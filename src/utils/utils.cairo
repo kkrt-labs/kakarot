@@ -3,7 +3,7 @@
 // StarkWare dependencies
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.math import assert_le, split_felt, assert_nn_le, unsigned_div_rem
-from starkware.cairo.common.math_cmp import is_le
+from starkware.cairo.common.math_cmp import is_le, is_nn
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256, uint256_check
 from starkware.cairo.common.registers import get_label_location
@@ -25,6 +25,16 @@ namespace Helpers {
             return 1;
         }
 
+        return 0;
+    }
+
+    // @notice Performs subtraction and returns 0 if the result is negative.
+    func saturated_sub{range_check_ptr}(a, b) -> felt {
+        let res = a - b;
+        let is_res_nn = is_nn(res);
+        if (is_res_nn != FALSE) {
+            return res;
+        }
         return 0;
     }
 
@@ -889,5 +899,30 @@ namespace Helpers {
         return bytes4_array_to_bytes(
             data_len=data_len - 1, data=data + 1, bytes_len=bytes_len + 4, bytes=res
         );
+    }
+    // Returns 1 if lhs <= rhs (or more precisely 0 <= rhs - lhs < RANGE_CHECK_BOUND).
+    // Returns 0 otherwise.
+    // Soundness assumptions (caller responsibility to ensure those) :
+    // - 0 <= lhs < RANGE_CHECK_BOUND
+    // - 0 <= rhs < RANGE_CHECK_BOUND
+    @known_ap_change
+    func is_le_unchecked{range_check_ptr}(lhs: felt, rhs: felt) -> felt {
+        tempvar a = rhs - lhs;  // reference (rhs-lhs) as "a" to use already whitelisted hint
+        %{ memory[ap] = 0 if 0 <= (ids.a % PRIME) < range_check_builtin.bound else 1 %}
+        jmp false if [ap] != 0, ap++;
+
+        // Ensure lhs <= rhs
+        assert [range_check_ptr] = a;
+        ap += 2;  // Two memory holes for known_ap_change in case of false case: Two instructions more: -1*a, and (-1*a) - 1.
+        tempvar range_check_ptr = range_check_ptr + 1;
+        tempvar res = 1;
+        ret;
+
+        false:
+        // Ensure rhs < lhs
+        assert [range_check_ptr] = (-a) - 1;
+        tempvar range_check_ptr = range_check_ptr + 1;
+        tempvar res = 0;
+        ret;
     }
 }

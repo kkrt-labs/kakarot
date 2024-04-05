@@ -6,7 +6,7 @@ import pytest_asyncio
 from starknet_py.contract import Contract
 from starknet_py.net.full_node_client import FullNodeClient
 
-from scripts.utils.starknet import wait_for_transaction
+from kakarot_scripts.utils.starknet import wait_for_transaction
 from tests.end_to_end.bytecodes import test_cases
 from tests.utils.constants import PRE_FUND_AMOUNT, TRANSACTION_GAS_LIMIT
 from tests.utils.helpers import (
@@ -38,7 +38,10 @@ async def other():
     """
     Just another Starknet contract.
     """
-    from scripts.utils.starknet import deploy_starknet_account, get_starknet_account
+    from kakarot_scripts.utils.starknet import (
+        deploy_starknet_account,
+        get_starknet_account,
+    )
 
     account_info = await deploy_starknet_account()
     return await get_starknet_account(account_info["address"])
@@ -49,7 +52,7 @@ async def class_hashes():
     """
     All declared class hashes.
     """
-    from scripts.utils.starknet import get_declarations
+    from kakarot_scripts.utils.starknet import get_declarations
 
     return get_declarations()
 
@@ -59,7 +62,7 @@ async def origin(evm: Contract, addresses):
     """
     Deploys the origin's Starknet contract to the correct address and funds it.
     """
-    from scripts.utils.starknet import fund_address
+    from kakarot_scripts.utils.starknet import fund_address
 
     evm_address = int(addresses[0].address, 16)
     sn_address = (
@@ -69,7 +72,7 @@ async def origin(evm: Contract, addresses):
     return evm_address
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(scope="session")
 class TestKakarot:
     class TestEVM:
         @pytest.mark.parametrize(
@@ -160,10 +163,8 @@ class TestKakarot:
             await fund_starknet_address(starknet_address, PRE_FUND_AMOUNT / 1e18)
 
             await deploy_externally_owned_account(evm_address)
-            eoa = get_contract("externally_owned_account", address=starknet_address)
-            actual_evm_address = (
-                await eoa.functions["get_evm_address"].call()
-            ).evm_address
+            eoa = get_contract("account_contract", address=starknet_address)
+            actual_evm_address = (await eoa.functions["get_evm_address"].call()).address
             assert actual_evm_address == int(evm_address, 16)
 
     class TestEthCallNativeCoinTransfer:

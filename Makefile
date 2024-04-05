@@ -11,13 +11,13 @@ KKRT_SSJ_BUILD_ARTIFACT_URL = $(shell curl -L https://api.github.com/repos/kkrt-
 
 build: check
 	$(MAKE) clean
-	poetry run python ./scripts/compile_kakarot.py
+	poetry run python ./kakarot_scripts/compile_kakarot.py
 
 check:
 	poetry check --lock
 
 fetch-ef-tests:
-	poetry run python ./scripts/ef_tests/fetch.py
+	poetry run python ./kakarot_scripts/ef_tests/fetch.py
 
 # This action fetches the latest Kakarot SSJ (Cairo compiler version >=2) artifacts
 # from the main branch and unzips them into the build/ssj directory.
@@ -44,7 +44,7 @@ test-end-to-end: build-sol deploy
 	poetry run pytest tests/end_to_end
 
 deploy: build
-	poetry run python ./scripts/deploy_kakarot.py
+	poetry run python ./kakarot_scripts/deploy_kakarot.py
 
 format:
 	trunk check --fix
@@ -58,7 +58,7 @@ clean:
 	mkdir -p build
 
 check-resources:
-	poetry run python scripts/check_resources.py
+	poetry run python kakarot_scripts/check_resources.py
 
 build-sol:
 	git submodule update --init --recursive

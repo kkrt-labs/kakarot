@@ -3,7 +3,7 @@ import pytest
 from tests.utils.errors import evm_error
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(scope="package")
 @pytest.mark.Counter
 class TestCounter:
     class TestCount:

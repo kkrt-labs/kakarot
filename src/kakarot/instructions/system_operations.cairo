@@ -5,7 +5,6 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.cairo_keccak.keccak import cairo_keccak_bigend, finalize_keccak
 from starkware.cairo.common.math import split_felt, unsigned_div_rem
 from starkware.cairo.common.math_cmp import is_le, is_nn, is_not_zero
 from starkware.cairo.common.registers import get_fp_and_pc
@@ -14,6 +13,7 @@ from starkware.cairo.common.default_dict import default_dict_new
 from starkware.cairo.common.dict_access import DictAccess
 
 from kakarot.account import Account
+from kakarot.interfaces.interfaces import IAccount, ICairo1Helpers
 from kakarot.constants import Constants
 from kakarot.errors import Errors
 from kakarot.evm import EVM
@@ -21,6 +21,7 @@ from kakarot.gas import Gas
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
+from kakarot.storages import Kakarot_precompiles_class_hash
 from kakarot.state import State
 from utils.utils import Helpers
 from utils.array import slice
@@ -752,42 +753,45 @@ namespace SystemOperations {
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
         let (popped) = Stack.pop();
-        let recipient_evm_address = uint256_to_uint160([popped]);
+        let recipient = uint256_to_uint160([popped]);
 
         // Gas
         // Access gas cost. The account is marked as warm in the `is_account_alive` instruction,
         // which performs a `get_account` and thus must be performed after the warm check.
-        let is_recipient_warm = State.is_account_warm(recipient_evm_address);
+        let is_recipient_warm = State.is_account_warm(recipient);
         tempvar access_gas_cost = (1 - is_recipient_warm) * Gas.COLD_ACCOUNT_ACCESS;
 
-        let is_recipient_alive = State.is_account_alive(recipient_evm_address);
+        let is_recipient_alive = State.is_account_alive(recipient);
         let self_account = State.get_account(evm.message.address.evm);
-        tempvar is_self_balance_not_zero = is_not_zero(self_account.balance.low) + is_not_zero(
+        tempvar is_self_balance_zero = Helpers.is_zero(self_account.balance.low) * Helpers.is_zero(
             self_account.balance.high
         );
-        tempvar gas_selfdestruct_new_account = (1 - is_recipient_alive) * is_self_balance_not_zero *
-            Gas.SELF_DESTRUCT_NEW_ACCOUNT;
+        tempvar gas_selfdestruct_new_account = (1 - is_recipient_alive) * (
+            1 - is_self_balance_zero
+        ) * Gas.SELF_DESTRUCT_NEW_ACCOUNT;
 
         let evm = EVM.charge_gas(evm, access_gas_cost + gas_selfdestruct_new_account);
         if (evm.reverted != FALSE) {
             return evm;
         }
 
+        // Operation
         if (evm.message.read_only != FALSE) {
             let (revert_reason_len, revert_reason) = Errors.stateModificationError();
             let evm = EVM.stop(evm, revert_reason_len, revert_reason, Errors.EXCEPTIONAL_HALT);
             return evm;
         }
 
-        // Remove this when https://eips.ethereum.org/EIPS/eip-6780 is validated
-        if (recipient_evm_address == evm.message.address.evm) {
-            tempvar is_recipient_self = TRUE;
-        } else {
-            tempvar is_recipient_self = FALSE;
-        }
-        let recipient_evm_address = (1 - is_recipient_self) * recipient_evm_address;
+        // If the account was created in the same transaction and recipient is self, the native token is burnt
+        tempvar is_recipient_not_self = is_not_zero(recipient - evm.message.address.evm);
 
-        let recipient_account = State.get_account(recipient_evm_address);
+        if (self_account.created != FALSE) {
+            tempvar recipient = is_recipient_not_self * recipient;
+        } else {
+            tempvar recipient = recipient;
+        }
+
+        let recipient_account = State.get_account(recipient);
         let transfer = model.Transfer(
             sender=self_account.address,
             recipient=recipient_account.address,
@@ -795,7 +799,7 @@ namespace SystemOperations {
         );
         let success = State.add_transfer(transfer);
 
-        // Register for SELFDESTRUCT
+        // Marked as SELFDESTRUCT for commitment
         // @dev: get_account again because add_transfer updated it
         let account = State.get_account(evm.message.address.evm);
         let account = Account.selfdestruct(account);
@@ -983,9 +987,9 @@ namespace CreateHelper {
         local message_len;
         // rlp([address, nonce]) inlined to save unnecessary expensive general RLP encoding
         // final bytes is either
-        // (0xc0 + bytes_lenght) + (0x80 + 20) + address + nonce
+        // (0xc0 + bytes_length) + (0x80 + 20) + address + nonce
         // or
-        // (0xc0 + bytes_lenght) + (0x80 + 20) + address + (0x80 + nonce_len) + nonce
+        // (0xc0 + bytes_length) + (0x80 + 20) + address + (0x80 + nonce_len) + nonce
         let (message: felt*) = alloc();
         assert [message + 1] = 0x80 + 20;
         felt_to_bytes20(message + 2, sender_address);
@@ -1003,15 +1007,18 @@ namespace CreateHelper {
         assert message[0] = message_len + 0xc0 - 1;
 
         let (message_bytes8: felt*) = alloc();
-        bytes_to_bytes8_little_endian(message_bytes8, message_len, message);
+        let (message_bytes8_len, last_word, last_word_num_bytes) = bytes_to_bytes8_little_endian(
+            message_bytes8, message_len, message
+        );
 
-        let (keccak_ptr: felt*) = alloc();
-        local keccak_ptr_start: felt* = keccak_ptr;
-        with keccak_ptr {
-            let (message_hash) = cairo_keccak_bigend(message_bytes8, message_len);
-        }
-
-        finalize_keccak(keccak_ptr_start, keccak_ptr);
+        let (implementation) = Kakarot_precompiles_class_hash.read();
+        let (message_hash) = ICairo1Helpers.library_call_keccak(
+            class_hash=implementation,
+            words_len=message_bytes8_len,
+            words=message_bytes8,
+            last_input_word=last_word,
+            last_input_num_bytes=last_word_num_bytes,
+        );
 
         let address = uint256_to_uint160(message_hash);
         return (address,);
@@ -1032,18 +1039,22 @@ namespace CreateHelper {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(sender_address: felt, bytecode_len: felt, bytecode: felt*, salt: Uint256) -> (
-        evm_contract_address: felt
-    ) {
+    }(sender_address: felt, bytecode_len: felt, bytecode: felt*, salt: Uint256) -> felt {
         alloc_locals;
-        let (keccak_ptr: felt*) = alloc();
-        local keccak_ptr_start: felt* = keccak_ptr;
 
         let (local bytecode_bytes8: felt*) = alloc();
-        bytes_to_bytes8_little_endian(bytecode_bytes8, bytecode_len, bytecode);
-        with keccak_ptr {
-            let (bytecode_hash) = cairo_keccak_bigend(bytecode_bytes8, bytecode_len);
-        }
+        let (bytecode_bytes8_len, last_word, last_word_num_bytes) = bytes_to_bytes8_little_endian(
+            bytecode_bytes8, bytecode_len, bytecode
+        );
+
+        let (implementation) = Kakarot_precompiles_class_hash.read();
+        let (bytecode_hash) = ICairo1Helpers.library_call_keccak(
+            class_hash=implementation,
+            words_len=bytecode_bytes8_len,
+            words=bytecode_bytes8,
+            last_input_word=last_word,
+            last_input_num_bytes=last_word_num_bytes,
+        );
 
         // get keccak hash of
         // marker + caller_address + salt + bytecode_hash
@@ -1057,16 +1068,20 @@ namespace CreateHelper {
         let packed_bytes_len = 1 + 20 + 32 + 32;
 
         let (local packed_bytes8: felt*) = alloc();
-        bytes_to_bytes8_little_endian(packed_bytes8, packed_bytes_len, packed_bytes);
+        let (packed_bytes8_len, last_word, last_word_num_bytes) = bytes_to_bytes8_little_endian(
+            packed_bytes8, packed_bytes_len, packed_bytes
+        );
 
-        with keccak_ptr {
-            let (create2_hash) = cairo_keccak_bigend(packed_bytes8, packed_bytes_len);
-        }
-
-        finalize_keccak(keccak_ptr_start, keccak_ptr);
-
+        let (create2_hash) = ICairo1Helpers.library_call_keccak(
+            class_hash=implementation,
+            words_len=packed_bytes8_len,
+            words=packed_bytes8,
+            last_input_word=last_word,
+            last_input_num_bytes=last_word_num_bytes,
+        );
         let create2_address = uint256_to_uint160(create2_hash);
-        return (create2_address,);
+
+        return create2_address;
     }
 
     // @notice Pre-compute the evm address of a contract account before deploying it.
@@ -1091,7 +1106,7 @@ namespace CreateHelper {
             return evm_contract_address;
         } else {
             let salt = popped[3];
-            let (evm_contract_address) = CreateHelper.get_create2_address(
+            let evm_contract_address = CreateHelper.get_create2_address(
                 sender_address=evm_address, bytecode_len=bytecode_len, bytecode=bytecode, salt=salt
             );
             return evm_contract_address;
@@ -1178,6 +1193,7 @@ namespace CreateHelper {
         // Write bytecode to Account
         let account = State.get_account(evm.message.address.evm);
         let account = Account.set_code(account, evm.return_data_len, evm.return_data);
+        let account = Account.set_created(account, TRUE);
         State.update_account(account);
 
         tempvar evm = new model.EVM(

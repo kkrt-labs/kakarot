@@ -11,7 +11,7 @@ from eth_keys import keys
 from eth_utils import decode_hex, keccak, to_checksum_address
 from starkware.starknet.public.abi import get_storage_var_address
 
-from scripts.constants import NETWORK
+from kakarot_scripts.constants import NETWORK
 from tests.utils.uint256 import int_to_uint256
 
 PERMIT_TYPEHASH = keccak(
@@ -223,7 +223,9 @@ def merge_access_list(access_list):
     for access in access_list:
         merged_list[access["address"]] = merged_list[access["address"]].union(
             {
-                get_storage_var_address("storage_", *int_to_uint256(int(key, 16)))
+                get_storage_var_address(
+                    "Account_storage", *int_to_uint256(int(key, 16))
+                )
                 for key in access["storageKeys"]
             }
         )

@@ -9,7 +9,7 @@ from eth_utils.address import to_checksum_address
 from starknet_py.contract import Contract
 from starknet_py.net.account.account import Account
 
-from scripts.utils.starknet import wait_for_transaction
+from kakarot_scripts.utils.starknet import wait_for_transaction
 from tests.utils.helpers import generate_random_private_key
 
 logging.basicConfig()
@@ -43,14 +43,14 @@ def starknet():
     """
     End-to-end tests assume that there is already a "Starknet" network running
     with kakarot deployed.
-    We return the RPC_CLIENT in a fixture to avoid importing in the tests the scripts.utils
+    We return the RPC_CLIENT in a fixture to avoid importing in the tests the kakarot_scripts.utils
     but gather instead in fixtures all the utils. Using only fixtures in the tests will make
     it easier to later on change the backend without rewriting the tests.
 
     Since this `starknet` fixture is run before all the others, setting the STARKNET_NETWORK
     environment variable here would effectively change the target network of the test suite.
     """
-    from scripts.constants import RPC_CLIENT
+    from kakarot_scripts.constants import RPC_CLIENT
 
     return RPC_CLIENT
 
@@ -64,7 +64,7 @@ async def addresses(max_fee) -> List[Wallet]:
     - private_key: the PrivateKey of this address.
     - starknet_contract: the deployed Starknet contract handling this EOA.
     """
-    from scripts.utils.kakarot import get_eoa
+    from kakarot_scripts.utils.kakarot import get_eoa
 
     wallets = []
     for i in range(5):
@@ -92,7 +92,7 @@ async def owner(addresses, eth_balance_of):
     account = addresses[0]
     current_balance = await eth_balance_of(account.address)
     if current_balance / 1e18 < 10:
-        from scripts.utils.starknet import fund_address
+        from kakarot_scripts.utils.starknet import fund_address
 
         await fund_address(account.starknet_contract.address, 10)
     return addresses[0]
@@ -114,7 +114,7 @@ async def deployer() -> Account:
     Return a cached version of the deployer contract.
     """
 
-    from scripts.utils.starknet import get_starknet_account
+    from kakarot_scripts.utils.starknet import get_starknet_account
 
     return await get_starknet_account()
 
@@ -125,7 +125,7 @@ async def eth(deployer) -> Contract:
     Return a cached version of the eth contract.
     """
 
-    from scripts.utils.starknet import get_eth_contract
+    from kakarot_scripts.utils.starknet import get_eth_contract
 
     return await get_eth_contract(provider=deployer)
 
@@ -136,7 +136,7 @@ def fund_starknet_address(deployer, eth):
     Return a cached fund_starknet_address for the whole session.
     """
 
-    from scripts.utils.starknet import fund_address
+    from kakarot_scripts.utils.starknet import fund_address
 
     return partial(fund_address, funding_account=deployer, token_contract=eth)
 
@@ -146,7 +146,7 @@ def kakarot(deployer) -> Contract:
     """
     Return a cached deployer for the whole session.
     """
-    from scripts.utils.starknet import get_contract
+    from kakarot_scripts.utils.starknet import get_contract
 
     return get_contract("kakarot", provider=deployer)
 
@@ -192,7 +192,7 @@ def get_contract(deployer):
     """
     Wrap script.utils.starknet.get_contract to make the test are agnostics of the utils.
     """
-    from scripts.utils.starknet import get_contract
+    from kakarot_scripts.utils.starknet import get_contract
 
     def _factory(contract_name, address=None, provider=deployer):
         return get_contract(
@@ -230,7 +230,7 @@ def deploy_solidity_contract(zero_fee: int):
     Fixture to attach a modified web3.contract instance to an already deployed contract_account in kakarot.
     """
 
-    from scripts.utils.kakarot import deploy
+    from kakarot_scripts.utils.kakarot import deploy
 
     async def _factory(contract_app, contract_name, *args, **kwargs):
         """
@@ -249,7 +249,7 @@ def get_solidity_contract():
     Fixture to attach a modified web3.contract instance to an already deployed contract_account in kakarot.
     """
 
-    from scripts.utils.kakarot import get_contract
+    from kakarot_scripts.utils.kakarot import get_contract
 
     def _factory(contract_app, contract_name, *args, **kwargs):
         """
@@ -267,22 +267,8 @@ def block_with_tx_hashes(starknet):
     https://github.com/software-mansion/starknet.py/issues/1174.
     """
 
-    import json
-
-    import requests
-
-    def _factory(block_number: Optional[int] = None):
-        response = requests.post(
-            starknet.url,
-            json={
-                "jsonrpc": "2.0",
-                "method": "starknet_getBlockWithTxHashes",
-                "params": [block_number or "latest"],
-                "id": 0,
-            },
-            timeout=60,
-        )
-        return json.loads(response.text)["result"]
+    async def _factory(block_number: Optional[int] = None):
+        return await starknet.get_block_with_tx_hashes(block_number=block_number)
 
     return _factory
 
@@ -312,7 +298,7 @@ def eth_send_transaction(max_fee, owner):
     """
     Send a decoded transaction to Kakarot.
     """
-    from scripts.utils.kakarot import eth_send_transaction
+    from kakarot_scripts.utils.kakarot import eth_send_transaction
 
     return partial(
         eth_send_transaction, max_fee=max_fee, caller_eoa=owner.starknet_contract
@@ -324,7 +310,7 @@ def eth_get_code():
     """
     Send a decoded transaction to Kakarot.
     """
-    from scripts.utils.kakarot import eth_get_code
+    from kakarot_scripts.utils.kakarot import eth_get_code
 
     return eth_get_code
 
@@ -334,7 +320,7 @@ def call():
     """
     Send a Starknet call.
     """
-    from scripts.utils.starknet import call
+    from kakarot_scripts.utils.starknet import call
 
     return call
 
@@ -344,6 +330,6 @@ def invoke():
     """
     Send a Starknet transaction.
     """
-    from scripts.utils.starknet import invoke
+    from kakarot_scripts.utils.starknet import invoke
 
     return invoke

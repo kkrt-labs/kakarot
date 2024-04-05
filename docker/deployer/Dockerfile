@@ -5,7 +5,7 @@
 ###########################################
 # Base image used by builder and deployer
 ###########################################
-FROM python:3.9.18-slim-bookworm as base
+FROM python:3.10.14-slim-bookworm as base
 
 HEALTHCHECK NONE
 
@@ -48,7 +48,7 @@ ENV GITHUB_TOKEN=${GITHUB_TOKEN}
 # install dependencies
 COPY poetry.lock .
 COPY pyproject.toml .
-COPY scripts ./scripts
+COPY kakarot_scripts ./kakarot_scripts
 COPY README.md .
 COPY tests ./tests
 
@@ -66,7 +66,7 @@ RUN --mount=type=cache,target=/root/.cache \
 FROM base as deployer
 
 COPY --from=builder /app/kakarot/build ./build/
-COPY --from=builder /app/kakarot/scripts/ ./scripts/
+COPY --from=builder /app/kakarot/kakarot_scripts/ ./kakarot_scripts/
 COPY --from=builder /app/kakarot/tests ./tests/
 
 # Cairo Smart contracts are used in deploy_kakarot.py
@@ -83,4 +83,4 @@ RUN --mount=type=cache,target=/root/.cache \
     poetry install --without dev
 
 # Deploy kakarot
-CMD ["python", "scripts/deploy_kakarot.py"]
+CMD ["python", "kakarot_scripts/deploy_kakarot.py"]

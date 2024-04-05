@@ -428,7 +428,13 @@ namespace Errors {
         assert [error + 31] = 108;  // l
         assert [error + 32] = 101;  // e
         assert [error + 33] = 32;  //
-        assert [error + 34] = '0' + address;  //
+
+        if (address == 10) {
+            assert [error + 34] = '1';
+            assert [error + 35] = '0';
+            return (36, error);
+        }
+        assert [error + 34] = '0' + address;
         return (35, error);
     }
 

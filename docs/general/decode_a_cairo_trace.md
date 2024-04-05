@@ -39,8 +39,8 @@ this cryptic message to map location in the original cairo program.
   - by default in the `compile_kakarot.py` script, the `--no_debug_info` is
     applied when the target network is not a devnet (e.g katana)
   - to use the tooling as is, just run
-    `STARKNET_NETWORK=starknet-devnet python scripts/compile_kakarot.py` or
-    `make build` if you set katana as your `STARKNET_NETWORK` in `.env`
+    `STARKNET_NETWORK=starknet-devnet python kakarot_scripts/compile_kakarot.py`
+    or `make build` if you set katana as your `STARKNET_NETWORK` in `.env`
 
 - Then, use this simple snippet as a standalone Python file
 
@@ -48,7 +48,7 @@ this cryptic message to map location in the original cairo program.
   # %% Imports
   import json
 
-  from scripts.utils.starknet import get_artifact
+  from kakarot_scripts.utils.starknet import get_artifact
   from starkware.cairo.lang.compiler.program import Program
   from starkware.cairo.lang.vm.reconstruct_traceback import reconstruct_traceback
 
@@ -72,7 +72,7 @@ failed with more clarity.
 
 As it's not always obvious which contract triggered the error (Kakarot, account,
 EVM for the bytecode tests), this extended snippets proved to be more robust as
-a general purpose debug scripts, to be run both from the ef-test and the kakarot
+a general purpose debug script, to be run both from the ef-test and the kakarot
 repo.
 
 It basically loads by default all the possible contract sources, looking for
@@ -89,7 +89,7 @@ from starkware.cairo.lang.vm.reconstruct_traceback import reconstruct_traceback
 
 build_dir = Path("build")
 programs = {}
-for contract_name in ["externally_owned_account", "kakarot", "contract_account", "EVM"]:
+for contract_name in ["uninitialized_account", "kakarot", "account_contract", "EVM"]:
     artifact = build_dir / f"{contract_name}.json"
     if not artifact.is_file():
         artifact = build_dir / "fixtures" / f"{contract_name}.json"

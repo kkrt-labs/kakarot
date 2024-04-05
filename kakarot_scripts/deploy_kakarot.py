@@ -2,15 +2,16 @@
 import logging
 from asyncio import run
 
-from scripts.constants import (
+from kakarot_scripts.constants import (
     BLOCK_GAS_LIMIT,
+    COINBASE,
     DECLARED_CONTRACTS,
     ETH_TOKEN_ADDRESS,
     EVM_ADDRESS,
     NETWORK,
     RPC_CLIENT,
 )
-from scripts.utils.starknet import (
+from kakarot_scripts.utils.starknet import (
     declare,
     deploy,
     dump_declarations,
@@ -56,12 +57,10 @@ async def main():
             "kakarot",
             account.address,  # owner
             ETH_TOKEN_ADDRESS,  # native_token_address_
-            class_hash["contract_account"],  # contract_account_class_hash_
-            class_hash[
-                "externally_owned_account"
-            ],  # externally_owned_account_class_hash
-            class_hash["proxy"],  # account_proxy_class_hash
-            class_hash["Precompiles"],
+            class_hash["account_contract"],  # account_contract_class_hash_
+            class_hash["uninitialized_account"],  # uninitialized_account_class_hash_
+            class_hash["Cairo1Helpers"],
+            COINBASE,
             BLOCK_GAS_LIMIT,
         )
 
@@ -69,9 +68,10 @@ async def main():
         deployments["EVM"] = await deploy(
             "EVM",
             ETH_TOKEN_ADDRESS,  # native_token_address_
-            class_hash["contract_account"],  # contract_account_class_hash_
-            class_hash["proxy"],  # account_proxy_class_hash
-            class_hash["Precompiles"],
+            class_hash["account_contract"],  # account_contract_class_hash_
+            class_hash["uninitialized_account"],  # uninitialized_account_class_hash_
+            class_hash["Cairo1Helpers"],
+            COINBASE,
             BLOCK_GAS_LIMIT,
         )
 
@@ -79,9 +79,10 @@ async def main():
 
     if EVM_ADDRESS:
         logger.info(f"ℹ️  Found default EVM address {EVM_ADDRESS}")
-        from scripts.utils.kakarot import get_eoa
+        from kakarot_scripts.utils.kakarot import get_eoa
 
-        await get_eoa(amount=100)
+        amount = 0.02 if not NETWORK["devnet"] else 100
+        await get_eoa(amount=amount)
 
 
 # %% Run

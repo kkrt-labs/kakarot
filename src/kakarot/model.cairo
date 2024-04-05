@@ -71,9 +71,15 @@ namespace model {
         code: felt*,
         storage_start: DictAccess*,
         storage: DictAccess*,
+        transient_storage_start: DictAccess*,
+        transient_storage: DictAccess*,
         nonce: felt,
         balance: Uint256*,
         selfdestruct: felt,
+        // @dev: another way of knowing if an account was just created or not is to get it's registered starknet address.
+        // 1. It's zero -> it was created in the same tx
+        // 2. It's non-zero -> We fetch it's nonce from storage, if 0 -> it was created in the same tx, otherwise it was created in a previous tx.
+        created: felt,
     }
 
     // @notice The struct representing an EVM event.
@@ -159,7 +165,6 @@ namespace model {
     // @param block_number The block number of the current block.
     // @param block_gas_limit The gas limit for the current block.
     // @param block_timestamp The timestamp of the current block.
-    // @param block_hashes The last 256 accessible block hashes
     // @param coinbase The address of the miner of the current block.
     // @param base_fee The basefee of the current block.
     struct Environment {
@@ -170,7 +175,6 @@ namespace model {
         block_number: felt,
         block_gas_limit: felt,
         block_timestamp: felt,
-        block_hashes: Uint256*,
         coinbase: felt,
         base_fee: felt,
     }

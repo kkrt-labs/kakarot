@@ -9,10 +9,11 @@ from pathlib import Path
 import pyperclip
 import rlp
 from dotenv import load_dotenv
-from eth.vm.forks.shanghai.blocks import ShanghaiBlock
+from eth.vm.forks.cancun.blocks import CancunBlock
 from web3 import Web3
 
-from scripts.ef_tests.fetch import EF_TESTS_PARSED_DIR
+from kakarot_scripts.constants import BEACON_ROOT_ADDRESS
+from kakarot_scripts.ef_tests.fetch import EF_TESTS_PARSED_DIR
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -34,7 +35,7 @@ class AnvilHandler:
             block = get_block(data)
             ts = block.header.timestamp
             anvil = subprocess.Popen(
-                f"anvil --timestamp {ts} --hardfork shanghai",
+                f"anvil --timestamp {ts} --hardfork cancun",
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
@@ -67,8 +68,13 @@ def get_test_file():
     ]
 
     if len(tests) == 0:
-        raise ValueError(f"Test {TEST_NAME} not found")
-
+        if len(TEST_NAME) > 255:
+            raise ValueError(
+                f"Test name '{TEST_NAME}' could not be parsed because it exceeds the maximum length of 255 characters."
+            )
+        raise ValueError(
+            f"Test '{TEST_NAME}' not found. Please ensure that you are using the valid EF-Test name, not the sanitized identifier used in the runner. If the test name is longer than 255 characters, it might be invalid."
+        )
     if len(tests) > 1:
         if TEST_PARENT_FOLDER == "":
             raise ValueError(
@@ -102,7 +108,7 @@ def set_pre_state(w3, data):
 def get_block(data):
     try:
         block_rlp = data["blocks"][0]["rlp"]
-        block = rlp.decode(bytes.fromhex(block_rlp[2:]), ShanghaiBlock)
+        block = rlp.decode(bytes.fromhex(block_rlp[2:]), CancunBlock)
     except Exception as e:
         raise Exception("Could not find block in test data") from e
     return block
@@ -119,17 +125,18 @@ def set_block(w3, data):
     w3.provider.make_request("evm_setBlockGasLimit", [block.header.gas_limit])
 
 
-def send_transaction(w3, data):
-    block = get_block(data)
-    if len(block.transactions) == 0:
-        raise ValueError("Could not find transaction in test data")
-    tx_hash = w3.eth.send_raw_transaction(block.transactions[0].encode()).hex()
+def send_transaction(w3, transaction):
+    tx_hash = w3.eth.send_raw_transaction(transaction.encode()).hex()
     return tx_hash
 
 
 def check_post_state(w3, data):
     for address, account in data["postState"].items():
         address = Web3.to_checksum_address(address)
+        if address == Web3.to_checksum_address(
+            BEACON_ROOT_ADDRESS
+        ):  # Skip beacon root address validation
+            continue
         try:
             assert w3.eth.get_balance(address) == int(
                 account["balance"], 16
@@ -151,31 +158,41 @@ def check_post_state(w3, data):
 
 def main():
     test = get_test_file()
-
     # Launch anvil
     handler = AnvilHandler(test)
     try:
         provider = connect_anvil()
-
         # Set test state
         set_pre_state(provider, test)
         set_block(provider, test)
 
-        # Send transaction
-        tx_hash = send_transaction(provider, test)
+        # Send transactions
+        block = get_block(test)
+        tx_hashes = []
+        if len(block.transactions) == 0:
+            raise ValueError("Could not find transaction in test data")
+        for tx in block["transactions"]:
+            tx_hash = send_transaction(provider, tx)
+            provider.eth.wait_for_transaction_receipt(tx_hash)
+            tx_hashes.append(tx_hash)
 
         # Check post state
         check_post_state(provider, test)
+
+        logger.info("Running transactions:")
+        for i, tx_hash in enumerate(tx_hashes, start=1):
+            command = f"cast run {tx_hash}"
+            _ = subprocess.run(command, shell=True)
+            debug_command = f"cast run {tx_hash} --debug"
+            logger.info(f"Run `{debug_command}` to debug transaction {i} \n")
+
+        first_command = f"cast run {tx_hashes[0]} --debug"
+        pyperclip.copy(first_command)
+        logger.info(f"First command `{first_command}` copied to clipboard")
+
     except Exception as e:
         handler.anvil.terminate()
         raise e
-
-    logger.info("Running transaction:")
-    _ = subprocess.run(f"cast run {tx_hash}", shell=True)
-
-    command = f"cast run {tx_hash} --debug"
-    pyperclip.copy(command)
-    logger.info(f"Run `{command}` to debug transaction (copied in clipboard)")
 
     # Wait for sig term to stop anvil
     handler.wait()

@@ -132,14 +132,28 @@ func uint256_to_bytes32{range_check_ptr}(dst: felt*, n: Uint256) {
     return ();
 }
 
-func bytes_to_bytes8_little_endian(dst: felt*, bytes_len: felt, bytes: felt*) -> felt {
+// @notice Converts an array of bytes to an array of bytes8, little endian
+// @dev The individual bytes are packed into 8-byte words, little endian.
+//     The last word is returned separately, along with the number of used bytes
+//     as it may be incomplete.
+// @param dst The destination array.
+// @param bytes_len The number of bytes in the input array.
+// @param bytes The input array.
+// @return The number of bytes written to the destination array.
+// @return The last word.
+// @return The number of bytes used in the last word
+func bytes_to_bytes8_little_endian{range_check_ptr}(dst: felt*, bytes_len: felt, bytes: felt*) -> (
+    felt, felt, felt
+) {
     alloc_locals;
 
     if (bytes_len == 0) {
-        return (0);
+        return (0, 0, 0);
     }
 
     let (local pow256) = get_label_location(pow256_table);
+    let (full_u64_word_count, local last_input_num_bytes) = unsigned_div_rem(bytes_len, 8);
+    local range_check_ptr = range_check_ptr;
 
     tempvar dst_index = 0;
     tempvar bytes_index = bytes_len - 1;
@@ -161,9 +175,12 @@ func bytes_to_bytes8_little_endian(dst: felt*, bytes_len: felt, bytes: felt*) ->
     tempvar bytes8 = bytes8 + current_byte * current_pow;
 
     jmp next if bytes_index != 0;
+    jmp end_word_not_full if bytes8_index != 0;
 
+    let last_input_num_bytes = [fp + 1];
     assert [dst + dst_index] = bytes8;
-    return (dst_index + 1);
+    let range_check_ptr = [fp + 2];
+    return (dst_index + 1, 0, 0);
 
     next:
     jmp regular if bytes8_index != 0;
@@ -190,6 +207,13 @@ func bytes_to_bytes8_little_endian(dst: felt*, bytes_len: felt, bytes: felt*) ->
     static_assert bytes8 == [ap - 2];
     static_assert bytes8_index == [ap - 1];
     jmp body;
+
+    end_word_not_full:
+    tempvar dst_index = dst_index;
+    tempvar bytes8 = bytes8;
+
+    let range_check_ptr = [fp + 2];
+    return (dst_index, bytes8, last_input_num_bytes);
 
     pow256_table:
     dw 256 ** 7;

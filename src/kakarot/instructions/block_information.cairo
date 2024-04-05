@@ -10,6 +10,8 @@ from starkware.cairo.common.uint256 import Uint256
 
 from kakarot.constants import Constants
 from kakarot.evm import EVM
+from kakarot.interfaces.interfaces import ICairo1Helpers
+from kakarot.storages import Kakarot_precompiles_class_hash
 from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.state import State
@@ -41,16 +43,18 @@ namespace BlockInformation {
         jmp chainid;
         jmp selfbalance;
         jmp basefee;
+        jmp blobhash;
+        jmp blobbasefee;
 
         blockhash:
+        let syscall_ptr = cast([fp - 10], felt*);
+        let pedersen_ptr = cast([fp - 9], HashBuiltin*);
         let range_check_ptr = [fp - 8];
         let stack = cast([fp - 6], model.Stack*);
         let evm = cast([fp - 3], model.EVM*);
         Internals.blockhash(evm);
 
         // Rebind unused args with fp
-        let syscall_ptr = cast([fp - 10], felt*);
-        let pedersen_ptr = cast([fp - 9], HashBuiltin*);
         let bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
         let memory = cast([fp - 5], model.Memory*);
         let state = cast([fp - 4], model.State*);
@@ -122,6 +126,17 @@ namespace BlockInformation {
         Stack.push_uint128(evm.message.env.base_fee);
         jmp end;
 
+        blobhash:
+        let stack = cast([fp - 6], model.Stack*);
+        Stack.pop();
+        Stack.push_uint128(0);
+        jmp end;
+
+        blobbasefee:
+        let stack = cast([fp - 6], model.Stack*);
+        Stack.push_uint128(0);
+        jmp end;
+
         end:
         // Rebind unused args with fp
         let syscall_ptr = cast([fp - 10], felt*);
@@ -140,26 +155,29 @@ namespace BlockInformation {
 }
 
 namespace Internals {
-    func blockhash{range_check_ptr, stack: model.Stack*}(evm: model.EVM*) {
+    func blockhash{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, stack: model.Stack*
+    }(evm: model.EVM*) {
         let (block_number) = Stack.pop();
         if (block_number.high != 0) {
             Stack.push_uint256(Uint256(0, 0));
             return ();
         }
 
-        let in_range = is_in_range(
-            block_number.low, evm.message.env.block_number - 256, evm.message.env.block_number
-        );
+        let lower_bound = Helpers.saturated_sub(evm.message.env.block_number, 256);
+        let in_range = is_in_range(block_number.low, lower_bound, evm.message.env.block_number);
 
         if (in_range == FALSE) {
             Stack.push_uint256(Uint256(0, 0));
             return ();
         }
 
-        let blockhash = evm.message.env.block_hashes[
-            evm.message.env.block_number - 1 - block_number.low
-        ];
-        Stack.push_uint256(blockhash);
+        let (implementation) = Kakarot_precompiles_class_hash.read();
+        let (blockhash) = ICairo1Helpers.library_call_get_block_hash(
+            implementation, block_number.low
+        );
+        let (blockhash_high, blockhash_low) = split_felt(blockhash);
+        Stack.push_uint256(Uint256(low=blockhash_low, high=blockhash_high));
         return ();
     }
 

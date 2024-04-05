@@ -5,6 +5,7 @@ from starkware.cairo.common.uint256 import Uint256, assert_uint256_eq
 from starkware.cairo.common.memset import memset
 
 from utils.utils import Helpers
+from kakarot.constants import Constants
 
 func test__bytes_to_uint256{range_check_ptr}() -> Uint256 {
     alloc_locals;

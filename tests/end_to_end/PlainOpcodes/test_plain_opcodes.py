@@ -4,7 +4,7 @@ from web3 import Web3
 from tests.utils.errors import evm_error
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(scope="package")
 @pytest.mark.PlainOpcodes
 class TestPlainOpcodes:
     class TestStaticCall:
@@ -35,7 +35,7 @@ class TestPlainOpcodes:
             self, plain_opcodes, block_with_tx_hashes
         ):
             timestamp = await plain_opcodes.opcodeTimestamp()
-            assert timestamp == block_with_tx_hashes("pending")["timestamp"]
+            assert timestamp == (await block_with_tx_hashes("pending")).timestamp
 
     class TestBlockhash:
         @pytest.mark.xfail(reason="Need to fix blockhash on real Starknet network")
@@ -45,22 +45,18 @@ class TestPlainOpcodes:
             block_with_tx_hashes,
         ):
             latest_block = block_with_tx_hashes("latest")
-            blockhash = await plain_opcodes.opcodeBlockHash(
-                latest_block["block_number"]
-            )
+            blockhash = await plain_opcodes.opcodeBlockHash(latest_block.block_number)
 
-            assert (
-                int.from_bytes(blockhash, byteorder="big") == latest_block["block_hash"]
-            )
+            assert int.from_bytes(blockhash, byteorder="big") == latest_block.block_hash
 
         async def test_should_return_zero_with_invalid_block_number(
             self,
             plain_opcodes,
             block_with_tx_hashes,
         ):
-            latest_block = block_with_tx_hashes("latest")
+            latest_block = await block_with_tx_hashes("latest")
             blockhash_invalid_number = await plain_opcodes.opcodeBlockHash(
-                latest_block["block_number"] + 1
+                latest_block.block_number + 1
             )
 
             assert int.from_bytes(blockhash_invalid_number, byteorder="big") == 0
@@ -154,7 +150,7 @@ class TestPlainOpcodes:
             get_contract,
         ):
             plain_opcodes_contract_account = get_contract(
-                "contract_account", address=plain_opcodes.starknet_address
+                "account_contract", address=plain_opcodes.starknet_address
             )
             nonce_initial = (
                 await plain_opcodes_contract_account.functions["get_nonce"].call()
@@ -203,7 +199,7 @@ class TestPlainOpcodes:
                 events["CreateAddress"][0]["_address"]
             )
             contract_account = get_contract(
-                "contract_account", address=starknet_address
+                "account_contract", address=starknet_address
             )
             assert [] == (await contract_account.functions["bytecode"].call()).bytecode
 
@@ -230,7 +226,7 @@ class TestPlainOpcodes:
             assert await counter.count() == 1
 
     class TestCreate2:
-        async def test_should_redeploy_after_selfdestruct(
+        async def test_should_collision_after_selfdestruct_different_tx(
             self,
             plain_opcodes,
             get_solidity_contract,
@@ -255,16 +251,28 @@ class TestPlainOpcodes:
                 "ContractWithSelfdestructMethod",
                 address=events["Create2Address"][0]["_address"],
             )
-            assert await eth_get_code(contract_with_selfdestruct.address)
+            pre_code = await eth_get_code(contract_with_selfdestruct.address)
+            assert pre_code
             await contract_with_selfdestruct.kill()
-            assert not await eth_get_code(contract_with_selfdestruct.address)
+            post_code = await eth_get_code(contract_with_selfdestruct.address)
+            assert pre_code == post_code
 
-            await plain_opcodes.create2(
-                bytecode=contract_with_selfdestruct.constructor().data_in_transaction,
-                salt=salt,
-                caller_eoa=owner.starknet_contract,
-            )
-            assert await eth_get_code(contract_with_selfdestruct.address)
+            receipt = (
+                await plain_opcodes.create2(
+                    bytecode=contract_with_selfdestruct.constructor().data_in_transaction,
+                    salt=salt,
+                    caller_eoa=owner.starknet_contract,
+                )
+            )["receipt"]
+
+            events = plain_opcodes.events.parse_starknet_events(receipt.events)
+
+            # There should be a create2 collision which returns zero
+            assert events["Create2Address"] == [
+                {
+                    "_address": "0x0000000000000000000000000000000000000000",
+                }
+            ]
 
         async def test_should_deploy_bytecode_at_address(
             self,
@@ -276,7 +284,7 @@ class TestPlainOpcodes:
             compute_starknet_address,
         ):
             plain_opcodes_contract_account = get_contract(
-                "contract_account", address=plain_opcodes.starknet_address
+                "account_contract", address=plain_opcodes.starknet_address
             )
             nonce_initial = (
                 await plain_opcodes_contract_account.functions["get_nonce"].call()
@@ -301,7 +309,7 @@ class TestPlainOpcodes:
             assert await deployed_counter.count() == 0
 
             deployed_counter_contract_account = get_contract(
-                "contract_account",
+                "account_contract",
                 address=await compute_starknet_address(deployed_counter.address),
             )
 

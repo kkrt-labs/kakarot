@@ -24,13 +24,13 @@ from starkware.starknet.common.syscalls import get_contract_address
 
 from kakarot.constants import Constants
 from kakarot.storages import (
-    account_proxy_class_hash,
-    native_token_address,
-    contract_account_class_hash,
+    Kakarot_uninitialized_account_class_hash,
+    Kakarot_native_token_address,
+    Kakarot_account_contract_class_hash,
 )
-from kakarot.interfaces.interfaces import IAccount, IContractAccount, IERC20
+from kakarot.interfaces.interfaces import IAccount, IERC20
 from kakarot.model import model
-from kakarot.storages import evm_to_starknet_address
+from kakarot.storages import Kakarot_evm_to_starknet_address
 from utils.dict import default_dict_copy
 from utils.utils import Helpers
 
@@ -47,15 +47,19 @@ namespace Account {
         address: model.Address*, code_len: felt, code: felt*, nonce: felt, balance: Uint256*
     ) -> model.Account* {
         let (storage_start) = default_dict_new(0);
+        let (transient_storage_start) = default_dict_new(0);
         return new model.Account(
             address=address,
             code_len=code_len,
             code=code,
             storage_start=storage_start,
             storage=storage_start,
+            transient_storage_start=transient_storage_start,
+            transient_storage=transient_storage_start,
             nonce=nonce,
             balance=balance,
             selfdestruct=0,
+            created=0,
         );
     }
 
@@ -63,16 +67,23 @@ namespace Account {
     // @dev Squash dicts used internally
     // @param self The pointer to the Account
     func copy{range_check_ptr}(self: model.Account*) -> model.Account* {
+        alloc_locals;
         let (storage_start, storage) = default_dict_copy(self.storage_start, self.storage);
+        let (transient_storage_start, transient_storage) = default_dict_copy(
+            self.transient_storage_start, self.transient_storage
+        );
         return new model.Account(
             address=self.address,
             code_len=self.code_len,
             code=self.code,
             storage_start=storage_start,
             storage=storage,
+            transient_storage_start=transient_storage_start,
+            transient_storage=transient_storage,
             nonce=self.nonce,
             balance=self.balance,
             selfdestruct=self.selfdestruct,
+            created=self.created,
         );
     }
 
@@ -105,24 +116,16 @@ namespace Account {
             assert balance_ptr = new Uint256(balance.low, balance.high);
         }
 
-        let (account_type) = IAccount.account_type(contract_address=starknet_address);
-
-        if (account_type == 'EOA') {
-            let (bytecode: felt*) = alloc();
-            // There is no way to access the nonce of an EOA currently
-            // But putting 1 shouldn't have any impact and is safer than 0
-            // since has_code_or_nonce is used in some places to trigger collision
-            let account = Account.init(
-                address=address, code_len=0, code=bytecode, nonce=1, balance=balance_ptr
-            );
-            return account;
-        }
-
-        // Case CA
         let (bytecode_len, bytecode) = IAccount.bytecode(contract_address=starknet_address);
-        let (nonce) = IContractAccount.get_nonce(contract_address=starknet_address);
+        let (nonce) = IAccount.get_nonce(contract_address=starknet_address);
+
+        // CAs are instantiated with their actual nonce - EOAs are instantiated with the nonce=1
+        // that is set when they're deployed.
+
+        // If an account was created-selfdestructed in the same tx, its nonce is 0, thus
+        // it is considered as a new account as per the `has_code_or_nonce` rule.
         let account = Account.init(
-            address, code_len=bytecode_len, code=bytecode, nonce=nonce, balance=balance_ptr
+            address=address, code_len=bytecode_len, code=bytecode, nonce=nonce, balance=balance_ptr
         );
         return account;
     }
@@ -152,9 +155,12 @@ namespace Account {
                 code=self.code,
                 storage_start=self.storage_start,
                 storage=storage,
+                transient_storage_start=self.transient_storage_start,
+                transient_storage=self.transient_storage,
                 nonce=self.nonce,
                 balance=self.balance,
                 selfdestruct=self.selfdestruct,
+                created=self.created,
             );
             return (self, value_ptr);
         }
@@ -162,7 +168,7 @@ namespace Account {
         // Case reading from Starknet storage
         let starknet_account_exists = is_registered(self.address.evm);
         if (starknet_account_exists != 0) {
-            let (value) = IContractAccount.storage(
+            let (value) = IAccount.storage(
                 contract_address=self.address.starknet, storage_addr=storage_addr
             );
             tempvar value_ptr = new Uint256(value.low, value.high);
@@ -186,9 +192,12 @@ namespace Account {
             code=self.code,
             storage_start=self.storage_start,
             storage=storage,
+            transient_storage_start=self.transient_storage_start,
+            transient_storage=self.transient_storage,
             nonce=self.nonce,
             balance=self.balance,
             selfdestruct=self.selfdestruct,
+            created=self.created,
         );
         return (self, value_ptr);
     }
@@ -197,7 +206,7 @@ namespace Account {
     // @param self The pointer to the Account.
     // @param key The pointer to the Uint256 storage key
     // @param value The pointer to the Uint256 value
-    func write_storage{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    func write_storage{pedersen_ptr: HashBuiltin*, range_check_ptr}(
         self: model.Account*, key: Uint256*, value: Uint256*
     ) -> model.Account* {
         alloc_locals;
@@ -210,11 +219,77 @@ namespace Account {
             code=self.code,
             storage_start=self.storage_start,
             storage=storage,
+            transient_storage_start=self.transient_storage_start,
+            transient_storage=self.transient_storage,
             nonce=self.nonce,
             balance=self.balance,
             selfdestruct=self.selfdestruct,
+            created=self.created,
         );
         return self;
+    }
+
+    // @notice Updates a transient storage key with the given value
+    // @param self The pointer to the Account.
+    // @param key The pointer to the Uint256 storage key
+    // @param value The pointer to the Uint256 value
+    func write_transient_storage{pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        self: model.Account*, key: Uint256*, value: Uint256*
+    ) -> model.Account* {
+        alloc_locals;
+        local transient_storage: DictAccess* = self.transient_storage;
+        let (storage_addr) = Internals._storage_addr(key);
+        dict_write{dict_ptr=transient_storage}(key=storage_addr, new_value=cast(value, felt));
+        tempvar self = new model.Account(
+            address=self.address,
+            code_len=self.code_len,
+            code=self.code,
+            storage_start=self.storage_start,
+            storage=self.storage,
+            transient_storage_start=self.transient_storage_start,
+            transient_storage=transient_storage,
+            nonce=self.nonce,
+            balance=self.balance,
+            selfdestruct=self.selfdestruct,
+            created=self.created,
+        );
+        return self;
+    }
+
+    // @notice Read a given key in the transient storage
+    // @param self The pointer to the execution Account.
+    // @param key The pointer to the storage key
+    // @return The updated Account
+    // @return The read value
+    func read_transient_storage{pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        self: model.Account*, key: Uint256*
+    ) -> (model.Account*, Uint256*) {
+        alloc_locals;
+        let transient_storage = self.transient_storage;
+        let (local storage_addr) = Internals._storage_addr(key);
+        let (pointer) = dict_read{dict_ptr=transient_storage}(key=storage_addr);
+        local value_ptr: Uint256*;
+
+        // Case reading from local storage
+        if (pointer != 0) {
+            assert value_ptr = cast(pointer, Uint256*);
+        } else {
+            assert value_ptr = new Uint256(0, 0);
+        }
+        tempvar self = new model.Account(
+            address=self.address,
+            code_len=self.code_len,
+            code=self.code,
+            storage_start=self.storage_start,
+            storage=self.storage,
+            transient_storage_start=self.transient_storage_start,
+            transient_storage=transient_storage,
+            nonce=self.nonce,
+            balance=self.balance,
+            selfdestruct=self.selfdestruct,
+            created=self.created,
+        );
+        return (self, value_ptr);
     }
 
     // @notice Set the code of the Account
@@ -231,9 +306,12 @@ namespace Account {
             code=code,
             storage_start=self.storage_start,
             storage=self.storage,
+            transient_storage_start=self.transient_storage_start,
+            transient_storage=self.transient_storage,
             nonce=self.nonce,
             balance=self.balance,
             selfdestruct=self.selfdestruct,
+            created=self.created,
         );
     }
 
@@ -247,9 +325,29 @@ namespace Account {
             code=self.code,
             storage_start=self.storage_start,
             storage=self.storage,
+            transient_storage_start=self.transient_storage_start,
+            transient_storage=self.transient_storage,
             nonce=nonce,
             balance=self.balance,
             selfdestruct=self.selfdestruct,
+            created=self.created,
+        );
+    }
+
+    // @notice Sets an account as created
+    func set_created(self: model.Account*, is_created: felt) -> model.Account* {
+        return new model.Account(
+            address=self.address,
+            code_len=self.code_len,
+            code=self.code,
+            storage_start=self.storage_start,
+            storage=self.storage,
+            transient_storage_start=self.transient_storage_start,
+            transient_storage=self.transient_storage,
+            nonce=self.nonce,
+            balance=self.balance,
+            selfdestruct=self.selfdestruct,
+            created=is_created,
         );
     }
 
@@ -259,8 +357,8 @@ namespace Account {
     func fetch_balance{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         address: model.Address*
     ) -> Uint256 {
-        let (native_token_address_) = native_token_address.read();
-        let (balance) = IERC20.balanceOf(native_token_address_, address.starknet);
+        let (native_token_address) = Kakarot_native_token_address.read();
+        let (balance) = IERC20.balanceOf(native_token_address, address.starknet);
         return balance;
     }
 
@@ -280,7 +378,7 @@ namespace Account {
             return value;
         }
         let (storage_addr) = Internals._storage_addr(key);
-        let (value) = IContractAccount.storage(
+        let (value) = IAccount.storage(
             contract_address=account.address.starknet, storage_addr=storage_addr
         );
         return value;
@@ -296,9 +394,12 @@ namespace Account {
             code=self.code,
             storage_start=self.storage_start,
             storage=self.storage,
+            transient_storage_start=self.transient_storage_start,
+            transient_storage=self.transient_storage,
             nonce=self.nonce,
             balance=balance,
             selfdestruct=self.selfdestruct,
+            created=self.created,
         );
     }
 
@@ -312,9 +413,12 @@ namespace Account {
             code=self.code,
             storage_start=self.storage_start,
             storage=self.storage,
+            transient_storage_start=self.transient_storage_start,
+            transient_storage=self.transient_storage,
             nonce=self.nonce,
             balance=self.balance,
             selfdestruct=1,
+            created=self.created,
         );
     }
 
@@ -325,7 +429,7 @@ namespace Account {
     func get_registered_starknet_address{
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     }(evm_address: felt) -> felt {
-        let (starknet_address) = evm_to_starknet_address.read(evm_address);
+        let (starknet_address) = Kakarot_evm_to_starknet_address.read(evm_address);
         return starknet_address;
     }
 
@@ -338,8 +442,12 @@ namespace Account {
     ) -> felt {
         alloc_locals;
         let (_deployer_address: felt) = get_contract_address();
-        let (_account_proxy_class_hash: felt) = account_proxy_class_hash.read();
+        let (
+            _uninitialized_account_class_hash: felt
+        ) = Kakarot_uninitialized_account_class_hash.read();
         let (constructor_calldata: felt*) = alloc();
+        assert constructor_calldata[0] = _deployer_address;
+        assert constructor_calldata[1] = evm_address;
         let (hash_state_ptr) = hash_init();
         let (hash_state_ptr) = hash_update_single{hash_ptr=pedersen_ptr}(
             hash_state_ptr=hash_state_ptr, item=Constants.CONTRACT_ADDRESS_PREFIX
@@ -354,10 +462,11 @@ namespace Account {
         );
         // hash class hash
         let (hash_state_ptr) = hash_update_single{hash_ptr=pedersen_ptr}(
-            hash_state_ptr=hash_state_ptr, item=_account_proxy_class_hash
+            hash_state_ptr=hash_state_ptr, item=_uninitialized_account_class_hash
         );
+        // hash constructor arguments
         let (hash_state_ptr) = hash_update_with_hashchain{hash_ptr=pedersen_ptr}(
-            hash_state_ptr=hash_state_ptr, data_ptr=constructor_calldata, data_length=0
+            hash_state_ptr=hash_state_ptr, data_ptr=constructor_calldata, data_length=2
         );
         let (contract_address_before_modulo) = hash_finalize{hash_ptr=pedersen_ptr}(
             hash_state_ptr=hash_state_ptr
@@ -423,8 +532,8 @@ namespace Account {
         let i = [ap - 1];
 
         tempvar opcode = [bytecode + i];
-        let is_opcode_ge_0x5f = is_le(0x5f, opcode);
-        let is_opcode_le_0x7f = is_le(opcode, 0x7f);
+        let is_opcode_ge_0x5f = Helpers.is_le_unchecked(0x5f, opcode);
+        let is_opcode_le_0x7f = Helpers.is_le_unchecked(opcode, 0x7f);
         let is_push_opcode = is_opcode_ge_0x5f * is_opcode_le_0x7f;
         let next_i = i + 1 + is_push_opcode * (opcode - 0x5f);  // 0x5f is the first PUSHN opcode, opcode - 0x5f is the number of arguments.
 
@@ -439,17 +548,25 @@ namespace Account {
             tempvar range_check_ptr = range_check_ptr;
         }
 
-        tempvar is_not_done = is_le(next_i + 1, bytecode_len);
+        // continue_loop != 0 => next_i - bytecode_len < 0 <=> next_i < bytecode_len
+        tempvar a = next_i - bytecode_len;
+        %{ memory[ap] = 0 if 0 <= (ids.a % PRIME) < range_check_builtin.bound else 1 %}
+        ap += 1;
+        let continue_loop = [ap - 1];
         tempvar range_check_ptr = range_check_ptr;
         tempvar valid_jumpdests = valid_jumpdests;
         tempvar i = next_i;
         static_assert range_check_ptr == [ap - 3];
         static_assert valid_jumpdests == [ap - 2];
         static_assert i == [ap - 1];
-        jmp body if is_not_done != 0;
+        jmp body if continue_loop != 0;
 
         end:
-        tempvar range_check_ptr = [ap - 3];
+        let range_check_ptr = [ap - 3];
+        let i = [ap - 1];
+        // Verify that i >= bytecode_len to ensure loop terminated correctly.
+        let check = Helpers.is_le_unchecked(bytecode_len, i);
+        assert check = 1;
         return (valid_jumpdests_start, valid_jumpdests);
     }
 
@@ -467,9 +584,12 @@ namespace Account {
             code=self.code,
             storage_start=self.storage_start,
             storage=storage,
+            transient_storage_start=self.transient_storage_start,
+            transient_storage=self.transient_storage,
             nonce=self.nonce,
             balance=self.balance,
             selfdestruct=self.selfdestruct,
+            created=self.created,
         );
 
         if (pointer != 0) {
@@ -496,9 +616,12 @@ namespace Account {
             code=self.code,
             storage_start=self.storage_start,
             storage=storage_ptr,
+            transient_storage_start=self.transient_storage_start,
+            transient_storage=self.transient_storage,
             nonce=self.nonce,
             balance=self.balance,
             selfdestruct=self.selfdestruct,
+            created=self.created,
         );
         return self;
     }
@@ -506,10 +629,10 @@ namespace Account {
 
 namespace Internals {
     // @notice Compute the storage address of the given key when the storage var interface is
-    //         storage_(key: Uint256)
-    // @dev    Just the generated addr method when compiling the contract_account
+    //         Account_storage(key: Uint256)
+    // @dev    Just the generated addr method when compiling the account_contract
     func _storage_addr{pedersen_ptr: HashBuiltin*, range_check_ptr}(key: Uint256*) -> (res: felt) {
-        let res = 1510236440068827666686527023008568026372765124888307403567795291192307314167;
+        let res = 0x0127c52d6fa812547d8a5b435341b8c12e82048913e7193c0e318e8a6642876d;
         let (res) = hash2{hash_ptr=pedersen_ptr}(res, cast(key, felt*)[0]);
         let (res) = hash2{hash_ptr=pedersen_ptr}(res, cast(key, felt*)[1]);
         let (res) = normalize_address(addr=res);
@@ -530,7 +653,7 @@ namespace Internals {
 
         let starknet_address = Account.get_registered_starknet_address(evm_address);
         if (starknet_address != 0) {
-            let (value) = IContractAccount.storage(
+            let (value) = IAccount.storage(
                 contract_address=starknet_address, storage_addr=storage_addr
             );
             tempvar value_ptr = new Uint256(value.low, value.high);

@@ -7,7 +7,6 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.registers import get_fp_and_pc
 from starkware.cairo.common.uint256 import (
-    uint256_add,
     uint256_and,
     uint256_eq,
     uint256_lt,
@@ -19,19 +18,20 @@ from starkware.cairo.common.uint256 import (
     uint256_shr,
     uint256_signed_div_rem,
     uint256_signed_lt,
-    uint256_sub,
     uint256_unsigned_div_rem,
     uint256_xor,
     Uint256,
+    SHIFT,
+    ALL_ONES,
 )
 
-from kakarot.constants import opcodes_label
+from kakarot.constants import Constants, opcodes_label
 from kakarot.model import model
 from kakarot.evm import EVM
 from kakarot.stack import Stack
 from kakarot.gas import Gas
 from kakarot.state import State
-from utils.uint256 import uint256_fast_exp, uint256_signextend
+from utils.uint256 import uint256_fast_exp, uint256_signextend, uint256_sub, uint256_add
 from utils.utils import Helpers
 
 // @title Stop and Math operations opcodes.
@@ -482,8 +482,8 @@ namespace StopAndMathOperations {
             high = 0;
         } else {
             // If sign is negative, set the number to -1.
-            low = 0xffffffffffffffffffffffffffffffff;
-            high = 0xffffffffffffffffffffffffffffffff;
+            low = Constants.UINT128_MAX;
+            high = Constants.UINT128_MAX;
         }
 
         // Rebuild the `sign` variable from `low` and `high`.

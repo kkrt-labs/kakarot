@@ -238,7 +238,7 @@ by running (in the ef test directory):
 
 ```bash
 cargo test <test_name> --features v0 -- --nocapture
-# e.g. cargo test test_sha3_d7g0v0_Shanghai --features v0 -- --nocapture
+# e.g. cargo test test_sha3_d7g0v0_Cancun --features v0 -- --nocapture
 ```
 
 See [this doc](./docs/general/decode_a_cairo_trace.md) to learn how to debug a
@@ -252,9 +252,9 @@ on an underlying StarknetOS network.
 It is **not** a description on how to deploy a solidity contract on the Kakarot
 EVM.
 
-The [deploy script](./scripts/deploy_kakarot.py) relies on some env variables
-defined in a `.env` file located at the root of the project and loaded in the
-[constant file](./scripts/constants.py). To get started, just
+The [deploy script](./kakarot_scripts/deploy_kakarot.py) relies on some env
+variables defined in a `.env` file located at the root of the project and loaded
+in the [constant file](./kakarot_scripts/constants.py). To get started, just
 
 ```bash
 cp .env.example .env
@@ -264,9 +264,9 @@ The default file is self sufficient for using Kakarot with KATANA. If targeting
 other networks, make sure to fill the corresponding variables.
 
 Furthermore, if you want to run the
-[check-resources](./scripts/check_resources.py) locally to check the steps usage
-of your local changes in the EF tests against main and other branches, you need
-to fill the following
+[check-resources](./kakarot_scripts/check_resources.py) locally to check the
+steps usage of your local changes in the EF tests against main and other
+branches, you need to fill the following
 
 ```text
 GITHUB_TOKEN=your_github_token

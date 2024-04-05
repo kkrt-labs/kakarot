@@ -9,8 +9,9 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn
 from starkware.cairo.common.math import split_felt
 from starkware.cairo.lang.compiler.lib.registers import get_fp_and_pc
-from starkware.cairo.common.uint256 import Uint256, uint256_le, uint256_sub, uint256_add
+from starkware.cairo.common.uint256 import Uint256, uint256_le
 from starkware.cairo.common.math import unsigned_div_rem
+from starkware.starknet.common.syscalls import get_tx_info
 
 // Internal dependencies
 from kakarot.account import Account
@@ -35,6 +36,7 @@ from kakarot.state import State
 from kakarot.gas import Gas
 from utils.utils import Helpers
 from utils.array import count_not_zero
+from utils.uint256 import uint256_sub, uint256_add
 
 // @title EVM instructions processing.
 // @notice This file contains functions related to the processing of EVM instructions.
@@ -275,9 +277,9 @@ namespace Interpreter {
         jmp end;
         call BlockInformation.exec_block_information;  // 0x48
         jmp end;
-        call unknown_opcode;  // 0x49
+        call BlockInformation.exec_block_information;  // 0x49
         jmp end;
-        call unknown_opcode;  // 0x4a
+        call BlockInformation.exec_block_information;  // 0x4a
         jmp end;
         call unknown_opcode;  // 0x4b
         jmp end;
@@ -313,11 +315,11 @@ namespace Interpreter {
         jmp end;
         call MemoryOperations.exec_jumpdest;  // 0x5b
         jmp end;
-        call unknown_opcode;  // 0x5c
+        call MemoryOperations.exec_tload;  // 0x5c
         jmp end;
-        call unknown_opcode;  // 0x5d
+        call MemoryOperations.exec_tstore;  // 0x5d
         jmp end;
-        call unknown_opcode;  // 0x5e
+        call MemoryOperations.exec_mcopy;  // 0x5e
         jmp end;
         call PushOperations.exec_push;  // 0x5f
         jmp end;
@@ -755,6 +757,8 @@ namespace Interpreter {
     // @return stack The stack post-execution
     // @return memory The memory post-execution
     // @return gas_used the gas used by the transaction
+    // @return required_gas The amount of gas required by the transaction to successfully execute. This is different
+    // from the gas used by the transaction as it doesn't take into account any refunds.
     func execute{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -772,7 +776,7 @@ namespace Interpreter {
         gas_limit: felt,
         access_list_len: felt,
         access_list: felt*,
-    ) -> (model.EVM*, model.Stack*, model.Memory*, model.State*, felt) {
+    ) -> (model.EVM*, model.Stack*, model.Memory*, model.State*, felt, felt) {
         alloc_locals;
         let fp_and_pc = get_fp_and_pc();
         local __fp__: felt* = fp_and_pc.fp_val;
@@ -858,7 +862,7 @@ namespace Interpreter {
             if (is_gas_limit_enough == FALSE) {
                 let evm = EVM.halt_validation_failed(evm);
                 State.finalize();
-                return (evm, stack, memory, state, 0);
+                return (evm, stack, memory, state, 0, 0);
             }
 
             // TODO: same as below
@@ -866,7 +870,7 @@ namespace Interpreter {
             if (is_value_le_balance == FALSE) {
                 let evm = EVM.halt_validation_failed(evm);
                 State.finalize();
-                return (evm, stack, memory, state, 0);
+                return (evm, stack, memory, state, 0, 0);
             }
             let (balance_post_value_transfer) = uint256_sub([sender.balance], [value]);
 
@@ -879,7 +883,7 @@ namespace Interpreter {
             if (can_pay_gasfee == FALSE) {
                 let evm = EVM.halt_validation_failed(evm);
                 State.finalize();
-                return (evm, stack, memory, state, 0);
+                return (evm, stack, memory, state, 0, 0);
             }
 
             tempvar is_initcode_invalid = is_deploy_tx * is_le(
@@ -888,7 +892,7 @@ namespace Interpreter {
             if (is_initcode_invalid != FALSE) {
                 let evm = EVM.halt_validation_failed(evm);
                 State.finalize();
-                return (evm, stack, memory, state, 0);
+                return (evm, stack, memory, state, 0, 0);
             }
 
             // Charge the gas fee to the user without setting up a transfer.
@@ -904,9 +908,10 @@ namespace Interpreter {
             let account = State.get_account(address.evm);
             let code_or_nonce = Account.has_code_or_nonce(account);
             let is_collision = code_or_nonce * is_deploy_tx;
-            // Nonce is set to 1 in case of deploy_tx
+            // Nonce is set to 1 in case of deploy_tx and account is marked as created
             let nonce = account.nonce * (1 - is_deploy_tx) + is_deploy_tx;
-            let account = Account.set_nonce(account, nonce);
+            let account = Account.set_nonce(account, nonce);  // Increase the nonce of the sender of the tx
+            let account = Account.set_created(account, is_deploy_tx);
             State.update_account(account);
         }
 
@@ -928,14 +933,14 @@ namespace Interpreter {
             let evm = run(evm);
         }
 
-        let gas_used = gas_limit - evm.gas_left;
-        let (max_refund, _) = unsigned_div_rem(gas_used, 5);
+        let required_gas = gas_limit - evm.gas_left;
+        let (max_refund, _) = unsigned_div_rem(required_gas, 5);
         let is_max_refund_le_gas_refund = is_le(max_refund, evm.gas_refund);
         tempvar gas_refund = is_max_refund_le_gas_refund * max_refund + (
             1 - is_max_refund_le_gas_refund
         ) * evm.gas_refund;
 
-        let total_gas_used = gas_used - gas_refund;
+        let total_gas_used = required_gas - gas_refund;
 
         with state {
             // Reset the state if the execution has failed.
@@ -978,7 +983,7 @@ namespace Interpreter {
             State.finalize();
         }
 
-        return (evm, stack, memory, state, total_gas_used);
+        return (evm, stack, memory, state, total_gas_used, required_gas);
     }
 
     // @notice A placeholder for opcodes that don't exist

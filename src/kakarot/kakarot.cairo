@@ -24,20 +24,20 @@ from utils.utils import Helpers
 @constructor
 func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     owner: felt,
-    native_token_address_: felt,
-    contract_account_class_hash_: felt,
-    externally_owned_account_class_hash: felt,
-    account_proxy_class_hash: felt,
+    native_token_address: felt,
+    account_contract_class_hash: felt,
+    uninitialized_account_class_hash: felt,
     precompiles_class_hash: felt,
+    coinbase: felt,
     block_gas_limit: felt,
 ) {
     return Kakarot.constructor(
         owner,
-        native_token_address_,
-        contract_account_class_hash_,
-        externally_owned_account_class_hash,
-        account_proxy_class_hash,
+        native_token_address,
+        account_contract_class_hash,
+        uninitialized_account_class_hash,
         precompiles_class_hash,
+        coinbase,
         block_gas_limit,
     );
 }
@@ -57,12 +57,12 @@ func upgrade{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 
 // @notice Set the native token used by kakarot
 // @dev Set the native token which will emulate the role of ETH on Ethereum
-// @param native_token_address_ The address of the native token
+// @param native_token_address The address of the native token
 @external
 func set_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    native_token_address_: felt
+    native_token_address: felt
 ) {
-    return Kakarot.set_native_token(native_token_address_);
+    return Kakarot.set_native_token(native_token_address);
 }
 
 // @notice Get the native token address
@@ -76,12 +76,10 @@ func get_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
 }
 
 // @notice Set the block base fee.
-// @param base_fee_ The new base fee.
+// @param base_fee The new base fee.
 @external
-func set_base_fee{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    base_fee_: felt
-) {
-    return Kakarot.set_base_fee(base_fee_);
+func set_base_fee{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(base_fee: felt) {
+    return Kakarot.set_base_fee(base_fee);
 }
 
 // @notice Get the block base fee.
@@ -93,13 +91,11 @@ func get_base_fee{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
     return Kakarot.get_base_fee();
 }
 
-// @notice Set the coinbase.
-// @param coinbase_ The new coinbase address.
+// @notice Set the Kakarot_coinbase.
+// @param coinbase The new coinbase address.
 @external
-func set_coinbase{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    coinbase_: felt
-) {
-    return Kakarot.set_coinbase(coinbase_);
+func set_coinbase{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(coinbase: felt) {
+    return Kakarot.set_coinbase(coinbase);
 }
 
 // @notice Get the coinbase address.
@@ -112,12 +108,12 @@ func get_coinbase{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
 }
 
 // @notice Sets the prev randao
-// @param prev_randao_ The new prev randao.
+// @param prev_randao The new prev randao.
 @external
 func set_prev_randao{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    prev_randao_: Uint256
+    prev_randao: Uint256
 ) {
-    return Kakarot.set_prev_randao(prev_randao_);
+    return Kakarot.set_prev_randao(prev_randao);
 }
 
 // @notice Get the prev randao.
@@ -212,7 +208,7 @@ func eth_call{
     alloc_locals;
     let fp_and_pc = get_fp_and_pc();
     local __fp__: felt* = fp_and_pc.fp_val;
-    let (evm, state, gas_used) = Kakarot.eth_call(
+    let (evm, state, gas_used, _) = Kakarot.eth_call(
         nonce,
         origin,
         to,
@@ -226,6 +222,55 @@ func eth_call{
     );
     let is_reverted = is_not_zero(evm.reverted);
     return (evm.return_data_len, evm.return_data, 1 - is_reverted, gas_used);
+}
+
+// @notice The eth_estimateGas function as described in the spec,
+//         see https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_call
+//         This is a view only function, meaning that it doesn't make any state change.
+// @param origin The address the transaction is sent from.
+// @param to The address the transaction is directed to.
+// @param gas_limit Integer of the gas provided for the transaction execution
+// @param gas_price Integer of the gas price used for each paid gas
+// @param value Integer of the value sent with this transaction
+// @param data_len The length of the data
+// @param data Hash of the method signature and encoded parameters. For details see Ethereum Contract ABI in the Solidity documentation
+// @return return_data_len The length of the return_data
+// @return return_data An array of returned felts
+// @return success An boolean, TRUE if the transaction succeeded, FALSE otherwise
+// @return required_gas The amount of gas required by the transaction to successfully execute. This is different
+// from the gas used by the transaction as it doesn't take into account any refunds.
+@view
+func eth_estimate_gas{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(
+    nonce: felt,
+    origin: felt,
+    to: model.Option,
+    gas_limit: felt,
+    gas_price: felt,
+    value: Uint256,
+    data_len: felt,
+    data: felt*,
+    access_list_len: felt,
+    access_list: felt*,
+) -> (return_data_len: felt, return_data: felt*, success: felt, required_gas: felt) {
+    alloc_locals;
+    let fp_and_pc = get_fp_and_pc();
+    local __fp__: felt* = fp_and_pc.fp_val;
+    let (evm, state, _, gas_required) = Kakarot.eth_call(
+        nonce,
+        origin,
+        to,
+        gas_limit,
+        gas_price,
+        &value,
+        data_len,
+        data,
+        access_list_len,
+        access_list,
+    );
+    let is_reverted = is_not_zero(evm.reverted);
+    return (evm.return_data_len, evm.return_data, 1 - is_reverted, gas_required);
 }
 
 // @notice The eth_send_transaction function as described in the spec,
@@ -264,7 +309,7 @@ func eth_send_transaction{
 
     let (tx_info) = get_tx_info();
 
-    let (evm, state, gas_used) = Kakarot.eth_call(
+    let (evm, state, gas_used, _) = Kakarot.eth_call(
         tx_info.nonce,
         origin,
         to,

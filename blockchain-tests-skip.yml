@@ -1,481 +1,534 @@
+# List of test directories to completely skip
+# trunk-ignore(yamllint/empty-values)
+directories:
+
 # List of file names to be skipped
 # The first level corresponds to the directory, the second to the list of file names to ignore.
 # trunk-ignore(yamllint/empty-values)
 filename:
 
-# List of specific tests names to be skipped with folder
 testname:
+  eip198_modexp_precompile:
+    - modexp__fork_Cancun_minus_blockchain_test_minus_EIP_minus_198_minus_case3_minus_raw_minus_input_minus_out_minus_of_minus_gas
+    - modexp__fork_Cancun_minus_blockchain_test_minus_ModExpInput_base__minus_exponent__minus_modulus_0002_minus_ExpectedOutput_call_return_code_0x01_minus_returned_data_0x0001
+    - modexp__fork_Cancun_minus_blockchain_test_minus_ModExpInput_base__minus_exponent__minus_modulus_02_minus_ExpectedOutput_call_return_code_0x01_minus_returned_data_0x01
+    - test_modexp__fork_Cancun_minus_blockchain_test_minus_ModExpInput_base__minus_exponent__minus_modulus_02_minus_ExpectedOutput_call_return_code_0x01_minus_returned_data_0x01
+    - modexp__fork_Cancun_minus_blockchain_test_minus_ModExpInput_base_00_minus_exponent_00_minus_modulus_02_minus_ExpectedOutput_call_return_code_0x01_minus_returned_data_0x01
+    - modexp__fork_Cancun_minus_blockchain_test_minus_ModExpInput_base_01_minus_exponent_01_minus_modulus_02_minus_ExpectedOutput_call_return_code_0x01_minus_returned_data_0x01
+    - modexp__fork_Cancun_minus_blockchain_test_minus_ModExpInput_base_02_minus_exponent_01_minus_modulus_03_minus_ExpectedOutput_call_return_code_0x01_minus_returned_data_0x02
+    - modexp__fork_Cancun_minus_blockchain_test_minus_ModExpInput_base_02_minus_exponent_02_minus_modulus_05_minus_ExpectedOutput_call_return_code_0x01_minus_returned_data_0x04
+    - modexp__fork_Cancun_minus_blockchain_test_minus_ModExpInput_base
+    - modexp__fork_Cancun_minus_blockchain_test_minus_ModExpInput_base
+  eip1344_chainid:
+    - chainid__fork_Cancun_minus_blockchain_test
+  stEIP1153-transientStorage:
+    - 15_tstoreCannotBeDosd_d0g0v0_Cancun #RunResources error
+    - 21_tstoreCannotBeDosdOOO_d0g0v0_Cancun #RunResources error
+  eip1153_tstore:
+    - run_until_out_of_gas__fork_Cancun_minus_blockchain_test_minus_tstore #RunResources error
+    - run_until_out_of_gas__fork_Cancun_minus_blockchain_test_minus_tstore_tload #RunResources error
+    - run_until_out_of_gas__fork_Cancun_minus_blockchain_test_minus_tstore_wide_address_space #RunResources error
   vmArithmeticTest:
-    - expPower256Of256_d0g0v0_Shanghai #RunResources error
-    - exp_d9g0v0_Shanghai #RunResources error
+    - expPower256Of256_d0g0v0_Cancun #RunResources error
+    - exp_d9g0v0_Cancun #RunResources error
   vmPerformance:
-    - loopExp_d10g0v0_Shanghai #RunResources error
-    - loopExp_d11g0v0_Shanghai #RunResources error
-    - loopExp_d12g0v0_Shanghai #RunResources error
-    - loopExp_d13g0v0_Shanghai #RunResources error
-    - loopExp_d14g0v0_Shanghai #RunResources error
-    - loopExp_d8g0v0_Shanghai #RunResources error
-    - loopExp_d9g0v0_Shanghai #RunResources error
-    - loopMul_d0g0v0_Shanghai #RunResources error
-    - loopMul_d1g0v0_Shanghai #RunResources error
-    - loopMul_d2g0v0_Shanghai #RunResources error
-    - performanceTester_d1g0v0_Shanghai #RunResources error
-    - performanceTester_d4g0v0_Shanghai #RunResources error
+    - loopExp_d10g0v0_Cancun #RunResources error
+    - loopExp_d11g0v0_Cancun #RunResources error
+    - loopExp_d12g0v0_Cancun #RunResources error
+    - loopExp_d13g0v0_Cancun #RunResources error
+    - loopExp_d14g0v0_Cancun #RunResources error
+    - loopExp_d8g0v0_Cancun #RunResources error
+    - loopExp_d9g0v0_Cancun #RunResources error
+    - loopMul_d0g0v0_Cancun #RunResources error
+    - loopMul_d1g0v0_Cancun #RunResources error
+    - loopMul_d2g0v0_Cancun #RunResources error
+    - performanceTester_d1g0v0_Cancun #RunResources error
+    - performanceTester_d4g0v0_Cancun #RunResources error
   vmTests:
-    - sha3_d3g0v0_Shanghai #RunResources error
+    - sha3_d3g0v0_Cancun #RunResources error
   stAttackTest:
-    - ContractCreationSpam_d0g0v0_Shanghai #RunResources error
+    - ContractCreationSpam_d0g0v0_Cancun #RunResources error
   stChainId:
-    - chainId_d0g0v0_Shanghai
+    - chainId_d0g0v0_Cancun
   stCreate2:
-    - RevertInCreateInInitCreate2_d0g0v0_Shanghai
-    - create2callPrecompiles_d6g0v0_Shanghai
-    - create2callPrecompiles_d7g0v0_Shanghai
-    - create2collisionStorage_d0g0v0_Shanghai
-    - create2collisionStorage_d1g0v0_Shanghai
-    - create2collisionStorage_d2g0v0_Shanghai
-  stCreateTest:
-    - CreateOOGafterMaxCodesize_d2g0v0_Shanghai #RunResources error
-    - CreateOOGafterMaxCodesize_d3g0v0_Shanghai #RunResources error
-    - CreateOOGafterMaxCodesize_d5g0v0_Shanghai #RunResources error
-    - CreateTransactionHighNonce_d0g0v0_Shanghai
-    - CreateTransactionHighNonce_d0g0v1_Shanghai
+    - RevertInCreateInInitCreate2Paris_d0g0v0_Cancun
+    - create2callPrecompiles_d6g0v0_Cancun
+    - create2callPrecompiles_d7g0v0_Cancun
+    - create2collisionStorageParis_d0g0v0_Cancun
+    - create2collisionStorageParis_d1g0v0_Cancun
+    - create2collisionStorageParis_d2g0v0_Cancun
   stCallCreateCallCodeTest:
-    - Call1024PreCalls_d0g0v0_Shanghai #RunResources error
-    - Call1024PreCalls_d0g1v0_Shanghai #RunResources error
-  stDelegatecallTestHomestead:
-    - Call1024PreCalls_d0g1v0_Shanghai #RunResources error
-    - Call1024PreCalls_d0g2v0_Shanghai #RunResources error
-  stEIP150singleCodeGasPrices:
-    - gasCostExp_d7g0v0_Shanghai #RunResources error
+    - Call1024PreCalls_d0g0v0_Cancun #RunResources error
+    - Call1024PreCalls_d0g1v0_Cancun #RunResources error
+  stCreateTest:
+    - CreateTransactionHighNonce_d0g0v0_Cancun
+    - CreateTransactionHighNonce_d0g0v1_Cancun
+    - CreateOOGafterMaxCodesize_d2g0v0_Cancun #RunResources error
+    - CreateOOGafterMaxCodesize_d3g0v0_Cancun #RunResources error
+    - CreateOOGafterMaxCodesize_d5g0v0_Cancun #RunResources error
   stExtCodeHash:
-    - dynamicAccountOverwriteEmpty_d0g0v0_Shanghai
+    - dynamicAccountOverwriteEmpty_Paris_d0g0v0_Cancun
+  stDelegatecallTestHomestead:
+    - Call1024PreCalls_d0g1v0_Cancun #RunResources error
+    - Call1024PreCalls_d0g2v0_Cancun #RunResources error
+  stEIP150singleCodeGasPrices:
+    - gasCostExp_d7g0v0_Cancun #RunResources error
   stPreCompiledContracts2:
-    - CALLBlake2f_d9g0v0_Shanghai #RunResources error
-    - CALLBlake2f_d9g1v0_Shanghai #RunResources error
-    - CALLBlake2f_d9g2v0_Shanghai #RunResources error
-    - CALLBlake2f_d9g3v0_Shanghai #RunResources error
-    - CALLCODEBlake2f_d9g0v0_Shanghai #RunResources error
-    - CALLCODEBlake2f_d9g1v0_Shanghai #RunResources error
-    - CALLCODEBlake2f_d9g2v0_Shanghai #RunResources error
-    - CALLCODEBlake2f_d9g3v0_Shanghai #RunResources error
-    - CALLCODEEcrecover0_Gas2999_d0g0v0_Shanghai
-    - CALLCODEEcrecover0_NoGas_d0g0v0_Shanghai
-    - CALLCODEEcrecover80_d0g0v0_Shanghai
-    - CALLCODEEcrecoverR_prefixed0_d0g0v0_Shanghai
-    - CALLCODERipemd160_0_d0g0v0_Shanghai
-    - CALLCODERipemd160_4_gas719_d0g0v0_Shanghai
-    - CALLCODERipemd160_5_d0g0v0_Shanghai #RunResources error
-    - CALLCODESha256_5_d0g0v0_Shanghai
-    - CallEcrecover0_Gas2999_d0g0v0_Shanghai
-    - CallEcrecover0_NoGas_d0g0v0_Shanghai
-    - CallEcrecover80_d0g0v0_Shanghai
-    - CallEcrecoverR_prefixed0_d0g0v0_Shanghai
-    - CallEcrecoverUnrecoverableKey_d0g0v0_Shanghai
-    - CallEcrecover_Overflow_d0g0v0_Shanghai
-    - CallEcrecover_Overflow_d1g0v0_Shanghai
-    - CallEcrecover_Overflow_d2g0v0_Shanghai
-    - CallEcrecover_Overflow_d4g0v0_Shanghai
-    - CallEcrecover_Overflow_d5g0v0_Shanghai
-    - CallRipemd160_0_d0g0v0_Shanghai
-    - CallRipemd160_4_gas719_d0g0v0_Shanghai
-    - CallRipemd160_5_d0g0v0_Shanghai #RunResources error
-    - CallSha256_5_d0g0v0_Shanghai
-    - ecrecoverShortBuff_d0g0v0_Shanghai
-    - modexpRandomInput_d1g0v0_Shanghai
-    - modexpRandomInput_d1g1v0_Shanghai
-    - modexpRandomInput_d2g0v0_Shanghai
-    - modexpRandomInput_d2g1v0_Shanghai
+    - CALLBlake2f_d9g0v0_Cancun #RunResources error
+    - CALLBlake2f_d9g1v0_Cancun #RunResources error
+    - CALLBlake2f_d9g2v0_Cancun #RunResources error
+    - CALLBlake2f_d9g3v0_Cancun #RunResources error
+    - CALLCODEBlake2f_d9g0v0_Cancun #RunResources error
+    - CALLCODEBlake2f_d9g1v0_Cancun #RunResources error
+    - CALLCODEBlake2f_d9g2v0_Cancun #RunResources error
+    - CALLCODEBlake2f_d9g3v0_Cancun #RunResources error
+    - CALLCODEEcrecover0_Gas2999_d0g0v0_Cancun
+    - CALLCODEEcrecover0_NoGas_d0g0v0_Cancun
+    - CALLCODEEcrecover80_d0g0v0_Cancun
+    - CALLCODEEcrecoverR_prefixed0_d0g0v0_Cancun
+    - CALLCODERipemd160_0_d0g0v0_Cancun
+    - CALLCODERipemd160_4_gas719_d0g0v0_Cancun
+    - CALLCODERipemd160_5_d0g0v0_Cancun #RunResources error
+    - CALLCODESha256_5_d0g0v0_Cancun #RunResources error
+    - CallEcrecover0_Gas2999_d0g0v0_Cancun
+    - CallEcrecover0_NoGas_d0g0v0_Cancun
+    - CallEcrecover80_d0g0v0_Cancun
+    - CallEcrecoverR_prefixed0_d0g0v0_Cancun
+    - CallEcrecoverUnrecoverableKey_d0g0v0_Cancun
+    - CallEcrecover_Overflow_d0g0v0_Cancun
+    - CallEcrecover_Overflow_d1g0v0_Cancun
+    - CallEcrecover_Overflow_d2g0v0_Cancun
+    - CallEcrecover_Overflow_d4g0v0_Cancun
+    - CallEcrecover_Overflow_d5g0v0_Cancun
+    - CallRipemd160_0_d0g0v0_Cancun
+    - CallRipemd160_4_gas719_d0g0v0_Cancun
+    - CallRipemd160_5_d0g0v0_Cancun #RunResources error
+    - CallSha256_5_d0g0v0_Cancun #RunResources error
+    - ecrecoverShortBuff_d0g0v0_Cancun
+    - modexpRandomInput_d1g0v0_Cancun
+    - modexpRandomInput_d1g1v0_Cancun
+    - modexpRandomInput_d2g0v0_Cancun #RunResources error
+    - modexpRandomInput_d2g1v0_Cancun #RunResources error
   stPreCompiledContracts:
-    - idPrecomps_d4g0v0_Shanghai
-    - modexp_d11g0v0_Shanghai
-    - modexp_d11g1v0_Shanghai
-    - modexp_d11g2v0_Shanghai
-    - modexp_d11g3v0_Shanghai
-    - modexp_d14g0v0_Shanghai
-    - modexp_d14g1v0_Shanghai
-    - modexp_d14g2v0_Shanghai
-    - modexp_d14g3v0_Shanghai
-    - modexp_d16g0v0_Shanghai
-    - modexp_d16g1v0_Shanghai
-    - modexp_d16g2v0_Shanghai
-    - modexp_d16g3v0_Shanghai
-    - modexp_d17g0v0_Shanghai
-    - modexp_d17g1v0_Shanghai
-    - modexp_d17g2v0_Shanghai
-    - modexp_d17g3v0_Shanghai
-    - modexp_d25g0v0_Shanghai
-    - modexp_d25g1v0_Shanghai
-    - modexp_d25g2v0_Shanghai
-    - modexp_d25g3v0_Shanghai
-    - modexp_d26g0v0_Shanghai
-    - modexp_d26g1v0_Shanghai
-    - modexp_d26g2v0_Shanghai
-    - modexp_d26g3v0_Shanghai
-    - modexp_d27g0v0_Shanghai
-    - modexp_d27g1v0_Shanghai
-    - modexp_d27g2v0_Shanghai
-    - modexp_d27g3v0_Shanghai
-    - modexp_d28g0v0_Shanghai
-    - modexp_d28g1v0_Shanghai
-    - modexp_d28g2v0_Shanghai
-    - modexp_d28g3v0_Shanghai
-    - modexp_d29g0v0_Shanghai
-    - modexp_d29g1v0_Shanghai
-    - modexp_d29g2v0_Shanghai
-    - modexp_d29g3v0_Shanghai
-    - modexp_d2g0v0_Shanghai
-    - modexp_d2g1v0_Shanghai
-    - modexp_d2g2v0_Shanghai
-    - modexp_d2g3v0_Shanghai
-    - modexp_d30g0v0_Shanghai
-    - modexp_d30g1v0_Shanghai
-    - modexp_d30g2v0_Shanghai
-    - modexp_d30g3v0_Shanghai
-    - modexp_d33g0v0_Shanghai
-    - modexp_d33g1v0_Shanghai
-    - modexp_d33g2v0_Shanghai
-    - modexp_d33g3v0_Shanghai
-    - modexp_d36g0v0_Shanghai
-    - modexp_d36g1v0_Shanghai
-    - modexp_d36g2v0_Shanghai
-    - modexp_d36g3v0_Shanghai
-    - modexp_d37g0v0_Shanghai
-    - modexp_d37g1v0_Shanghai
-    - modexp_d37g2v0_Shanghai
-    - modexp_d37g3v0_Shanghai
-    - precompsEIP2929_d10g0v0_Shanghai
-    - precompsEIP2929_d113g0v0_Shanghai
-    - precompsEIP2929_d114g0v0_Shanghai
-    - precompsEIP2929_d115g0v0_Shanghai
-    - precompsEIP2929_d131g0v0_Shanghai
-    - precompsEIP2929_d132g0v0_Shanghai
-    - precompsEIP2929_d133g0v0_Shanghai
-    - precompsEIP2929_d149g0v0_Shanghai
-    - precompsEIP2929_d150g0v0_Shanghai
-    - precompsEIP2929_d167g0v0_Shanghai
-    - precompsEIP2929_d168g0v0_Shanghai
-    - precompsEIP2929_d185g0v0_Shanghai
-    - precompsEIP2929_d186g0v0_Shanghai
-    - precompsEIP2929_d187g0v0_Shanghai
-    - precompsEIP2929_d203g0v0_Shanghai
-    - precompsEIP2929_d204g0v0_Shanghai
-    - precompsEIP2929_d205g0v0_Shanghai
-    - precompsEIP2929_d221g0v0_Shanghai
-    - precompsEIP2929_d222g0v0_Shanghai
-    - precompsEIP2929_d223g0v0_Shanghai
-    - precompsEIP2929_d239g0v0_Shanghai
-    - precompsEIP2929_d23g0v0_Shanghai
-    - precompsEIP2929_d240g0v0_Shanghai
-    - precompsEIP2929_d24g0v0_Shanghai
-    - precompsEIP2929_d257g0v0_Shanghai
-    - precompsEIP2929_d258g0v0_Shanghai
-    - precompsEIP2929_d259g0v0_Shanghai
-    - precompsEIP2929_d25g0v0_Shanghai
-    - precompsEIP2929_d275g0v0_Shanghai
-    - precompsEIP2929_d276g0v0_Shanghai
-    - precompsEIP2929_d277g0v0_Shanghai
-    - precompsEIP2929_d293g0v0_Shanghai
-    - precompsEIP2929_d294g0v0_Shanghai
-    - precompsEIP2929_d311g0v0_Shanghai
-    - precompsEIP2929_d312g0v0_Shanghai
-    - precompsEIP2929_d313g0v0_Shanghai
-    - precompsEIP2929_d41g0v0_Shanghai
-    - precompsEIP2929_d42g0v0_Shanghai
-    - precompsEIP2929_d59g0v0_Shanghai
-    - precompsEIP2929_d60g0v0_Shanghai
-    - precompsEIP2929_d77g0v0_Shanghai
-    - precompsEIP2929_d78g0v0_Shanghai
-    - precompsEIP2929_d79g0v0_Shanghai
-    - precompsEIP2929_d8g0v0_Shanghai
-    - precompsEIP2929_d95g0v0_Shanghai
-    - precompsEIP2929_d96g0v0_Shanghai
-    - precompsEIP2929_d97g0v0_Shanghai
-    - precompsEIP2929_d9g0v0_Shanghai
+    - idPrecomps_d4g0v0_Cancun
+    - idPrecomps_d9g0v0_Cancun
+    - modexp_d11g0v0_Cancun
+    - modexp_d11g1v0_Cancun
+    - modexp_d11g2v0_Cancun
+    - modexp_d11g3v0_Cancun
+    - modexp_d14g0v0_Cancun
+    - modexp_d14g1v0_Cancun
+    - modexp_d14g2v0_Cancun
+    - modexp_d14g3v0_Cancun
+    - modexp_d16g0v0_Cancun
+    - modexp_d16g1v0_Cancun
+    - modexp_d16g2v0_Cancun
+    - modexp_d16g3v0_Cancun
+    - modexp_d17g0v0_Cancun
+    - modexp_d17g1v0_Cancun
+    - modexp_d17g2v0_Cancun
+    - modexp_d17g3v0_Cancun
+    - modexp_d25g0v0_Cancun
+    - modexp_d25g1v0_Cancun
+    - modexp_d25g2v0_Cancun
+    - modexp_d25g3v0_Cancun
+    - modexp_d26g0v0_Cancun
+    - modexp_d26g1v0_Cancun
+    - modexp_d26g2v0_Cancun
+    - modexp_d26g3v0_Cancun
+    - modexp_d27g0v0_Cancun
+    - modexp_d27g1v0_Cancun
+    - modexp_d27g2v0_Cancun
+    - modexp_d27g3v0_Cancun
+    - modexp_d28g0v0_Cancun
+    - modexp_d28g1v0_Cancun
+    - modexp_d28g2v0_Cancun
+    - modexp_d28g3v0_Cancun
+    - modexp_d29g0v0_Cancun
+    - modexp_d29g1v0_Cancun
+    - modexp_d29g2v0_Cancun
+    - modexp_d29g3v0_Cancun
+    - modexp_d2g0v0_Cancun
+    - modexp_d2g1v0_Cancun
+    - modexp_d2g2v0_Cancun
+    - modexp_d2g3v0_Cancun
+    - modexp_d30g0v0_Cancun
+    - modexp_d30g1v0_Cancun
+    - modexp_d30g2v0_Cancun
+    - modexp_d30g3v0_Cancun
+    - modexp_d33g0v0_Cancun
+    - modexp_d33g1v0_Cancun
+    - modexp_d33g2v0_Cancun
+    - modexp_d33g3v0_Cancun
+    - modexp_d36g0v0_Cancun
+    - modexp_d36g1v0_Cancun
+    - modexp_d36g2v0_Cancun
+    - modexp_d36g3v0_Cancun
+    - modexp_d37g0v0_Cancun
+    - modexp_d37g1v0_Cancun
+    - modexp_d37g2v0_Cancun
+    - modexp_d37g3v0_Cancun
+    - precompsEIP2929Cancun_d10g0v0_Cancun
+    - precompsEIP2929Cancun_d113g0v0_Cancun
+    - precompsEIP2929Cancun_d114g0v0_Cancun
+    - precompsEIP2929Cancun_d115g0v0_Cancun
+    - precompsEIP2929Cancun_d117g0v0_Cancun
+    - precompsEIP2929Cancun_d12g0v0_Cancun
+    - precompsEIP2929Cancun_d131g0v0_Cancun
+    - precompsEIP2929Cancun_d132g0v0_Cancun
+    - precompsEIP2929Cancun_d133g0v0_Cancun
+    - precompsEIP2929Cancun_d135g0v0_Cancun
+    - precompsEIP2929Cancun_d149g0v0_Cancun
+    - precompsEIP2929Cancun_d150g0v0_Cancun
+    - precompsEIP2929Cancun_d153g0v0_Cancun
+    - precompsEIP2929Cancun_d167g0v0_Cancun
+    - precompsEIP2929Cancun_d168g0v0_Cancun
+    - precompsEIP2929Cancun_d171g0v0_Cancun
+    - precompsEIP2929Cancun_d185g0v0_Cancun
+    - precompsEIP2929Cancun_d186g0v0_Cancun
+    - precompsEIP2929Cancun_d187g0v0_Cancun
+    - precompsEIP2929Cancun_d189g0v0_Cancun
+    - precompsEIP2929Cancun_d203g0v0_Cancun
+    - precompsEIP2929Cancun_d204g0v0_Cancun
+    - precompsEIP2929Cancun_d205g0v0_Cancun
+    - precompsEIP2929Cancun_d207g0v0_Cancun
+    - precompsEIP2929Cancun_d221g0v0_Cancun
+    - precompsEIP2929Cancun_d222g0v0_Cancun
+    - precompsEIP2929Cancun_d223g0v0_Cancun
+    - precompsEIP2929Cancun_d225g0v0_Cancun
+    - precompsEIP2929Cancun_d239g0v0_Cancun
+    - precompsEIP2929Cancun_d23g0v0_Cancun
+    - precompsEIP2929Cancun_d240g0v0_Cancun
+    - precompsEIP2929Cancun_d243g0v0_Cancun
+    - precompsEIP2929Cancun_d24g0v0_Cancun
+    - precompsEIP2929Cancun_d257g0v0_Cancun
+    - precompsEIP2929Cancun_d258g0v0_Cancun
+    - precompsEIP2929Cancun_d259g0v0_Cancun
+    - precompsEIP2929Cancun_d25g0v0_Cancun
+    - precompsEIP2929Cancun_d261g0v0_Cancun
+    - precompsEIP2929Cancun_d275g0v0_Cancun
+    - precompsEIP2929Cancun_d276g0v0_Cancun
+    - precompsEIP2929Cancun_d277g0v0_Cancun
+    - precompsEIP2929Cancun_d279g0v0_Cancun
+    - precompsEIP2929Cancun_d27g0v0_Cancun
+    - precompsEIP2929Cancun_d293g0v0_Cancun
+    - precompsEIP2929Cancun_d294g0v0_Cancun
+    - precompsEIP2929Cancun_d297g0v0_Cancun
+    - precompsEIP2929Cancun_d311g0v0_Cancun
+    - precompsEIP2929Cancun_d312g0v0_Cancun
+    - precompsEIP2929Cancun_d313g0v0_Cancun
+    - precompsEIP2929Cancun_d315g0v0_Cancun
+    - precompsEIP2929Cancun_d333g0v0_Cancun
+    - precompsEIP2929Cancun_d351g0v0_Cancun
+    - precompsEIP2929Cancun_d369g0v0_Cancun
+    - precompsEIP2929Cancun_d387g0v0_Cancun
+    - precompsEIP2929Cancun_d41g0v0_Cancun
+    - precompsEIP2929Cancun_d42g0v0_Cancun
+    - precompsEIP2929Cancun_d45g0v0_Cancun
+    - precompsEIP2929Cancun_d59g0v0_Cancun
+    - precompsEIP2929Cancun_d60g0v0_Cancun
+    - precompsEIP2929Cancun_d63g0v0_Cancun
+    - precompsEIP2929Cancun_d77g0v0_Cancun
+    - precompsEIP2929Cancun_d78g0v0_Cancun
+    - precompsEIP2929Cancun_d79g0v0_Cancun
+    - precompsEIP2929Cancun_d81g0v0_Cancun
+    - precompsEIP2929Cancun_d8g0v0_Cancun
+    - precompsEIP2929Cancun_d95g0v0_Cancun
+    - precompsEIP2929Cancun_d96g0v0_Cancun
+    - precompsEIP2929Cancun_d97g0v0_Cancun
+    - precompsEIP2929Cancun_d99g0v0_Cancun
+    - precompsEIP2929Cancun_d9g0v0_Cancun
   stRandom2:
-    - randomStatetest458_d0g0v0_Shanghai #RunResources error
-    - randomStatetest476_d0g0v0_Shanghai #RunResources error
-    - randomStatetest487_d0g0v0_Shanghai
-    - randomStatetest564_d0g0v0_Shanghai
-    - randomStatetest571_d0g0v0_Shanghai
-    - randomStatetest605_d0g0v0_Shanghai
-    - randomStatetest650_d0g0v0_Shanghai
+    - randomStatetest458_d0g0v0_Cancun #RunResources error
+    - randomStatetest476_d0g0v0_Cancun #RunResources error
+    - randomStatetest487_d0g0v0_Cancun
+    - randomStatetest564_d0g0v0_Cancun
+    - randomStatetest605_d0g0v0_Cancun
+    - randomStatetest650_d0g0v0_Cancun
   stQuadraticComplexityTest:
-    - Call1MB1024Calldepth_d0g1v0_Shanghai #RunResources error
-    - Call20KbytesContract50_1_d0g1v0_Shanghai #RunResources error
-    - Call20KbytesContract50_2_d0g1v0_Shanghai #RunResources error
-    - Call20KbytesContract50_3_d0g0v0_Shanghai #RunResources error
-    - Call20KbytesContract50_3_d0g1v0_Shanghai #RunResources error
-    - Call50000_d0g1v0_Shanghai #RunResources error
-    - Call50000_ecrec_d0g1v0_Shanghai #RunResources error
-    - Call50000_identity2_d0g1v0_Shanghai #RunResources error
-    - Call50000_identity_d0g1v0_Shanghai #RunResources error
-    - Call50000_rip160_d0g0v0_Shanghai #RunResources error
-    - Call50000_rip160_d0g1v0_Shanghai #RunResources error
-    - Call50000_sha256_d0g0v0_Shanghai
-    - Call50000_sha256_d0g1v0_Shanghai
-    - Callcode50000_d0g1v0_Shanghai #RunResources error
-    - Return50000_2_d0g0v0_Shanghai #RunResources error
-    - Return50000_2_d0g1v0_Shanghai #RunResources error
-    - Return50000_d0g0v0_Shanghai #RunResources error
-    - Return50000_d0g1v0_Shanghai #RunResources error
+    - Call1MB1024Calldepth_d0g1v0_Cancun #RunResources error
+    - Call20KbytesContract50_1_d0g1v0_Cancun #RunResources error
+    - Call20KbytesContract50_2_d0g1v0_Cancun #RunResources error
+    - Call20KbytesContract50_3_d0g0v0_Cancun #RunResources error
+    - Call20KbytesContract50_3_d0g1v0_Cancun #RunResources error
+    - Call50000_d0g1v0_Cancun #RunResources error
+    - Call50000_ecrec_d0g1v0_Cancun #RunResources error
+    - Call50000_identity2_d0g1v0_Cancun #RunResources error
+    - Call50000_identity_d0g1v0_Cancun #RunResources error
+    - Call50000_rip160_d0g0v0_Cancun #RunResources error
+    - Call50000_rip160_d0g1v0_Cancun #RunResources error
+    - Call50000_sha256_d0g0v0_Cancun #RunResources error
+    - Call50000_sha256_d0g1v0_Cancun #RunResources error
+    - Callcode50000_d0g1v0_Cancun #RunResources error
+    - Return50000_2_d0g0v0_Cancun #RunResources error
+    - Return50000_2_d0g1v0_Cancun #RunResources error
+    - Return50000_d0g0v0_Cancun #RunResources error
+    - Return50000_d0g1v0_Cancun #RunResources error
   stRandom:
-    - randomStatetest116_d0g0v0_Shanghai
-    - randomStatetest159_d0g0v0_Shanghai #RunResources error
-    - randomStatetest163_d0g0v0_Shanghai #RunResources error
-    - randomStatetest177_d0g0v0_Shanghai #RunResources error
-    - randomStatetest185_d0g0v0_Shanghai #RunResources error
-    - randomStatetest242_d0g0v0_Shanghai
-    - randomStatetest320_d0g0v0_Shanghai #RunResources error
-    - randomStatetest326_d0g0v0_Shanghai #RunResources error
-    - randomStatetest354_d0g0v0_Shanghai #RunResources error
-    - randomStatetest367_d0g0v0_Shanghai #RunResources error
-    - randomStatetest36_d0g0v0_Shanghai #RunResources error
-    - randomStatetest382_d0g0v0_Shanghai
-    - randomStatetest384_d0g0v0_Shanghai #RunResources error
-    - randomStatetest43_d0g0v0_Shanghai #RunResources error
-    - randomStatetest48_d0g0v0_Shanghai #RunResources error
-    - randomStatetest64_d0g0v0_Shanghai
-    - randomStatetest85_d0g0v0_Shanghai
+    - randomStatetest116_d0g0v0_Cancun
+    - randomStatetest159_d0g0v0_Cancun #RunResources error
+    - randomStatetest163_d0g0v0_Cancun #RunResources error
+    - randomStatetest177_d0g0v0_Cancun #RunResources error
+    - randomStatetest185_d0g0v0_Cancun #RunResources error
+    - randomStatetest242_d0g0v0_Cancun
+    - randomStatetest320_d0g0v0_Cancun #RunResources error
+    - randomStatetest326_d0g0v0_Cancun #RunResources error
+    - randomStatetest354_d0g0v0_Cancun #RunResources error
+    - randomStatetest367_d0g0v0_Cancun #RunResources error
+    - randomStatetest36_d0g0v0_Cancun #RunResources error
+    - randomStatetest382_d0g0v0_Cancun
+    - randomStatetest384_d0g0v0_Cancun #RunResources error
+    - randomStatetest43_d0g0v0_Cancun #RunResources error
+    - randomStatetest48_d0g0v0_Cancun #RunResources error
+    - randomStatetest64_d0g0v0_Cancun
+    - randomStatetest85_d0g0v0_Cancun
   stRevertTest:
-    - RevertInCreateInInit_d0g0v0_Shanghai
-    - RevertPrecompiledTouchExactOOG_d13g1v0_Shanghai
-    - RevertPrecompiledTouchExactOOG_d13g2v0_Shanghai
-    - RevertPrecompiledTouchExactOOG_d14g1v0_Shanghai
-    - RevertPrecompiledTouchExactOOG_d14g2v0_Shanghai
-    - RevertPrecompiledTouchExactOOG_d15g1v0_Shanghai
-    - RevertPrecompiledTouchExactOOG_d21g1v0_Shanghai
-    - RevertPrecompiledTouchExactOOG_d21g2v0_Shanghai
-    - RevertPrecompiledTouchExactOOG_d22g1v0_Shanghai
-    - RevertPrecompiledTouchExactOOG_d22g2v0_Shanghai
-    - RevertPrecompiledTouchExactOOG_d23g1v0_Shanghai
-    - RevertPrecompiledTouchExactOOG_d29g1v0_Shanghai
-    - RevertPrecompiledTouchExactOOG_d29g2v0_Shanghai
-    - RevertPrecompiledTouchExactOOG_d30g1v0_Shanghai
-    - RevertPrecompiledTouchExactOOG_d30g2v0_Shanghai
-    - RevertPrecompiledTouchExactOOG_d31g1v0_Shanghai
-    - RevertPrecompiledTouchExactOOG_d5g1v0_Shanghai
-    - RevertPrecompiledTouchExactOOG_d5g2v0_Shanghai
-    - RevertPrecompiledTouchExactOOG_d6g1v0_Shanghai
-    - RevertPrecompiledTouchExactOOG_d6g2v0_Shanghai
-    - RevertPrecompiledTouchExactOOG_d7g1v0_Shanghai
+    - RevertInCreateInInit_Paris_d0g0v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d13g1v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d13g2v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d14g1v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d14g2v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d15g1v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d21g1v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d21g2v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d22g1v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d22g2v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d23g1v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d29g1v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d29g2v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d30g1v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d30g2v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d31g1v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d5g1v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d5g2v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d6g1v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d6g2v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d7g1v0_Cancun
   stSStoreTest:
-    - InitCollision_d0g0v0_Shanghai
-    - InitCollision_d1g0v0_Shanghai
-    - InitCollision_d2g0v0_Shanghai
-    - InitCollision_d3g0v0_Shanghai
+    - InitCollisionParis_d0g0v0_Cancun
+    - InitCollisionParis_d1g0v0_Cancun
+    - InitCollisionParis_d2g0v0_Cancun
+    - InitCollisionParis_d3g0v0_Cancun
   stReturnDataTest:
-    - modexp_modsize0_returndatasize_d4g0v0_Shanghai
+    - modexp_modsize0_returndatasize_d4g0v0_Cancun #RunResources error
   stStaticCall:
-    - StaticcallToPrecompileFromCalledContract_d0g0v0_Shanghai
-    - StaticcallToPrecompileFromContractInitialization_d0g0v0_Shanghai
-    - StaticcallToPrecompileFromTransaction_d0g0v0_Shanghai
-    - static_Call1MB1024Calldepth_d1g0v0_Shanghai #RunResources error
-    - static_Call50000_d0g0v0_Shanghai #RunResources error
-    - static_Call50000_d1g0v0_Shanghai #RunResources error
-    - static_Call50000_ecrec_d0g0v0_Shanghai #RunResources error
-    - static_Call50000_ecrec_d1g0v0_Shanghai #RunResources error
-    - static_Call50000_identity2_d0g0v0_Shanghai #RunResources error
-    - static_Call50000_identity2_d1g0v0_Shanghai #RunResources error
-    - static_Call50000_identity_d0g0v0_Shanghai #RunResources error
-    - static_Call50000_identity_d1g0v0_Shanghai #RunResources error
-    - static_Call50000_rip160_d0g0v0_Shanghai #RunResources error
-    - static_Call50000_rip160_d1g0v0_Shanghai #RunResources error
-    - static_Call50000bytesContract50_1_d0g0v0_Shanghai #RunResources error
-    - static_Call50000bytesContract50_1_d1g0v0_Shanghai #RunResources error
-    - static_Call50000bytesContract50_2_d0g0v0_Shanghai #RunResources error
-    - static_Call50000bytesContract50_2_d1g0v0_Shanghai #RunResources error
-    - static_Call50000bytesContract50_3_d0g0v0_Shanghai #RunResources error
-    - static_Call50000bytesContract50_3_d1g0v0_Shanghai #RunResources error
-    - static_CallEcrecover0_0input_d6g0v0_Shanghai
-    - static_CallEcrecover0_0input_d7g0v0_Shanghai
-    - static_CallEcrecover0_Gas2999_d0g0v0_Shanghai
-    - static_CallEcrecover0_NoGas_d0g0v0_Shanghai
-    - static_CallEcrecover80_d0g0v0_Shanghai
-    - static_CallEcrecoverR_prefixed0_d0g0v0_Shanghai
-    - static_CallRipemd160_4_gas719_d0g0v0_Shanghai
-    - static_CallRipemd160_5_d0g0v0_Shanghai #RunResources error
-    - static_CallSha256_5_d0g0v0_Shanghai
-    - static_LoopCallsThenRevert_d0g0v0_Shanghai #RunResources error
-    - static_LoopCallsThenRevert_d0g1v0_Shanghai #RunResources error
-    - static_Return50000_2_d0g0v0_Shanghai #RunResources error
+    - StaticcallToPrecompileFromCalledContract_d0g0v0_Cancun
+    - StaticcallToPrecompileFromContractInitialization_d0g0v0_Cancun
+    - StaticcallToPrecompileFromTransaction_d0g0v0_Cancun
+    - static_Call1024PreCalls2_d0g0v0_Cancun #RunResources error
+    - static_Call1MB1024Calldepth_d1g0v0_Cancun #RunResources error
+    - static_Call50000_d0g0v0_Cancun #RunResources error
+    - static_Call50000_d1g0v0_Cancun #RunResources error
+    - static_Call50000_ecrec_d0g0v0_Cancun #RunResources error
+    - static_Call50000_ecrec_d1g0v0_Cancun #RunResources error
+    - static_Call50000_identity2_d0g0v0_Cancun #RunResources error
+    - static_Call50000_identity2_d1g0v0_Cancun #RunResources error
+    - static_Call50000_identity_d0g0v0_Cancun #RunResources error
+    - static_Call50000_identity_d1g0v0_Cancun #RunResources error
+    - static_Call50000_rip160_d0g0v0_Cancun #RunResources error
+    - static_Call50000_rip160_d1g0v0_Cancun #RunResources error
+    - static_Call50000bytesContract50_1_d0g0v0_Cancun #RunResources error
+    - static_Call50000bytesContract50_1_d1g0v0_Cancun #RunResources error
+    - static_Call50000bytesContract50_2_d0g0v0_Cancun #RunResources error
+    - static_Call50000bytesContract50_2_d1g0v0_Cancun #RunResources error
+    - static_Call50000bytesContract50_3_d0g0v0_Cancun #RunResources error
+    - static_Call50000bytesContract50_3_d1g0v0_Cancun #RunResources error
+    - static_CallEcrecover0_0input_d6g0v0_Cancun
+    - static_CallEcrecover0_0input_d7g0v0_Cancun
+    - static_CallEcrecover0_Gas2999_d0g0v0_Cancun
+    - static_CallEcrecover0_NoGas_d0g0v0_Cancun
+    - static_CallEcrecover80_d0g0v0_Cancun
+    - static_CallEcrecoverR_prefixed0_d0g0v0_Cancun
+    - static_CallRipemd160_4_gas719_d0g0v0_Cancun
+    - static_CallRipemd160_5_d0g0v0_Cancun #RunResources error
+    - static_CallSha256_5_d0g0v0_Cancun #RunResources error
+    - static_LoopCallsThenRevert_d0g0v0_Cancun #RunResources error
+    - static_LoopCallsThenRevert_d0g1v0_Cancun #RunResources error
+    - static_Return50000_2_d0g0v0_Cancun #RunResources error
   stSpecialTest:
-    - JUMPDEST_Attack_d0g0v0_Shanghai #RunResources error
-    - JUMPDEST_AttackwithJump_d0g0v0_Shanghai #RunResources error
-    - block504980_d0g0v0_Shanghai #RunResources error
-    - failed_tx_xcf416c53_d0g0v0_Shanghai #RunResources error
+    - JUMPDEST_Attack_d0g0v0_Cancun #RunResources error
+    - JUMPDEST_AttackwithJump_d0g0v0_Cancun #RunResources error
+    - block504980_d0g0v0_Cancun #RunResources error
+    - failed_tx_xcf416c53_Paris_d0g0v0_Cancun #RunResources error
   stSystemOperationsTest:
-    - CallToNameRegistratorNotMuchMemory0_d0g0v0_Shanghai
-    - multiSelfdestruct_d0g0v0_Shanghai
-    - multiSelfdestruct_d4g0v0_Shanghai
+    - CallToNameRegistratorNotMuchMemory0_d0g0v0_Cancun
   stStaticFlagEnabled:
-    - CallWithZeroValueToPrecompileFromCalledContract_d0g0v0_Shanghai
-    - CallWithZeroValueToPrecompileFromContractInitialization_d0g0v0_Shanghai
-    - CallWithZeroValueToPrecompileFromTransaction_d0g0v0_Shanghai
-    - CallcodeToPrecompileFromCalledContract_d0g0v0_Shanghai
-    - CallcodeToPrecompileFromContractInitialization_d0g0v0_Shanghai
-    - CallcodeToPrecompileFromTransaction_d0g0v0_Shanghai
-    - DelegatecallToPrecompileFromCalledContract_d0g0v0_Shanghai
-    - DelegatecallToPrecompileFromContractInitialization_d0g0v0_Shanghai
-    - DelegatecallToPrecompileFromTransaction_d0g0v0_Shanghai
-  stTimeConsuming:
-    - CALLBlake2f_MaxRounds_d0g0v0_Shanghai #RunResources error
-    - static_Call50000_sha256_d0g0v0_Shanghai
-    - static_Call50000_sha256_d1g0v0_Shanghai
+    - CallWithZeroValueToPrecompileFromCalledContract_d0g0v0_Cancun
+    - CallWithZeroValueToPrecompileFromContractInitialization_d0g0v0_Cancun
+    - CallWithZeroValueToPrecompileFromTransaction_d0g0v0_Cancun
+    - CallcodeToPrecompileFromCalledContract_d0g0v0_Cancun
+    - CallcodeToPrecompileFromContractInitialization_d0g0v0_Cancun
+    - CallcodeToPrecompileFromTransaction_d0g0v0_Cancun
+    - DelegatecallToPrecompileFromCalledContract_d0g0v0_Cancun
+    - DelegatecallToPrecompileFromContractInitialization_d0g0v0_Cancun
+    - DelegatecallToPrecompileFromTransaction_d0g0v0_Cancun
   stTransactionTest:
-    - HighGasPrice_d0g0v0_Shanghai
-    - SuicidesAndInternlCallSuicidesSuccess_d1g0v0_Shanghai
-    - ValueOverflow_d0g0v0_Shanghai
+    - HighGasPriceParis_d0g0v0_Cancun
+    - ValueOverflowParis_d0g0v0_Cancun
+  stTimeConsuming:
+    - CALLBlake2f_MaxRounds_d0g0v0_Cancun #RunResources error
+    - static_Call50000_sha256_d0g0v0_Cancun #RunResources error
+    - static_Call50000_sha256_d1g0v0_Cancun #RunResources error
   stZeroKnowledge:
-    - ecpairing_empty_data_d0g0v0_Shanghai
-    - ecpairing_empty_data_d0g3v0_Shanghai
-    - ecpairing_empty_data_insufficient_gas_d0g2v0_Shanghai
-    - ecpairing_one_point_fail_d0g0v0_Shanghai
-    - ecpairing_one_point_with_g1_zero_d0g0v0_Shanghai
-    - ecpairing_one_point_with_g2_zero_d0g0v0_Shanghai
-    - ecpairing_one_point_with_g2_zero_d0g2v0_Shanghai
-    - ecpairing_one_point_with_g2_zero_d0g3v0_Shanghai
-    - ecpairing_three_point_fail_1_d0g0v0_Shanghai
-    - ecpairing_three_point_match_1_d0g0v0_Shanghai
-    - ecpairing_three_point_match_1_d0g3v0_Shanghai
-    - ecpairing_two_point_fail_1_d0g0v0_Shanghai
-    - ecpairing_two_point_fail_2_d0g0v0_Shanghai
-    - ecpairing_two_point_match_1_d0g0v0_Shanghai
-    - ecpairing_two_point_match_2_d0g0v0_Shanghai
-    - ecpairing_two_point_match_2_d0g3v0_Shanghai
-    - ecpairing_two_point_match_3_d0g0v0_Shanghai
-    - ecpairing_two_point_match_3_d0g3v0_Shanghai
-    - ecpairing_two_point_match_4_d0g0v0_Shanghai
-    - ecpairing_two_point_match_4_d0g3v0_Shanghai
-    - ecpairing_two_point_match_5_d0g0v0_Shanghai
-    - ecpairing_two_point_oog_d0g0v0_Shanghai
-    - ecpairing_two_point_oog_d0g3v0_Shanghai
-    - ecpairing_two_points_with_one_g2_zero_d0g0v0_Shanghai
-    - ecpairing_two_points_with_one_g2_zero_d0g3v0_Shanghai
-    - pairingTest_d0g0v0_Shanghai
-    - pairingTest_d1g0v0_Shanghai
-    - pairingTest_d2g0v0_Shanghai
-    - pairingTest_d3g0v0_Shanghai
-    - pairingTest_d4g0v0_Shanghai
-    - pairingTest_d5g0v0_Shanghai
-    - pointAddTrunc_d0g0v0_Shanghai
-    - pointAddTrunc_d0g1v0_Shanghai
-    - pointAddTrunc_d0g2v0_Shanghai
-    - pointAddTrunc_d1g0v0_Shanghai
-    - pointAddTrunc_d1g1v0_Shanghai
-    - pointAddTrunc_d1g2v0_Shanghai
-    - pointAddTrunc_d1g3v0_Shanghai
-    - pointAddTrunc_d2g0v0_Shanghai
-    - pointAddTrunc_d2g1v0_Shanghai
-    - pointAddTrunc_d2g2v0_Shanghai
-    - pointAddTrunc_d3g0v0_Shanghai
-    - pointAddTrunc_d3g1v0_Shanghai
-    - pointAddTrunc_d3g2v0_Shanghai
-    - pointAddTrunc_d4g0v0_Shanghai
-    - pointAddTrunc_d4g1v0_Shanghai
-    - pointAddTrunc_d4g2v0_Shanghai
-    - pointAddTrunc_d4g3v0_Shanghai
-    - pointAddTrunc_d7g0v0_Shanghai
-    - pointAddTrunc_d7g1v0_Shanghai
-    - pointAddTrunc_d7g2v0_Shanghai
-    - pointAddTrunc_d8g0v0_Shanghai
-    - pointAddTrunc_d8g1v0_Shanghai
-    - pointAddTrunc_d8g2v0_Shanghai
-    - pointAddTrunc_d9g0v0_Shanghai
-    - pointAddTrunc_d9g1v0_Shanghai
-    - pointAddTrunc_d9g2v0_Shanghai
-    - pointAdd_d0g0v0_Shanghai
-    - pointAdd_d0g1v0_Shanghai
-    - pointAdd_d0g2v0_Shanghai
-    - pointAdd_d1g0v0_Shanghai
-    - pointAdd_d1g1v0_Shanghai
-    - pointAdd_d1g2v0_Shanghai
-    - pointAdd_d1g3v0_Shanghai
-    - pointAdd_d3g0v0_Shanghai
-    - pointAdd_d3g1v0_Shanghai
-    - pointAdd_d3g2v0_Shanghai
-    - pointAdd_d4g0v0_Shanghai
-    - pointAdd_d4g1v0_Shanghai
-    - pointAdd_d4g2v0_Shanghai
-    - pointAdd_d7g0v0_Shanghai
-    - pointAdd_d7g1v0_Shanghai
-    - pointAdd_d7g2v0_Shanghai
-    - pointAdd_d8g0v0_Shanghai
-    - pointAdd_d8g1v0_Shanghai
-    - pointAdd_d8g2v0_Shanghai
-    - pointAdd_d9g0v0_Shanghai
-    - pointAdd_d9g1v0_Shanghai
-    - pointAdd_d9g2v0_Shanghai
-    - pointMulAdd2_d0g0v0_Shanghai
-    - pointMulAdd2_d0g3v0_Shanghai
-    - pointMulAdd2_d10g0v0_Shanghai
-    - pointMulAdd2_d11g0v0_Shanghai
-    - pointMulAdd2_d12g0v0_Shanghai
-    - pointMulAdd2_d12g3v0_Shanghai
-    - pointMulAdd2_d13g0v0_Shanghai
-    - pointMulAdd2_d14g0v0_Shanghai
-    - pointMulAdd2_d15g0v0_Shanghai
-    - pointMulAdd2_d16g0v0_Shanghai
-    - pointMulAdd2_d17g0v0_Shanghai
-    - pointMulAdd2_d17g3v0_Shanghai
-    - pointMulAdd2_d18g0v0_Shanghai
-    - pointMulAdd2_d19g0v0_Shanghai
-    - pointMulAdd2_d1g0v0_Shanghai
-    - pointMulAdd2_d1g3v0_Shanghai
-    - pointMulAdd2_d20g0v0_Shanghai
-    - pointMulAdd2_d21g0v0_Shanghai
-    - pointMulAdd2_d21g3v0_Shanghai
-    - pointMulAdd2_d22g0v0_Shanghai
-    - pointMulAdd2_d23g0v0_Shanghai
-    - pointMulAdd2_d24g0v0_Shanghai
-    - pointMulAdd2_d25g0v0_Shanghai
-    - pointMulAdd2_d26g0v0_Shanghai
-    - pointMulAdd2_d26g3v0_Shanghai
-    - pointMulAdd2_d27g0v0_Shanghai
-    - pointMulAdd2_d28g0v0_Shanghai
-    - pointMulAdd2_d29g0v0_Shanghai
-    - pointMulAdd2_d2g0v0_Shanghai
-    - pointMulAdd2_d2g3v0_Shanghai
-    - pointMulAdd2_d30g0v0_Shanghai
-    - pointMulAdd2_d30g3v0_Shanghai
-    - pointMulAdd2_d31g0v0_Shanghai
-    - pointMulAdd2_d32g0v0_Shanghai
-    - pointMulAdd2_d33g0v0_Shanghai
-    - pointMulAdd2_d34g0v0_Shanghai
-    - pointMulAdd2_d34g3v0_Shanghai
-    - pointMulAdd2_d35g0v0_Shanghai
-    - pointMulAdd2_d36g0v0_Shanghai
-    - pointMulAdd2_d37g0v0_Shanghai
-    - pointMulAdd2_d3g0v0_Shanghai
-    - pointMulAdd2_d3g3v0_Shanghai
-    - pointMulAdd2_d4g0v0_Shanghai
-    - pointMulAdd2_d4g3v0_Shanghai
-    - pointMulAdd2_d5g0v0_Shanghai
-    - pointMulAdd2_d5g3v0_Shanghai
-    - pointMulAdd2_d6g0v0_Shanghai
-    - pointMulAdd2_d6g3v0_Shanghai
-    - pointMulAdd2_d7g0v0_Shanghai
-    - pointMulAdd2_d7g3v0_Shanghai
-    - pointMulAdd2_d8g0v0_Shanghai
-    - pointMulAdd2_d8g3v0_Shanghai
-    - pointMulAdd2_d9g0v0_Shanghai
-    - pointMulAdd2_d9g3v0_Shanghai
-    - pointMulAdd_d0g0v0_Shanghai
-    - pointMulAdd_d1g0v0_Shanghai
-    - pointMulAdd_d2g0v0_Shanghai
-    - pointMulAdd_d2g3v0_Shanghai
-    - pointMulAdd_d3g0v0_Shanghai
-    - pointMulAdd_d4g0v0_Shanghai
-    - pointMulAdd_d5g0v0_Shanghai
-    - pointMulAdd_d6g0v0_Shanghai
-    - pointMulAdd_d7g0v0_Shanghai
-    - pointMulAdd_d7g3v0_Shanghai
-    - pointMulAdd_d8g0v0_Shanghai
-    - pointMulAdd_d8g3v0_Shanghai
+    - ecpairing_empty_data_d0g0v0_Cancun
+    - ecpairing_empty_data_d0g3v0_Cancun
+    - ecpairing_empty_data_insufficient_gas_d0g2v0_Cancun
+    - ecpairing_one_point_fail_d0g0v0_Cancun
+    - ecpairing_one_point_with_g1_zero_d0g0v0_Cancun
+    - ecpairing_one_point_with_g2_zero_d0g0v0_Cancun
+    - ecpairing_one_point_with_g2_zero_d0g2v0_Cancun
+    - ecpairing_one_point_with_g2_zero_d0g3v0_Cancun
+    - ecpairing_three_point_fail_1_d0g0v0_Cancun
+    - ecpairing_three_point_match_1_d0g0v0_Cancun
+    - ecpairing_three_point_match_1_d0g3v0_Cancun
+    - ecpairing_two_point_fail_1_d0g0v0_Cancun
+    - ecpairing_two_point_fail_2_d0g0v0_Cancun
+    - ecpairing_two_point_match_1_d0g0v0_Cancun
+    - ecpairing_two_point_match_2_d0g0v0_Cancun
+    - ecpairing_two_point_match_2_d0g3v0_Cancun
+    - ecpairing_two_point_match_3_d0g0v0_Cancun
+    - ecpairing_two_point_match_3_d0g3v0_Cancun
+    - ecpairing_two_point_match_4_d0g0v0_Cancun
+    - ecpairing_two_point_match_4_d0g3v0_Cancun
+    - ecpairing_two_point_match_5_d0g0v0_Cancun
+    - ecpairing_two_point_oog_d0g0v0_Cancun
+    - ecpairing_two_point_oog_d0g3v0_Cancun
+    - ecpairing_two_points_with_one_g2_zero_d0g0v0_Cancun
+    - ecpairing_two_points_with_one_g2_zero_d0g3v0_Cancun
+    - pairingTest_d0g0v0_Cancun
+    - pairingTest_d1g0v0_Cancun
+    - pairingTest_d2g0v0_Cancun
+    - pairingTest_d3g0v0_Cancun
+    - pairingTest_d4g0v0_Cancun
+    - pairingTest_d5g0v0_Cancun
+    - pointAddTrunc_d0g0v0_Cancun
+    - pointAddTrunc_d0g1v0_Cancun
+    - pointAddTrunc_d0g2v0_Cancun
+    - pointAddTrunc_d1g0v0_Cancun
+    - pointAddTrunc_d1g1v0_Cancun
+    - pointAddTrunc_d1g2v0_Cancun
+    - pointAddTrunc_d1g3v0_Cancun
+    - pointAddTrunc_d2g0v0_Cancun
+    - pointAddTrunc_d2g1v0_Cancun
+    - pointAddTrunc_d2g2v0_Cancun
+    - pointAddTrunc_d3g0v0_Cancun
+    - pointAddTrunc_d3g1v0_Cancun
+    - pointAddTrunc_d3g2v0_Cancun
+    - pointAddTrunc_d4g0v0_Cancun
+    - pointAddTrunc_d4g1v0_Cancun
+    - pointAddTrunc_d4g2v0_Cancun
+    - pointAddTrunc_d4g3v0_Cancun
+    - pointAddTrunc_d7g0v0_Cancun
+    - pointAddTrunc_d7g1v0_Cancun
+    - pointAddTrunc_d7g2v0_Cancun
+    - pointAddTrunc_d8g0v0_Cancun
+    - pointAddTrunc_d8g1v0_Cancun
+    - pointAddTrunc_d8g2v0_Cancun
+    - pointAddTrunc_d9g0v0_Cancun
+    - pointAddTrunc_d9g1v0_Cancun
+    - pointAddTrunc_d9g2v0_Cancun
+    - pointAdd_d0g0v0_Cancun
+    - pointAdd_d0g1v0_Cancun
+    - pointAdd_d0g2v0_Cancun
+    - pointAdd_d1g0v0_Cancun
+    - pointAdd_d1g1v0_Cancun
+    - pointAdd_d1g2v0_Cancun
+    - pointAdd_d1g3v0_Cancun
+    - pointAdd_d3g0v0_Cancun
+    - pointAdd_d3g1v0_Cancun
+    - pointAdd_d3g2v0_Cancun
+    - pointAdd_d4g0v0_Cancun
+    - pointAdd_d4g1v0_Cancun
+    - pointAdd_d4g2v0_Cancun
+    - pointAdd_d7g0v0_Cancun
+    - pointAdd_d7g1v0_Cancun
+    - pointAdd_d7g2v0_Cancun
+    - pointAdd_d8g0v0_Cancun
+    - pointAdd_d8g1v0_Cancun
+    - pointAdd_d8g2v0_Cancun
+    - pointAdd_d9g0v0_Cancun
+    - pointAdd_d9g1v0_Cancun
+    - pointAdd_d9g2v0_Cancun
+    - pointMulAdd2_d0g0v0_Cancun
+    - pointMulAdd2_d0g3v0_Cancun
+    - pointMulAdd2_d10g0v0_Cancun
+    - pointMulAdd2_d11g0v0_Cancun
+    - pointMulAdd2_d12g0v0_Cancun
+    - pointMulAdd2_d12g3v0_Cancun
+    - pointMulAdd2_d13g0v0_Cancun
+    - pointMulAdd2_d14g0v0_Cancun
+    - pointMulAdd2_d15g0v0_Cancun
+    - pointMulAdd2_d16g0v0_Cancun
+    - pointMulAdd2_d17g0v0_Cancun
+    - pointMulAdd2_d17g3v0_Cancun
+    - pointMulAdd2_d18g0v0_Cancun
+    - pointMulAdd2_d19g0v0_Cancun
+    - pointMulAdd2_d1g0v0_Cancun
+    - pointMulAdd2_d1g3v0_Cancun
+    - pointMulAdd2_d20g0v0_Cancun
+    - pointMulAdd2_d21g0v0_Cancun
+    - pointMulAdd2_d21g3v0_Cancun
+    - pointMulAdd2_d22g0v0_Cancun
+    - pointMulAdd2_d23g0v0_Cancun
+    - pointMulAdd2_d24g0v0_Cancun
+    - pointMulAdd2_d25g0v0_Cancun
+    - pointMulAdd2_d26g0v0_Cancun
+    - pointMulAdd2_d26g3v0_Cancun
+    - pointMulAdd2_d27g0v0_Cancun
+    - pointMulAdd2_d28g0v0_Cancun
+    - pointMulAdd2_d29g0v0_Cancun
+    - pointMulAdd2_d2g0v0_Cancun
+    - pointMulAdd2_d2g3v0_Cancun
+    - pointMulAdd2_d30g0v0_Cancun
+    - pointMulAdd2_d30g3v0_Cancun
+    - pointMulAdd2_d31g0v0_Cancun
+    - pointMulAdd2_d32g0v0_Cancun
+    - pointMulAdd2_d33g0v0_Cancun
+    - pointMulAdd2_d34g0v0_Cancun
+    - pointMulAdd2_d34g3v0_Cancun
+    - pointMulAdd2_d35g0v0_Cancun
+    - pointMulAdd2_d36g0v0_Cancun
+    - pointMulAdd2_d37g0v0_Cancun
+    - pointMulAdd2_d3g0v0_Cancun
+    - pointMulAdd2_d3g3v0_Cancun
+    - pointMulAdd2_d4g0v0_Cancun
+    - pointMulAdd2_d4g3v0_Cancun
+    - pointMulAdd2_d5g0v0_Cancun
+    - pointMulAdd2_d5g3v0_Cancun
+    - pointMulAdd2_d6g0v0_Cancun
+    - pointMulAdd2_d6g3v0_Cancun
+    - pointMulAdd2_d7g0v0_Cancun
+    - pointMulAdd2_d7g3v0_Cancun
+    - pointMulAdd2_d8g0v0_Cancun
+    - pointMulAdd2_d8g3v0_Cancun
+    - pointMulAdd2_d9g0v0_Cancun
+    - pointMulAdd2_d9g3v0_Cancun
+    - pointMulAdd_d0g0v0_Cancun
+    - pointMulAdd_d1g0v0_Cancun
+    - pointMulAdd_d2g0v0_Cancun
+    - pointMulAdd_d2g3v0_Cancun
+    - pointMulAdd_d3g0v0_Cancun
+    - pointMulAdd_d4g0v0_Cancun
+    - pointMulAdd_d5g0v0_Cancun
+    - pointMulAdd_d6g0v0_Cancun
+    - pointMulAdd_d7g0v0_Cancun
+    - pointMulAdd_d7g3v0_Cancun
+    - pointMulAdd_d8g0v0_Cancun
+    - pointMulAdd_d8g3v0_Cancun
 
-# List of file names regex to be skipped
-# The first level corresponds to the directory, the second to the list of file names regex to ignore.
+# Keeping some skipped tests because of a probable memory leak somewhere
+# causing cargo test to just crash at some point
 regex:
+  eip4895_withdrawals:
+    - .*
+  eip4844_blobs:
+    - .*
+  eip4788_beacon_root:
+    - .*
+  eip7516_blobgasfee:
+    - .*
+  stEIP4844-blobtransactions:
+    - .*
   stMemoryStressTest:
     - mload32bitBound_return.* # ef-tests #565
     - CREATE_Bounds.* # ef-tests #565

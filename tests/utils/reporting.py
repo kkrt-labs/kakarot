@@ -23,7 +23,7 @@ _resources_report: List[dict] = []
 # A mapping to fix the mismatch between the debug_info and the identifiers.
 _label_scope = {
     "kakarot.constants.opcodes_label": "kakarot.constants",
-    "kakarot.accounts.contract.library.internal.pow_": "kakarot.accounts.contract.library.internal",
+    "kakarot.accounts.library.internal.pow_": "kakarot.accounts.library.internal",
 }
 T = TypeVar("T", bound=Callable[..., Any])
 
@@ -229,36 +229,38 @@ def reports():
             )
             .reindex(columns=["contract", "name", "duration", "args", "kwargs"])
         ),
-        pd.DataFrame(_resources_report)
-        if not _resources_report
-        else (
+        (
             pd.DataFrame(_resources_report)
-            .assign(context=lambda df: df.get("context", ""))
-            .fillna({"context": ""})
-            .fillna(0)
-            .pipe(
-                lambda df: df.reindex(
-                    columns=[
-                        "context",
-                        "contract_name",
-                        "function_name",
-                        *df.drop(
-                            [
-                                "context",
-                                "contract_name",
-                                "function_name",
-                                "args",
-                                "kwargs",
-                            ],
-                            axis=1,
-                            errors="ignore",
-                        ).columns,
-                        "args",
-                        "kwargs",
-                    ]
+            if not _resources_report
+            else (
+                pd.DataFrame(_resources_report)
+                .assign(context=lambda df: df.get("context", ""))
+                .fillna({"context": ""})
+                .fillna(0)
+                .pipe(
+                    lambda df: df.reindex(
+                        columns=[
+                            "context",
+                            "contract_name",
+                            "function_name",
+                            *df.drop(
+                                [
+                                    "context",
+                                    "contract_name",
+                                    "function_name",
+                                    "args",
+                                    "kwargs",
+                                ],
+                                axis=1,
+                                errors="ignore",
+                            ).columns,
+                            "args",
+                            "kwargs",
+                        ]
+                    )
                 )
+                .sort_values(["n_steps"], ascending=False)
             )
-            .sort_values(["n_steps"], ascending=False)
         ),
     )
 

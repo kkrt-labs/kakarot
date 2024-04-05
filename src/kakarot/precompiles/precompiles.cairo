@@ -6,8 +6,8 @@ from starkware.starknet.common.syscalls import library_call
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.memcpy import memcpy
 
-from kakarot.interfaces.interfaces import IPrecompiles
-from kakarot.storages import precompiles_class_hash
+from kakarot.interfaces.interfaces import ICairo1Helpers
+from kakarot.storages import Kakarot_precompiles_class_hash
 from kakarot.errors import Errors
 from kakarot.precompiles.blake2f import PrecompileBlake2f
 from kakarot.precompiles.datacopy import PrecompileDataCopy
@@ -15,7 +15,7 @@ from kakarot.precompiles.ec_recover import PrecompileEcRecover
 from kakarot.precompiles.ripemd160 import PrecompileRIPEMD160
 from kakarot.precompiles.sha256 import PrecompileSHA256
 
-const LAST_PRECOMPILE_ADDRESS = 0x09;
+const LAST_PRECOMPILE_ADDRESS = 0x0a;
 const EXEC_PRECOMPILE_SELECTOR = 0x01e3e7ac032066525c37d0791c3c0f5fbb1c17f1cb6fe00afc206faa3fbd18e1;
 
 // @title Precompile related functions.
@@ -76,6 +76,8 @@ namespace Precompiles {
         ret;
         call PrecompileBlake2f.run;  // 0x9
         ret;
+        call not_implemented_precompile;  // 0x0a: POINT_EVALUATION_PRECOMPILE
+        ret;
     }
 
     // @notice A placeholder for precompile that don't exist.
@@ -121,14 +123,14 @@ namespace Precompiles {
         output_len: felt, output: felt*, gas_used: felt, reverted: felt
     ) {
         alloc_locals;
-        let (implementation) = precompiles_class_hash.read();
+        let (implementation) = Kakarot_precompiles_class_hash.read();
         let (calldata: felt*) = alloc();
         assert [calldata] = evm_address;
         assert [calldata + 1] = input_len;
         memcpy(calldata + 2, input, input_len);
         let (
             success, gas, return_data_len, return_data
-        ) = IPrecompiles.library_call_exec_precompile(
+        ) = ICairo1Helpers.library_call_exec_precompile(
             class_hash=implementation, address=evm_address, data_len=input_len, data=input
         );
 

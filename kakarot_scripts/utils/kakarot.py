@@ -26,13 +26,13 @@ from web3.contract.contract import ContractEvents
 from web3.exceptions import LogTopicError, MismatchedABI, NoABIFunctionsFound
 from web3.types import LogReceipt
 
-from scripts.constants import EVM_ADDRESS, EVM_PRIVATE_KEY, NETWORK, RPC_CLIENT
-from scripts.utils.starknet import call as _call_starknet
-from scripts.utils.starknet import fund_address as _fund_starknet_address
-from scripts.utils.starknet import get_contract as _get_starknet_contract
-from scripts.utils.starknet import get_deployments
-from scripts.utils.starknet import invoke as _invoke_starknet
-from scripts.utils.starknet import wait_for_transaction
+from kakarot_scripts.constants import EVM_ADDRESS, EVM_PRIVATE_KEY, NETWORK, RPC_CLIENT
+from kakarot_scripts.utils.starknet import call as _call_starknet
+from kakarot_scripts.utils.starknet import fund_address as _fund_starknet_address
+from kakarot_scripts.utils.starknet import get_contract as _get_starknet_contract
+from kakarot_scripts.utils.starknet import get_deployments
+from kakarot_scripts.utils.starknet import invoke as _invoke_starknet
+from kakarot_scripts.utils.starknet import wait_for_transaction
 from tests.utils.constants import TRANSACTION_GAS_LIMIT
 from tests.utils.helpers import rlp_encode_signed_data
 from tests.utils.uint256 import int_to_uint256
@@ -262,6 +262,7 @@ def _wrap_kakarot(fun: str, caller_eoa: Optional[Account] = None):
 async def _contract_exists(address: int) -> bool:
     try:
         await RPC_CLIENT.get_class_hash_at(address)
+        logger.info(f"ℹ️  Contract at address {hex(address)} already exists")
         return True
     except ClientError:
         return False
@@ -451,7 +452,7 @@ async def eth_get_code(address: Union[int, str]):
     return bytes(
         (
             await _call_starknet(
-                "contract_account", "bytecode", address=starknet_address
+                "account_contract", "bytecode", address=starknet_address
             )
         ).bytecode
     )

@@ -11,7 +11,7 @@ async def safe(deploy_solidity_contract, owner):
     )
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(scope="package")
 @pytest.mark.Safe
 class TestSafe:
     class TestReceive:

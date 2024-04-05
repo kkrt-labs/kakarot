@@ -34,11 +34,20 @@ namespace IERC20 {
 }
 
 @contract_interface
+namespace IUninitializedAccount {
+    func initialize(new_class: felt) {
+    }
+}
+
+@contract_interface
 namespace IAccount {
+    func initialize(implementation: felt, calldata_len: felt, calldata: felt*) {
+    }
+
     func get_evm_address() -> (evm_address: felt) {
     }
 
-    func initialize(implementation: felt, calldata_len: felt, calldata: felt*) {
+    func version() -> (version: felt) {
     }
 
     func bytecode_len() -> (len: felt) {
@@ -47,15 +56,6 @@ namespace IAccount {
     func bytecode() -> (bytecode_len: felt, bytecode: felt*) {
     }
 
-    func storage(storage_addr: felt) -> (value: Uint256) {
-    }
-
-    func account_type() -> (type: felt) {
-    }
-}
-
-@contract_interface
-namespace IContractAccount {
     func write_bytecode(bytecode_len: felt, bytecode: felt*) {
     }
 
@@ -71,25 +71,25 @@ namespace IContractAccount {
     func set_nonce(nonce: felt) {
     }
 
-    func selfdestruct() {
+    func is_empty() -> (is_empty: felt) {
     }
 }
 
 @contract_interface
 namespace IKakarot {
-    func set_native_token(native_token_address_: felt) {
+    func set_native_token(native_token_address: felt) {
     }
 
     func get_native_token() -> (native_token_address: felt) {
     }
 
-    func set_base_fee(base_fee_: felt) {
+    func set_base_fee(base_fee: felt) {
     }
 
     func get_base_fee() -> (base_fee: felt) {
     }
 
-    func set_coinbase(coinbase_: felt) {
+    func set_coinbase(coinbase: felt) {
     }
 
     func get_coinbase() -> (coinbase: felt) {
@@ -101,7 +101,7 @@ namespace IKakarot {
     func get_block_gas_limit() -> (block_gas_limit: felt) {
     }
 
-    func set_prev_randao(prev_randao_: Uint256) {
+    func set_prev_randao(prev_randao: Uint256) {
     }
 
     func get_prev_randao() -> (prev_randao: Uint256) {
@@ -142,9 +142,17 @@ namespace IKakarot {
 }
 
 @contract_interface
-namespace IPrecompiles {
+namespace ICairo1Helpers {
     func exec_precompile(address: felt, data_len: felt, data: felt*) -> (
         success: felt, gas: felt, return_data_len: felt, return_data: felt*
     ) {
+    }
+
+    func get_block_hash(block_number: felt) -> (hash: felt) {
+    }
+
+    func keccak(
+        words_len: felt, words: felt*, last_input_word: felt, last_input_num_bytes: felt
+    ) -> (hash: Uint256) {
     }
 }

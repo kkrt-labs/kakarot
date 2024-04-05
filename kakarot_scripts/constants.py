@@ -19,6 +19,8 @@ load_dotenv()
 # Hardcode block gas limit to 20M
 BLOCK_GAS_LIMIT = 20_000_000
 
+BEACON_ROOT_ADDRESS = "0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02"
+
 NETWORKS = {
     "mainnet": {
         "name": "mainnet",
@@ -27,12 +29,21 @@ NETWORKS = {
         "devnet": False,
         "chain_id": StarknetChainId.MAINNET,
     },
-    "testnet": {
-        "name": "testnet",
+    "goerli": {
+        "name": "starknet-goerli",
         "explorer_url": "https://testnet.starkscan.co",
         "rpc_url": f"https://starknet-goerli.infura.io/v3/{os.getenv('INFURA_KEY')}",
         "devnet": False,
         "chain_id": StarknetChainId.GOERLI,
+    },
+    "sepolia": {
+        "name": "starknet-sepolia",
+        "explorer_url": "https://sepolia.starkscan.co/",
+        "rpc_url": "https://starknet-sepolia.public.blastapi.io/rpc/v0_6",
+        "devnet": False,
+        "chain_id": StarknetChainId.SEPOLIA_TESTNET,
+        "check_interval": 5,
+        "max_wait": 30,
     },
     "starknet-devnet": {
         "name": "starknet-devnet",
@@ -120,7 +131,11 @@ try:
     payload = json.loads(response.text)
 
     chain_id = int(payload["result"], 16)
-except (requests.exceptions.ConnectionError, requests.exceptions.MissingSchema):
+except (
+    requests.exceptions.ConnectionError,
+    requests.exceptions.MissingSchema,
+    requests.exceptions.InvalidSchema,
+):
     chain_id = int.from_bytes(b"KKRT", "big")
 
 
@@ -131,6 +146,7 @@ class ChainId(IntEnum):
 NETWORK["chain_id"] = ChainId.chain_id
 
 ETH_TOKEN_ADDRESS = 0x49D36570D4E46F48E99674BD3FCC84644DDD6B96F7C741B1562B82F9E004DC7
+COINBASE = 0xCA40796AFB5472ABAED28907D5ED6FC74C04954A
 SOURCE_DIR = Path("src")
 SOURCE_DIR_FIXTURES = Path("tests/fixtures")
 CONTRACTS = {p.stem: p for p in list(SOURCE_DIR.glob("**/*.cairo"))}
@@ -153,9 +169,8 @@ DEPLOYMENTS_DIR.mkdir(exist_ok=True, parents=True)
 
 COMPILED_CONTRACTS = [
     {"contract_name": "kakarot", "is_account_contract": False},
-    {"contract_name": "contract_account", "is_account_contract": False},
-    {"contract_name": "externally_owned_account", "is_account_contract": True},
-    {"contract_name": "proxy", "is_account_contract": False},
+    {"contract_name": "account_contract", "is_account_contract": True},
+    {"contract_name": "uninitialized_account", "is_account_contract": False},
     {"contract_name": "EVM", "is_account_contract": False},
     {"contract_name": "OpenzeppelinAccount", "is_account_contract": True},
     {"contract_name": "ERC20", "is_account_contract": False},
@@ -163,12 +178,11 @@ COMPILED_CONTRACTS = [
 ]
 DECLARED_CONTRACTS = [
     {"contract_name": "kakarot", "cairo_version": ArtifactType.cairo0},
-    {"contract_name": "contract_account", "cairo_version": ArtifactType.cairo0},
-    {"contract_name": "externally_owned_account", "cairo_version": ArtifactType.cairo0},
-    {"contract_name": "proxy", "cairo_version": ArtifactType.cairo0},
+    {"contract_name": "account_contract", "cairo_version": ArtifactType.cairo0},
+    {"contract_name": "uninitialized_account", "cairo_version": ArtifactType.cairo0},
     {"contract_name": "EVM", "cairo_version": ArtifactType.cairo0},
     {"contract_name": "OpenzeppelinAccount", "cairo_version": ArtifactType.cairo0},
-    {"contract_name": "Precompiles", "cairo_version": ArtifactType.cairo1},
+    {"contract_name": "Cairo1Helpers", "cairo_version": ArtifactType.cairo1},
     {"contract_name": "replace_class", "cairo_version": ArtifactType.cairo0},
 ]
 

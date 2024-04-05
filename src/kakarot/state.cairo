@@ -9,7 +9,7 @@ from starkware.cairo.common.dict import dict_read, dict_write
 from starkware.cairo.common.dict_access import DictAccess
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.registers import get_fp_and_pc
-from starkware.cairo.common.uint256 import Uint256, uint256_add, uint256_sub, uint256_le, uint256_eq
+from starkware.cairo.common.uint256 import Uint256, uint256_le, uint256_eq
 from starkware.cairo.common.bool import FALSE, TRUE
 
 from kakarot.account import Account
@@ -17,6 +17,7 @@ from kakarot.model import model
 from kakarot.gas import Gas
 from utils.dict import default_dict_copy
 from utils.utils import Helpers
+from utils.uint256 import uint256_add, uint256_sub
 
 namespace State {
     // @dev Create a new empty State
@@ -141,6 +142,7 @@ namespace State {
             Internals._cache_precompile(7);
             Internals._cache_precompile(8);
             Internals._cache_precompile(9);
+            Internals._cache_precompile(10);
         }
         tempvar state = new model.State(
             accounts_start=state.accounts_start,
@@ -300,6 +302,34 @@ namespace State {
         alloc_locals;
         let account = get_account(evm_address);
         let account = Account.write_storage(account, key, value);
+        update_account(account);
+        return ();
+    }
+
+    // @notice Reads the transient storage of an account at the given key.
+    // @param evm_address The EVM address of the account to read.
+    // @param key The key of the storage slot to read.
+    // @return The value of the storage slot.
+    func read_transient_storage{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*
+    }(evm_address: felt, key: Uint256*) -> Uint256* {
+        alloc_locals;
+        let account = get_account(evm_address);
+        let (account, value) = Account.read_transient_storage(account, key);
+        update_account(account);
+        return value;
+    }
+
+    // @notice Updates the transient storage of an account at the given key with the given value.
+    // @param evm_address The EVM address of the account to update.
+    // @param key The key of the storage slot to update.
+    // @param value The new value of the storage slot.
+    func write_transient_storage{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*
+    }(evm_address: felt, key: Uint256*, value: Uint256*) {
+        alloc_locals;
+        let account = get_account(evm_address);
+        let account = Account.write_transient_storage(account, key, value);
         update_account(account);
         return ();
     }

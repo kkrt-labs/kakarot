@@ -5,24 +5,19 @@ from kakarot.gas import Gas
 // @title Constants file.
 // @notice This file contains global constants.
 namespace Constants {
+    const UINT128_MAX = 0xffffffffffffffffffffffffffffffff;
+
     // STACK
     const STACK_MAX_DEPTH = 1024;
 
-    // TRANSACTION
-    // Used in tests only
-    const TRANSACTION_GAS_LIMIT = 1000000;
-
     // PROXY
-    const INITIALIZE_SELECTOR = 0x79dc0da7c54b95f10aa182ad0a46400db63156920adb65eca2654c0945a463;
     const CONTRACT_ADDRESS_PREFIX = 'STARKNET_CONTRACT_ADDRESS';
-    // EOA_V0.0.1 => [69, 79, 65, 95, 86, 48, 46, 48, 46, 49] => 0x454f415f56302e302e31 => pedersen hashed
-    const EOA_VERSION = 0x6f5f51231e876bd085664a890c148a20ea806c5211a8ffd1a61747cf71c71d9;
-    // CA_V0.0.1 => [67, 65, 95, 86, 48, 46, 48, 46, 49] => 0x43415f56302e302e31 => pedersen hashed
-    const CA_VERSION = 0x7be1c12f918a11456a63db29ebfd5e477c967ae994e1bf751a7d04fa8429095;
+
     // ACCOUNTS
-    const BYTES_PER_FELT = 16;
     const MAX_NONCE = 2 ** 64 - 1;
     const MAX_CODE_SIZE = 0x6000;
+
+    const BURN_ADDRESS = 0xdead;
 }
 
 // See model.Opcode:
@@ -470,18 +465,18 @@ dw Gas.BASE;
 dw 0;
 dw 0;
 dw 1;
-// INVALID
+// BLOBHASH
 dw 0x49;
+dw Gas.BLOBHASH;
+dw 1;
+dw 1;
 dw 0;
-dw 0;
-dw 0;
-dw 0;
-// INVALID
+// BLOBBASEFEE
 dw 0x4a;
+dw Gas.BASE;
 dw 0;
 dw 0;
-dw 0;
-dw 0;
+dw 1;
 // INVALID
 dw 0x4b;
 dw 0;
@@ -584,24 +579,24 @@ dw Gas.JUMPDEST;
 dw 0;
 dw 0;
 dw 0;
-// INVALID
+// TLOAD
 dw 0x5c;
+dw 0;  // gas cost is dynamic
+dw 1;
+dw 1;
 dw 0;
-dw 0;
-dw 0;
-dw 0;
-// INVALID
+// TSTORE
 dw 0x5d;
-dw 0;
-dw 0;
-dw 0;
-dw 0;
-// INVALID
+dw 0;  // gas cost is dynamic
+dw 2;
+dw 2;
+dw -2;
+// MCOPY
 dw 0x5e;
-dw 0;
-dw 0;
-dw 0;
-dw 0;
+dw Gas.VERY_LOW;  // + Dynamic gas
+dw 3;
+dw 3;
+dw -3;
 // PUSH0
 dw 0x5f;
 dw Gas.BASE;

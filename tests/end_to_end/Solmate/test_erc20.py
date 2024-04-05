@@ -21,7 +21,7 @@ async def erc_20(deploy_solidity_contract, owner):
     )
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(scope="session")
 @pytest.mark.SolmateERC20
 class TestERC20:
     class TestDeploy:
@@ -258,7 +258,8 @@ class TestERC20:
             self, erc_20, block_with_tx_hashes, owner, other
         ):
             nonce = await erc_20.nonces(owner.address)
-            pending_timestamp = block_with_tx_hashes("pending")["timestamp"]
+
+            pending_timestamp = (await block_with_tx_hashes("pending")).timestamp
             deadline = pending_timestamp - 1
             digest = get_approval_digest(
                 "Kakarot Token",
