@@ -101,8 +101,8 @@ The deployment process is illustrated as follows:
 ```mermaid
 sequenceDiagram
     Anyone ->>+ UninitializedAccount: deploy_syscall
-    UninitializedAccount->>+Kakarot: get_account_contract_class_hash()
-    Kakarot-->>-UninitializedAccount: account_contract_class_hash
+    UninitializedAccount ->>+ Kakarot: get_account_contract_class_hash()
+    Kakarot -->>- UninitializedAccount: account_contract_class_hash
     UninitializedAccount->>+AccountContractClass: library_call_initialize(kakarot_address,evm_address,account_contract_class_hash)
     AccountContractClass ->> AccountContractClass: set_owner(kakarot_address)
     AccountContractClass ->> AccountContractClass: set_evm_address
@@ -114,7 +114,7 @@ sequenceDiagram
     AccountContractClass ->>+ Kakarot: register_account(evm_address)
     Kakarot ->> Kakarot: set_mapping(evm_address => starknet_address)
     Kakarot -->>- AccountContractClass : _
-    AccountContractClass-->>-UninitializedAccount: _
+    AccountContractClass -->>- UninitializedAccount: _
     UninitializedAccount ->> UninitializedAccount: replace_class(account_contract_class_hash)
     UninitializedAccount -->>- Anyone: _
 ```
@@ -157,7 +157,7 @@ be executed in the context of the latest account version.
 ```mermaid
 sequenceDiagram
     User ->>+ Kakarot-RPC: eth_sendRawTransaction
-    Kakarot-RPC->>+UserAccount: __execute__(params)
+    Kakarot-RPC ->>+ UserAccount: __execute__(params)
     UserAccount ->>+ Kakarot: get_account_contract_class_hash()
     Kakarot -->>- UserAccount: account_contract_class_hash
     alt class_hash equal
