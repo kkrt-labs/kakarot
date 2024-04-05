@@ -152,3 +152,25 @@ class TestKakarot:
             }
             assert parsed_state == parse_state(test_case["postState"])
             assert gas_used == int(block["blockHeader"]["gasUsed"], 16)
+
+        @pytest.mark.skip
+        async def test_failing_contract(self, cairo_run):
+            initial_state = {
+                CONTRACT_ADDRESS: {
+                    "code": bytes.fromhex("0xADD_CODE"),
+                    "storage": {},
+                    "balance": 0,
+                    "nonce": 0,
+                }
+            }
+            with SyscallHandler.patch_state(parse_state(initial_state)):
+                evm, *_ = cairo_run(
+                    "eth_call",
+                    origin=int(OWNER, 16),
+                    to=CONTRACT_ADDRESS,
+                    gas_limit=0,
+                    gas_price=0,
+                    value=0,
+                    data="0xADD_DATA",
+                )
+            assert not evm["reverted"]
