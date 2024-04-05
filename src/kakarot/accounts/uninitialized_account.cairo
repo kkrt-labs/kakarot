@@ -2,9 +2,8 @@
 
 %lang starknet
 
-from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.alloc import alloc
-from starkware.starknet.common.syscalls import get_caller_address, replace_class, library_call
+from starkware.cairo.common.cairo_builtins import HashBuiltin
+from starkware.starknet.common.syscalls import replace_class
 
 @contract_interface
 namespace IKakarot {

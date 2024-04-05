@@ -1,5 +1,5 @@
+import hashlib
 import logging
-import random
 
 import pytest
 import pytest_asyncio
@@ -70,6 +70,18 @@ async def origin(evm: Contract, addresses):
     ).contract_address
     await fund_address(sn_address, 10)
     return evm_address
+
+
+@pytest.fixture(scope="function")
+def random_seed(request):
+    test_name = request.node.name
+    parameters = str(request.node.funcargs)
+
+    seed_string = test_name + parameters
+    seed_hash = hashlib.sha256(seed_string.encode()).hexdigest()
+    seed = int(seed_hash, 16)
+
+    return seed
 
 
 @pytest.mark.asyncio(scope="session")
@@ -158,8 +170,9 @@ class TestKakarot:
             deploy_externally_owned_account,
             compute_starknet_address,
             get_contract,
+            random_seed,
         ):
-            evm_address = generate_random_evm_address()
+            evm_address = generate_random_evm_address(random_seed)
             starknet_address = await compute_starknet_address(evm_address)
 
             await deploy_externally_owned_account(evm_address)
@@ -176,8 +189,9 @@ class TestKakarot:
             register_account,
             compute_starknet_address,
             get_contract,
+            random_seed,
         ):
-            evm_address = generate_random_evm_address()
+            evm_address = generate_random_evm_address(random_seed)
             await compute_starknet_address(evm_address)
 
             tx = await register_account(evm_address)
@@ -194,7 +208,7 @@ class TestKakarot:
             compute_starknet_address,
             get_contract,
         ):
-            evm_address = generate_random_evm_address()
+            evm_address = generate_random_evm_address(random_seed)
             await deploy_externally_owned_account(evm_address)
             tx = await register_account(evm_address)
             receipt = await starknet.get_transaction_receipt(tx.hash)
@@ -209,8 +223,9 @@ class TestKakarot:
             is_account_deployed,
             compute_starknet_address,
             kakarot,
+            random_seed,
         ):
-            seed = random.randint(0, 0x5EED)
+            seed = random_seed
             evm_address = generate_random_evm_address(seed=seed)
             while await is_account_deployed(evm_address):
                 seed += 1
@@ -230,7 +245,7 @@ class TestKakarot:
                 origin=int(evm_address, 16),
                 to={
                     "is_some": 1,
-                    "value": int(generate_random_evm_address(seed=3), 16),
+                    "value": int(generate_random_evm_address(seed=seed + 1), 16),
                 },
                 gas_limit=TRANSACTION_GAS_LIMIT,
                 gas_price=1_000,
