@@ -6,34 +6,19 @@ from starkware.cairo.common.memset import memset
 
 from utils.utils import Helpers
 
-func test__bytes_big_endian_to_uint256{range_check_ptr}() {
+func test__bytes_to_uint256{range_check_ptr}() -> Uint256 {
     alloc_locals;
 
-    let (bytecode) = alloc();
-    assert bytecode[0] = 0x01;
-    assert bytecode[1] = 0x02;
+    tempvar word_len;
+    let (word) = alloc();
+    %{
+        ids.word_len = len(program_input["word"])
+        segments.write_arg(ids.word, program_input["word"])
+    %}
 
-    let uint256 = Helpers.bytes_big_endian_to_uint256(1, bytecode);
+    let res = Helpers.bytes_to_uint256(word_len, word);
 
-    assert_uint256_eq(uint256, Uint256(0x01, 0));
-
-    let uint256 = Helpers.bytes_big_endian_to_uint256(2, bytecode);
-
-    assert_uint256_eq(uint256, Uint256(0x0102, 0));
-
-    let (bytecode) = alloc();
-    memset(bytecode, 0xFF, 20);
-    let uint256 = Helpers.bytes_big_endian_to_uint256(20, bytecode);
-
-    assert_uint256_eq(uint256, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFF));
-
-    let (bytecode) = alloc();
-    memset(bytecode, 0xFF, 16);
-    let uint256 = Helpers.bytes_big_endian_to_uint256(16, bytecode);
-
-    assert_uint256_eq(uint256, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0));
-
-    return ();
+    return res;
 }
 
 func test__bytes_to_bytes4_array{range_check_ptr}() {

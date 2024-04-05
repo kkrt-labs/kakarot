@@ -39,13 +39,13 @@ namespace PrecompileModExpUint256 {
         let b_size: Uint256 = Helpers.bytes32_to_uint256(input);
         let e_size: Uint256 = Helpers.bytes32_to_uint256(input + MOD_EXP_BYTES_LEN);
         let m_size: Uint256 = Helpers.bytes32_to_uint256(input + MOD_EXP_BYTES_LEN * 2);
-        let b: Uint256 = Helpers.bytes_big_endian_to_uint256(
+        let b: Uint256 = Helpers.bytes_to_uint256(
             b_size.low, input + MOD_EXP_BYTES_LEN * 3
         );
-        let e: Uint256 = Helpers.bytes_big_endian_to_uint256(
+        let e: Uint256 = Helpers.bytes_to_uint256(
             e_size.low, input + MOD_EXP_BYTES_LEN * 3 + b_size.low
         );
-        let m: Uint256 = Helpers.bytes_big_endian_to_uint256(
+        let m: Uint256 = Helpers.bytes_to_uint256(
             m_size.low, input + MOD_EXP_BYTES_LEN * 3 + b_size.low + e_size.low
         );
         with_attr error_message("Kakarot: modexp failed") {

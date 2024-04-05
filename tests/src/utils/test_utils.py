@@ -1,4 +1,5 @@
 import pytest
+from math import ceil
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
@@ -50,11 +51,20 @@ from hypothesis import strategies as st
                 0x726C6400,
             ],
         ),
-        ("test__bytes_big_endian_to_uint256", [], []),
     ],
 )
 def test_utils(cairo_run, test_case, data, expected):
     cairo_run(test_case, data=data, expected=expected)
+
+
+@given(word=st.integers(min_value=0, max_value=2**256 - 1))
+@settings(max_examples=20, deadline=None)
+def test_bytes_to_uint256(cairo_run, word):
+    output = cairo_run(
+        "test__bytes_to_uint256",
+        word=int.to_bytes(word, ceil(word.bit_length() / 8), byteorder="big"),
+    )
+    assert int(output, 16) == word
 
 
 @given(word=st.integers(min_value=0, max_value=2**128 - 1))
