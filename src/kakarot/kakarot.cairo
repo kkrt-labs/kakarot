@@ -154,6 +154,15 @@ func compute_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ra
     return (contract_address=starknet_address);
 }
 
+// @notice Return the account implementation class hash
+// @return account_contract_class_hash The account implementation class hash
+@view
+func get_account_contract_class_hash{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+}() -> (account_contract_class_hash: felt) {
+    return Kakarot.get_account_contract_class_hash();
+}
+
 // @notice Returns the registered starknet address for a given EVM address.
 // @dev Returns 0 if no contract is deployed for this EVM address.
 // @param evm_address The EVM address to transform to a starknet address
@@ -174,6 +183,16 @@ func deploy_externally_owned_account{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 }(evm_address: felt) -> (starknet_contract_address: felt) {
     return Kakarot.deploy_externally_owned_account(evm_address);
+}
+
+// @notice Register the calling Starknet address for the given EVM address
+// @dev    Only the corresponding computed Starknet address can make this call to ensure that registered accounts are actually deployed.
+// @param evm_address The EVM address of the account.
+@external
+func register_account{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    evm_address: felt
+) {
+    return Kakarot.register_account(evm_address);
 }
 
 // @notice The eth_call function as described in the spec,

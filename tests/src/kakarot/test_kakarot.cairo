@@ -6,6 +6,7 @@ from starkware.cairo.common.uint256 import Uint256
 
 from kakarot.library import Kakarot
 from kakarot.model import model
+from kakarot.account import Account
 
 func eth_call{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
@@ -38,7 +39,7 @@ func eth_call{
         ids.access_list_len = 0
     %}
 
-    let (evm, state, gas_used) = Kakarot.eth_call(
+    let (evm, state, gas_used, _) = Kakarot.eth_call(
         nonce=0,
         origin=origin,
         to=to,
@@ -52,4 +53,25 @@ func eth_call{
     );
 
     return (evm, state, gas_used);
+}
+
+func compute_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    ) -> felt {
+    tempvar evm_address;
+
+    %{ ids.evm_address = program_input["evm_address"] %}
+
+    let starknet_address = Account.compute_starknet_address(evm_address=evm_address);
+
+    return starknet_address;
+}
+
+func test__register_account{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+    tempvar evm_address;
+
+    %{ ids.evm_address = program_input["evm_address"] %}
+
+    Kakarot.register_account(evm_address=evm_address);
+
+    return ();
 }
