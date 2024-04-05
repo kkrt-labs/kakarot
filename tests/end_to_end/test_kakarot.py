@@ -159,7 +159,7 @@ class TestKakarot:
             compute_starknet_address,
             get_contract,
         ):
-            evm_address = generate_random_evm_address(random.randint(0, 0x5EED))
+            evm_address = generate_random_evm_address()
             starknet_address = await compute_starknet_address(evm_address)
 
             await deploy_externally_owned_account(evm_address)
@@ -177,7 +177,7 @@ class TestKakarot:
             compute_starknet_address,
             get_contract,
         ):
-            evm_address = generate_random_evm_address(random.randint(0, 0x5EED))
+            evm_address = generate_random_evm_address()
             await compute_starknet_address(evm_address)
 
             tx = await register_account(evm_address)
@@ -194,7 +194,7 @@ class TestKakarot:
             compute_starknet_address,
             get_contract,
         ):
-            evm_address = generate_random_evm_address(random.randint(0, 0x5EED))
+            evm_address = generate_random_evm_address()
             await deploy_externally_owned_account(evm_address)
             tx = await register_account(evm_address)
             receipt = await starknet.get_transaction_receipt(tx.hash)
