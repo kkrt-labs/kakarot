@@ -34,7 +34,7 @@ namespace PushOperations {
         let out_of_bounds = is_le(evm.message.bytecode_len, pc + i);
         local len = (1 - out_of_bounds) * i + out_of_bounds * (evm.message.bytecode_len - pc);
 
-        let stack_element = Helpers.bytes_i_to_uint256(evm.message.bytecode + pc, len);
+        let stack_element = Helpers.bytes_to_uint256(len, evm.message.bytecode + pc);
         Stack.push_uint256(stack_element);
 
         let evm = EVM.increment_program_counter(evm, len);
