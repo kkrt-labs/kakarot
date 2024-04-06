@@ -120,7 +120,7 @@ namespace Starknet {
 
         // No idea why this is required - but trying to pass prev_randao directly causes bugs.
         let prev_randao = Uint256(low=prev_randao.low, high=prev_randao.high);
-        let (_, chain_id) = unsigned_div_rem(tx_info.chain_id, 2 ** 64);
+        let (_, chain_id) = unsigned_div_rem(tx_info.chain_id, 2 ** 32);
 
         return new model.Environment(
             origin=origin,
