@@ -188,7 +188,7 @@ namespace AccountContract {
         let r = Uint256(tx_info.signature[0], tx_info.signature[1]);
         let s = Uint256(tx_info.signature[2], tx_info.signature[3]);
         let v = tx_info.signature[4];
-        let (_, chain_id) = unsigned_div_rem(tx_info.chain_id, 2 ** 64);
+        let (_, chain_id) = unsigned_div_rem(tx_info.chain_id, 2 ** 32);
 
         EthTransaction.validate(
             address,
