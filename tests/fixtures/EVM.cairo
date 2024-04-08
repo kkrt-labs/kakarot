@@ -21,7 +21,7 @@ from kakarot.storages import (
     Kakarot_native_token_address,
     Kakarot_account_contract_class_hash,
     Kakarot_uninitialized_account_class_hash,
-    Kakarot_precompiles_class_hash,
+    Kakarot_cairo1_helpers_class_hash,
     Kakarot_coinbase,
     Kakarot_block_gas_limit,
 )
@@ -34,14 +34,14 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     native_token_address: felt,
     account_contract_class_hash: felt,
     uninitialized_account_class_hash: felt,
-    precompiles_class_hash: felt,
+    cairo1_helpers_class_hash: felt,
     coinbase: felt,
     block_gas_limit: felt,
 ) {
     Kakarot_native_token_address.write(native_token_address);
     Kakarot_account_contract_class_hash.write(account_contract_class_hash);
     Kakarot_uninitialized_account_class_hash.write(uninitialized_account_class_hash);
-    Kakarot_precompiles_class_hash.write(precompiles_class_hash);
+    Kakarot_cairo1_helpers_class_hash.write(cairo1_helpers_class_hash);
     Kakarot_coinbase.write(coinbase);
     Kakarot_block_gas_limit.write(block_gas_limit);
     return ();

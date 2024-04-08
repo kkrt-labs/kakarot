@@ -19,7 +19,7 @@ from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.state import State
-from kakarot.storages import Kakarot_precompiles_class_hash
+from kakarot.storages import Kakarot_cairo1_helpers_class_hash
 from utils.array import slice
 from utils.bytes import bytes_to_bytes8_little_endian
 from utils.uint256 import uint256_to_uint160, uint256_add
@@ -481,7 +481,7 @@ namespace EnvironmentalInformation {
             dst, account.code_len, account.code
         );
 
-        let (implementation) = Kakarot_precompiles_class_hash.read();
+        let (implementation) = Kakarot_cairo1_helpers_class_hash.read();
         let (code_hash) = ICairo1Helpers.library_call_keccak(
             class_hash=implementation,
             words_len=dst_len,

@@ -27,7 +27,7 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     native_token_address: felt,
     account_contract_class_hash: felt,
     uninitialized_account_class_hash: felt,
-    precompiles_class_hash: felt,
+    cairo1_helpers_class_hash: felt,
     coinbase: felt,
     block_gas_limit: felt,
 ) {
@@ -36,7 +36,7 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
         native_token_address,
         account_contract_class_hash,
         uninitialized_account_class_hash,
-        precompiles_class_hash,
+        cairo1_helpers_class_hash,
         coinbase,
         block_gas_limit,
     );

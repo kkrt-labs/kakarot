@@ -7,7 +7,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.memcpy import memcpy
 
 from kakarot.interfaces.interfaces import ICairo1Helpers
-from kakarot.storages import Kakarot_precompiles_class_hash
+from kakarot.storages import Kakarot_cairo1_helpers_class_hash
 from kakarot.errors import Errors
 from kakarot.precompiles.blake2f import PrecompileBlake2f
 from kakarot.precompiles.datacopy import PrecompileDataCopy
@@ -123,7 +123,7 @@ namespace Precompiles {
         output_len: felt, output: felt*, gas_used: felt, reverted: felt
     ) {
         alloc_locals;
-        let (implementation) = Kakarot_precompiles_class_hash.read();
+        let (implementation) = Kakarot_cairo1_helpers_class_hash.read();
         let (calldata: felt*) = alloc();
         assert [calldata] = evm_address;
         assert [calldata + 1] = input_len;
