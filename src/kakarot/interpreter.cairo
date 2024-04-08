@@ -786,7 +786,6 @@ namespace Interpreter {
         let count = count_not_zero(calldata_len, calldata);
         let zeroes = calldata_len - count;
         let calldata_gas = zeroes * 4 + count * 16;
-        // TODO no overflow check on calldata operation
         let intrinsic_gas = Gas.TX_BASE_COST + calldata_gas;
 
         // If is_deploy_tx is TRUE, then
@@ -865,27 +864,6 @@ namespace Interpreter {
                 return (evm, stack, memory, state, 0, 0);
             }
 
-            // TODO: same as below
-            let (is_value_le_balance) = uint256_le([value], [sender.balance]);
-            if (is_value_le_balance == FALSE) {
-                let evm = EVM.halt_validation_failed(evm);
-                State.finalize();
-                return (evm, stack, memory, state, 0, 0);
-            }
-            let (balance_post_value_transfer) = uint256_sub([sender.balance], [value]);
-
-            // TODO: since we check in EOA execute whether tx.amount + maxFeePerGas *tx.gas_limit <=
-            // tx.sender.balance this might be superfluous
-            let effective_gas_fee = gas_limit * env.gas_price;
-            let (fee_high, fee_low) = split_felt(effective_gas_fee);
-            let max_fee_u256 = Uint256(low=fee_low, high=fee_high);
-            let (can_pay_gasfee) = uint256_le(max_fee_u256, balance_post_value_transfer);
-            if (can_pay_gasfee == FALSE) {
-                let evm = EVM.halt_validation_failed(evm);
-                State.finalize();
-                return (evm, stack, memory, state, 0, 0);
-            }
-
             tempvar is_initcode_invalid = is_deploy_tx * is_le(
                 2 * Constants.MAX_CODE_SIZE + 1, bytecode_len
             );
@@ -897,6 +875,10 @@ namespace Interpreter {
 
             // Charge the gas fee to the user without setting up a transfer.
             // Transfers with the exact amounts will be performed post-execution.
+            // Note: balance > effective_fee was verified in AccountContract.execute()
+            let effective_gas_fee = gas_limit * env.gas_price;
+            let (fee_high, fee_low) = split_felt(effective_gas_fee);
+            let max_fee_u256 = Uint256(low=fee_low, high=fee_high);
             let (local new_balance) = uint256_sub([sender.balance], max_fee_u256);
             let sender = Account.set_balance(sender, &new_balance);
             State.update_account(sender);
