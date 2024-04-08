@@ -70,7 +70,8 @@ class TestEcRecover:
         assert bytes(output) == bytes(padded_address)
 
     def test_should_fail_when_input_len_is_not_128(self, cairo_run):
-        cairo_run("test__ec_recover", input=[])
+        [output] = cairo_run("test__ec_recover", input=[])
+        assert output == []
 
     def test_should_fail_when_recovery_identifier_is_neither_27_nor_28(self, cairo_run):
         random.seed(42)
@@ -85,4 +86,5 @@ class TestEcRecover:
             *r,
             *s,
         ]
-        cairo_run("test__ec_recover", input=input_data)
+        [output] = cairo_run("test__ec_recover", input=input_data)
+        assert output == []
