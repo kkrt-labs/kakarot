@@ -113,14 +113,13 @@ namespace EcRecoverHelpers {
         keccak_add_uint256s{inputs=inputs}(n_elements=2, elements=elements, bigend=1);
 
         let (implementation) = Kakarot_precompiles_class_hash.read();
-        let (hash) = ICairo1Helpers.library_call_keccak(
+        let (point_hash) = ICairo1Helpers.library_call_keccak(
             class_hash=implementation,
             words_len=8,
             words=inputs_start,
             last_input_word=0,
             last_input_num_bytes=0,
         );
-        let (point_hash) = uint256_reverse_endian(num=hash);
 
         // The Ethereum address is the 20 least significant bytes of the keccak of the public key.
         let (high_high, high_low) = unsigned_div_rem(point_hash.high, 2 ** 32);
