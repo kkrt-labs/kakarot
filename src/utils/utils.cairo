@@ -5,7 +5,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.math import assert_le, split_felt, assert_nn_le, unsigned_div_rem
 from starkware.cairo.common.math_cmp import is_le, is_nn
 from starkware.cairo.common.memcpy import memcpy
-from starkware.cairo.common.uint256 import Uint256, uint256_check
+from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.cairo_secp.bigint import BigInt3, bigint_to_uint256, uint256_to_bigint
 from starkware.cairo.common.bool import FALSE
@@ -183,7 +183,9 @@ namespace Helpers {
     // @param val: value to convert.
     // @return: felt representation of the input.
     func uint256_to_felt{range_check_ptr}(val: Uint256) -> felt {
-        uint256_check(val);
+        [range_check_ptr] = val.low;
+        [range_check_ptr + 1] = val.high;
+        let range_check_ptr = range_check_ptr + 2;
         return val.low + val.high * 2 ** 128;
     }
 
