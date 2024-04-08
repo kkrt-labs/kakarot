@@ -10,15 +10,10 @@ from starkware.cairo.common.uint256 import (
     uint256_and,
     uint256_eq,
     uint256_lt,
-    uint256_mul_div_mod,
     uint256_mul,
     uint256_not,
     uint256_or,
     uint256_shl,
-    uint256_shr,
-    uint256_signed_div_rem,
-    uint256_signed_lt,
-    uint256_unsigned_div_rem,
     uint256_xor,
     Uint256,
     SHIFT,
@@ -31,7 +26,17 @@ from kakarot.evm import EVM
 from kakarot.stack import Stack
 from kakarot.gas import Gas
 from kakarot.state import State
-from utils.uint256 import uint256_fast_exp, uint256_signextend, uint256_sub, uint256_add
+from utils.uint256 import (
+    uint256_fast_exp,
+    uint256_signextend,
+    uint256_sub,
+    uint256_add,
+    uint256_unsigned_div_rem,
+    uint256_mul_div_mod,
+    uint256_signed_lt,
+    uint256_shr,
+    uint256_signed_div_rem,
+)
 from utils.utils import Helpers
 
 // @title Stop and Math operations opcodes.
