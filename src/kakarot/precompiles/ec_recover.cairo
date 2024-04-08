@@ -19,7 +19,7 @@ from starkware.cairo.common.keccak_utils.keccak_utils import keccak_add_uint256s
 from utils.utils import Helpers
 from utils.array import slice
 from kakarot.errors import Errors
-from kakarot.storages import Kakarot_precompiles_class_hash
+from kakarot.storages import Kakarot_cairo1_helpers_class_hash
 from kakarot.interfaces.interfaces import ICairo1Helpers
 
 // @title EcRecover Precompile related functions.
@@ -112,7 +112,7 @@ namespace EcRecoverHelpers {
         let inputs_start = inputs;
         keccak_add_uint256s{inputs=inputs}(n_elements=2, elements=elements, bigend=1);
 
-        let (implementation) = Kakarot_precompiles_class_hash.read();
+        let (implementation) = Kakarot_cairo1_helpers_class_hash.read();
         let (point_hash) = ICairo1Helpers.library_call_keccak(
             class_hash=implementation,
             words_len=8,
