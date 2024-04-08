@@ -45,26 +45,27 @@ class TestEcRecover:
         msg = keccak256(b"test message")
         (v, r, s) = ec_sign(msg, private_key)
 
-        data = [
+        input_data = [
             *msg,
             *v.to_bytes(32, "big"),
             *r,
             *s,
         ]
 
-        padded_address, public_key = ecrecover(data)
+        padded_address, public_key = ecrecover(input_data)
 
         # Prepare the output of the keccak syscall
         keccak_result_bytes = keccak256(public_key)
         keccak_res = int.from_bytes(
-            keccak_result_bytes, "little"
-        )  # output of cairo_keccak is in little endian
+            keccak_result_bytes,
+            "big",
+        )  # output of cairo_keccak is in little endian, but our library reverses it back to big endian
         low, high = int_to_uint256(keccak_res)
 
         with SyscallHandler.patch(
             "ICairo1Helpers.library_call_keccak", lambda class_hash, data: [low, high]
         ):
-            [output] = cairo_run("test__ec_recover", input=data)
+            [output] = cairo_run("test__ec_recover", input=input_data)
 
         assert bytes(output) == bytes(padded_address)
 
@@ -78,10 +79,10 @@ class TestEcRecover:
         msg = keccak256(b"test message")
         (_, r, s) = ec_sign(msg, private_key)
         v = 1
-        data = [
+        input_data = [
             *msg,
             *v.to_bytes(32, "big"),
             *r,
             *s,
         ]
-        cairo_run("test__ec_recover", input=data)
+        cairo_run("test__ec_recover", input=input_data)
