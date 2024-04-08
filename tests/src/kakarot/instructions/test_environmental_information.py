@@ -148,7 +148,7 @@ class TestEnvironmentalInformation:
             EXISTING_ACCOUNT_SN_ADDR,
         )
         @SyscallHandler.patch(
-            "Kakarot_precompiles_class_hash",
+            "Kakarot_cairo1_helpers_class_hash",
             CAIRO1_HELPERS_CLASS_HASH,
         )
         def test_extcodehash__should_push_hash(

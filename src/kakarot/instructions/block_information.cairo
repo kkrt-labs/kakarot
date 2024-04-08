@@ -11,7 +11,7 @@ from starkware.cairo.common.uint256 import Uint256
 from kakarot.constants import Constants
 from kakarot.evm import EVM
 from kakarot.interfaces.interfaces import ICairo1Helpers
-from kakarot.storages import Kakarot_precompiles_class_hash
+from kakarot.storages import Kakarot_cairo1_helpers_class_hash
 from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.state import State
@@ -172,7 +172,7 @@ namespace Internals {
             return ();
         }
 
-        let (implementation) = Kakarot_precompiles_class_hash.read();
+        let (implementation) = Kakarot_cairo1_helpers_class_hash.read();
         let (blockhash) = ICairo1Helpers.library_call_get_block_hash(
             implementation, block_number.low
         );

@@ -21,7 +21,7 @@ from kakarot.gas import Gas
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
-from kakarot.storages import Kakarot_precompiles_class_hash
+from kakarot.storages import Kakarot_cairo1_helpers_class_hash
 from kakarot.state import State
 from utils.utils import Helpers
 from utils.array import slice
@@ -1011,7 +1011,7 @@ namespace CreateHelper {
             message_bytes8, message_len, message
         );
 
-        let (implementation) = Kakarot_precompiles_class_hash.read();
+        let (implementation) = Kakarot_cairo1_helpers_class_hash.read();
         let (message_hash) = ICairo1Helpers.library_call_keccak(
             class_hash=implementation,
             words_len=message_bytes8_len,
@@ -1047,7 +1047,7 @@ namespace CreateHelper {
             bytecode_bytes8, bytecode_len, bytecode
         );
 
-        let (implementation) = Kakarot_precompiles_class_hash.read();
+        let (implementation) = Kakarot_cairo1_helpers_class_hash.read();
         let (bytecode_hash) = ICairo1Helpers.library_call_keccak(
             class_hash=implementation,
             words_len=bytecode_bytes8_len,

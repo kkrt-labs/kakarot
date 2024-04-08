@@ -5,7 +5,7 @@
 from starkware.cairo.common.uint256 import Uint256
 
 @storage_var
-func Kakarot_precompiles_class_hash() -> (res: felt) {
+func Kakarot_cairo1_helpers_class_hash() -> (res: felt) {
 }
 
 @storage_var

@@ -16,7 +16,7 @@ from kakarot.storages import (
     Kakarot_account_contract_class_hash,
     Kakarot_base_fee,
     Kakarot_native_token_address,
-    Kakarot_precompiles_class_hash,
+    Kakarot_cairo1_helpers_class_hash,
     Kakarot_coinbase,
     Kakarot_prev_randao,
     Kakarot_block_gas_limit,
@@ -37,14 +37,14 @@ namespace Kakarot {
     // @param native_token_address The ERC20 contract used to emulate ETH.
     // @param account_contract_class_hash The clash hash of the contract account.
     // @param uninitialized_account_class_hash The class hash of the uninitialized account used for deterministic address calculation.
-    // @param precompiles_class_hash The precompiles class hash for precompiles not implemented in Kakarot.
+    // @param cairo1_helpers_class_hash The precompiles class hash for precompiles not implemented in Kakarot.
     // @param coinbase The EOA whose key is owned by the deployer (or known to be owned by Coinbase)
     func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         owner: felt,
         native_token_address,
         account_contract_class_hash,
         uninitialized_account_class_hash,
-        precompiles_class_hash,
+        cairo1_helpers_class_hash,
         coinbase,
         block_gas_limit,
     ) {
@@ -52,7 +52,7 @@ namespace Kakarot {
         Kakarot_native_token_address.write(native_token_address);
         Kakarot_account_contract_class_hash.write(account_contract_class_hash);
         Kakarot_uninitialized_account_class_hash.write(uninitialized_account_class_hash);
-        Kakarot_precompiles_class_hash.write(precompiles_class_hash);
+        Kakarot_cairo1_helpers_class_hash.write(cairo1_helpers_class_hash);
         Kakarot_coinbase.write(coinbase);
         Kakarot_block_gas_limit.write(block_gas_limit);
         return ();

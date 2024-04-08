@@ -15,7 +15,7 @@ from kakarot.gas import Gas
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
-from kakarot.storages import Kakarot_precompiles_class_hash
+from kakarot.storages import Kakarot_cairo1_helpers_class_hash
 from utils.bytes import bytes_to_bytes8_little_endian
 
 namespace Sha3 {
@@ -61,7 +61,7 @@ namespace Sha3 {
             dst, size.low, bigendian_data
         );
 
-        let (implementation) = Kakarot_precompiles_class_hash.read();
+        let (implementation) = Kakarot_cairo1_helpers_class_hash.read();
         let (result) = ICairo1Helpers.library_call_keccak(
             class_hash=implementation,
             words_len=dst_len,
