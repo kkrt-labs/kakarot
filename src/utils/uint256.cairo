@@ -110,8 +110,8 @@ func uint256_sub{range_check_ptr}(a: Uint256, b: Uint256) -> (res: Uint256) {
 // Returns 1 if the first signed integer is less than the second signed integer.
 func uint256_signed_lt{range_check_ptr}(a: Uint256, b: Uint256) -> (res: felt) {
     alloc_locals;
-    let (a, _) = uint256_add(a, cast((low=0, high=2 ** 127), Uint256));
-    let (b, _) = uint256_add(b, cast((low=0, high=2 ** 127), Uint256));
+    let (a, _) = uint256_add(a, Uint256(low=0, high=2 ** 127));
+    let (b, _) = uint256_add(b, Uint256(low=0, high=2 ** 127));
     return uint256_lt(a, b);
 }
 
