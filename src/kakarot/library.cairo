@@ -225,6 +225,16 @@ namespace Kakarot {
         return (starknet_contract_address=starknet_contract_address);
     }
 
+    // @notice Set the account implementation class hash
+    // @param account_contract_class_hash The new account implementation class hash
+    func set_account_contract_class_hash{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    }(account_contract_class_hash: felt) {
+        Ownable.assert_only_owner();
+        Kakarot_account_contract_class_hash.write(account_contract_class_hash);
+        return ();
+    }
+
     // @notice Return the class hash of the account implementation
     // @return account_contract_class_hash The class hash of the account implementation
     func get_account_contract_class_hash{
