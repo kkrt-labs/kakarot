@@ -9,21 +9,11 @@ from starkware.cairo.common.uint256 import Uint256
 
 // Local dependencies
 from kakarot.accounts.library import AccountContract, Account_implementation
-from kakarot.interfaces.interfaces import IKakarot
+from kakarot.accounts.model import CallArray
+from kakarot.interfaces.interfaces import IKakarot, IAccount
 from starkware.starknet.common.syscalls import get_tx_info, get_caller_address, replace_class
 from starkware.cairo.common.math import assert_le, unsigned_div_rem
 from starkware.cairo.common.alloc import alloc
-
-@contract_interface
-namespace IAccount {
-    func __execute__(
-        call_array_len: felt,
-        call_array: AccountContract.CallArray*,
-        calldata_len: felt,
-        calldata: felt*,
-    ) -> (response_len: felt, response: felt*) {
-    }
-}
 
 // @title EVM smart contract account representation.
 @constructor
@@ -95,12 +85,7 @@ func is_initialized{
 @external
 func __validate__{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, bitwise_ptr: BitwiseBuiltin*, range_check_ptr
-}(
-    call_array_len: felt,
-    call_array: AccountContract.CallArray*,
-    calldata_len: felt,
-    calldata: felt*,
-) {
+}(call_array_len: felt, call_array: CallArray*, calldata_len: felt, calldata: felt*) {
     AccountContract.validate(
         call_array_len=call_array_len,
         call_array=call_array,
@@ -138,12 +123,9 @@ func __execute__{
     ecdsa_ptr: SignatureBuiltin*,
     bitwise_ptr: BitwiseBuiltin*,
     range_check_ptr,
-}(
-    call_array_len: felt,
-    call_array: AccountContract.CallArray*,
-    calldata_len: felt,
-    calldata: felt*,
-) -> (response_len: felt, response: felt*) {
+}(call_array_len: felt, call_array: CallArray*, calldata_len: felt, calldata: felt*) -> (
+    response_len: felt, response: felt*
+) {
     alloc_locals;
     let (tx_info) = get_tx_info();
     let version = tx_info.version;

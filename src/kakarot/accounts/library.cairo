@@ -26,6 +26,7 @@ from starkware.starknet.common.syscalls import (
 from starkware.cairo.common.memset import memset
 
 from kakarot.interfaces.interfaces import IERC20, IKakarot
+from kakarot.accounts.model import CallArray
 from kakarot.errors import Errors
 from kakarot.constants import Constants
 from utils.eth_transaction import EthTransaction
@@ -141,21 +142,6 @@ namespace AccountContract {
     }
 
     // EOA functions
-
-    struct Call {
-        to: felt,
-        selector: felt,
-        calldata_len: felt,
-        calldata: felt*,
-    }
-
-    // Struct introduced to pass `[Call]` to __execute__
-    struct CallArray {
-        to: felt,
-        selector: felt,
-        data_offset: felt,
-        data_len: felt,
-    }
 
     // @notice Validate the signature of every call in the call array.
     // @dev Recursively validates if tx is signed and valid for each call -> see utils/eth_transaction.cairo
