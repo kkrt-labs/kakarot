@@ -4,16 +4,23 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_keccak.keccak import finalize_keccak
 from starkware.cairo.common.bool import FALSE
+from starkware.cairo.common.math import unsigned_div_rem
+from starkware.cairo.common.math_cmp import RC_BOUND
 from starkware.cairo.common.cairo_secp.ec import EcPoint
 from starkware.cairo.common.cairo_secp.bigint import BigInt3
 from starkware.cairo.common.cairo_secp.signature import (
     recover_public_key,
     public_key_point_to_eth_address,
 )
+from starkware.cairo.common.uint256 import Uint256, uint256_reverse_endian
+from starkware.cairo.common.cairo_secp.bigint import bigint_to_uint256
+from starkware.cairo.common.keccak_utils.keccak_utils import keccak_add_uint256s
 
 from utils.utils import Helpers
 from utils.array import slice
 from kakarot.errors import Errors
+from kakarot.storages import Kakarot_cairo1_helpers_class_hash
+from kakarot.interfaces.interfaces import ICairo1Helpers
 
 // @title EcRecover Precompile related functions.
 // @notice This file contains the logic required to run the ec_recover precompile
@@ -43,7 +50,6 @@ namespace PrecompileEcRecover {
         let (input_padded) = alloc();
         slice(input_padded, input_len, input, 0, 4 * 32);
 
-        let hash = Helpers.bytes32_to_bigint(input_padded);
         let v_uint256 = Helpers.bytes32_to_uint256(input_padded + 32);
         let v = Helpers.uint256_to_felt(v_uint256);
 
@@ -52,10 +58,11 @@ namespace PrecompileEcRecover {
             return (0, output, GAS_COST_EC_RECOVER, 0);
         }
 
+        // v - 27, see recover_public_key comment
+        let hash = Helpers.bytes32_to_bigint(input_padded);
         let r = Helpers.bytes32_to_bigint(input_padded + 32 * 2);
         let s = Helpers.bytes32_to_bigint(input_padded + 32 * 3);
 
-        // v - 27, see recover_public_key comment
         let (public_key_point) = recover_public_key(hash, r, s, v - 27);
         let (is_public_key_invalid) = EcRecoverHelpers.ec_point_equal(
             public_key_point, EcPoint(BigInt3(0, 0, 0), BigInt3(0, 0, 0))
@@ -66,12 +73,7 @@ namespace PrecompileEcRecover {
             return (0, output, GAS_COST_EC_RECOVER, 0);
         }
 
-        let (keccak_ptr: felt*) = alloc();
-        local keccak_ptr_start: felt* = keccak_ptr;
-        with keccak_ptr {
-            let (public_address) = public_key_point_to_eth_address(public_key_point);
-            finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
-        }
+        let (public_address) = EcRecoverHelpers.public_key_point_to_eth_address(public_key_point);
 
         let (output) = alloc();
         Helpers.split_word(public_address, 32, output);
@@ -88,5 +90,39 @@ namespace EcRecoverHelpers {
             return (is_equal=1);
         }
         return (is_equal=0);
+    }
+
+    // @notice Convert a public key point to the corresponding Ethereum address.
+    // @dev Use the keccak_syscall available through the Cairo1Helpers class. The u256 words are
+    // converted to full u64 words before being passed to the keccak_syscall.
+    func public_key_point_to_eth_address{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(public_key_point: EcPoint) -> (eth_address: felt) {
+        alloc_locals;
+        let (local elements: Uint256*) = alloc();
+        let (x_uint256: Uint256) = bigint_to_uint256(public_key_point.x);
+        assert elements[0] = x_uint256;
+        let (y_uint256: Uint256) = bigint_to_uint256(public_key_point.y);
+        assert elements[1] = y_uint256;
+
+        let (inputs) = alloc();
+        let inputs_start = inputs;
+        keccak_add_uint256s{inputs=inputs}(n_elements=2, elements=elements, bigend=1);
+
+        let (implementation) = Kakarot_cairo1_helpers_class_hash.read();
+        let (point_hash) = ICairo1Helpers.library_call_keccak(
+            class_hash=implementation,
+            words_len=8,
+            words=inputs_start,
+            last_input_word=0,
+            last_input_num_bytes=0,
+        );
+
+        // The Ethereum address is the 20 least significant bytes of the keccak of the public key.
+        let (high_high, high_low) = unsigned_div_rem(point_hash.high, 2 ** 32);
+        return (eth_address=point_hash.low + RC_BOUND * high_low);
     }
 }
