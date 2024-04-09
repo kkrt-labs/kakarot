@@ -2,6 +2,7 @@
 
 from starkware.cairo.common.uint256 import Uint256
 from kakarot.model import model
+from kakarot.accounts.model import CallArray
 
 @contract_interface
 namespace IERC20 {
@@ -35,6 +36,16 @@ namespace IERC20 {
 
 @contract_interface
 namespace IAccount {
+    func __validate__(
+        call_array_len: felt, call_array: CallArray*, calldata_len: felt, calldata: felt*
+    ) {
+    }
+
+    func __execute__(
+        call_array_len: felt, call_array: CallArray*, calldata_len: felt, calldata: felt*
+    ) -> (response_len: felt, response: felt*) {
+    }
+
     func initialize(implementation: felt, calldata_len: felt, calldata: felt*) {
     }
 
