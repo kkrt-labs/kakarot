@@ -163,6 +163,15 @@ func get_account_contract_class_hash{
     return Kakarot.get_account_contract_class_hash();
 }
 
+// @notice Set the account implementation class hash
+// @param account_contract_class_hash The new account implementation class hash
+@external
+func set_account_contract_class_hash{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+}(account_contract_class_hash: felt) {
+    return Kakarot.set_account_contract_class_hash(account_contract_class_hash);
+}
+
 // @notice Returns the registered starknet address for a given EVM address.
 // @dev Returns 0 if no contract is deployed for this EVM address.
 // @param evm_address The EVM address to transform to a starknet address

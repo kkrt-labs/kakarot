@@ -436,6 +436,15 @@ namespace AccountContract {
         Account_nonce.write(new_nonce);
         return ();
     }
+
+    // @notice Return the latest available implementation of the account contract.
+    // @returns The latest account class hash registered in Kakarot
+    func get_latest_class{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        ) -> felt {
+        let (kakarot_address) = Ownable_owner.read();
+        let (latest_implementation) = IKakarot.get_account_contract_class_hash(kakarot_address);
+        return latest_implementation;
+    }
 }
 
 namespace Internals {
