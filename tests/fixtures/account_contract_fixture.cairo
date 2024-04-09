@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// ! A fixture of the Account Contract class, used to test the upgradeability flow, where version = 001.000.000
 
 %lang starknet
 
@@ -62,8 +63,7 @@ func upgrade{
 func version{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() -> (version: felt) {
-    let version = AccountContract.VERSION;
-    return (version=version);
+    return (version=1000000);
 }
 
 // @notice Gets the evm address associated with the account.
