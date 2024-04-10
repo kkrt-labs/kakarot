@@ -243,6 +243,24 @@ namespace Kakarot {
         return (account_contract_class_hash,);
     }
 
+    // @notice Return the hash of the Cairo1Helpers class
+    // @return account_contract_class_hash The hash of the Cairo1Helpers class
+    func get_cairo1_helpers_class_hash{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    }() -> (cairo1_helpers_class_hash: felt) {
+        let (cairo1_helpers_class_hash) = Kakarot_cairo1_helpers_class_hash.read();
+        return (cairo1_helpers_class_hash,);
+    }
+
+    // @notice Set the hash of the Cairo1Helpers class
+    // @param account_contract_class_hash The hash of the Cairo1Helpers class
+    func set_cairo1_helpers_class_hash{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    }(cairo1_helpers_class_hash: felt) {
+        Kakarot_cairo1_helpers_class_hash.write(cairo1_helpers_class_hash);
+        return ();
+    }
+
     // @notice Register the calling Starknet address for the given EVM address
     // @dev    Only the corresponding computed Starknet address can make this call to ensure that registered accounts are actually deployed.
     // @param evm_address The EVM address of the account.

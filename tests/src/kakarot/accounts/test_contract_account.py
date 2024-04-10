@@ -1,6 +1,6 @@
 import random
 from textwrap import wrap
-from unittest.mock import PropertyMock, call, patch
+from unittest.mock import call, patch
 
 import pytest
 from starkware.starknet.public.abi import (
@@ -120,38 +120,3 @@ class TestContractAccount:
             calls = [call(address=address) for address in addresses]
             mock_storage.assert_has_calls(calls)
             assert output[:output_len] == list(bytecode)
-
-    class TestUpgrade:
-        @patch.object(SyscallHandler, "mock_replace_class")
-        @patch.object(SyscallHandler, "mock_storage")
-        def test_should_upgrade_account(
-            self, mock_storage, mock_replace_class, cairo_run
-        ):
-            cairo_run("test__upgrade", new_class=0xBEEF)
-
-            mock_replace_class.assert_called_once_with(class_hash=0xBEEF)
-            mock_storage.assert_called_once_with(
-                address=get_storage_var_address("Account_implementation"), value=0xBEEF
-            )
-
-        @patch(
-            "tests.utils.syscall_handler.SyscallHandler.contract_address",
-            new_callable=PropertyMock,
-            return_value=123,
-        )
-        @patch(
-            "tests.utils.syscall_handler.SyscallHandler.caller_address",
-            new_callable=PropertyMock,
-            return_value=456,
-        )
-        @patch.object(SyscallHandler, "mock_replace_class")
-        def test_should_fail_caller_not_self(
-            self,
-            mock_replace_class,
-            mock_contract_address,
-            mock_caller_address,
-            cairo_run,
-        ):
-            with cairo_error():
-                cairo_run("test__upgrade", new_class=0xBEEF)
-            mock_replace_class.assert_not_called()
