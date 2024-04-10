@@ -25,7 +25,7 @@ async def uniswap_pair_deployer(addresses):
     return addresses[14]
 
 
-@pytest_asyncio.fixture(scope="module")
+@pytest_asyncio.fixture(scope="function")
 async def token_a(
     deploy_solidity_contract: Callable,
     token_a_deployer,
@@ -38,7 +38,7 @@ async def token_a(
     )
 
 
-@pytest_asyncio.fixture(scope="module")
+@pytest_asyncio.fixture(scope="function")
 async def token_b(
     deploy_solidity_contract: Callable,
     token_b_deployer,

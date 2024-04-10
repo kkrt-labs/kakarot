@@ -97,23 +97,6 @@ namespace AccountContract {
         return ();
     }
 
-    // @notice Upgrade the implementation of the account.
-    // @param new_class The new class of the account.
-    func upgrade{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(new_class: felt) {
-        alloc_locals;
-        // Access control check. Only the EOA owner should be able to upgrade its contract.
-        Internals.assert_only_self();
-        assert_not_zero(new_class);
-        replace_class(new_class);
-        Account_implementation.write(new_class);
-        return ();
-    }
-
     func get_implementation{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
         implementation: felt
     ) {

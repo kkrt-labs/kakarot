@@ -37,15 +37,6 @@ func initialize{
     return AccountContract.initialize(kakarot_address, evm_address, implementation_class);
 }
 
-// @notice replaces the class of the account.
-// @param new_class The new class of the account.
-@external
-func upgrade{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(new_class: felt) {
-    return AccountContract.upgrade(new_class);
-}
-
 // @notice Returns the version of the account class.
 // @dev The version is a packed integer with the following format: XXX.YYY.ZZZ where XXX is the
 // major version, YYY is the minor version and ZZZ is the patch version.

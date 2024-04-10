@@ -136,14 +136,7 @@ of accounts. The upgrade process works as follows:
 4. Upgrading an account will not change the content of the account storage. It
    will only change the implementation logic.
 
-## (Not implemented) Upgrading accounts with AA
-
-The account contract class exposes an `upgrade` entrypoint, which allows the
-owner of the account to upgrade the account contract class to a new version.
-However, this process is related to the _Starknet_ account, which is abstracted
-from the user by the system, while users can interact with Kakarot using an EVM
-EOA. To upgrade an account, the user will need to perform the upgrade action
-directly, as the caller of the upgrade function **must** be the account itself.
+## Upgrading accounts with AA
 
 One proposal for seamless upgrades would be to check if an account's class hash
 matches the one defined in the Kakarot contract every time we execute a

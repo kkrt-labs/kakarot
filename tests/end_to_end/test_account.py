@@ -17,7 +17,7 @@ async def class_hashes():
 
 
 @pytest_asyncio.fixture(scope="module")
-async def token_a(deploy_solidity_contract, owner):
+async def erc20_token(deploy_solidity_contract, owner):
     return await deploy_solidity_contract(
         "UniswapV2",
         "ERC20",
@@ -31,7 +31,13 @@ async def token_a(deploy_solidity_contract, owner):
 class TestAccount:
     class TestAutoUpgradeOnTransaction:
         async def test_should_upgrade_outdated_account_on_transfer(
-            self, starknet: FullNodeClient, invoke, token_a, owner, other, class_hashes
+            self,
+            starknet: FullNodeClient,
+            invoke,
+            erc20_token,
+            owner,
+            other,
+            class_hashes,
         ):
             # Given an initial class
             prev_class = await starknet.get_class_hash_at(
@@ -48,11 +54,11 @@ class TestAccount:
 
             # Then the account should process the next transaction and be upgraded to the new class
             receipt = (
-                await token_a.transfer(
+                await erc20_token.transfer(
                     other.address, TEST_AMOUNT, caller_eoa=owner.starknet_contract
                 )
             )["receipt"]
-            events = token_a.events.parse_starknet_events(receipt.events)
+            events = erc20_token.events.parse_starknet_events(receipt.events)
             assert events["Transfer"] == [
                 {
                     "from": owner.address,
@@ -60,8 +66,10 @@ class TestAccount:
                     "value": TEST_AMOUNT,
                 }
             ]
-            assert await token_a.balanceOf(owner.address) == TOTAL_SUPPLY - TEST_AMOUNT
-            assert await token_a.balanceOf(other.address) == TEST_AMOUNT
+            assert (
+                await erc20_token.balanceOf(owner.address) == TOTAL_SUPPLY - TEST_AMOUNT
+            )
+            assert await erc20_token.balanceOf(other.address) == TEST_AMOUNT
 
             new_class = await starknet.get_class_hash_at(
                 owner.starknet_contract.address

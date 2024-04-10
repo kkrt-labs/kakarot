@@ -173,6 +173,24 @@ func set_account_contract_class_hash{
     return Kakarot.set_account_contract_class_hash(account_contract_class_hash);
 }
 
+// @notice Set the Cairo1Helpers class hash
+// @param cairo1_helpers_class_hash The Cairo1Helpers class hash
+@external
+func set_cairo1_helpers_class_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    cairo1_helpers_class_hash: felt
+) {
+    Ownable.assert_only_owner();
+    return Kakarot.set_cairo1_helpers_class_hash(cairo1_helpers_class_hash);
+}
+
+// @notice Return the Cairo1Helpers class hash
+// @return cairo1_helpers_class_hash The Cairo1Helpers class hash
+@view
+func get_cairo1_helpers_class_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    ) -> (cairo1_helpers_class_hash: felt) {
+    return Kakarot.get_cairo1_helpers_class_hash();
+}
+
 // @notice Returns the registered starknet address for a given EVM address.
 // @dev Returns 0 if no contract is deployed for this EVM address.
 // @param evm_address The EVM address to transform to a starknet address
