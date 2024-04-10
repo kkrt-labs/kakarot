@@ -1,17 +1,7 @@
 {
   "kakarot": {
-    "address": "0x1a18210c20241ea7a06224246264a59add11c8358d69826e8bd51f4ba6d3be7",
-    "tx": "0x35b90b02f1f1f54222d95101c50f8d972afe8047303f39a0a3603b193792adf",
+    "address": "0x612fb5de32723a19b073b3aba348e48a3d9f51448426d8931694e51db5795e6",
+    "tx": "0x7caa23499e8c743f6fe916d6005de76c37d39bd7527c07b81176b96625ef5f",
     "artifact": "build/kakarot.json"
-  },
-  "EVM": {
-    "address": "0x5535633563d64727d8af818146a35ad76ff4bb32baf5221881c4e8e9f7ee8c5",
-    "tx": "0x71994f3822cb2df0988423bafd45197bab283ff3809dca4bd657434b8a62640",
-    "artifact": "build/fixtures/EVM.json"
-  },
-  "deployer_account": {
-    "address": "0x203e7de57f863e59040918c8bd67cc03d6c3dd5db0f2bda49bac5f59073374",
-    "tx": "0x57c9d7c0ad7315bea11565e6cf3a8537355c503f49c6c640c5b8e503accb754",
-    "artifact": "build/OpenzeppelinAccount.json"
   }
 }
