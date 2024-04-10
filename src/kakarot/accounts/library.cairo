@@ -251,10 +251,11 @@ namespace AccountContract {
         // transaction. If we were to execute more than one transaction in a single __execute__ call, we would
         // need to change the nonce incrementation logic.
         //
-        // TODO! If the previous execute failed with a CairoVM error, the protocol nonce was not incremented
-        // and there is an off-by-one count until it's overwritten by the next successful execute.
+        // TODO! If the previous execute failed with a CairoVM error, the protocol nonce was
+        // incremented but not the storage nonce, and there is an off-by-one count until it's
+        // overwritten by the next successful execute.
         let (tx_info) = get_tx_info();
-        Account_nonce.write(tx_info.nonce);
+        Account_nonce.write(tx_info.nonce + 1);
 
         let (kakarot_address) = Ownable_owner.read();
         let (block_gas_limit) = IKakarot.get_block_gas_limit(kakarot_address);
