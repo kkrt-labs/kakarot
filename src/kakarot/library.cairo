@@ -230,7 +230,6 @@ namespace Kakarot {
     func set_account_contract_class_hash{
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     }(account_contract_class_hash: felt) {
-        Ownable.assert_only_owner();
         Kakarot_account_contract_class_hash.write(account_contract_class_hash);
         return ();
     }

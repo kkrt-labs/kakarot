@@ -169,6 +169,7 @@ func get_account_contract_class_hash{
 func set_account_contract_class_hash{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 }(account_contract_class_hash: felt) {
+    Ownable.assert_only_owner();
     return Kakarot.set_account_contract_class_hash(account_contract_class_hash);
 }
 

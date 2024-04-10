@@ -1,7 +1,6 @@
 import pytest
 import pytest_asyncio
-
-from kakarot_scripts.utils.starknet import call
+from starknet_py.net.full_node_client import FullNodeClient
 
 TOTAL_SUPPLY = 10000 * 10**18
 TEST_AMOUNT = 10 * 10**18
@@ -17,11 +16,8 @@ async def class_hashes():
     return get_declarations()
 
 
-@pytest_asyncio.fixture(scope="function")
-async def token_a(
-    deploy_solidity_contract,
-    owner,
-):
+@pytest_asyncio.fixture(scope="module")
+async def token_a(deploy_solidity_contract, owner):
     return await deploy_solidity_contract(
         "UniswapV2",
         "ERC20",
@@ -35,20 +31,22 @@ async def token_a(
 class TestAccount:
     class TestAutoUpgradeOnTransaction:
         async def test_should_upgrade_outdated_account_on_transfer(
-            self, invoke, token_a, owner, other, class_hashes
+            self, starknet: FullNodeClient, invoke, token_a, owner, other, class_hashes
         ):
-            # Given an initial version of 1000
-            prev_version = (await call(owner.starknet_contract.address, "version"))[0]
-            assert prev_version == 1000  # 000.001.000
+            # Given an initial class
+            prev_class = await starknet.get_class_hash_at(
+                owner.starknet_contract.address
+            )
+            assert prev_class == class_hashes["account_contract"]
 
-            # When setting the account class to version 001.000.000
+            # When setting the account class to version 001.000.000 (account_contract_fixture)
             await invoke(
                 "kakarot",
                 "set_account_contract_class_hash",
                 class_hashes["account_contract_fixture"],
             )
 
-            # Then the account should process the next transaction and be upgraded to the new version.
+            # Then the account should process the next transaction and be upgraded to the new class
             receipt = (
                 await token_a.transfer(
                     other.address, TEST_AMOUNT, caller_eoa=owner.starknet_contract
@@ -65,5 +63,7 @@ class TestAccount:
             assert await token_a.balanceOf(owner.address) == TOTAL_SUPPLY - TEST_AMOUNT
             assert await token_a.balanceOf(other.address) == TEST_AMOUNT
 
-            new_version = (await call(owner.starknet_contract.address, "version"))[0]
-            assert new_version == 1000000  # 001.000.000
+            new_class = await starknet.get_class_hash_at(
+                owner.starknet_contract.address
+            )
+            assert new_class == class_hashes["account_contract_fixture"]
