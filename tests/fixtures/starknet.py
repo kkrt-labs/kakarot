@@ -229,10 +229,16 @@ def cairo_run(request) -> list:
             )
             data = profile_from_tracer_data(tracer_data)
 
+            displayed_args = ""
+            if kwargs:
+                try:
+                    displayed_args = json.dumps(kwargs)
+                except TypeError as e:
+                    logger.info(f"Failed to serialize kwargs: {e}")
             output_path = (
                 str(
                     request.node.path.parent
-                    / f"{request.node.path.stem}.{entrypoint}_{(json.dumps(kwargs) if kwargs else '')}"
+                    / f"{request.node.path.stem}.{entrypoint}_{displayed_args}"
                 )[:180]
                 + ".pb.gz"
             )
