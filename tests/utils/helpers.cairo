@@ -8,7 +8,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.default_dict import default_dict_new
 from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.memset import memset
-from starkware.cairo.common.uint256 import Uint256, uint256_check, uint256_eq, assert_uint256_eq
+from starkware.cairo.common.uint256 import Uint256, uint256_eq, assert_uint256_eq
 from starkware.cairo.common.dict_access import DictAccess
 
 from backend.starknet import Starknet
