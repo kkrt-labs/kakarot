@@ -250,8 +250,12 @@ namespace AccountContract {
         // The protocol nonce is updated once per __execute__ call, while the EVM nonce is updated once per
         // transaction. If we were to execute more than one transaction in a single __execute__ call, we would
         // need to change the nonce incrementation logic.
-        let (current_nonce) = Account_nonce.read();
-        Account_nonce.write(current_nonce + 1);
+        //
+        // TODO! If the previous execute failed with a CairoVM error, the protocol nonce was
+        // incremented but not the storage nonce, and there is an off-by-one count until it's
+        // overwritten by the next successful execute.
+        let (tx_info) = get_tx_info();
+        Account_nonce.write(tx_info.nonce + 1);
 
         let (kakarot_address) = Ownable_owner.read();
         let (block_gas_limit) = IKakarot.get_block_gas_limit(kakarot_address);
@@ -414,6 +418,8 @@ namespace AccountContract {
     }
 
     // @notice This function is used to read the nonce from storage
+    // @dev If the nonce is that of an EOA and the previous transaction reverted with a CairoVM,
+    // the nonce was not incremented and this is off-by-one until the next successful CairoVM execution.
     // @return nonce The current nonce of the contract account
     func get_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
         nonce: felt
