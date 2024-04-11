@@ -16,13 +16,13 @@ async def class_hashes():
     return get_declarations()
 
 
-@pytest_asyncio.fixture(scope="module")
-async def erc20_token(deploy_solidity_contract, owner):
+@pytest_asyncio.fixture(scope="function")
+async def erc20_token(deploy_solidity_contract, new_account):
     return await deploy_solidity_contract(
         "UniswapV2",
         "ERC20",
         TOTAL_SUPPLY,
-        caller_eoa=owner.starknet_contract,
+        caller_eoa=new_account.starknet_contract,
     )
 
 
@@ -35,43 +35,53 @@ class TestAccount:
             starknet: FullNodeClient,
             invoke,
             erc20_token,
-            owner,
+            new_account,
             other,
             class_hashes,
         ):
             # Given an initial class
             prev_class = await starknet.get_class_hash_at(
-                owner.starknet_contract.address
+                new_account.starknet_contract.address
             )
+            target_class = class_hashes["account_contract_fixture"]
+            assert prev_class != target_class
             assert prev_class == class_hashes["account_contract"]
 
-            # When setting the account class to version 001.000.000 (account_contract_fixture)
+            # When setting the account class to version `account_contract_fixture`
             await invoke(
                 "kakarot",
                 "set_account_contract_class_hash",
-                class_hashes["account_contract_fixture"],
+                target_class,
             )
 
             # Then the account should process the next transaction and be upgraded to the new class
             receipt = (
                 await erc20_token.transfer(
-                    other.address, TEST_AMOUNT, caller_eoa=owner.starknet_contract
+                    other.address, TEST_AMOUNT, caller_eoa=new_account.starknet_contract
                 )
             )["receipt"]
             events = erc20_token.events.parse_starknet_events(receipt.events)
             assert events["Transfer"] == [
                 {
-                    "from": owner.address,
+                    "from": new_account.address,
                     "to": other.address,
                     "value": TEST_AMOUNT,
                 }
             ]
             assert (
-                await erc20_token.balanceOf(owner.address) == TOTAL_SUPPLY - TEST_AMOUNT
+                await erc20_token.balanceOf(new_account.address)
+                == TOTAL_SUPPLY - TEST_AMOUNT
             )
             assert await erc20_token.balanceOf(other.address) == TEST_AMOUNT
 
             new_class = await starknet.get_class_hash_at(
-                owner.starknet_contract.address
+                new_account.starknet_contract.address
             )
-            assert new_class == class_hashes["account_contract_fixture"]
+            assert new_class == target_class
+
+            # Reset the account class to the previous version
+            await invoke(
+                "kakarot",
+                "set_account_contract_class_hash",
+                prev_class,
+            )

@@ -138,11 +138,12 @@ of accounts. The upgrade process works as follows:
 
 ## Upgrading accounts with AA
 
-One proposal for seamless upgrades would be to check if an account's class hash
-matches the one defined in the Kakarot contract every time we execute a
-transaction. If not, we would call the `upgrade` entrypoint of the account
-contract to update its class, and then proceed with the transaction by executing
-a `library_call` to the new class with the transaction to execute. The class
+As end users engage with Kakarot using EOAs, we need to ensure that the upgrade
+process is seamless and does not require any action from the user. One way of
+achieving this is to check if an account's class hash matches the one defined in
+the Kakarot contract every time we execute a transaction. If not, we can replace
+the user's account contract class with a `replace_class` syscall, and execute a
+`library_call` to the new class with the transaction to execute. The class
 upgrade would only be effective at the end of the transaction, but since we
 would execute the transaction through a library call, the transaction sent would
 be executed in the context of the latest account version.
