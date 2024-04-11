@@ -58,7 +58,9 @@ class TestRLP:
             assert output[2] == expected_len
 
     class TestDecode:
-        @pytest.mark.parametrize("payload_len", [55, 56])
+        @pytest.mark.parametrize(
+            "payload_len", [32, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536]
+        )
         async def test_should_match_decode_reference_implementation(
             self, cairo_run, payload_len
         ):
