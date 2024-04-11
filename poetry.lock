@@ -430,12 +430,12 @@ files = [
 
 [[package]]
 name = "cairo-lang"
-version = "0.13.0"
+version = "0.13.1"
 description = "Compiler and runner for the Cairo language"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "cairo-lang-0.13.0.zip", hash = "sha256:2789a87d3528d6015ae361a8086360125af28abb39451dfbc8655549aebc3553"},
+    {file = "cairo-lang-0.13.1.zip", hash = "sha256:c7b5b732af1102af7da5a3e042632f92b49450ddfb08239945faf01c8c3a9da6"},
 ]
 
 [package.dependencies]
@@ -4348,4 +4348,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.11"
-content-hash = "4b961fb1a24b44b3ea35dd94e1f3b995e14a57843b3d24ff79794bb38ec01d36"
+content-hash = "8bfd99d0a7582b8778daac76c239724c556c3bb6b1d4c7c6a27862ef05153ef5"
