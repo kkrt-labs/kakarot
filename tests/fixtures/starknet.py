@@ -159,6 +159,7 @@ def cairo_run(request) -> list:
                 "ec_op",
                 "keccak",
                 "poseidon",
+                "range_check96",
             ]
             if builtin in {arg.replace("_ptr", "") for arg in implicit_args}
         ]
