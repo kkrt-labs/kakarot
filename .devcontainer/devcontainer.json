@@ -1,6 +1,6 @@
 {
   "name": "Python 3",
-  "image": "mcr.microsoft.com/vscode/devcontainers/python:0-3.9",
+  "image": "mcr.microsoft.com/vscode/devcontainers/python:0-3.10",
   // Configure tool-specific properties.
   "customizations": {
     // Configure properties specific to VS Code.
@@ -8,17 +8,10 @@
       // Set *default* container specific settings.json values on container create.
       "settings": {
         "python.defaultInterpreterPath": "/usr/local/bin/python",
-        "python.linting.enabled": true,
-        "python.linting.pylintEnabled": true,
         "python.formatting.autopep8Path": "/usr/local/py-utils/bin/autopep8",
         "python.formatting.blackPath": "/usr/local/py-utils/bin/black",
         "python.formatting.yapfPath": "/usr/local/py-utils/bin/yapf",
-        "python.linting.banditPath": "/usr/local/py-utils/bin/bandit",
-        "python.linting.flake8Path": "/usr/local/py-utils/bin/flake8",
-        "python.linting.mypyPath": "/usr/local/py-utils/bin/mypy",
-        "python.linting.pycodestylePath": "/usr/local/py-utils/bin/pycodestyle",
-        "python.linting.pydocstylePath": "/usr/local/py-utils/bin/pydocstyle",
-        "python.linting.pylintPath": "/usr/local/py-utils/bin/pylint",
+        "editor.defaultFormatter": "trunk.io",
         "cairols.sourceDir": "src",
         "cairols.cairoPath": ["src", "tests"]
       },
@@ -27,7 +20,8 @@
         "ms-python.python",
         "ms-python.vscode-pylance",
         "starkware.cairo",
-        "ericglau.cairo-ls"
+        "ericglau.cairo-ls",
+        "trunk.io"
       ]
     }
   },
