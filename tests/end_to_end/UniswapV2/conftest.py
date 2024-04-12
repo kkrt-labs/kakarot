@@ -4,10 +4,7 @@ TOTAL_SUPPLY = 10000 * 10**18
 
 
 @pytest_asyncio.fixture(scope="function")
-async def token_a(
-    deploy_solidity_contract,
-    owner,
-):
+async def token_a(deploy_solidity_contract, owner):
     return await deploy_solidity_contract(
         "UniswapV2",
         "ERC20",
@@ -17,10 +14,7 @@ async def token_a(
 
 
 @pytest_asyncio.fixture(scope="function")
-async def token_b(
-    deploy_solidity_contract,
-    owner,
-):
+async def token_b(deploy_solidity_contract, owner):
     return await deploy_solidity_contract(
         "UniswapV2",
         "ERC20",

@@ -26,6 +26,7 @@ from starkware.starknet.common.syscalls import (
 from starkware.cairo.common.memset import memset
 
 from kakarot.interfaces.interfaces import IERC20, IKakarot
+from kakarot.accounts.model import CallArray
 from kakarot.errors import Errors
 from kakarot.constants import Constants
 from utils.eth_transaction import EthTransaction
@@ -96,23 +97,6 @@ namespace AccountContract {
         return ();
     }
 
-    // @notice Upgrade the implementation of the account.
-    // @param new_class The new class of the account.
-    func upgrade{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(new_class: felt) {
-        alloc_locals;
-        // Access control check. Only the EOA owner should be able to upgrade its contract.
-        Internals.assert_only_self();
-        assert_not_zero(new_class);
-        replace_class(new_class);
-        Account_implementation.write(new_class);
-        return ();
-    }
-
     func get_implementation{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
         implementation: felt
     ) {
@@ -141,21 +125,6 @@ namespace AccountContract {
     }
 
     // EOA functions
-
-    struct Call {
-        to: felt,
-        selector: felt,
-        calldata_len: felt,
-        calldata: felt*,
-    }
-
-    // Struct introduced to pass `[Call]` to __execute__
-    struct CallArray {
-        to: felt,
-        selector: felt,
-        data_offset: felt,
-        data_len: felt,
-    }
 
     // @notice Validate the signature of every call in the call array.
     // @dev Recursively validates if tx is signed and valid for each call -> see utils/eth_transaction.cairo
@@ -435,6 +404,15 @@ namespace AccountContract {
         Ownable.assert_only_owner();
         Account_nonce.write(new_nonce);
         return ();
+    }
+
+    // @notice Return the latest available implementation of the account contract.
+    // @returns The latest account class hash registered in Kakarot
+    func get_latest_class{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        ) -> felt {
+        let (kakarot_address) = Ownable_owner.read();
+        let (latest_implementation) = IKakarot.get_account_contract_class_hash(kakarot_address);
+        return latest_implementation;
     }
 }
 

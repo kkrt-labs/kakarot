@@ -150,6 +150,7 @@ markers = [
   "SolmateERC721",
   "UniswapV2ERC20",
   "UniswapV2Factory",
+  "AccountContract",
   "Utils",
   "Safe",
   "EFTests",

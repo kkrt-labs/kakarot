@@ -3,13 +3,15 @@
 %lang starknet
 
 // Starkware dependencies
-from openzeppelin.access.ownable.library import Ownable
+from openzeppelin.access.ownable.library import Ownable, Ownable_owner
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin, SignatureBuiltin
 from starkware.cairo.common.uint256 import Uint256
 
 // Local dependencies
-from kakarot.accounts.library import AccountContract
-from starkware.starknet.common.syscalls import get_tx_info, get_caller_address
+from kakarot.accounts.library import AccountContract, Account_implementation
+from kakarot.accounts.model import CallArray
+from kakarot.interfaces.interfaces import IKakarot, IAccount
+from starkware.starknet.common.syscalls import get_tx_info, get_caller_address, replace_class
 from starkware.cairo.common.math import assert_le, unsigned_div_rem
 from starkware.cairo.common.alloc import alloc
 
@@ -32,15 +34,6 @@ func initialize{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(kakarot_address: felt, evm_address: felt, implementation_class: felt) {
     return AccountContract.initialize(kakarot_address, evm_address, implementation_class);
-}
-
-// @notice replaces the class of the account.
-// @param new_class The new class of the account.
-@external
-func upgrade{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(new_class: felt) {
-    return AccountContract.upgrade(new_class);
 }
 
 // @notice Returns the version of the account class.
@@ -83,12 +76,7 @@ func is_initialized{
 @external
 func __validate__{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, bitwise_ptr: BitwiseBuiltin*, range_check_ptr
-}(
-    call_array_len: felt,
-    call_array: AccountContract.CallArray*,
-    calldata_len: felt,
-    calldata: felt*,
-) {
+}(call_array_len: felt, call_array: CallArray*, calldata_len: felt, calldata: felt*) {
     AccountContract.validate(
         call_array_len=call_array_len,
         call_array=call_array,
@@ -126,12 +114,9 @@ func __execute__{
     ecdsa_ptr: SignatureBuiltin*,
     bitwise_ptr: BitwiseBuiltin*,
     range_check_ptr,
-}(
-    call_array_len: felt,
-    call_array: AccountContract.CallArray*,
-    calldata_len: felt,
-    calldata: felt*,
-) -> (response_len: felt, response: felt*) {
+}(call_array_len: felt, call_array: CallArray*, calldata_len: felt, calldata: felt*) -> (
+    response_len: felt, response: felt*
+) {
     alloc_locals;
     let (tx_info) = get_tx_info();
     let version = tx_info.version;
@@ -146,6 +131,22 @@ func __execute__{
 
     with_attr error_message("EOA: multicall not supported") {
         assert call_array_len = 1;
+    }
+
+    let latest_class = AccountContract.get_latest_class();
+    let (this_class) = Account_implementation.read();
+    if (latest_class != this_class) {
+        // Must be done before library_call, otherwise entering an infinite recursive loop.
+        Account_implementation.write(latest_class);
+        let (response_len, response) = IAccount.library_call___execute__(
+            class_hash=latest_class,
+            call_array_len=call_array_len,
+            call_array=call_array,
+            calldata_len=calldata_len,
+            calldata=calldata,
+        );
+        replace_class(latest_class);
+        return (response_len, response);
     }
 
     let (local response: felt*) = alloc();

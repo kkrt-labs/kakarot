@@ -225,6 +225,15 @@ namespace Kakarot {
         return (starknet_contract_address=starknet_contract_address);
     }
 
+    // @notice Set the account implementation class hash
+    // @param account_contract_class_hash The new account implementation class hash
+    func set_account_contract_class_hash{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    }(account_contract_class_hash: felt) {
+        Kakarot_account_contract_class_hash.write(account_contract_class_hash);
+        return ();
+    }
+
     // @notice Return the class hash of the account implementation
     // @return account_contract_class_hash The class hash of the account implementation
     func get_account_contract_class_hash{
@@ -232,6 +241,24 @@ namespace Kakarot {
     }() -> (account_contract_class_hash: felt) {
         let (account_contract_class_hash) = Kakarot_account_contract_class_hash.read();
         return (account_contract_class_hash,);
+    }
+
+    // @notice Return the hash of the Cairo1Helpers class
+    // @return account_contract_class_hash The hash of the Cairo1Helpers class
+    func get_cairo1_helpers_class_hash{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    }() -> (cairo1_helpers_class_hash: felt) {
+        let (cairo1_helpers_class_hash) = Kakarot_cairo1_helpers_class_hash.read();
+        return (cairo1_helpers_class_hash,);
+    }
+
+    // @notice Set the hash of the Cairo1Helpers class
+    // @param account_contract_class_hash The hash of the Cairo1Helpers class
+    func set_cairo1_helpers_class_hash{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    }(cairo1_helpers_class_hash: felt) {
+        Kakarot_cairo1_helpers_class_hash.write(cairo1_helpers_class_hash);
+        return ();
     }
 
     // @notice Register the calling Starknet address for the given EVM address
