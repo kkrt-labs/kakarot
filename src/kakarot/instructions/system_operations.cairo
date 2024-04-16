@@ -849,6 +849,28 @@ namespace SystemOperations {
         let offset = popped[1];
         let length = popped[2];
 
+        // Gas
+        // Calling `get_account` subsequently will make the account warm for the next interaction
+        let is_warm = State.is_account_warm(authority);
+        tempvar access_gas_cost = is_warm * Gas.WARM_ACCESS + (1 - is_warm) *
+            Gas.COLD_ACCOUNT_ACCESS;
+
+        // Charge memory access gas - will revert if offset.high | length.high != 0
+        let memory_expansion = Gas.memory_expansion_cost_saturated(
+            memory.words_len, offset, length
+        );
+        let evm = EVM.charge_gas(evm, memory_expansion.cost + access_gas_cost);
+        if (evm.reverted != FALSE) {
+            return evm;
+        }
+
+        // OPERATION
+        tempvar memory = new model.Memory(
+            word_dict_start=memory.word_dict_start,
+            word_dict=memory.word_dict,
+            words_len=memory_expansion.new_words_len,
+        );
+
         // authority not EOA
         let authority_account = State.get_account(authority);
         if (authority_account.code_len != 0) {
@@ -883,28 +905,6 @@ namespace SystemOperations {
                 reverted=evm.reverted,
             );
         }
-
-        // Gas
-        // Calling `get_account` subsequently will make the account warm for the next interaction
-        let is_warm = State.is_account_warm(authority);
-        tempvar access_gas_cost = is_warm * Gas.WARM_ACCESS + (1 - is_warm) *
-            Gas.COLD_ACCOUNT_ACCESS;
-
-        // Charge memory access gas - will revert if offset.high | length.high != 0
-        let memory_expansion = Gas.memory_expansion_cost_saturated(
-            memory.words_len, offset, length
-        );
-        let evm = EVM.charge_gas(evm, memory_expansion.cost + access_gas_cost);
-        if (evm.reverted != FALSE) {
-            return evm;
-        }
-
-        // OPERATION
-        tempvar memory = new model.Memory(
-            word_dict_start=memory.word_dict_start,
-            word_dict=memory.word_dict,
-            words_len=memory_expansion.new_words_len,
-        );
 
         let (mem_slice) = alloc();
         let mem_slice_len = length.low;
