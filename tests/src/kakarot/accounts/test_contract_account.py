@@ -23,6 +23,10 @@ class TestContractAccount:
         @SyscallHandler.patch("IKakarot.register_account", lambda addr, data: [])
         @SyscallHandler.patch("IKakarot.get_native_token", lambda addr, data: [0xDEAD])
         @SyscallHandler.patch("IERC20.approve", lambda addr, data: [1])
+        @SyscallHandler.patch(
+            "IKakarot.get_cairo1_helpers_class_hash",
+            lambda addr, data: [0xDEADBEEFABDE1],
+        )
         def test_should_set_storage_variables(self, cairo_run):
             cairo_run(
                 "test__initialize",
@@ -43,7 +47,10 @@ class TestContractAccount:
             SyscallHandler.mock_storage.assert_any_call(
                 address=get_storage_var_address("Account_implementation"), value=0xC1A55
             )
-
+            SyscallHandler.mock_storage.assert_any_call(
+                address=get_storage_var_address("Account_cairo1_helpers_class_hash"),
+                value=0xDEADBEEFABDE1,
+            )
             SyscallHandler.mock_event.assert_any_call(
                 keys=[get_selector_from_name("OwnershipTransferred")], data=[0, 0x1234]
             )
