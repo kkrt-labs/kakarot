@@ -118,6 +118,7 @@ namespace model {
     // @param code_address The EVM address the bytecode of the message is taken from.
     // @param read_only if set to true, context cannot do any state modifying instructions or send ETH in the sub context.
     // @param is_create if set to true, the call context is a CREATEs or deploy execution
+    // @param authorized If set, delegates control of the externally owned account (EOA) to a smart contract.
     // @param depth The depth of the current execution context.
     struct Message {
         bytecode: felt*,
@@ -133,6 +134,7 @@ namespace model {
         code_address: felt,
         read_only: felt,
         is_create: felt,
+        authorized: model.Option*,
         depth: felt,
         env: Environment*,
     }

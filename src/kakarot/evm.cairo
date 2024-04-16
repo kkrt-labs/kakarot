@@ -57,6 +57,7 @@ namespace EVM {
             code_address=evm.message.code_address,
             read_only=evm.message.read_only,
             is_create=evm.message.is_create,
+            authorized=evm.message.authorized,
             depth=evm.message.depth,
             env=evm.message.env,
         );
@@ -244,6 +245,7 @@ namespace EVM {
             code_address=self.message.code_address,
             read_only=self.message.read_only,
             is_create=self.message.is_create,
+            authorized=self.message.authorized,
             depth=self.message.depth,
             env=self.message.env,
         );

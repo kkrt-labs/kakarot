@@ -623,9 +623,9 @@ namespace Interpreter {
         jmp end;
         call SystemOperations.exec_create;  // 0xf5
         jmp end;
-        call unknown_opcode;  // 0xf6
+        call SystemOperations.exec_auth;  // 0xf6
         jmp end;
-        call unknown_opcode;  // 0xf7
+        call SystemOperations.exec_authcall;  // 0xf7
         jmp end;
         call unknown_opcode;  // 0xf8
         jmp end;
@@ -821,6 +821,7 @@ namespace Interpreter {
         let (valid_jumpdests_start, valid_jumpdests) = Account.get_jumpdests(
             bytecode_len=bytecode_len, bytecode=bytecode
         );
+        tempvar authorized = new model.Option(is_some=0, value=0);
         tempvar message = new model.Message(
             bytecode=bytecode,
             bytecode_len=bytecode_len,
@@ -835,6 +836,7 @@ namespace Interpreter {
             code_address=code_address,
             read_only=FALSE,
             is_create=is_deploy_tx,
+            authorized=authorized,
             depth=0,
             env=env,
         );

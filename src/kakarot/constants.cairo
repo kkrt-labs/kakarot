@@ -18,6 +18,9 @@ namespace Constants {
     const MAX_CODE_SIZE = 0x6000;
 
     const BURN_ADDRESS = 0xdead;
+
+    // AUTH MAGIC
+    const MAGIC = 0x04;
 }
 
 // See model.Opcode:
@@ -1503,18 +1506,18 @@ dw Gas.CREATE;
 dw 4;
 dw 4;
 dw -3;
-// INVALID
+// AUTH
 dw 0xf6;
 dw 0;
-dw 0;
-dw 0;
-dw 0;
-// INVALID
+dw 3;
+dw 3;
+dw -2;
+// AUTHCALL
 dw 0xf7;
 dw 0;
-dw 0;
-dw 0;
-dw 0;
+dw 7;
+dw 7;
+dw -6;
 // INVALID
 dw 0xf8;
 dw 0;

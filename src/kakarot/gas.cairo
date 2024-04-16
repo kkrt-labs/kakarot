@@ -31,6 +31,7 @@ namespace Gas {
     const ZERO = 0;
     const NEW_ACCOUNT = 25000;
     const CALL_VALUE = 9000;
+    const AUTHCALL_VALUE = 6700;
     const CALL_STIPEND = 2300;
     const SELF_DESTRUCT = 5000;
     const SELF_DESTRUCT_NEW_ACCOUNT = 25000;
@@ -53,6 +54,7 @@ namespace Gas {
     const TX_ACCESS_LIST_ADDRESS_COST = 2400;
     const TX_ACCESS_LIST_STORAGE_KEY_COST = 1900;
     const BLOBHASH = 3;
+    const AUTH = 3100;
 
     // @notice Compute the cost of the memory for a given words length.
     // @dev To avoid range_check overflow, we compute words_len / 512
