@@ -8,7 +8,11 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin, S
 from starkware.cairo.common.uint256 import Uint256
 
 // Local dependencies
-from kakarot.accounts.library import AccountContract, Account_implementation
+from kakarot.accounts.library import (
+    AccountContract,
+    Account_implementation,
+    Account_cairo1_helpers_class_hash,
+)
 from kakarot.accounts.model import CallArray
 from kakarot.interfaces.interfaces import IKakarot, IAccount
 from starkware.starknet.common.syscalls import get_tx_info, get_caller_address, replace_class
@@ -136,8 +140,27 @@ func __execute__{
     let latest_class = AccountContract.get_latest_class();
     let (this_class) = Account_implementation.read();
     if (latest_class != this_class) {
-        // Must be done before library_call, otherwise entering an infinite recursive loop.
+        // Update storage
         Account_implementation.write(latest_class);
+        let (kakarot_address) = Ownable_owner.read();
+        let (latest_cairo1helpers_class) = IKakarot.get_cairo1_helpers_class_hash(kakarot_address);
+        let (this_cairo1helpers_class) = Account_cairo1_helpers_class_hash.read();
+
+        if (latest_cairo1helpers_class != this_cairo1helpers_class) {
+            Account_cairo1_helpers_class_hash.write(latest_cairo1helpers_class);
+            tempvar syscall_ptr = syscall_ptr;
+            tempvar range_check_ptr = range_check_ptr;
+            tempvar pedersen_ptr = pedersen_ptr;
+        } else {
+            tempvar syscall_ptr = syscall_ptr;
+            tempvar range_check_ptr = range_check_ptr;
+            tempvar pedersen_ptr = pedersen_ptr;
+        }
+        let pedersen_ptr = cast([ap - 1], HashBuiltin*);
+        let range_check_ptr = [ap - 2];
+        let syscall_ptr = cast([ap - 3], felt*);
+
+        // Library call to new class
         let (response_len, response) = IAccount.library_call___execute__(
             class_hash=latest_class,
             call_array_len=call_array_len,

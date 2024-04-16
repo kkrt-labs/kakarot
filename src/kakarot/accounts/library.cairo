@@ -57,6 +57,10 @@ func Account_implementation() -> (address: felt) {
 func Account_evm_address() -> (evm_address: felt) {
 }
 
+@storage_var
+func Account_cairo1_helpers_class_hash() -> (res: felt) {
+}
+
 @event
 func transaction_executed(response_len: felt, response: felt*, success: felt, gas_used: felt) {
 }
@@ -91,6 +95,10 @@ namespace AccountContract {
         let (native_token_address) = IKakarot.get_native_token(kakarot_address);
         let infinite = Uint256(Constants.UINT128_MAX, Constants.UINT128_MAX);
         IERC20.approve(native_token_address, kakarot_address, infinite);
+
+        // Write Cairo1Helpers class to storage
+        let (cairo1_helpers_class_hash) = IKakarot.get_cairo1_helpers_class_hash(kakarot_address);
+        Account_cairo1_helpers_class_hash.write(cairo1_helpers_class_hash);
 
         // Register the account in the Kakarot mapping
         IKakarot.register_account(kakarot_address, evm_address);

@@ -121,6 +121,12 @@ namespace IKakarot {
     func get_account_contract_class_hash() -> (account_contract_class_hash: felt) {
     }
 
+    func set_cairo1_helpers_class_hash(cairo1_helpers_class_hash: felt) {
+    }
+
+    func get_cairo1_helpers_class_hash() -> (cairo1_helpers_class_hash: felt) {
+    }
+
     func register_account(evm_address: felt) {
     }
 
