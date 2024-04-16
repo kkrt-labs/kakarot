@@ -10,10 +10,8 @@ from starkware.cairo.common.uint256 import Uint256
 
 from kakarot.model import model
 from kakarot.constants import Constants
-from kakarot.interfaces.interfaces import IKakarot
 from utils.rlp import RLP
 from utils.utils import Helpers
-from utils.bytes import bytes_to_bytes8_little_endian
 
 // @title EthTransaction utils
 // @notice This file contains utils for decoding eth transactions

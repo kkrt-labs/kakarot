@@ -3,14 +3,36 @@ from textwrap import wrap
 from unittest.mock import call, patch
 
 import pytest
+from eth_account._utils.legacy_transactions import (
+    serializable_unsigned_transaction_from_dict,
+)
+from eth_account.account import Account
 from starkware.starknet.public.abi import (
     get_selector_from_name,
     get_storage_var_address,
 )
 
+from tests.utils.constants import CHAIN_ID, TRANSACTIONS
 from tests.utils.errors import cairo_error
+from tests.utils.helpers import (
+    generate_random_evm_address,
+    generate_random_private_key,
+    pack_into_u64_words,
+    rlp_encode_signed_data,
+)
 from tests.utils.syscall_handler import SyscallHandler
 from tests.utils.uint256 import int_to_uint256
+
+CHAIN_ID_OFFSET = 35
+V_OFFSET = 27
+
+
+def to_eth_y_parity(v_raw, chain_id=None):
+    if chain_id is None:
+        y_parity = v_raw - V_OFFSET
+    else:
+        y_parity = v_raw - (CHAIN_ID_OFFSET + 2 * chain_id)
+    return y_parity
 
 
 class TestContractAccount:
@@ -127,3 +149,146 @@ class TestContractAccount:
             calls = [call(address=address) for address in addresses]
             mock_storage.assert_has_calls(calls)
             assert output[:output_len] == list(bytecode)
+
+    class TestValidate:
+        @pytest.mark.parametrize("seed", (41, 42))
+        @pytest.mark.parametrize("transaction", TRANSACTIONS)
+        async def test_should_pass_all_transactions_types(
+            self, cairo_run, seed, transaction
+        ):
+            """
+            Note: the seeds 41 and 42 have been manually selected after observing that some private keys
+            were making the Counter deploy transaction failing because their signature parameters length (s and v)
+            were not 32 bytes.
+            """
+            random.seed(seed)
+            private_key = generate_random_private_key()
+            address = private_key.public_key.to_checksum_address()
+            signed = Account.sign_transaction(transaction, private_key)
+
+            unsigned_transaction = serializable_unsigned_transaction_from_dict(
+                transaction
+            )
+            transaction_hash = unsigned_transaction.hash()
+
+            encoded_unsigned_tx = rlp_encode_signed_data(transaction)
+            tx_data = list(encoded_unsigned_tx)
+
+            # break tx_data into len_full_words u64 words. The last word may be incomplete and the number of bytes used
+            # in it is stored in last_expected_word_bytes_used.
+
+            (
+                len_full_words,
+                full_words,
+                last_expected_word,
+                last_expected_word_bytes_used,
+            ) = pack_into_u64_words(tx_data)
+
+            msg_hash = list(int_to_uint256(int.from_bytes(transaction_hash, "big")))
+
+            with SyscallHandler.patch(
+                "ICairo1Helpers.library_call_keccak", lambda class_hash, data: msg_hash
+            ), SyscallHandler.patch(
+                "ICairo1Helpers.library_call_verify_eth_signature",
+                lambda class_hash, data: [],
+            ):
+                cairo_run(
+                    "test__validate",
+                    address=int(address, 16),
+                    nonce=transaction["nonce"],
+                    chain_id=transaction["chainId"],
+                    r=int_to_uint256(signed.r),
+                    s=int_to_uint256(signed.s),
+                    v=signed["v"],
+                    tx_data=tx_data,
+                )
+
+            SyscallHandler.mock_library_call.assert_any_call(
+                class_hash=0,
+                function_selector=get_selector_from_name("keccak"),
+                calldata=[
+                    len_full_words,
+                    *full_words,
+                    last_expected_word,
+                    last_expected_word_bytes_used,
+                ],
+            )
+
+            y_parity = (
+                to_eth_y_parity(signed["v"], chain_id=CHAIN_ID)
+                if transaction.get("type") is None
+                else signed["v"]
+            )
+            SyscallHandler.mock_library_call.assert_any_call(
+                class_hash=0,
+                function_selector=get_selector_from_name("verify_eth_signature"),
+                calldata=[
+                    *msg_hash,
+                    *list(int_to_uint256(signed.r)),
+                    *list(int_to_uint256(signed.s)),
+                    y_parity,
+                    int(address, 16),
+                ],
+            )
+
+        @pytest.mark.parametrize("transaction", TRANSACTIONS)
+        async def test_should_raise_with_wrong_chain_id(self, cairo_run, transaction):
+            private_key = generate_random_private_key()
+            address = private_key.public_key.to_checksum_address()
+            signed = Account.sign_transaction(transaction, private_key)
+
+            encoded_unsigned_tx = rlp_encode_signed_data(transaction)
+
+            with cairo_error():
+                cairo_run(
+                    "test__validate",
+                    address=int(address, 16),
+                    nonce=transaction["nonce"],
+                    chain_id=transaction["chainId"] + 1,
+                    r=int_to_uint256(signed.r),
+                    s=int_to_uint256(signed.s),
+                    v=signed["v"],
+                    tx_data=list(encoded_unsigned_tx),
+                )
+
+        @pytest.mark.parametrize("transaction", TRANSACTIONS)
+        async def test_should_raise_with_wrong_address(self, cairo_run, transaction):
+            private_key = generate_random_private_key()
+            address = int(generate_random_evm_address(), 16)
+            signed = Account.sign_transaction(transaction, private_key)
+
+            encoded_unsigned_tx = rlp_encode_signed_data(transaction)
+
+            assert address != int(private_key.public_key.to_address(), 16)
+            with cairo_error():
+                cairo_run(
+                    "test__validate",
+                    address=int(address, 16),
+                    nonce=transaction["nonce"],
+                    chain_id=transaction["chainId"],
+                    r=int_to_uint256(signed.r),
+                    s=int_to_uint256(signed.s),
+                    v=signed["v"],
+                    tx_data=list(encoded_unsigned_tx),
+                )
+
+        @pytest.mark.parametrize("transaction", TRANSACTIONS)
+        async def test_should_raise_with_wrong_nonce(self, cairo_run, transaction):
+            private_key = generate_random_private_key()
+            address = int(generate_random_evm_address(), 16)
+            signed = Account.sign_transaction(transaction, private_key)
+
+            encoded_unsigned_tx = rlp_encode_signed_data(transaction)
+
+            assert address != int(private_key.public_key.to_address(), 16)
+            with cairo_error():
+                cairo_run(
+                    "test__validate",
+                    address=int(address, 16),
+                    nonce=transaction["nonce"],
+                    chain_id=transaction["chainId"],
+                    r=int_to_uint256(signed.r),
+                    s=int_to_uint256(signed.s),
+                    v=signed["v"],
+                    tx_data=list(encoded_unsigned_tx),
+                )

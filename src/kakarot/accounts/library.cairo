@@ -31,6 +31,7 @@ from kakarot.errors import Errors
 from kakarot.constants import Constants
 from utils.eth_transaction import EthTransaction
 from utils.uint256 import uint256_add
+from utils.bytes import bytes_to_bytes8_little_endian
 
 // @dev: should always be zero for EOAs
 @storage_var
@@ -610,7 +611,12 @@ namespace Internals {
     // @param account_nonce The nonce of the account
     // @param tx_data_len The length of the raw transaction data
     // @param tx_data The raw transaction data
-    func validate{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(
+    func validate{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        bitwise_ptr: BitwiseBuiltin*,
+        range_check_ptr,
+    }(
         address: felt,
         account_nonce: felt,
         chain_id: felt,
@@ -621,13 +627,13 @@ namespace Internals {
         tx_data: felt*,
     ) {
         alloc_locals;
-        let tx = decode(tx_data_len, tx_data);
+        let tx = EthTransaction.decode(tx_data_len, tx_data);
         assert tx.signer_nonce = account_nonce;
         assert tx.chain_id = chain_id;
 
         // Note: here, the validate process assumes an ECDSA signature, and r, s, v field
         // Technically, the transaction type can determine the signature scheme.
-        let tx_type = get_tx_type(tx_data);
+        let tx_type = EthTransaction.get_tx_type(tx_data);
         local y_parity: felt;
         if (tx_type == 0) {
             assert y_parity = (v - 2 * chain_id - 35);
@@ -641,7 +647,7 @@ namespace Internals {
         );
 
         let (implementation) = Account_cairo1_helpers_class_hash.read();
-        let (message_hash) = ICairo1Helpers.library_call_keccak(
+        let (msg_hash) = ICairo1Helpers.library_call_keccak(
             class_hash=implementation,
             words_len=words_len,
             words=words,
@@ -651,10 +657,10 @@ namespace Internals {
 
         ICairo1Helpers.library_call_verify_eth_signature(
             class_hash=implementation,
-            message_hash=message_hash,
+            msg_hash=msg_hash,
             r=r,
             s=s,
-            v=y_parity,
+            y_parity=y_parity,
             eth_address=address,
         );
         return ();
