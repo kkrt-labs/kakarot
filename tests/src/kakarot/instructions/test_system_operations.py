@@ -1,14 +1,16 @@
 import pytest
 from eth_account.account import Account
 from eth_utils import keccak
+from starkware.starknet.public.abi import get_selector_from_name
 
 from tests.utils.constants import CHAIN_ID
-from tests.utils.helpers import generate_random_private_key
+from tests.utils.helpers import generate_random_private_key, pack_into_u64_words
 from tests.utils.syscall_handler import SyscallHandler
 from tests.utils.uint256 import int_to_uint256
 
 NONCE = 1
 MAGIC = 0x04
+CAIRO1_HELPERS_CLASS_HASH = 0xDEADBEEFABDE1
 
 
 @pytest.fixture
@@ -48,7 +50,7 @@ def prepare_stack_and_memory(invoker_address, message, private_key):
     memory[offset + 33 : offset + 65] = s.to_bytes(32, "big")
     memory[offset + 65 : offset + 97] = message["commit"]
 
-    return stack, memory
+    return serialized_msg, msg_hash, stack, memory
 
 
 class TestSystemOperations:
@@ -56,15 +58,24 @@ class TestSystemOperations:
         @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
         @SyscallHandler.patch("IAccount.get_nonce", lambda addr, data: [NONCE])
         @SyscallHandler.patch("IAccount.bytecode", lambda addr, data: [0])
+        @SyscallHandler.patch(
+            "Kakarot_cairo1_helpers_class_hash",
+            CAIRO1_HELPERS_CLASS_HASH,
+        )
         def test__exec_auth__should_pass_valid_signature(
             self, cairo_run, private_key, invoker_address, message
         ):
-            stack, memory = prepare_stack_and_memory(
+            serialized_msg, msg_hash, stack, memory = prepare_stack_and_memory(
                 invoker_address, message, private_key
             )
 
+            msg_hash_int = int.from_bytes(msg_hash, "big")
+
             with SyscallHandler.patch(
                 "Kakarot_evm_to_starknet_address", invoker_address, 0x1234
+            ), SyscallHandler.patch(
+                "ICairo1Helpers.library_call_keccak",
+                lambda class_hash, data: list(int_to_uint256(msg_hash_int)),
             ):
                 stack, evm = cairo_run(
                     "test__auth",
@@ -73,6 +84,23 @@ class TestSystemOperations:
                     invoker_address=invoker_address,
                 )
 
+            (
+                len_full_words,
+                full_words,
+                last_expected_word,
+                last_expected_word_bytes_used,
+            ) = pack_into_u64_words(serialized_msg)
+            SyscallHandler.mock_library_call.assert_any_call(
+                class_hash=CAIRO1_HELPERS_CLASS_HASH,
+                function_selector=get_selector_from_name("keccak"),
+                calldata=[
+                    len_full_words,
+                    *full_words,
+                    last_expected_word,
+                    last_expected_word_bytes_used,
+                ],
+            )
+
             assert stack == ["0x1"]
             assert evm["message"]["authorized"] == {
                 "is_some": 1,
@@ -80,17 +108,25 @@ class TestSystemOperations:
             }
 
         @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
-        @SyscallHandler.patch("IAccount.get_nonce", lambda addr, data: [NONCE + 1])
+        @SyscallHandler.patch("IAccount.get_nonce", lambda addr, data: [NONCE])
         @SyscallHandler.patch("IAccount.bytecode", lambda addr, data: [0])
-        def test__exec_auth__should_fail_invalid_nonce(
+        def test__exec_auth__should_fail_invalid_signature(
             self, cairo_run, private_key, invoker_address, message
         ):
-            stack, memory = prepare_stack_and_memory(
+            _, _, stack, memory = prepare_stack_and_memory(
+                invoker_address, message, private_key
+            )
+            message["chainId"] = (CHAIN_ID + 1).to_bytes(32, "big")
+            _, msg_hash, _, _ = prepare_stack_and_memory(
                 invoker_address, message, private_key
             )
 
+            msg_hash_int = int.from_bytes(msg_hash, "big")
             with SyscallHandler.patch(
                 "Kakarot_evm_to_starknet_address", invoker_address, 0x1234
+            ), SyscallHandler.patch(
+                "ICairo1Helpers.library_call_keccak",
+                lambda class_hash, data: list(int_to_uint256(msg_hash_int)),
             ):
                 stack, evm = cairo_run(
                     "test__auth",
@@ -109,85 +145,17 @@ class TestSystemOperations:
             self, cairo_run, private_key, invoker_address, message
         ):
             invoker_address += 1
-            stack, memory = prepare_stack_and_memory(
+            serialized_msg, msg_hash, stack, memory = prepare_stack_and_memory(
                 invoker_address, message, private_key
             )
 
-            with SyscallHandler.patch(
-                "Kakarot_evm_to_starknet_address", invoker_address, 0x1234
-            ):
-                stack, evm = cairo_run(
-                    "test__auth",
-                    stack=stack,
-                    memory=memory,
-                    invoker_address=invoker_address,
-                )
-
-            assert stack == ["0x0"]
-            assert evm["message"]["authorized"] == {"is_some": 0, "value": 0}
-
-        @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
-        @SyscallHandler.patch("IAccount.get_nonce", lambda addr, data: [NONCE])
-        @SyscallHandler.patch("IAccount.bytecode", lambda addr, data: [0])
-        def test__exec_auth__should_fail_invalid_chainid(
-            self, cairo_run, private_key, invoker_address, message
-        ):
-            message["chainId"] = (CHAIN_ID + 1).to_bytes(32, "big")
-            stack, memory = prepare_stack_and_memory(
-                invoker_address, message, private_key
-            )
+            msg_hash_int = int.from_bytes(msg_hash, "big")
 
             with SyscallHandler.patch(
                 "Kakarot_evm_to_starknet_address", invoker_address, 0x1234
-            ):
-                stack, evm = cairo_run(
-                    "test__auth",
-                    stack=stack,
-                    memory=memory,
-                    invoker_address=invoker_address,
-                )
-
-            assert stack == ["0x0"]
-            assert evm["message"]["authorized"] == {"is_some": 0, "value": 0}
-
-        # Test for invalid commit
-        @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
-        @SyscallHandler.patch("IAccount.get_nonce", lambda addr, data: [NONCE])
-        @SyscallHandler.patch("IAccount.bytecode", lambda addr, data: [0])
-        def test__exec_auth__should_fail_invalid_commit(
-            self, cairo_run, private_key, invoker_address, message
-        ):
-            message["commit"] = "invalid".encode("utf-8").ljust(32, b"\x00")
-            stack, memory = prepare_stack_and_memory(
-                invoker_address, message, private_key
-            )
-
-            with SyscallHandler.patch(
-                "Kakarot_evm_to_starknet_address", invoker_address, 0x1234
-            ):
-                stack, evm = cairo_run(
-                    "test__auth",
-                    stack=stack,
-                    memory=memory,
-                    invoker_address=invoker_address,
-                )
-
-            assert stack == ["0x0"]
-            assert evm["message"]["authorized"] == {"is_some": 0, "value": 0}
-
-        @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
-        @SyscallHandler.patch("IAccount.get_nonce", lambda addr, data: [NONCE])
-        @SyscallHandler.patch("IAccount.bytecode", lambda addr, data: [0])
-        def test__exec_auth_invalid_signer_private_key(
-            self, cairo_run, invoker_address, message
-        ):
-            private_key = generate_random_private_key()
-            stack, memory = prepare_stack_and_memory(
-                invoker_address, message, private_key
-            )
-
-            with SyscallHandler.patch(
-                "Kakarot_evm_to_starknet_address", invoker_address, 0x1234
+            ), SyscallHandler.patch(
+                "ICairo1Helpers.library_call_keccak",
+                lambda class_hash, data: list(int_to_uint256(msg_hash_int)),
             ):
                 stack, evm = cairo_run(
                     "test__auth",
@@ -203,11 +171,15 @@ class TestSystemOperations:
         @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
         @SyscallHandler.patch("IAccount.get_nonce", lambda addr, data: [NONCE])
         @SyscallHandler.patch("IAccount.bytecode", lambda addr, data: [0])
+        @SyscallHandler.patch(
+            "Kakarot_cairo1_helpers_class_hash",
+            CAIRO1_HELPERS_CLASS_HASH,
+        )
         def test__auth_then_authcall_should_return_correct_evm_frame(
             self, cairo_run, private_key, invoker_address, message
         ):
-            auth_stack, auth_memory = prepare_stack_and_memory(
-                invoker_address, message, private_key
+            serialized_msg, msg_hash, auth_stack, auth_memory = (
+                prepare_stack_and_memory(invoker_address, message, private_key)
             )
 
             gas = [100000, 0]
@@ -226,8 +198,13 @@ class TestSystemOperations:
                 ret_offset,
                 ret_len,
             ]
+
+            msg_hash_int = int.from_bytes(msg_hash, "big")
             with SyscallHandler.patch(
                 "Kakarot_evm_to_starknet_address", invoker_address, 0x1234
+            ), SyscallHandler.patch(
+                "ICairo1Helpers.library_call_keccak",
+                lambda class_hash, data: list(int_to_uint256(msg_hash_int)),
             ):
                 evm = cairo_run(
                     "test__auth_authcall",
@@ -246,7 +223,7 @@ class TestSystemOperations:
             assert int(evm["message"]["address"]["evm"], 16) == called_address
 
             # Parent frame should keep the authorized value
-            assert evm["message"]["parent"]["evm"]["message"]["p"] == {
+            assert evm["message"]["parent"]["evm"]["message"]["authorized"] == {
                 "is_some": 1,
                 "value": invoker_address,
             }

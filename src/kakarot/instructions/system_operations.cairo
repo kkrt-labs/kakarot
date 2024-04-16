@@ -33,6 +33,7 @@ from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.storages import Kakarot_cairo1_helpers_class_hash
 from kakarot.state import State
+from kakarot.precompiles.ec_recover import EcRecoverHelpers
 from utils.utils import Helpers
 from utils.array import slice
 from utils.bytes import (
@@ -937,19 +938,28 @@ namespace SystemOperations {
             message_bytes8, message_len, msg
         );
 
-        assert [message_bytes8 + message_bytes8_len] = last_word;
-        let message_bytes8_len = message_bytes8_len + 1;
+        let (implementation) = Kakarot_cairo1_helpers_class_hash.read();
+        let (msg_hash) = ICairo1Helpers.library_call_keccak(
+            class_hash=implementation,
+            words_len=message_bytes8_len,
+            words=message_bytes8,
+            last_input_word=last_word,
+            last_input_num_bytes=last_word_num_bytes,
+        );
 
         let (keccak_ptr: felt*) = alloc();
         let keccak_ptr_start = keccak_ptr;
         with keccak_ptr {
-            let (msg_hash) = cairo_keccak_bigend(inputs=message_bytes8, n_bytes=message_len);
             let (msg_hash_bigint: BigInt3) = uint256_to_bigint(msg_hash);
             let (r_bigint: BigInt3) = uint256_to_bigint(r);
             let (s_bigint: BigInt3) = uint256_to_bigint(s);
             let (public_key_point: EcPoint) = recover_public_key(
                 msg_hash=msg_hash_bigint, r=r_bigint, s=s_bigint, v=y_parity
             );
+            // TODO(optimization): recover address using cairo1 syscalls from EcRecoverHelpers
+            // let (calculated_eth_address) = EcRecoverHelpers.public_key_point_to_eth_address(
+            //     public_key_point=public_key_point
+            // );
             let (calculated_eth_address) = public_key_point_to_eth_address(
                 public_key_point=public_key_point
             );
