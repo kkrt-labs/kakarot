@@ -4,7 +4,6 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin, HashBuiltin
 from starkware.cairo.common.cairo_keccak.keccak import finalize_keccak, cairo_keccak_bigend
-from starkware.cairo.common.cairo_secp.signature import verify_eth_signature_uint256
 from starkware.cairo.common.math_cmp import is_not_zero, is_le
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256
@@ -197,63 +196,6 @@ namespace EthTransaction {
         ret;
         call decode_1559;
         ret;
-    }
-
-    // @notice Validate an Ethereum transaction
-    // @dev This function validates an Ethereum transaction by checking if the transaction
-    // is correctly signed by the given address, and if the nonce in the transaction
-    // matches the nonce of the account. It decodes the transaction using the decode function,
-    // and then verifies the Ethereum signature on the transaction hash.
-    // @param address The address that is supposed to have signed the transaction
-    // @param account_nonce The nonce of the account
-    // @param tx_data_len The length of the raw transaction data
-    // @param tx_data The raw transaction data
-    func validate{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(
-        address: felt,
-        account_nonce: felt,
-        chain_id: felt,
-        r: Uint256,
-        s: Uint256,
-        v: felt,
-        tx_data_len: felt,
-        tx_data: felt*,
-    ) {
-        alloc_locals;
-        let tx = decode(tx_data_len, tx_data);
-        assert tx.signer_nonce = account_nonce;
-        assert tx.chain_id = chain_id;
-
-        // Note: here, the validate process assumes an ECDSA signature, and r, s, v field
-        // Technically, the transaction type can determine the signature scheme.
-        let tx_type = get_tx_type(tx_data);
-        local y_parity: felt;
-        if (tx_type == 0) {
-            assert y_parity = (v - 2 * chain_id - 35);
-        } else {
-            assert y_parity = v;
-        }
-
-        let (local words: felt*) = alloc();
-        let (words_len, last_word, last_word_num_bytes) = bytes_to_bytes8_little_endian(
-            words, tx_data_len, tx_data
-        );
-        assert [words + words_len] = last_word;
-        let words_len = words_len + 1;
-
-        let (keccak_ptr: felt*) = alloc();
-        let keccak_ptr_start = keccak_ptr;
-        with keccak_ptr {
-            // From keccak/cairo_keccak_bigend doc:
-            // > To use this function, split the input into words of 64 bits (little endian).
-            // > Same as keccak, but outputs the hash in big endian representation.
-            // > Note that the input is still treated as little endian.
-            let (msg_hash) = cairo_keccak_bigend(inputs=words, n_bytes=tx_data_len);
-            verify_eth_signature_uint256(
-                msg_hash=msg_hash, r=r, s=s, v=y_parity, eth_address=address
-            );
-        }
-        finalize_keccak(keccak_ptr_start, keccak_ptr);
-        return ();
     }
 
     // @notice Recursively parses the RLP-decoded access list.

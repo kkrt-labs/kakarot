@@ -25,7 +25,7 @@ from starkware.starknet.common.syscalls import (
 )
 from starkware.cairo.common.memset import memset
 
-from kakarot.interfaces.interfaces import IERC20, IKakarot
+from kakarot.interfaces.interfaces import IERC20, IKakarot, ICairo1Helpers
 from kakarot.accounts.model import CallArray
 from kakarot.errors import Errors
 from kakarot.constants import Constants
@@ -167,7 +167,7 @@ namespace AccountContract {
         let v = tx_info.signature[4];
         let (_, chain_id) = unsigned_div_rem(tx_info.chain_id, 2 ** 32);
 
-        EthTransaction.validate(
+        Internals.validate(
             address,
             tx_info.nonce,
             chain_id,
@@ -599,5 +599,64 @@ namespace Internals {
         cond:
         jmp body if count != 0;
         jmp read;
+    }
+
+    // @notice Validate an Ethereum transaction
+    // @dev This function validates an Ethereum transaction by checking if the transaction
+    // is correctly signed by the given address, and if the nonce in the transaction
+    // matches the nonce of the account. It decodes the transaction using the decode function,
+    // and then verifies the Ethereum signature on the transaction hash.
+    // @param address The address that is supposed to have signed the transaction
+    // @param account_nonce The nonce of the account
+    // @param tx_data_len The length of the raw transaction data
+    // @param tx_data The raw transaction data
+    func validate{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(
+        address: felt,
+        account_nonce: felt,
+        chain_id: felt,
+        r: Uint256,
+        s: Uint256,
+        v: felt,
+        tx_data_len: felt,
+        tx_data: felt*,
+    ) {
+        alloc_locals;
+        let tx = decode(tx_data_len, tx_data);
+        assert tx.signer_nonce = account_nonce;
+        assert tx.chain_id = chain_id;
+
+        // Note: here, the validate process assumes an ECDSA signature, and r, s, v field
+        // Technically, the transaction type can determine the signature scheme.
+        let tx_type = get_tx_type(tx_data);
+        local y_parity: felt;
+        if (tx_type == 0) {
+            assert y_parity = (v - 2 * chain_id - 35);
+        } else {
+            assert y_parity = v;
+        }
+
+        let (local words: felt*) = alloc();
+        let (words_len, last_word, last_word_num_bytes) = bytes_to_bytes8_little_endian(
+            words, tx_data_len, tx_data
+        );
+
+        let (implementation) = Account_cairo1_helpers_class_hash.read();
+        let (message_hash) = ICairo1Helpers.library_call_keccak(
+            class_hash=implementation,
+            words_len=words_len,
+            words=words,
+            last_input_word=last_word,
+            last_input_num_bytes=last_word_num_bytes,
+        );
+
+        ICairo1Helpers.library_call_verify_eth_signature(
+            class_hash=implementation,
+            message_hash=message_hash,
+            r=r,
+            s=s,
+            v=y_parity,
+            eth_address=address,
+        );
+        return ();
     }
 }
