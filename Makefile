@@ -40,7 +40,6 @@ test: build-sol deploy
 test-unit: build-sol
 	poetry run pytest tests/src -m "not NoCI" -n logical
 
-test-end-to-end: export STARKNET_NETWORK := katana
 test-end-to-end: build-sol deploy
 	poetry run pytest tests/end_to_end
 
