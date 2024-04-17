@@ -946,24 +946,15 @@ namespace SystemOperations {
             last_input_num_bytes=last_word_num_bytes,
         );
 
-        let (keccak_ptr: felt*) = alloc();
-        let keccak_ptr_start = keccak_ptr;
-        with keccak_ptr {
-            let (msg_hash_bigint: BigInt3) = uint256_to_bigint(msg_hash);
-            let (r_bigint: BigInt3) = uint256_to_bigint(r);
-            let (s_bigint: BigInt3) = uint256_to_bigint(s);
-            let (public_key_point: EcPoint) = recover_public_key(
-                msg_hash=msg_hash_bigint, r=r_bigint, s=s_bigint, v=y_parity
-            );
-            // TODO(optimization): recover address using cairo1 syscalls from EcRecoverHelpers
-            // let (calculated_eth_address) = EcRecoverHelpers.public_key_point_to_eth_address(
-            //     public_key_point=public_key_point
-            // );
-            let (calculated_eth_address) = public_key_point_to_eth_address(
-                public_key_point=public_key_point
-            );
-        }
-        finalize_keccak(keccak_ptr_start, keccak_ptr);
+        let (msg_hash_bigint: BigInt3) = uint256_to_bigint(msg_hash);
+        let (r_bigint: BigInt3) = uint256_to_bigint(r);
+        let (s_bigint: BigInt3) = uint256_to_bigint(s);
+        let (public_key_point: EcPoint) = recover_public_key(
+            msg_hash=msg_hash_bigint, r=r_bigint, s=s_bigint, v=y_parity
+        );
+        let (calculated_eth_address) = EcRecoverHelpers.public_key_point_to_eth_address(
+            public_key_point=public_key_point
+        );
 
         if (calculated_eth_address != authority) {
             Stack.push_uint128(0);

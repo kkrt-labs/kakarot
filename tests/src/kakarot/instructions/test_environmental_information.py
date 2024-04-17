@@ -2,11 +2,8 @@ import random
 
 import pytest
 from Crypto.Hash import keccak
-from starkware.starknet.public.abi import get_selector_from_name
 
-from tests.utils.helpers import pack_into_u64_words
 from tests.utils.syscall_handler import SyscallHandler
-from tests.utils.uint256 import int_to_uint256
 
 EXISTING_ACCOUNT = 0xABDE1
 EXISTING_ACCOUNT_SN_ADDR = 0x1234
@@ -141,29 +138,10 @@ class TestEnvironmentalInformation:
         ):
             with SyscallHandler.patch(
                 "IAccount.bytecode", lambda sn_addr, data: [len(bytecode), *bytecode]
-            ), SyscallHandler.patch(
-                "ICairo1Helpers.library_call_keccak",
-                lambda class_hash, data: int_to_uint256(bytecode_hash),
             ):
                 output = cairo_run("test__exec_extcodehash", address=address)
 
             if address == EXISTING_ACCOUNT:
-                (
-                    len_full_words,
-                    full_words,
-                    last_expected_word,
-                    last_expected_word_bytes_used,
-                ) = pack_into_u64_words(bytecode)
-                SyscallHandler.mock_library_call.assert_any_call(
-                    class_hash=CAIRO1_HELPERS_CLASS_HASH,
-                    function_selector=get_selector_from_name("keccak"),
-                    calldata=[
-                        len_full_words,
-                        *full_words,
-                        last_expected_word,
-                        last_expected_word_bytes_used,
-                    ],
-                )
                 assert output == hex(bytecode_hash)
             else:
                 assert output == "0x0"

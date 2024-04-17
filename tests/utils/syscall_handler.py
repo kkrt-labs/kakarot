@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import Optional, Union
 from unittest import mock
 
+from eth_utils import keccak
 from starkware.starknet.public.abi import (
     get_selector_from_name,
     get_storage_var_address,
@@ -99,6 +100,22 @@ class SyscallHandler:
     mock_storage = mock.MagicMock()
     mock_event = mock.MagicMock()
     mock_replace_class = mock.MagicMock()
+
+    # Patch the keccak library call to return the keccak of the input data.
+    # We need to reconstruct the raw bytes from the Cairo-style keccak calldata.
+    patches[get_selector_from_name("keccak")] = lambda class_hash, calldata: list(
+        int_to_uint256(
+            int.from_bytes(
+                keccak(
+                    b"".join(
+                        [num.to_bytes(8, "little") for num in calldata[1:-2]]
+                        + [calldata[-2].to_bytes(calldata[-1], "big")]
+                    )
+                ),
+                "big",
+            )
+        )
+    )
 
     def get_contract_address(self, segments, syscall_ptr):
         """
