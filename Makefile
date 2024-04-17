@@ -64,8 +64,15 @@ build-sol:
 	git submodule update --init --recursive
 	forge build --names --force
 
+build-vyper:
+	poetry run python vyper_contracts/scripts/compile.py
+
+install-vyper:
+	pip3 install git+https://github.com/charles-cooper/vyper@feat/eip-3074
+	vyper --version
+
 install-katana:
 	cargo install --git https://github.com/dojoengine/dojo --locked --tag v0.6.1-alpha.1 katana
 
 run-katana:
-	katana --chain-id test --validate-max-steps 16777216 --invoke-max-steps 16777216 --eth-gas-price 0 --strk-gas-price 0 --disable-fee
+	katana --chain-id test --validate-max-steps 16777216 --invoke-max-steps 16777216 --gas-price 0 --disable-fee
