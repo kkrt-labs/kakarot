@@ -137,13 +137,12 @@ func __execute__{
         assert call_array_len = 1;
     }
 
-    let latest_class = AccountContract.get_latest_class();
+    let (latest_account_class, latest_cairo1helpers_class) = AccountContract.get_latest_classes();
     let (this_class) = Account_implementation.read();
-    if (latest_class != this_class) {
+    if (latest_account_class != this_class) {
         // Update storage
-        Account_implementation.write(latest_class);
+        Account_implementation.write(latest_account_class);
         let (kakarot_address) = Ownable_owner.read();
-        let (latest_cairo1helpers_class) = IKakarot.get_cairo1_helpers_class_hash(kakarot_address);
         let (this_cairo1helpers_class) = Account_cairo1_helpers_class_hash.read();
 
         if (latest_cairo1helpers_class != this_cairo1helpers_class) {
@@ -156,19 +155,19 @@ func __execute__{
             tempvar range_check_ptr = range_check_ptr;
             tempvar pedersen_ptr = pedersen_ptr;
         }
-        let pedersen_ptr = cast([ap - 1], HashBuiltin*);
-        let range_check_ptr = [ap - 2];
         let syscall_ptr = cast([ap - 3], felt*);
+        let range_check_ptr = [ap - 2];
+        let pedersen_ptr = cast([ap - 1], HashBuiltin*);
 
         // Library call to new class
         let (response_len, response) = IAccount.library_call___execute__(
-            class_hash=latest_class,
+            class_hash=latest_account_class,
             call_array_len=call_array_len,
             call_array=call_array,
             calldata_len=calldata_len,
             calldata=calldata,
         );
-        replace_class(latest_class);
+        replace_class(latest_account_class);
         return (response_len, response);
     }
 

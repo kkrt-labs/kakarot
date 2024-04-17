@@ -173,6 +173,8 @@ namespace ICairo1Helpers {
     ) -> (hash: Uint256) {
     }
 
-    func verify_eth_signature(msg_hash: Uint256, r:felt, s:felt, y_parity:felt, eth_address: felt) {
+    func verify_eth_signature(
+        msg_hash: Uint256, r: felt, s: felt, y_parity: felt, eth_address: felt
+    ) {
     }
 }

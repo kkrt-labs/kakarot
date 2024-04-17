@@ -18,16 +18,15 @@ async def class_hashes():
 
 
 @pytest_asyncio.fixture(scope="function")
-async def erc20_token(deploy_solidity_contract, new_account):
+async def counter(deploy_solidity_contract, new_account):
     return await deploy_solidity_contract(
-        "UniswapV2",
-        "ERC20",
-        TOTAL_SUPPLY,
+        "PlainOpcodes",
+        "Counter",
         caller_eoa=new_account.starknet_contract,
     )
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(autouse=True)
 async def cleanup(invoke, class_hashes):
     yield
     await invoke(
@@ -40,24 +39,13 @@ async def cleanup(invoke, class_hashes):
     )
 
 
-async def assert_transfer_success(erc20_token, new_account, other):
-    receipt = (
-        await erc20_token.transfer(
-            other.address, TEST_AMOUNT, caller_eoa=new_account.starknet_contract
-        )
-    )["receipt"]
-    events = erc20_token.events.parse_starknet_events(receipt.events)
-    assert events["Transfer"] == [
-        {
-            "from": new_account.address,
-            "to": other.address,
-            "value": TEST_AMOUNT,
-        }
-    ]
-    assert (
-        await erc20_token.balanceOf(new_account.address) == TOTAL_SUPPLY - TEST_AMOUNT
-    )
-    assert await erc20_token.balanceOf(other.address) == TEST_AMOUNT
+async def assert_counter_transaction_success(counter, new_account, other):
+    """
+    Assert that the transaction sent, other than upgrading the account contract, is successful.
+    """
+    assert await counter.count() == 0
+    await counter.inc(caller_eoa=new_account.starknet_contract)
+    assert await counter.count() == 1
 
 
 @pytest.mark.asyncio(scope="session")
@@ -68,11 +56,10 @@ class TestAccount:
             self,
             starknet: FullNodeClient,
             invoke,
-            erc20_token,
+            counter,
             new_account,
             other,
             class_hashes,
-            cleanup,
         ):
             prev_class = await starknet.get_class_hash_at(
                 new_account.starknet_contract.address
@@ -87,7 +74,7 @@ class TestAccount:
                 target_class,
             )
 
-            await assert_transfer_success(erc20_token, new_account, other)
+            await assert_counter_transaction_success(counter, new_account, other)
 
             new_class = await starknet.get_class_hash_at(
                 new_account.starknet_contract.address
@@ -98,11 +85,10 @@ class TestAccount:
             self,
             starknet: FullNodeClient,
             invoke,
-            erc20_token,
+            counter,
             new_account,
             other,
             class_hashes,
-            cleanup,
         ):
             prev_cairo1_helpers_class = await starknet.get_storage_at(
                 new_account.starknet_contract.address,
@@ -119,7 +105,7 @@ class TestAccount:
             )
             await invoke("kakarot", "set_cairo1_helpers_class_hash", target_class)
 
-            await assert_transfer_success(erc20_token, new_account, other)
+            await assert_counter_transaction_success(counter, new_account, other)
 
             new_cairo1_helpers_class = await starknet.get_storage_at(
                 new_account.starknet_contract.address,

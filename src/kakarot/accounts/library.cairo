@@ -416,11 +416,13 @@ namespace AccountContract {
 
     // @notice Return the latest available implementation of the account contract.
     // @returns The latest account class hash registered in Kakarot
-    func get_latest_class{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ) -> felt {
+    func get_latest_classes{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+        account_class: felt, cairo1_helpers_class: felt
+    ) {
         let (kakarot_address) = Ownable_owner.read();
-        let (latest_implementation) = IKakarot.get_account_contract_class_hash(kakarot_address);
-        return latest_implementation;
+        let (latest_account_class) = IKakarot.get_account_contract_class_hash(kakarot_address);
+        let (latest_cairo1_helpers_class) = IKakarot.get_cairo1_helpers_class_hash(kakarot_address);
+        return (latest_account_class, latest_cairo1_helpers_class);
     }
 }
 
