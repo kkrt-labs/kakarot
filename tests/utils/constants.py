@@ -8,7 +8,6 @@ BLOCK_GAS_LIMIT = BLOCK_GAS_LIMIT
 CHAIN_ID = int.from_bytes(b"KKRT", "big")  # KKRT (0x4b4b5254) in ASCII
 BIG_CHAIN_ID = int.from_bytes(b"SN_SEPOLIA", "big")
 
-MAGIC = 0x04
 
 # Amount of funds to pre-fund the account with
 PRE_FUND_AMOUNT = int(1e17)  # 0.01 ETH

@@ -37,20 +37,22 @@ def message(invoker_address):
 def prepare_stack_and_memory(invoker_address, message, private_key):
     serialized_msg = b"".join(message.values())
     msg_hash = keccak(serialized_msg)
-    (messageHash, r, s, v, signature) = Account.signHash(msg_hash, private_key)
-    yParity = v - 27
+    (_, r, s, v, signature) = Account.signHash(msg_hash, private_key)
+    y_parity = v - 27
 
-    addr_low, addr_high = int_to_uint256(invoker_address)
-    stack = [[addr_low, addr_high], [0, 0], [97, 0]]  # len, offset, invoker_address
+    stack = [
+        int_to_uint256(value)
+        for value in [invoker_address, 0, 65 + len(message["commit"])]
+    ]  # invoker_address, offset, len
 
-    offset = 0
-    memory = []
-    memory[offset : offset + 1] = [yParity]
-    memory[offset + 1 : offset + 33] = r.to_bytes(32, "big")
-    memory[offset + 33 : offset + 65] = s.to_bytes(32, "big")
-    memory[offset + 65 : offset + 97] = message["commit"]
+    memory = [
+        y_parity,
+        *r.to_bytes(32, "big"),
+        *s.to_bytes(32, "big"),
+        *message["commit"],
+    ]
 
-    return serialized_msg, msg_hash, stack, memory
+    return serialized_msg, int.from_bytes(msg_hash, "big"), stack, memory
 
 
 class TestSystemOperations:
@@ -62,20 +64,18 @@ class TestSystemOperations:
             "Kakarot_cairo1_helpers_class_hash",
             CAIRO1_HELPERS_CLASS_HASH,
         )
-        def test__exec_auth__should_pass_valid_signature(
+        def test__should_pass_valid_signature(
             self, cairo_run, private_key, invoker_address, message
         ):
             serialized_msg, msg_hash, stack, memory = prepare_stack_and_memory(
                 invoker_address, message, private_key
             )
 
-            msg_hash_int = int.from_bytes(msg_hash, "big")
-
             with SyscallHandler.patch(
                 "Kakarot_evm_to_starknet_address", invoker_address, 0x1234
             ), SyscallHandler.patch(
                 "ICairo1Helpers.library_call_keccak",
-                lambda class_hash, data: list(int_to_uint256(msg_hash_int)),
+                lambda class_hash, data: list(int_to_uint256(msg_hash)),
             ):
                 stack, evm = cairo_run(
                     "test__auth",
@@ -110,7 +110,7 @@ class TestSystemOperations:
         @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
         @SyscallHandler.patch("IAccount.get_nonce", lambda addr, data: [NONCE])
         @SyscallHandler.patch("IAccount.bytecode", lambda addr, data: [0])
-        def test__exec_auth__should_fail_invalid_signature(
+        def test____should_fail_invalid_signature(
             self, cairo_run, private_key, invoker_address, message
         ):
             _, _, stack, memory = prepare_stack_and_memory(
@@ -121,12 +121,11 @@ class TestSystemOperations:
                 invoker_address, message, private_key
             )
 
-            msg_hash_int = int.from_bytes(msg_hash, "big")
             with SyscallHandler.patch(
                 "Kakarot_evm_to_starknet_address", invoker_address, 0x1234
             ), SyscallHandler.patch(
                 "ICairo1Helpers.library_call_keccak",
-                lambda class_hash, data: list(int_to_uint256(msg_hash_int)),
+                lambda class_hash, data: list(int_to_uint256(msg_hash)),
             ):
                 stack, evm = cairo_run(
                     "test__auth",
@@ -141,7 +140,7 @@ class TestSystemOperations:
         @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
         @SyscallHandler.patch("IAccount.get_nonce", lambda addr, data: [NONCE])
         @SyscallHandler.patch("IAccount.bytecode", lambda addr, data: [0])
-        def test__exec_auth__should_fail_invalid_invoker(
+        def test____should_fail_invalid_invoker(
             self, cairo_run, private_key, invoker_address, message
         ):
             invoker_address += 1
@@ -149,13 +148,11 @@ class TestSystemOperations:
                 invoker_address, message, private_key
             )
 
-            msg_hash_int = int.from_bytes(msg_hash, "big")
-
             with SyscallHandler.patch(
                 "Kakarot_evm_to_starknet_address", invoker_address, 0x1234
             ), SyscallHandler.patch(
                 "ICairo1Helpers.library_call_keccak",
-                lambda class_hash, data: list(int_to_uint256(msg_hash_int)),
+                lambda class_hash, data: list(int_to_uint256(msg_hash)),
             ):
                 stack, evm = cairo_run(
                     "test__auth",
@@ -182,29 +179,31 @@ class TestSystemOperations:
                 prepare_stack_and_memory(invoker_address, message, private_key)
             )
 
-            gas = [100000, 0]
+            gas = 100000
             called_address = 0xC411
-            value = [100, 0]
-            args_offset = [0, 0]
-            args_len = [0, 0]
-            ret_offset = [0, 0]
-            ret_len = [0, 0]
+            value = 100
+            args_offset = 0
+            args_len = 0
+            ret_offset = 0
+            ret_len = 0
             authcall_stack = [
-                gas,
-                list(int_to_uint256(called_address)),
-                value,
-                args_offset,
-                args_len,
-                ret_offset,
-                ret_len,
+                int_to_uint256(value)
+                for value in [
+                    gas,
+                    called_address,
+                    value,
+                    args_offset,
+                    args_len,
+                    ret_offset,
+                    ret_len,
+                ]
             ]
 
-            msg_hash_int = int.from_bytes(msg_hash, "big")
             with SyscallHandler.patch(
                 "Kakarot_evm_to_starknet_address", invoker_address, 0x1234
             ), SyscallHandler.patch(
                 "ICairo1Helpers.library_call_keccak",
-                lambda class_hash, data: list(int_to_uint256(msg_hash_int)),
+                lambda class_hash, data: list(int_to_uint256(msg_hash)),
             ):
                 evm = cairo_run(
                     "test__auth_authcall",

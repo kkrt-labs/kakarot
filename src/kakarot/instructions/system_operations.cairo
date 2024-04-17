@@ -919,7 +919,6 @@ namespace SystemOperations {
 
         // The first 65 bytes hold the Signature {y_parity, r, s}
         let y_parity = mem_slice[0];
-
         let r = Helpers.bytes32_to_uint256(mem_slice + 1);
         let s = Helpers.bytes32_to_uint256(mem_slice + 33);
 
@@ -1074,7 +1073,7 @@ namespace SystemOperations {
             return evm;
         }
 
-        let is_authorized_unset = Helpers.is_zero(evm.message.authorized.is_some);
+        let is_authorized_unset = 1 - evm.message.authorized.is_some;
         let sender = State.get_account(call_sender);
         let (sender_balance_lt_value) = uint256_lt([sender.balance], [value]);
         tempvar is_max_depth_reached = Helpers.is_zero(
