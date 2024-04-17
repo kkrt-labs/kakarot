@@ -39,7 +39,7 @@ async def cleanup(invoke, class_hashes):
     )
 
 
-async def assert_counter_transaction_success(counter, new_account, other):
+async def assert_counter_transaction_success(counter, new_account):
     """
     Assert that the transaction sent, other than upgrading the account contract, is successful.
     """
@@ -58,7 +58,6 @@ class TestAccount:
             invoke,
             counter,
             new_account,
-            other,
             class_hashes,
         ):
             prev_class = await starknet.get_class_hash_at(
@@ -74,7 +73,7 @@ class TestAccount:
                 target_class,
             )
 
-            await assert_counter_transaction_success(counter, new_account, other)
+            await assert_counter_transaction_success(counter, new_account)
 
             new_class = await starknet.get_class_hash_at(
                 new_account.starknet_contract.address
@@ -87,7 +86,6 @@ class TestAccount:
             invoke,
             counter,
             new_account,
-            other,
             class_hashes,
         ):
             prev_cairo1_helpers_class = await starknet.get_storage_at(
@@ -105,7 +103,7 @@ class TestAccount:
             )
             await invoke("kakarot", "set_cairo1_helpers_class_hash", target_class)
 
-            await assert_counter_transaction_success(counter, new_account, other)
+            await assert_counter_transaction_success(counter, new_account)
 
             new_cairo1_helpers_class = await starknet.get_storage_at(
                 new_account.starknet_contract.address,
