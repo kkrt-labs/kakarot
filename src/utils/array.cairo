@@ -110,3 +110,8 @@ func contains{range_check_ptr}(arr_len: felt, arr: felt*, value: felt) -> felt {
     }
     return FALSE;
 }
+
+func pad_end(arr: felt*, value: felt, n: felt) {
+    memset(arr, value, n);
+    return ();
+}

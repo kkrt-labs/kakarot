@@ -75,6 +75,10 @@ async def assert_counter_transaction_success(counter, new_account):
 @pytest.mark.asyncio(scope="session")
 @pytest.mark.AccountContract
 class TestAccount:
+    class TestCounter:
+        async def test_inc_counter(self, counter, new_account):
+            await counter.inc(caller_eoa=new_account.starknet_contract)
+
     class TestAutoUpgradeOnTransaction:
         async def test_should_upgrade_outdated_account_on_transfer(
             self,

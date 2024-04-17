@@ -105,12 +105,14 @@ namespace TestHelpers {
     }
 
     func init_memory_with_values{range_check_ptr}(
-        memory_len: felt, memory: felt*
+        memory__len: felt, memory_: felt*
     ) -> model.Memory* {
         alloc_locals;
-        let memory_ = Memory.init();
-        Memory.store_n{memory=memory_}(memory_len, memory, 0);
-        return memory_;
+        let memory = Memory.init();
+        with memory {
+            Memory.store_n(memory__len, memory_, 0);
+        }
+        return memory;
     }
 
     func assert_array_equal(array_0_len: felt, array_0: felt*, array_1_len: felt, array_1: felt*) {
