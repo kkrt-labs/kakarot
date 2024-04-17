@@ -3,7 +3,6 @@ from collections import namedtuple
 import pytest
 import pytest_asyncio
 from starknet_py.net.full_node_client import FullNodeClient
-from starkware.starknet.public.abi import get_storage_var_address
 
 Wallet = namedtuple("Wallet", ["address", "private_key", "starknet_contract"])
 
