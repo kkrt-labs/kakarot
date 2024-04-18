@@ -4,7 +4,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.alloc import alloc
 
-from utils.array import reverse, count_not_zero, slice, contains
+from utils.array import reverse, count_not_zero, slice, contains, pad_end
 
 func test__reverse(output_ptr: felt*) {
     alloc_locals;
@@ -63,4 +63,19 @@ func test_contains{range_check_ptr}(output_ptr: felt*) {
     let result = contains(arr_len, arr, value);
     assert [output_ptr] = result;
     return ();
+}
+
+func test_pad_end{range_check_ptr}() -> (arr: felt*) {
+    alloc_locals;
+    tempvar arr_len: felt;
+    let (local arr) = alloc();
+    tempvar size: felt;
+    %{
+        ids.arr_len = len(program_input["arr"])
+        segments.write_arg(ids.arr, program_input["arr"])
+        ids.size = program_input["size"]
+    %}
+
+    pad_end(arr_len, arr, size);
+    return (arr=arr);
 }

@@ -105,12 +105,12 @@ namespace TestHelpers {
     }
 
     func init_memory_with_values{range_check_ptr}(
-        memory__len: felt, memory_: felt*
+        serialized_memory_len: felt, serialized_memory: felt*
     ) -> model.Memory* {
         alloc_locals;
         let memory = Memory.init();
         with memory {
-            Memory.store_n(memory__len, memory_, 0);
+            Memory.store_n(serialized_memory_len, serialized_memory, 0);
         }
         return memory;
     }

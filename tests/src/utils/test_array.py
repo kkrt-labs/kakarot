@@ -56,3 +56,19 @@ class TestArray:
         async def test_should_return_if_contains(self, cairo_run, arr, value, expected):
             output = cairo_run("test_contains", arr=arr, value=value)
             assert expected == output[0]
+
+    class TestPadEnd:
+        @pytest.mark.parametrize(
+            "arr, size, expected",
+            [
+                ([0, 1, 2, 3, 4], 7, [0, 1, 2, 3, 4, 0, 0]),
+                ([0, 1, 2, 3], 5, [0, 1, 2, 3, 0]),
+                ([0], 1, [0]),
+                ([], 1, [0]),
+                ([0, 1, 2, 3], 4, [0, 1, 2, 3]),
+                ([0, 1, 2, 3], 1, [0, 1, 2, 3]),
+            ],
+        )
+        async def test_should_pad_end(self, cairo_run, arr, size, expected):
+            [output] = cairo_run("test_pad_end", arr=arr, size=size)
+            assert expected == output

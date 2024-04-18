@@ -111,7 +111,13 @@ func contains{range_check_ptr}(arr_len: felt, arr: felt*, value: felt) -> felt {
     return FALSE;
 }
 
-func pad_end(arr: felt*, value: felt, n: felt) {
-    memset(arr, value, n);
+func pad_end{range_check_ptr}(arr_len, arr: felt*, size: felt) {
+    alloc_locals;
+    let size_to_fill = size - arr_len;
+    let is_within_bound = is_nn(size_to_fill);
+    if (is_within_bound == FALSE) {
+        return ();
+    }
+    memset(arr + arr_len, 0, size_to_fill);
     return ();
 }

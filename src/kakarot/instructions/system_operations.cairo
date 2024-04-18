@@ -35,7 +35,7 @@ from kakarot.storages import Kakarot_cairo1_helpers_class_hash
 from kakarot.state import State
 from kakarot.precompiles.ec_recover import EcRecoverHelpers
 from utils.utils import Helpers
-from utils.array import slice
+from utils.array import slice, pad_end
 from utils.bytes import (
     bytes_to_bytes8_little_endian,
     felt_to_bytes,
@@ -910,12 +910,8 @@ namespace SystemOperations {
         let mem_slice_len = length.low;
         Memory.load_n(mem_slice_len, mem_slice, offset.low);
 
-        // In the event length < 97, pad the memory slice with zeros
-        let is_length_lt_97 = is_le(mem_slice_len, 96);
-        if (is_length_lt_97 != FALSE) {
-            let padding = 97 - mem_slice_len;
-            memset(mem_slice + mem_slice_len, 0, padding);
-        }
+        // Pad the memory slice with zeros to a size of 97
+        pad_end(mem_slice_len, mem_slice, 97);
 
         // The first 65 bytes hold the Signature {y_parity, r, s}
         let y_parity = mem_slice[0];
