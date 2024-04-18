@@ -94,6 +94,15 @@ if os.getenv("STARKNET_NETWORK") is not None:
         raise ValueError(
             f"STARKNET_NETWORK {os.environ['STARKNET_NETWORK']} given in env variable unknown"
         )
+elif os.getenv("RPC_URL") is not None:
+    NETWORK = {
+        "name": os.getenv("RPC_NAME", "custom-rpc"),
+        "rpc_url": os.getenv("RPC_URL"),
+        "explorer_url": "",
+        "devnet": False,
+        "check_interval": float(os.getenv("CHECK_INTERVAL", 0.1)),
+        "max_wait": float(os.getenv("MAX_WAIT", 30)),
+    }
 else:
     NETWORK = NETWORKS["katana"]
 
