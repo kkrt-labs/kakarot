@@ -1,7 +1,11 @@
+from collections import namedtuple
+
 import pytest
 import pytest_asyncio
 from starknet_py.net.full_node_client import FullNodeClient
 from starkware.starknet.public.abi import get_storage_var_address
+
+Wallet = namedtuple("Wallet", ["address", "private_key", "starknet_contract"])
 
 TOTAL_SUPPLY = 10000 * 10**18
 TEST_AMOUNT = 10 * 10**18
@@ -15,6 +19,26 @@ async def class_hashes():
     from kakarot_scripts.utils.starknet import get_declarations
 
     return get_declarations()
+
+
+@pytest_asyncio.fixture(scope="module")
+async def new_account(max_fee):
+    """
+    Return a random funded new account.
+    """
+    from kakarot_scripts.utils.kakarot import get_eoa
+    from kakarot_scripts.utils.starknet import fund_address
+    from tests.utils.helpers import generate_random_private_key
+
+    private_key = generate_random_private_key()
+    account = Wallet(
+        address=private_key.public_key.to_checksum_address(),
+        private_key=private_key,
+        # deploying an account with enough ETH to pass ~10 tx
+        starknet_contract=await get_eoa(private_key, amount=100 * max_fee / 1e18),
+    )
+    await fund_address(account.starknet_contract.address, 10)
+    return account
 
 
 @pytest_asyncio.fixture(scope="module")
