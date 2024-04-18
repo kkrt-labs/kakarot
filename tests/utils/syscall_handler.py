@@ -4,23 +4,23 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import Optional, Union
 from unittest import mock
-from ethereum.crypto.elliptic_curve import SECP256K1N, secp256k1_recover
-from ethereum.base_types import U256
-from ethereum.crypto.hash import Hash32, keccak256
 
 from eth_utils import keccak
+from ethereum.base_types import U256
+from ethereum.crypto.elliptic_curve import secp256k1_recover
+from ethereum.crypto.hash import keccak256
 from starkware.starknet.public.abi import (
     get_selector_from_name,
     get_storage_var_address,
 )
 
-from tests.utils.constants import CAIRO1_HELPERS_CLASS_HASH, CHAIN_ID
+from tests.utils.constants import CHAIN_ID
 from tests.utils.uint256 import int_to_uint256, uint256_to_int
 
 
 def cairo_verify_eth_signature(class_hash, calldata):
     """
-    Convert the input calldata to Cairo's `verify_eth_signature` into a signature, a message hash and an address
+    Convert the input calldata to Cairo's `verify_eth_signature` into a signature, a message hash and an address.
     """
     msg_hash = b"".join([num.to_bytes(16, "big") for num in reversed(calldata[0:2])])
     r = U256(uint256_to_int(calldata[2], calldata[3]))
@@ -31,6 +31,7 @@ def cairo_verify_eth_signature(class_hash, calldata):
     recovered_address = int.from_bytes(keccak256(public_key)[12:32], "big")
     assert address == recovered_address
     return []
+
 
 def cairo_keccak(class_hash, calldata):
     return int_to_uint256(
@@ -135,9 +136,8 @@ class SyscallHandler:
     # We need to reconstruct the raw bytes from the Cairo-style keccak calldata.
     patches = {
         get_selector_from_name("keccak"): cairo_keccak,
-        get_selector_from_name("verify_eth_signature"): cairo_verify_eth_signature
+        get_selector_from_name("verify_eth_signature"): cairo_verify_eth_signature,
     }
-
 
     def get_contract_address(self, segments, syscall_ptr):
         """

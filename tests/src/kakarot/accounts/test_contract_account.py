@@ -12,7 +12,7 @@ from starkware.starknet.public.abi import (
     get_storage_var_address,
 )
 
-from tests.utils.constants import CAIRO1_HELPERS_CLASS_HASH, CHAIN_ID, TRANSACTIONS
+from tests.utils.constants import CAIRO1_HELPERS_CLASS_HASH, TRANSACTIONS
 from tests.utils.errors import cairo_error
 from tests.utils.helpers import (
     generate_random_evm_address,
@@ -21,10 +21,10 @@ from tests.utils.helpers import (
 )
 from tests.utils.syscall_handler import SyscallHandler
 from tests.utils.uint256 import int_to_uint256
-from tests.utils.helpers import pack_into_u64_words
 
 CHAIN_ID_OFFSET = 35
 V_OFFSET = 27
+
 
 class TestContractAccount:
     @pytest.fixture(params=[0, 10, 100, 1000, 10000])
@@ -144,10 +144,10 @@ class TestContractAccount:
     class TestValidate:
         @pytest.mark.parametrize("seed", (41, 42))
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
-        @SyscallHandler.patch("Account_cairo1_helpers_class_hash", CAIRO1_HELPERS_CLASS_HASH)
-        def test_should_pass_all_transactions_types(
-            self, cairo_run, seed, transaction
-        ):
+        @SyscallHandler.patch(
+            "Account_cairo1_helpers_class_hash", CAIRO1_HELPERS_CLASS_HASH
+        )
+        def test_should_pass_all_transactions_types(self, cairo_run, seed, transaction):
             """
             Note: the seeds 41 and 42 have been manually selected after observing that some private keys
             were making the Counter deploy transaction failing because their signature parameters length (s and v)
@@ -161,7 +161,7 @@ class TestContractAccount:
             unsigned_transaction = serializable_unsigned_transaction_from_dict(
                 transaction
             )
-            transaction_hash = unsigned_transaction.hash()
+            unsigned_transaction.hash()
 
             encoded_unsigned_tx = rlp_encode_signed_data(transaction)
             tx_data = list(encoded_unsigned_tx)
