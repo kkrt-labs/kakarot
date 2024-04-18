@@ -21,18 +21,10 @@ from tests.utils.helpers import (
 )
 from tests.utils.syscall_handler import SyscallHandler
 from tests.utils.uint256 import int_to_uint256
+from tests.utils.helpers import pack_into_u64_words
 
 CHAIN_ID_OFFSET = 35
 V_OFFSET = 27
-
-
-def to_eth_y_parity(v_raw, chain_id=None):
-    if chain_id is None:
-        y_parity = v_raw - V_OFFSET
-    else:
-        y_parity = v_raw - (CHAIN_ID_OFFSET + 2 * chain_id)
-    return y_parity
-
 
 class TestContractAccount:
     @pytest.fixture(params=[0, 10, 100, 1000, 10000])
@@ -152,7 +144,8 @@ class TestContractAccount:
     class TestValidate:
         @pytest.mark.parametrize("seed", (41, 42))
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
-        async def test_should_pass_all_transactions_types(
+        @SyscallHandler.patch("Account_cairo1_helpers_class_hash", CAIRO1_HELPERS_CLASS_HASH)
+        def test_should_pass_all_transactions_types(
             self, cairo_run, seed, transaction
         ):
             """
@@ -172,27 +165,16 @@ class TestContractAccount:
 
             encoded_unsigned_tx = rlp_encode_signed_data(transaction)
             tx_data = list(encoded_unsigned_tx)
-            list(int_to_uint256(int.from_bytes(transaction_hash, "big")))
 
-            with SyscallHandler.patch(
-                "ICairo1Helpers.library_call_verify_eth_signature",
-                lambda class_hash, data: [],
-            ):
-                cairo_run(
-                    "test__validate",
-                    address=int(address, 16),
-                    nonce=transaction["nonce"],
-                    chain_id=transaction["chainId"],
-                    r=int_to_uint256(signed.r),
-                    s=int_to_uint256(signed.s),
-                    v=signed["v"],
-                    tx_data=tx_data,
-                )
-
-            y_parity = (
-                to_eth_y_parity(signed["v"], chain_id=CHAIN_ID)
-                if transaction.get("type") is None
-                else signed["v"]
+            cairo_run(
+                "test__validate",
+                address=int(address, 16),
+                nonce=transaction["nonce"],
+                chain_id=transaction["chainId"],
+                r=int_to_uint256(signed.r),
+                s=int_to_uint256(signed.s),
+                v=signed["v"],
+                tx_data=tx_data,
             )
 
         @pytest.mark.parametrize("transaction", TRANSACTIONS)

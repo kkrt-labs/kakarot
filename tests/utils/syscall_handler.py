@@ -4,6 +4,9 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import Optional, Union
 from unittest import mock
+from ethereum.crypto.elliptic_curve import SECP256K1N, secp256k1_recover
+from ethereum.base_types import U256
+from ethereum.crypto.hash import Hash32, keccak256
 
 from eth_utils import keccak
 from starkware.starknet.public.abi import (
@@ -12,7 +15,35 @@ from starkware.starknet.public.abi import (
 )
 
 from tests.utils.constants import CAIRO1_HELPERS_CLASS_HASH, CHAIN_ID
-from tests.utils.uint256 import int_to_uint256
+from tests.utils.uint256 import int_to_uint256, uint256_to_int
+
+
+def cairo_verify_eth_signature(class_hash, calldata):
+    """
+    Convert the input calldata to Cairo's `verify_eth_signature` into a signature, a message hash and an address
+    """
+    msg_hash = b"".join([num.to_bytes(16, "big") for num in reversed(calldata[0:2])])
+    r = U256(uint256_to_int(calldata[2], calldata[3]))
+    s = U256(uint256_to_int(calldata[4], calldata[5]))
+    y_parity = U256(calldata[6])
+    address = calldata[7]
+    public_key = secp256k1_recover(r, s, y_parity, msg_hash)
+    recovered_address = int.from_bytes(keccak256(public_key)[12:32], "big")
+    assert address == recovered_address
+    return []
+
+def cairo_keccak(class_hash, calldata):
+    return int_to_uint256(
+        int.from_bytes(
+            keccak(
+                b"".join(
+                    [num.to_bytes(8, "little") for num in calldata[1:-2]]
+                    + [calldata[-2].to_bytes(calldata[-1], "little")]
+                )
+            ),
+            "big",
+        )
+    )
 
 
 def parse_state(state):
@@ -103,22 +134,10 @@ class SyscallHandler:
     # Patch the keccak library call to return the keccak of the input data.
     # We need to reconstruct the raw bytes from the Cairo-style keccak calldata.
     patches = {
-        get_selector_from_name("keccak"): lambda class_hash, calldata: (
-            int_to_uint256(
-                int.from_bytes(
-                    keccak(
-                        b"".join(
-                            [num.to_bytes(8, "little") for num in calldata[1:-2]]
-                            + [calldata[-2].to_bytes(calldata[-1], "big")]
-                        )
-                    ),
-                    "big",
-                )
-            )
-            if class_hash == CAIRO1_HELPERS_CLASS_HASH
-            else [0, 0]
-        )
+        get_selector_from_name("keccak"): cairo_keccak,
+        get_selector_from_name("verify_eth_signature"): cairo_verify_eth_signature
     }
+
 
     def get_contract_address(self, segments, syscall_ptr):
         """
