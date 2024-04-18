@@ -7,8 +7,8 @@ counter: public(uint256)
 
 # authorise this contract to spend the tokens on behalf of the user
 @external
-def authorizeInvoke(sig: Bytes[97], token: IERC20, receiver: address, amount: uint256):
+def authorizeInvoke(sender: address, sig: Bytes[97], token: IERC20, receiver: address, amount: uint256):
     self.counter += 1
-    authorize(self, sig)
+    authorize(sender, sig)
     authcall token.approve(receiver, amount)
     authcall token.transfer(receiver, amount)
