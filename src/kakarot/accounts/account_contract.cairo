@@ -124,10 +124,10 @@ func __execute__{
     alloc_locals;
 
     // Upgrade flow
-    let (latest_account_class, latest_cairo1helpers_class) = AccountContract.get_latest_classes();
+    let (latest_account_class, latest_helpers_class) = AccountContract.get_latest_classes();
     let (this_helpers_class) = Account_cairo1_helpers_class_hash.read();
-    if (latest_cairo1helpers_class != this_helpers_class) {
-        Account_cairo1_helpers_class_hash.write(latest_cairo1helpers_class);
+    if (latest_helpers_class != this_helpers_class) {
+        Account_cairo1_helpers_class_hash.write(latest_helpers_class);
         tempvar syscall_ptr = syscall_ptr;
         tempvar range_check_ptr = range_check_ptr;
         tempvar pedersen_ptr = pedersen_ptr;
