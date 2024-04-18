@@ -25,12 +25,13 @@ from starkware.starknet.common.syscalls import (
 )
 from starkware.cairo.common.memset import memset
 
-from kakarot.interfaces.interfaces import IERC20, IKakarot
+from kakarot.interfaces.interfaces import IERC20, IKakarot, ICairo1Helpers
 from kakarot.accounts.model import CallArray
 from kakarot.errors import Errors
 from kakarot.constants import Constants
 from utils.eth_transaction import EthTransaction
 from utils.uint256 import uint256_add
+from utils.bytes import bytes_to_bytes8_little_endian
 
 // @dev: should always be zero for EOAs
 @storage_var
@@ -55,6 +56,10 @@ func Account_implementation() -> (address: felt) {
 
 @storage_var
 func Account_evm_address() -> (evm_address: felt) {
+}
+
+@storage_var
+func Account_cairo1_helpers_class_hash() -> (res: felt) {
 }
 
 @event
@@ -91,6 +96,10 @@ namespace AccountContract {
         let (native_token_address) = IKakarot.get_native_token(kakarot_address);
         let infinite = Uint256(Constants.UINT128_MAX, Constants.UINT128_MAX);
         IERC20.approve(native_token_address, kakarot_address, infinite);
+
+        // Write Cairo1Helpers class to storage
+        let (cairo1_helpers_class_hash) = IKakarot.get_cairo1_helpers_class_hash(kakarot_address);
+        Account_cairo1_helpers_class_hash.write(cairo1_helpers_class_hash);
 
         // Register the account in the Kakarot mapping
         IKakarot.register_account(kakarot_address, evm_address);
@@ -159,7 +168,7 @@ namespace AccountContract {
         let v = tx_info.signature[4];
         let (_, chain_id) = unsigned_div_rem(tx_info.chain_id, 2 ** 32);
 
-        EthTransaction.validate(
+        Internals.validate(
             address,
             tx_info.nonce,
             chain_id,
@@ -408,11 +417,13 @@ namespace AccountContract {
 
     // @notice Return the latest available implementation of the account contract.
     // @returns The latest account class hash registered in Kakarot
-    func get_latest_class{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ) -> felt {
+    func get_latest_classes{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+        account_class: felt, cairo1_helpers_class: felt
+    ) {
         let (kakarot_address) = Ownable_owner.read();
-        let (latest_implementation) = IKakarot.get_account_contract_class_hash(kakarot_address);
-        return latest_implementation;
+        let (latest_account_class) = IKakarot.get_account_contract_class_hash(kakarot_address);
+        let (latest_cairo1_helpers_class) = IKakarot.get_cairo1_helpers_class_hash(kakarot_address);
+        return (latest_account_class, latest_cairo1_helpers_class);
     }
 }
 
@@ -591,5 +602,69 @@ namespace Internals {
         cond:
         jmp body if count != 0;
         jmp read;
+    }
+
+    // @notice Validate an Ethereum transaction
+    // @dev This function validates an Ethereum transaction by checking if the transaction
+    // is correctly signed by the given address, and if the nonce in the transaction
+    // matches the nonce of the account. It decodes the transaction using the decode function,
+    // and then verifies the Ethereum signature on the transaction hash.
+    // @param address The address that is supposed to have signed the transaction
+    // @param account_nonce The nonce of the account
+    // @param tx_data_len The length of the raw transaction data
+    // @param tx_data The raw transaction data
+    func validate{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        bitwise_ptr: BitwiseBuiltin*,
+        range_check_ptr,
+    }(
+        address: felt,
+        account_nonce: felt,
+        chain_id: felt,
+        r: Uint256,
+        s: Uint256,
+        v: felt,
+        tx_data_len: felt,
+        tx_data: felt*,
+    ) {
+        alloc_locals;
+        let tx = EthTransaction.decode(tx_data_len, tx_data);
+        assert tx.signer_nonce = account_nonce;
+        assert tx.chain_id = chain_id;
+
+        // Note: here, the validate process assumes an ECDSA signature, and r, s, v field
+        // Technically, the transaction type can determine the signature scheme.
+        let tx_type = EthTransaction.get_tx_type(tx_data);
+        local y_parity: felt;
+        if (tx_type == 0) {
+            assert y_parity = (v - 2 * chain_id - 35);
+        } else {
+            assert y_parity = v;
+        }
+
+        let (local words: felt*) = alloc();
+        let (words_len, last_word, last_word_num_bytes) = bytes_to_bytes8_little_endian(
+            words, tx_data_len, tx_data
+        );
+
+        let (helpers_class) = Account_cairo1_helpers_class_hash.read();
+        let (msg_hash) = ICairo1Helpers.library_call_keccak(
+            class_hash=helpers_class,
+            words_len=words_len,
+            words=words,
+            last_input_word=last_word,
+            last_input_num_bytes=last_word_num_bytes,
+        );
+
+        ICairo1Helpers.library_call_verify_eth_signature(
+            class_hash=helpers_class,
+            msg_hash=msg_hash,
+            r=r,
+            s=s,
+            y_parity=y_parity,
+            eth_address=address,
+        );
+        return ();
     }
 }

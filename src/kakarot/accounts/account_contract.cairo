@@ -8,7 +8,11 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin, S
 from starkware.cairo.common.uint256 import Uint256
 
 // Local dependencies
-from kakarot.accounts.library import AccountContract, Account_implementation
+from kakarot.accounts.library import (
+    AccountContract,
+    Account_implementation,
+    Account_cairo1_helpers_class_hash,
+)
 from kakarot.accounts.model import CallArray
 from kakarot.interfaces.interfaces import IKakarot, IAccount
 from starkware.starknet.common.syscalls import get_tx_info, get_caller_address, replace_class
@@ -118,6 +122,40 @@ func __execute__{
     response_len: felt, response: felt*
 ) {
     alloc_locals;
+
+    // Upgrade flow
+    let (latest_account_class, latest_helpers_class) = AccountContract.get_latest_classes();
+    let (this_helpers_class) = Account_cairo1_helpers_class_hash.read();
+    if (latest_helpers_class != this_helpers_class) {
+        Account_cairo1_helpers_class_hash.write(latest_helpers_class);
+        tempvar syscall_ptr = syscall_ptr;
+        tempvar range_check_ptr = range_check_ptr;
+        tempvar pedersen_ptr = pedersen_ptr;
+    } else {
+        tempvar syscall_ptr = syscall_ptr;
+        tempvar range_check_ptr = range_check_ptr;
+        tempvar pedersen_ptr = pedersen_ptr;
+    }
+    let syscall_ptr = cast([ap - 3], felt*);
+    let range_check_ptr = [ap - 2];
+    let pedersen_ptr = cast([ap - 1], HashBuiltin*);
+
+    let (this_class) = Account_implementation.read();
+    if (latest_account_class != this_class) {
+        Account_implementation.write(latest_account_class);
+        // Library call to new class
+        let (response_len, response) = IAccount.library_call___execute__(
+            class_hash=latest_account_class,
+            call_array_len=call_array_len,
+            call_array=call_array,
+            calldata_len=calldata_len,
+            calldata=calldata,
+        );
+        replace_class(latest_account_class);
+        return (response_len, response);
+    }
+
+    // Execution flow
     let (tx_info) = get_tx_info();
     let version = tx_info.version;
     with_attr error_message("EOA: deprecated tx version: {version}") {
@@ -131,22 +169,6 @@ func __execute__{
 
     with_attr error_message("EOA: multicall not supported") {
         assert call_array_len = 1;
-    }
-
-    let latest_class = AccountContract.get_latest_class();
-    let (this_class) = Account_implementation.read();
-    if (latest_class != this_class) {
-        // Must be done before library_call, otherwise entering an infinite recursive loop.
-        Account_implementation.write(latest_class);
-        let (response_len, response) = IAccount.library_call___execute__(
-            class_hash=latest_class,
-            call_array_len=call_array_len,
-            call_array=call_array,
-            calldata_len=calldata_len,
-            calldata=calldata,
-        );
-        replace_class(latest_class);
-        return (response_len, response);
     }
 
     let (local response: felt*) = alloc();

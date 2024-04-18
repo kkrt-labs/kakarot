@@ -1,6 +1,11 @@
+from collections import namedtuple
+
 import pytest
 import pytest_asyncio
 from starknet_py.net.full_node_client import FullNodeClient
+from starkware.starknet.public.abi import get_storage_var_address
+
+Wallet = namedtuple("Wallet", ["address", "private_key", "starknet_contract"])
 
 TOTAL_SUPPLY = 10000 * 10**18
 TEST_AMOUNT = 10 * 10**18
@@ -16,14 +21,55 @@ async def class_hashes():
     return get_declarations()
 
 
-@pytest_asyncio.fixture(scope="function")
-async def erc20_token(deploy_solidity_contract, new_account):
+@pytest_asyncio.fixture(scope="module")
+async def new_account(max_fee):
+    """
+    Return a random funded new account.
+    """
+    from kakarot_scripts.utils.kakarot import get_eoa
+    from kakarot_scripts.utils.starknet import fund_address
+    from tests.utils.helpers import generate_random_private_key
+
+    private_key = generate_random_private_key()
+    account = Wallet(
+        address=private_key.public_key.to_checksum_address(),
+        private_key=private_key,
+        # deploying an account with enough ETH to pass ~10 tx
+        starknet_contract=await get_eoa(private_key, amount=100 * max_fee / 1e18),
+    )
+    await fund_address(account.starknet_contract.address, 10)
+    return account
+
+
+@pytest_asyncio.fixture(scope="module")
+async def counter(deploy_solidity_contract, new_account):
     return await deploy_solidity_contract(
-        "UniswapV2",
-        "ERC20",
-        TOTAL_SUPPLY,
+        "PlainOpcodes",
+        "Counter",
         caller_eoa=new_account.starknet_contract,
     )
+
+
+@pytest.fixture(autouse=True)
+async def cleanup(invoke, class_hashes):
+    yield
+    await invoke(
+        "kakarot",
+        "set_account_contract_class_hash",
+        class_hashes["account_contract"],
+    )
+    await invoke(
+        "kakarot", "set_cairo1_helpers_class_hash", class_hashes["Cairo1Helpers"]
+    )
+
+
+async def assert_counter_transaction_success(counter, new_account):
+    """
+    Assert that the transaction sent, other than upgrading the account contract, is successful.
+    """
+    prev_count = await counter.count()
+    await counter.inc(caller_eoa=new_account.starknet_contract)
+    assert await counter.count() == prev_count + 1
 
 
 @pytest.mark.asyncio(scope="session")
@@ -34,12 +80,10 @@ class TestAccount:
             self,
             starknet: FullNodeClient,
             invoke,
-            erc20_token,
+            counter,
             new_account,
-            other,
             class_hashes,
         ):
-            # Given an initial class
             prev_class = await starknet.get_class_hash_at(
                 new_account.starknet_contract.address
             )
@@ -47,41 +91,47 @@ class TestAccount:
             assert prev_class != target_class
             assert prev_class == class_hashes["account_contract"]
 
-            # When setting the account class to version `account_contract_fixture`
             await invoke(
                 "kakarot",
                 "set_account_contract_class_hash",
                 target_class,
             )
 
-            # Then the account should process the next transaction and be upgraded to the new class
-            receipt = (
-                await erc20_token.transfer(
-                    other.address, TEST_AMOUNT, caller_eoa=new_account.starknet_contract
-                )
-            )["receipt"]
-            events = erc20_token.events.parse_starknet_events(receipt.events)
-            assert events["Transfer"] == [
-                {
-                    "from": new_account.address,
-                    "to": other.address,
-                    "value": TEST_AMOUNT,
-                }
-            ]
-            assert (
-                await erc20_token.balanceOf(new_account.address)
-                == TOTAL_SUPPLY - TEST_AMOUNT
-            )
-            assert await erc20_token.balanceOf(other.address) == TEST_AMOUNT
+            await assert_counter_transaction_success(counter, new_account)
 
             new_class = await starknet.get_class_hash_at(
                 new_account.starknet_contract.address
             )
             assert new_class == target_class
 
-            # Reset the account class to the previous version
+        async def test_should_update_cairo1_helpers_class(
+            self,
+            starknet: FullNodeClient,
+            invoke,
+            counter,
+            new_account,
+            class_hashes,
+        ):
+            prev_cairo1_helpers_class = await starknet.get_storage_at(
+                new_account.starknet_contract.address,
+                get_storage_var_address("Account_cairo1_helpers_class_hash"),
+            )
+            target_class = class_hashes["Cairo1HelpersFixture"]
+            assert prev_cairo1_helpers_class != target_class
+
             await invoke(
                 "kakarot",
                 "set_account_contract_class_hash",
-                prev_class,
+                class_hashes["account_contract_fixture"],
+            )
+            await invoke("kakarot", "set_cairo1_helpers_class_hash", target_class)
+
+            await assert_counter_transaction_success(counter, new_account)
+
+            assert (
+                await starknet.get_storage_at(
+                    new_account.starknet_contract.address,
+                    get_storage_var_address("Account_cairo1_helpers_class_hash"),
+                )
+                == target_class
             )

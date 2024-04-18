@@ -121,6 +121,12 @@ namespace IKakarot {
     func get_account_contract_class_hash() -> (account_contract_class_hash: felt) {
     }
 
+    func set_cairo1_helpers_class_hash(cairo1_helpers_class_hash: felt) {
+    }
+
+    func get_cairo1_helpers_class_hash() -> (cairo1_helpers_class_hash: felt) {
+    }
+
     func register_account(evm_address: felt) {
     }
 
@@ -165,5 +171,10 @@ namespace ICairo1Helpers {
     func keccak(
         words_len: felt, words: felt*, last_input_word: felt, last_input_num_bytes: felt
     ) -> (hash: Uint256) {
+    }
+
+    func verify_eth_signature(
+        msg_hash: Uint256, r: Uint256, s: Uint256, y_parity: felt, eth_address: felt
+    ) {
     }
 }
