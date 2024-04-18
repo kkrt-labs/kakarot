@@ -7,13 +7,9 @@ from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math import split_felt, unsigned_div_rem
 from starkware.cairo.common.math_cmp import is_le, is_nn, is_not_zero
-from starkware.cairo.common.cairo_keccak.keccak import cairo_keccak_bigend, finalize_keccak
 from starkware.cairo.common.memset import memset
 from starkware.cairo.common.memcpy import memcpy
-from starkware.cairo.common.cairo_secp.signature import (
-    recover_public_key,
-    public_key_point_to_eth_address,
-)
+from starkware.cairo.common.cairo_secp.signature import recover_public_key
 from starkware.cairo.common.cairo_secp.ec_point import EcPoint
 from starkware.cairo.common.cairo_secp.bigint import uint256_to_bigint
 from starkware.cairo.common.cairo_secp.bigint3 import BigInt3
