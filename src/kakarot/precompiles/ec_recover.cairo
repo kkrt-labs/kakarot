@@ -112,9 +112,9 @@ namespace EcRecoverHelpers {
         let inputs_start = inputs;
         keccak_add_uint256s{inputs=inputs}(n_elements=2, elements=elements, bigend=1);
 
-        let (implementation) = Kakarot_cairo1_helpers_class_hash.read();
+        let (helpers_class) = Kakarot_cairo1_helpers_class_hash.read();
         let (point_hash) = ICairo1Helpers.library_call_keccak(
-            class_hash=implementation,
+            class_hash=helpers_class,
             words_len=8,
             words=inputs_start,
             last_input_word=0,

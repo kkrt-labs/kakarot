@@ -4,18 +4,20 @@
 
 from kakarot.accounts.account_contract import (
     constructor,
+    initialize,
+    version,
+    get_evm_address,
+    is_initialized,
     __validate__,
     __validate_declare__,
     __execute__,
     write_bytecode,
-    bytecode_len,
     bytecode,
+    bytecode_len,
     write_storage,
     storage,
     get_nonce,
     set_nonce,
-    get_evm_address,
-    is_initialized,
 )
 
 // make sure the class hash is different
