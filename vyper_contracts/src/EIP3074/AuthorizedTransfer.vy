@@ -12,8 +12,3 @@ def authorizeInvoke(sig: Bytes[97], token: IERC20, receiver: address, amount: ui
     authorize(self, sig)
     authcall token.approve(receiver, amount)
     authcall token.transfer(receiver, amount)
-
-# add a function that returns a value
-@external
-def getCounter() -> uint256 :
-    return self.counter

@@ -47,11 +47,9 @@ class EvmTransactionError(Exception):
 
 
 @functools.lru_cache()
-def get_contract(
+def get_solidity_artifacts(
     contract_app: str,
     contract_name: str,
-    address=None,
-    caller_eoa: Optional[Account] = None,
 ) -> Web3Contract:
     import toml
 
@@ -95,18 +93,54 @@ def get_contract(
                 f"found {len(target_compilation_output)} outputs:\n{target_compilation_output}"
             )
         target_compilation_output = target_compilation_output[0]
+    return {
+        "bytecode": target_compilation_output["bytecode"]["object"],
+        "bytecode_runtime": target_compilation_output["deployedBytecode"]["object"],
+        "abi": target_compilation_output["abi"],
+    }
+
+
+@functools.lru_cache()
+def get_vyper_artifacts(
+    contract_app: str,
+    contract_name: str,
+) -> Web3Contract:
+    from vyper.cli.vyper_compile import compile_files
+
+    target_contract = (
+        Path("vyper_contracts") / "src" / contract_app / f"{contract_name}.vy"
+    )
+
+    if not target_contract.is_file():
+        raise ValueError("Cannot locate contract in app")
+
+    return compile_files([target_contract], ["bytecode", "bytecode_runtime", "abi"])[
+        target_contract
+    ]
+
+
+@functools.lru_cache()
+def get_contract(
+    contract_app: str,
+    contract_name: str,
+    address=None,
+    caller_eoa: Optional[Account] = None,
+) -> Web3Contract:
+
+    try:
+        artifacts = get_solidity_artifacts(contract_app, contract_name)
+    except ValueError:
+        artifacts = get_vyper_artifacts(contract_app, contract_name)
 
     contract = cast(
         Web3Contract,
         Web3().eth.contract(
             address=to_checksum_address(address) if address is not None else address,
-            abi=target_compilation_output["abi"],
-            bytecode=target_compilation_output["bytecode"]["object"],
+            abi=artifacts["abi"],
+            bytecode=artifacts["bytecode"],
         ),
     )
-    contract.bytecode_runtime = HexBytes(
-        target_compilation_output["deployedBytecode"]["object"]
-    )
+    contract.bytecode_runtime = HexBytes(artifacts["bytecode_runtime"])
 
     try:
         for fun in contract.functions:
@@ -161,7 +195,7 @@ def _parse_events(cls: ContractEvents, starknet_events: List[Event]):
             topic=bytes(),
             topics=[
                 bytes.fromhex(
-                    # event "keys" in cairo are event "topics" in solidity
+                    # event "keys" in cairo are event "topics" in EVM
                     # they're returned as list where consecutive values are indeed
                     # low, high, low, high, etc. of the Uint256 cairo representation
                     # of the bytes32 topics. This recomputes the original topic
