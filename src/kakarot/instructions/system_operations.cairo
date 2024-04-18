@@ -933,9 +933,9 @@ namespace SystemOperations {
             message_bytes8, message_len, msg
         );
 
-        let (implementation) = Kakarot_cairo1_helpers_class_hash.read();
+        let (helpers_class) = Kakarot_cairo1_helpers_class_hash.read();
         let (msg_hash) = ICairo1Helpers.library_call_keccak(
-            class_hash=implementation,
+            class_hash=helpers_class,
             words_len=message_bytes8_len,
             words=message_bytes8,
             last_input_word=last_word,
@@ -949,7 +949,7 @@ namespace SystemOperations {
             msg_hash=msg_hash_bigint, r=r_bigint, s=s_bigint, v=y_parity
         );
         let (calculated_eth_address) = EcRecoverHelpers.public_key_point_to_eth_address(
-            public_key_point=public_key_point
+            public_key_point=public_key_point, helpers_class=helpers_class
         );
 
         if (calculated_eth_address != authority) {

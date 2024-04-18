@@ -230,20 +230,3 @@ def merge_access_list(access_list):
             }
         )
     return merged_list
-
-
-def pack_into_u64_words(bytecode):
-    bytes8_little_endian = [
-        int.from_bytes(bytes(bytecode[i : i + 8]), byteorder="little")
-        for i in range(0, len(bytecode), 8)
-    ]
-
-    last_word_bytes_used = len(bytecode) % 8
-    if last_word_bytes_used == 0:
-        last_word = 0
-        full_words = bytes8_little_endian
-    else:
-        last_word = bytes8_little_endian[-1]
-        full_words = bytes8_little_endian[:-1]
-
-    return len(full_words), full_words, last_word, last_word_bytes_used
