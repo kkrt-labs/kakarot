@@ -125,8 +125,8 @@ func __execute__{
 
     // Upgrade flow
     let (latest_account_class, latest_cairo1helpers_class) = AccountContract.get_latest_classes();
-    let (this_cairo1helpers_class) = Account_cairo1_helpers_class_hash.read();
-    if (latest_cairo1helpers_class != this_cairo1helpers_class) {
+    let (this_helpers_class) = Account_cairo1_helpers_class_hash.read();
+    if (latest_cairo1helpers_class != this_helpers_class) {
         Account_cairo1_helpers_class_hash.write(latest_cairo1helpers_class);
         tempvar syscall_ptr = syscall_ptr;
         tempvar range_check_ptr = range_check_ptr;

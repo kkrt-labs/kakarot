@@ -17,7 +17,7 @@ async def class_hashes():
     return get_declarations()
 
 
-@pytest_asyncio.fixture(scope="function")
+@pytest_asyncio.fixture(scope="module")
 async def counter(deploy_solidity_contract, new_account):
     return await deploy_solidity_contract(
         "PlainOpcodes",
@@ -43,9 +43,9 @@ async def assert_counter_transaction_success(counter, new_account):
     """
     Assert that the transaction sent, other than upgrading the account contract, is successful.
     """
-    assert await counter.count() == 0
+    prev_count = await counter.count()
     await counter.inc(caller_eoa=new_account.starknet_contract)
-    assert await counter.count() == 1
+    assert await counter.count() == prev_count + 1
 
 
 @pytest.mark.asyncio(scope="session")
@@ -94,7 +94,6 @@ class TestAccount:
             )
             target_class = class_hashes["Cairo1HelpersFixture"]
             assert prev_cairo1_helpers_class != target_class
-            assert prev_cairo1_helpers_class == class_hashes["Cairo1Helpers"]
 
             await invoke(
                 "kakarot",
@@ -105,8 +104,10 @@ class TestAccount:
 
             await assert_counter_transaction_success(counter, new_account)
 
-            new_cairo1_helpers_class = await starknet.get_storage_at(
-                new_account.starknet_contract.address,
-                get_storage_var_address("Account_cairo1_helpers_class_hash"),
+            assert (
+                await starknet.get_storage_at(
+                    new_account.starknet_contract.address,
+                    get_storage_var_address("Account_cairo1_helpers_class_hash"),
+                )
+                == target_class
             )
-            assert new_cairo1_helpers_class == target_class

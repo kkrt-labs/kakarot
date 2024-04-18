@@ -4,13 +4,13 @@ import pytest
 from Crypto.Hash import keccak
 from starkware.starknet.public.abi import get_selector_from_name
 
+from tests.utils.constants import CAIRO1_HELPERS_CLASS_HASH
 from tests.utils.syscall_handler import SyscallHandler
 from tests.utils.uint256 import int_to_uint256
 
 EXISTING_ACCOUNT = 0xABDE1
 EXISTING_ACCOUNT_SN_ADDR = 0x1234
 NON_EXISTING_ACCOUNT = 0xDEAD
-CAIRO1_HELPERS_CLASS_HASH = 0xDEADBEEFABDE1
 
 
 @pytest.fixture(scope="module", params=[0, 32], ids=["no bytecode", "32 bytes"])

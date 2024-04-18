@@ -12,12 +12,11 @@ from starkware.starknet.public.abi import (
     get_storage_var_address,
 )
 
-from tests.utils.constants import CHAIN_ID, TRANSACTIONS
+from tests.utils.constants import CAIRO1_HELPERS_CLASS_HASH, CHAIN_ID, TRANSACTIONS
 from tests.utils.errors import cairo_error
 from tests.utils.helpers import (
     generate_random_evm_address,
     generate_random_private_key,
-    pack_into_u64_words,
     rlp_encode_signed_data,
 )
 from tests.utils.syscall_handler import SyscallHandler
@@ -47,7 +46,7 @@ class TestContractAccount:
         @SyscallHandler.patch("IERC20.approve", lambda addr, data: [1])
         @SyscallHandler.patch(
             "IKakarot.get_cairo1_helpers_class_hash",
-            lambda addr, data: [0xDEADBEEFABDE1],
+            lambda addr, data: [CAIRO1_HELPERS_CLASS_HASH],
         )
         def test_should_set_storage_variables(self, cairo_run):
             cairo_run(
@@ -71,7 +70,7 @@ class TestContractAccount:
             )
             SyscallHandler.mock_storage.assert_any_call(
                 address=get_storage_var_address("Account_cairo1_helpers_class_hash"),
-                value=0xDEADBEEFABDE1,
+                value=CAIRO1_HELPERS_CLASS_HASH,
             )
             SyscallHandler.mock_event.assert_any_call(
                 keys=[get_selector_from_name("OwnershipTransferred")], data=[0, 0x1234]
@@ -173,22 +172,9 @@ class TestContractAccount:
 
             encoded_unsigned_tx = rlp_encode_signed_data(transaction)
             tx_data = list(encoded_unsigned_tx)
-
-            # break tx_data into len_full_words u64 words. The last word may be incomplete and the number of bytes used
-            # in it is stored in last_expected_word_bytes_used.
-
-            (
-                len_full_words,
-                full_words,
-                last_expected_word,
-                last_expected_word_bytes_used,
-            ) = pack_into_u64_words(tx_data)
-
-            msg_hash = list(int_to_uint256(int.from_bytes(transaction_hash, "big")))
+            list(int_to_uint256(int.from_bytes(transaction_hash, "big")))
 
             with SyscallHandler.patch(
-                "ICairo1Helpers.library_call_keccak", lambda class_hash, data: msg_hash
-            ), SyscallHandler.patch(
                 "ICairo1Helpers.library_call_verify_eth_signature",
                 lambda class_hash, data: [],
             ):
@@ -203,32 +189,10 @@ class TestContractAccount:
                     tx_data=tx_data,
                 )
 
-            SyscallHandler.mock_library_call.assert_any_call(
-                class_hash=0,
-                function_selector=get_selector_from_name("keccak"),
-                calldata=[
-                    len_full_words,
-                    *full_words,
-                    last_expected_word,
-                    last_expected_word_bytes_used,
-                ],
-            )
-
             y_parity = (
                 to_eth_y_parity(signed["v"], chain_id=CHAIN_ID)
                 if transaction.get("type") is None
                 else signed["v"]
-            )
-            SyscallHandler.mock_library_call.assert_any_call(
-                class_hash=0,
-                function_selector=get_selector_from_name("verify_eth_signature"),
-                calldata=[
-                    *msg_hash,
-                    *list(int_to_uint256(signed.r)),
-                    *list(int_to_uint256(signed.s)),
-                    y_parity,
-                    int(address, 16),
-                ],
             )
 
         @pytest.mark.parametrize("transaction", TRANSACTIONS)

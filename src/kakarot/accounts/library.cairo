@@ -648,9 +648,9 @@ namespace Internals {
             words, tx_data_len, tx_data
         );
 
-        let (implementation) = Account_cairo1_helpers_class_hash.read();
+        let (helpers_class) = Account_cairo1_helpers_class_hash.read();
         let (msg_hash) = ICairo1Helpers.library_call_keccak(
-            class_hash=implementation,
+            class_hash=helpers_class,
             words_len=words_len,
             words=words,
             last_input_word=last_word,
@@ -658,7 +658,7 @@ namespace Internals {
         );
 
         ICairo1Helpers.library_call_verify_eth_signature(
-            class_hash=implementation,
+            class_hash=helpers_class,
             msg_hash=msg_hash,
             r=r,
             s=s,

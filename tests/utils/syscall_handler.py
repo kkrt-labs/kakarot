@@ -5,12 +5,13 @@ from dataclasses import dataclass
 from typing import Optional, Union
 from unittest import mock
 
+from eth_utils import keccak
 from starkware.starknet.public.abi import (
     get_selector_from_name,
     get_storage_var_address,
 )
 
-from tests.utils.constants import CHAIN_ID
+from tests.utils.constants import CAIRO1_HELPERS_CLASS_HASH, CHAIN_ID
 from tests.utils.uint256 import int_to_uint256
 
 
@@ -93,12 +94,31 @@ class SyscallHandler:
     contract_address: int = 0xABDE1
     caller_address: int = 0xABDE1
     class_hash: int = 0xC1A55
-    patches = {}
     mock_call = mock.MagicMock()
     mock_library_call = mock.MagicMock()
     mock_storage = mock.MagicMock()
     mock_event = mock.MagicMock()
     mock_replace_class = mock.MagicMock()
+
+    # Patch the keccak library call to return the keccak of the input data.
+    # We need to reconstruct the raw bytes from the Cairo-style keccak calldata.
+    patches = {
+        get_selector_from_name("keccak"): lambda class_hash, calldata: (
+            int_to_uint256(
+                int.from_bytes(
+                    keccak(
+                        b"".join(
+                            [num.to_bytes(8, "little") for num in calldata[1:-2]]
+                            + [calldata[-2].to_bytes(calldata[-1], "big")]
+                        )
+                    ),
+                    "big",
+                )
+            )
+            if class_hash == CAIRO1_HELPERS_CLASS_HASH
+            else [0, 0]
+        )
+    }
 
     def get_contract_address(self, segments, syscall_ptr):
         """
