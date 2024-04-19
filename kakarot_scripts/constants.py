@@ -135,7 +135,10 @@ except (
     requests.exceptions.ConnectionError,
     requests.exceptions.MissingSchema,
     requests.exceptions.InvalidSchema,
-):
+) as e:
+    logger.info(
+        f"⚠️  Could not get chain Id from {NETWORK['rpc_url']}: {e}, defaulting to KKRT"
+    )
     chain_id = int.from_bytes(b"KKRT", "big")
 
 
