@@ -18,21 +18,6 @@ from tests.utils.constants import CHAIN_ID
 from tests.utils.uint256 import int_to_uint256, uint256_to_int
 
 
-def cairo_verify_eth_signature(class_hash, calldata):
-    """
-    Convert the input calldata to Cairo's `verify_eth_signature` into a signature, a message hash and an address.
-    """
-    msg_hash = b"".join([num.to_bytes(16, "big") for num in reversed(calldata[0:2])])
-    r = U256(uint256_to_int(calldata[2], calldata[3]))
-    s = U256(uint256_to_int(calldata[4], calldata[5]))
-    y_parity = U256(calldata[6])
-    address = calldata[7]
-    public_key = secp256k1_recover(r, s, y_parity, msg_hash)
-    recovered_address = int.from_bytes(keccak256(public_key)[12:32], "big")
-    assert address == recovered_address
-    return []
-
-
 def cairo_keccak(class_hash, calldata):
     return int_to_uint256(
         int.from_bytes(
@@ -45,6 +30,18 @@ def cairo_keccak(class_hash, calldata):
             "big",
         )
     )
+
+
+def cairo_recover_eth_address(class_hash, calldata):
+    """
+    Convert the input calldata to Cairo's `recover_eth_address` into a signature and a message hash.
+    """
+    msg_hash = b"".join([num.to_bytes(16, "big") for num in reversed(calldata[0:2])])
+    r = U256(uint256_to_int(calldata[2], calldata[3]))
+    s = U256(uint256_to_int(calldata[4], calldata[5]))
+    y_parity = U256(calldata[6])
+    public_key = secp256k1_recover(r, s, y_parity, msg_hash)
+    return [int.from_bytes(keccak256(public_key)[12:32], "big")]
 
 
 def parse_state(state):
@@ -136,7 +133,7 @@ class SyscallHandler:
     # We need to reconstruct the raw bytes from the Cairo-style keccak calldata.
     patches = {
         get_selector_from_name("keccak"): cairo_keccak,
-        get_selector_from_name("verify_eth_signature"): cairo_verify_eth_signature,
+        get_selector_from_name("recover_eth_address"): cairo_recover_eth_address,
     }
 
     def get_contract_address(self, segments, syscall_ptr):

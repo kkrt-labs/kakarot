@@ -32,6 +32,7 @@ from kakarot.constants import Constants
 from utils.eth_transaction import EthTransaction
 from utils.uint256 import uint256_add
 from utils.bytes import bytes_to_bytes8_little_endian
+from utils.signature import Signature
 
 // @dev: should always be zero for EOAs
 @storage_var
@@ -657,13 +658,13 @@ namespace Internals {
             last_input_num_bytes=last_word_num_bytes,
         );
 
-        ICairo1Helpers.library_call_verify_eth_signature(
-            class_hash=helpers_class,
+        Signature.verify_eth_signature_uint256(
             msg_hash=msg_hash,
             r=r,
             s=s,
-            y_parity=y_parity,
+            v=y_parity,
             eth_address=address,
+            helpers_class=helpers_class,
         );
         return ();
     }
