@@ -73,7 +73,10 @@ namespace PrecompileEcRecover {
             return (0, output, GAS_COST_EC_RECOVER, 0);
         }
 
-        let (public_address) = EcRecoverHelpers.public_key_point_to_eth_address(public_key_point);
+        let (helpers_class) = Kakarot_cairo1_helpers_class_hash.read();
+        let (public_address) = EcRecoverHelpers.public_key_point_to_eth_address(
+            public_key_point, helpers_class
+        );
 
         let (output) = alloc();
         Helpers.split_word(public_address, 32, output);
@@ -100,7 +103,7 @@ namespace EcRecoverHelpers {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(public_key_point: EcPoint) -> (eth_address: felt) {
+    }(public_key_point: EcPoint, helpers_class: felt) -> (eth_address: felt) {
         alloc_locals;
         let (local elements: Uint256*) = alloc();
         let (x_uint256: Uint256) = bigint_to_uint256(public_key_point.x);
@@ -112,7 +115,6 @@ namespace EcRecoverHelpers {
         let inputs_start = inputs;
         keccak_add_uint256s{inputs=inputs}(n_elements=2, elements=elements, bigend=1);
 
-        let (helpers_class) = Kakarot_cairo1_helpers_class_hash.read();
         let (point_hash) = ICairo1Helpers.library_call_keccak(
             class_hash=helpers_class,
             words_len=8,

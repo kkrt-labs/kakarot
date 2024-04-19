@@ -43,6 +43,9 @@ ZERO_ADDRESS = "0x" + 40 * "0"
 BLOCK_NUMBER = 0x42
 BLOCK_TIMESTAMP = int(time())
 
+# AUTH
+MAGIC = 0x04
+
 # Taken from eth_account.account.Account.sign_transaction docstring
 # https://eth-account.readthedocs.io/en/stable/eth_account.html?highlight=sign_transaction#eth_account.account.Account.sign_transaction
 TRANSACTIONS = [

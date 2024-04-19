@@ -38,6 +38,7 @@ namespace TestHelpers {
             bytecode_len=bytecode_len, bytecode=bytecode
         );
         tempvar zero = new Uint256(0, 0);
+        tempvar authorized = new model.Option(is_some=0, value=0);
         local message: model.Message* = new model.Message(
             bytecode=bytecode,
             bytecode_len=bytecode_len,
@@ -52,6 +53,7 @@ namespace TestHelpers {
             code_address=evm_contract_address,
             read_only=FALSE,
             is_create=FALSE,
+            authorized=authorized,
             depth=0,
             env=env,
         );
@@ -100,6 +102,17 @@ namespace TestHelpers {
         let stack_ = cast([ap - 3], model.Stack*);
 
         return stack_;
+    }
+
+    func init_memory_with_values{range_check_ptr}(
+        serialized_memory_len: felt, serialized_memory: felt*
+    ) -> model.Memory* {
+        alloc_locals;
+        let memory = Memory.init();
+        with memory {
+            Memory.store_n(serialized_memory_len, serialized_memory, 0);
+        }
+        return memory;
     }
 
     func assert_array_equal(array_0_len: felt, array_0: felt*, array_1_len: felt, array_1: felt*) {

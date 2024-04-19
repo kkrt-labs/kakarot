@@ -7,6 +7,12 @@ from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math import split_felt, unsigned_div_rem
 from starkware.cairo.common.math_cmp import is_le, is_nn, is_not_zero
+from starkware.cairo.common.memset import memset
+from starkware.cairo.common.memcpy import memcpy
+from starkware.cairo.common.cairo_secp.signature import recover_public_key
+from starkware.cairo.common.cairo_secp.ec_point import EcPoint
+from starkware.cairo.common.cairo_secp.bigint import uint256_to_bigint
+from starkware.cairo.common.cairo_secp.bigint3 import BigInt3
 from starkware.cairo.common.registers import get_fp_and_pc
 from starkware.cairo.common.uint256 import Uint256, uint256_lt, uint256_le
 from starkware.cairo.common.default_dict import default_dict_new
@@ -23,8 +29,9 @@ from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.storages import Kakarot_cairo1_helpers_class_hash
 from kakarot.state import State
+from kakarot.precompiles.ec_recover import EcRecoverHelpers
 from utils.utils import Helpers
-from utils.array import slice
+from utils.array import slice, pad_end
 from utils.bytes import (
     bytes_to_bytes8_little_endian,
     felt_to_bytes,
@@ -159,6 +166,7 @@ namespace SystemOperations {
         let (valid_jumpdests_start, valid_jumpdests) = Account.get_jumpdests(
             bytecode_len=size.low, bytecode=bytecode
         );
+        tempvar authorized = new model.Option(is_some=0, value=0);
         tempvar message = new model.Message(
             bytecode=bytecode,
             bytecode_len=size.low,
@@ -173,6 +181,7 @@ namespace SystemOperations {
             code_address=0,
             read_only=FALSE,
             is_create=TRUE,
+            authorized=authorized,
             depth=evm.message.depth + 1,
             env=evm.message.env,
         );
@@ -343,6 +352,8 @@ namespace SystemOperations {
         let (ret_offset) = Stack.peek(0);
         let (ret_size) = Stack.peek(1);
 
+        local call_sender = evm.message.address.evm;
+
         // 2. Gas
         // Memory expansion cost
         let memory_expansion = Gas.max_memory_expansion_cost(
@@ -389,9 +400,9 @@ namespace SystemOperations {
             return evm;
         }
 
-        tempvar gas_stipend = gas + is_value_non_zero * Gas.CALL_STIPEND;
+        tempvar gas_with_stipend = gas + is_value_non_zero * Gas.CALL_STIPEND;
 
-        let sender = State.get_account(evm.message.address.evm);
+        let sender = State.get_account(call_sender);
         let (sender_balance_lt_value) = uint256_lt([sender.balance], [value]);
         tempvar is_max_depth_reached = Helpers.is_zero(
             Constants.STACK_MAX_DEPTH - evm.message.depth
@@ -408,7 +419,7 @@ namespace SystemOperations {
                 return_data=return_data,
                 program_counter=evm.program_counter,
                 stopped=FALSE,
-                gas_left=evm.gas_left + gas_stipend,
+                gas_left=evm.gas_left + gas_with_stipend,
                 gas_refund=evm.gas_refund,
                 reverted=FALSE,
             );
@@ -417,9 +428,9 @@ namespace SystemOperations {
 
         let child_evm = CallHelper.generic_call(
             evm,
-            gas=gas_stipend,
+            gas=gas_with_stipend,
             value=value,
-            caller=evm.message.address.evm,
+            caller=call_sender,
             to=to,
             code_address=to,
             is_staticcall=FALSE,
@@ -469,6 +480,8 @@ namespace SystemOperations {
         let args_size = popped + 3 * Uint256.SIZE;
         let (ret_offset) = Stack.peek(0);
         let (ret_size) = Stack.peek(1);
+
+        local call_sender = evm.message.address.evm;
 
         // Gas
         // Memory expansion cost
@@ -526,7 +539,7 @@ namespace SystemOperations {
             evm,
             gas,
             value=zero,
-            caller=evm.message.address.evm,
+            caller=call_sender,
             to=to,
             code_address=to,
             is_staticcall=TRUE,
@@ -567,6 +580,8 @@ namespace SystemOperations {
         let (ret_offset) = Stack.peek(0);
         let (ret_size) = Stack.peek(1);
 
+        local call_sender = evm.message.address.evm;
+
         // Gas
         let memory_expansion = Gas.max_memory_expansion_cost(
             memory.words_len, args_offset, args_size, ret_offset, ret_size
@@ -593,13 +608,13 @@ namespace SystemOperations {
         if (evm.reverted != FALSE) {
             return evm;
         }
-        tempvar gas_stipend = gas + is_value_non_zero * Gas.CALL_STIPEND;
+        tempvar gas_with_stipend = gas + is_value_non_zero * Gas.CALL_STIPEND;
 
         // Operation
         tempvar memory = new model.Memory(
             memory.word_dict_start, memory.word_dict, memory_expansion.new_words_len
         );
-        let sender = State.get_account(evm.message.address.evm);
+        let sender = State.get_account(call_sender);
         let (sender_balance_lt_value) = uint256_lt([sender.balance], [value]);
         tempvar is_max_depth_reached = Helpers.is_zero(
             Constants.STACK_MAX_DEPTH - evm.message.depth
@@ -616,7 +631,7 @@ namespace SystemOperations {
                 return_data=return_data,
                 program_counter=evm.program_counter,
                 stopped=FALSE,
-                gas_left=evm.gas_left + gas_stipend,
+                gas_left=evm.gas_left + gas_with_stipend,
                 gas_refund=evm.gas_refund,
                 reverted=FALSE,
             );
@@ -625,10 +640,10 @@ namespace SystemOperations {
 
         let child_evm = CallHelper.generic_call(
             evm,
-            gas=gas_stipend,
+            gas=gas_with_stipend,
             value=value,
-            caller=evm.message.address.evm,
-            to=evm.message.address.evm,
+            caller=call_sender,
+            to=call_sender,
             code_address=code_address,
             is_staticcall=FALSE,
             args_offset=args_offset,
@@ -666,6 +681,8 @@ namespace SystemOperations {
         let args_size = popped + 3 * Uint256.SIZE;
         let (ret_offset) = Stack.peek(0);
         let (ret_size) = Stack.peek(1);
+
+        let call_sender = evm.message.caller;
         let to = evm.message.address.evm;
 
         // Gas
@@ -722,7 +739,7 @@ namespace SystemOperations {
             evm,
             gas,
             value=evm.message.value,
-            caller=evm.message.caller,
+            caller=call_sender,
             to=to,
             code_address=code_address,
             is_staticcall=FALSE,
@@ -811,6 +828,291 @@ namespace SystemOperations {
 
         return evm;
     }
+
+    func exec_auth{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+        stack: model.Stack*,
+        memory: model.Memory*,
+        state: model.State*,
+    }(evm: model.EVM*) -> model.EVM* {
+        alloc_locals;
+        // Stack
+        let (popped) = Stack.pop_n(3);
+        let authority = uint256_to_uint160(popped[0]);
+        let offset = popped[1];
+        let length = popped[2];
+
+        // Gas
+        // Calling `get_account` subsequently will make the account warm for the next interaction
+        let is_warm = State.is_account_warm(authority);
+        tempvar access_gas_cost = is_warm * Gas.WARM_ACCESS + (1 - is_warm) *
+            Gas.COLD_ACCOUNT_ACCESS;
+
+        // Charge memory access gas - will revert if offset.high | length.high != 0
+        let memory_expansion = Gas.memory_expansion_cost_saturated(
+            memory.words_len, offset, length
+        );
+        let evm = EVM.charge_gas(evm, memory_expansion.cost + access_gas_cost);
+        if (evm.reverted != FALSE) {
+            return evm;
+        }
+
+        // OPERATION
+        tempvar memory = new model.Memory(
+            word_dict_start=memory.word_dict_start,
+            word_dict=memory.word_dict,
+            words_len=memory_expansion.new_words_len,
+        );
+
+        // authority not EOA
+        let authority_account = State.get_account(authority);
+        if (authority_account.code_len != 0) {
+            Stack.push_uint128(0);
+            tempvar authorized = new model.Option(is_some=0, value=0);
+            tempvar message = new model.Message(
+                bytecode=evm.message.bytecode,
+                bytecode_len=evm.message.bytecode_len,
+                valid_jumpdests_start=evm.message.valid_jumpdests_start,
+                valid_jumpdests=evm.message.valid_jumpdests,
+                calldata=evm.message.calldata,
+                calldata_len=evm.message.calldata_len,
+                value=evm.message.value,
+                caller=evm.message.caller,
+                parent=evm.message.parent,
+                address=evm.message.address,
+                code_address=evm.message.code_address,
+                read_only=evm.message.read_only,
+                is_create=evm.message.is_create,
+                authorized=authorized,
+                depth=evm.message.depth,
+                env=evm.message.env,
+            );
+            return new model.EVM(
+                message=message,
+                return_data_len=evm.return_data_len,
+                return_data=evm.return_data,
+                program_counter=evm.program_counter,
+                stopped=evm.stopped,
+                gas_left=evm.gas_left,
+                gas_refund=evm.gas_refund,
+                reverted=evm.reverted,
+            );
+        }
+
+        let (mem_slice) = alloc();
+        let mem_slice_len = length.low;
+        Memory.load_n(mem_slice_len, mem_slice, offset.low);
+
+        // Pad the memory slice with zeros to a size of 97
+        pad_end(mem_slice_len, mem_slice, 97);
+
+        // The first 65 bytes hold the Signature {y_parity, r, s}
+        let y_parity = mem_slice[0];
+        let r = Helpers.bytes32_to_uint256(mem_slice + 1);
+        let s = Helpers.bytes32_to_uint256(mem_slice + 33);
+
+        // Build the original message to compute the hash and verify the sig
+        let (msg) = alloc();
+        assert msg[0] = Constants.MAGIC;
+        Helpers.split_word(evm.message.env.chain_id, 32, msg + 1);
+        Helpers.split_word(authority_account.nonce, 32, msg + 33);
+        Helpers.split_word(evm.message.address.evm, 32, msg + 65);
+        // copy the commit to msg, held in mem_slice[65, 97]
+        memcpy(msg + 97, mem_slice + 65, 32);
+        let message_len = 129;
+
+        let (message_bytes8: felt*) = alloc();
+        let (message_bytes8_len, last_word, last_word_num_bytes) = bytes_to_bytes8_little_endian(
+            message_bytes8, message_len, msg
+        );
+
+        let (helpers_class) = Kakarot_cairo1_helpers_class_hash.read();
+        let (msg_hash) = ICairo1Helpers.library_call_keccak(
+            class_hash=helpers_class,
+            words_len=message_bytes8_len,
+            words=message_bytes8,
+            last_input_word=last_word,
+            last_input_num_bytes=last_word_num_bytes,
+        );
+
+        let (msg_hash_bigint: BigInt3) = uint256_to_bigint(msg_hash);
+        let (r_bigint: BigInt3) = uint256_to_bigint(r);
+        let (s_bigint: BigInt3) = uint256_to_bigint(s);
+        let (public_key_point: EcPoint) = recover_public_key(
+            msg_hash=msg_hash_bigint, r=r_bigint, s=s_bigint, v=y_parity
+        );
+        let (calculated_eth_address) = EcRecoverHelpers.public_key_point_to_eth_address(
+            public_key_point=public_key_point, helpers_class=helpers_class
+        );
+
+        if (calculated_eth_address != authority) {
+            Stack.push_uint128(0);
+            return evm;
+        }
+
+        Stack.push_uint128(1);
+        tempvar authorized = new model.Option(is_some=1, value=authority);
+        tempvar message = new model.Message(
+            bytecode=evm.message.bytecode,
+            bytecode_len=evm.message.bytecode_len,
+            valid_jumpdests_start=evm.message.valid_jumpdests_start,
+            valid_jumpdests=evm.message.valid_jumpdests,
+            calldata=evm.message.calldata,
+            calldata_len=evm.message.calldata_len,
+            value=evm.message.value,
+            caller=evm.message.caller,
+            parent=evm.message.parent,
+            address=evm.message.address,
+            code_address=evm.message.code_address,
+            read_only=evm.message.read_only,
+            is_create=evm.message.is_create,
+            authorized=authorized,
+            depth=evm.message.depth,
+            env=evm.message.env,
+        );
+
+        return new model.EVM(
+            message=message,
+            return_data_len=evm.return_data_len,
+            return_data=evm.return_data,
+            program_counter=evm.program_counter,
+            stopped=evm.stopped,
+            gas_left=evm.gas_left,
+            gas_refund=evm.gas_refund,
+            reverted=evm.reverted,
+        );
+    }
+
+    func exec_authcall{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+        stack: model.Stack*,
+        memory: model.Memory*,
+        state: model.State*,
+    }(evm: model.EVM*) -> model.EVM* {
+        alloc_locals;
+        // 1. Parse args from Stack
+        // Note: We don't pop ret_offset and ret_size here but at the end of the sub context
+        // See finalize_parent
+        let (popped) = Stack.pop_n(5);
+        let gas_param = popped[0];
+        let to = uint256_to_uint160(popped[1]);
+        let value = popped + 2 * Uint256.SIZE;
+        let args_offset = popped + 3 * Uint256.SIZE;
+        let args_size = popped + 4 * Uint256.SIZE;
+        let (ret_offset) = Stack.peek(0);
+        let (ret_size) = Stack.peek(1);
+
+        local call_sender = evm.message.authorized.value;
+
+        // 2. Gas
+        // Memory expansion cost
+        let memory_expansion = Gas.max_memory_expansion_cost(
+            memory.words_len, args_offset, args_size, ret_offset, ret_size
+        );
+
+        // Access gas cost. The account is marked as warm in the `generic_call` function,
+        // which performs a `get_account`.
+        let is_account_warm = State.is_account_warm(to);
+        tempvar access_gas_cost = is_account_warm * Gas.WARM_ACCESS + (1 - is_account_warm) *
+            Gas.COLD_ACCOUNT_ACCESS;
+
+        // Create gas cost
+        let is_account_alive = State.is_account_alive(to);
+        tempvar is_value_non_zero = is_not_zero(value.low) + is_not_zero(value.high);
+        tempvar is_value_non_zero = is_not_zero(is_value_non_zero);
+        let create_gas_cost = (1 - is_account_alive) * is_value_non_zero * Gas.NEW_ACCOUNT;
+
+        // Transfer gas cost
+        let transfer_gas_cost = is_value_non_zero * Gas.AUTHCALL_VALUE;
+
+        // Charge the fixed cost of the extra_gas + memory expansion
+        tempvar extra_gas = access_gas_cost + create_gas_cost + transfer_gas_cost;
+        let evm = EVM.charge_gas(evm, extra_gas + memory_expansion.cost);
+
+        let gas = Gas.compute_message_call_gas(gas_param, evm.gas_left);
+
+        // Charge the fixed message call gas
+        let evm = EVM.charge_gas(evm, gas);
+        if (evm.reverted != FALSE) {
+            // This EVM's stack will not be used anymore, since it reverted - no need to pop the
+            // last remaining 2 values ret_offset and ret_size.
+            return evm;
+        }
+
+        // Operation
+        tempvar memory = new model.Memory(
+            memory.word_dict_start, memory.word_dict, memory_expansion.new_words_len
+        );
+        if (evm.message.read_only * is_value_non_zero != FALSE) {
+            // No need to pop
+            let (revert_reason_len, revert_reason) = Errors.stateModificationError();
+            let evm = EVM.stop(evm, revert_reason_len, revert_reason, Errors.EXCEPTIONAL_HALT);
+            return evm;
+        }
+
+        let is_authorized_unset = 1 - evm.message.authorized.is_some;
+        let sender = State.get_account(call_sender);
+        let (sender_balance_lt_value) = uint256_lt([sender.balance], [value]);
+        tempvar is_max_depth_reached = Helpers.is_zero(
+            Constants.STACK_MAX_DEPTH - evm.message.depth
+        );
+        tempvar is_call_invalid = sender_balance_lt_value + is_max_depth_reached +
+            is_authorized_unset;
+        if (is_call_invalid != FALSE) {
+            // Requires popping the returndata offset and size before pushing 0
+            Stack.pop_n(2);
+            Stack.push_uint128(0);
+            let (return_data) = alloc();
+            tempvar evm = new model.EVM(
+                message=evm.message,
+                return_data_len=0,
+                return_data=return_data,
+                program_counter=evm.program_counter,
+                stopped=FALSE,
+                gas_left=evm.gas_left + gas,
+                gas_refund=evm.gas_refund,
+                reverted=FALSE,
+            );
+            return evm;
+        }
+
+        let child_evm = CallHelper.generic_call(
+            evm,
+            gas=gas,
+            value=value,
+            caller=call_sender,
+            to=to,
+            code_address=to,
+            is_staticcall=FALSE,
+            args_offset=args_offset,
+            args_size=args_size,
+            ret_offset=ret_offset,
+            ret_size=ret_size,
+        );
+
+        let call_sender_starknet_address = Account.compute_starknet_address(call_sender);
+        tempvar call_sender_address = new model.Address(
+            starknet=call_sender_starknet_address, evm=call_sender
+        );
+        let transfer = model.Transfer(call_sender_address, child_evm.message.address, [value]);
+        let success = State.add_transfer(transfer);
+        if (success == 0) {
+            let (revert_reason_len, revert_reason) = Errors.balanceError();
+            tempvar child_evm = EVM.stop(
+                child_evm, revert_reason_len, revert_reason, Errors.EXCEPTIONAL_HALT
+            );
+        } else {
+            tempvar child_evm = child_evm;
+        }
+
+        return child_evm;
+    }
 }
 
 namespace CallHelper {
@@ -876,6 +1178,7 @@ namespace CallHelper {
             tempvar read_only = evm.message.read_only;
         }
 
+        tempvar authorized = new model.Option(is_some=0, value=0);
         tempvar message = new model.Message(
             bytecode=code,
             bytecode_len=code_len,
@@ -890,6 +1193,7 @@ namespace CallHelper {
             code_address=code_address,
             read_only=read_only,
             is_create=FALSE,
+            authorized=authorized,
             depth=evm.message.depth + 1,
             env=evm.message.env,
         );
@@ -1012,7 +1316,7 @@ namespace CreateHelper {
         );
 
         let (implementation) = Kakarot_cairo1_helpers_class_hash.read();
-        let (message_hash) = ICairo1Helpers.library_call_keccak(
+        let (msg_hash) = ICairo1Helpers.library_call_keccak(
             class_hash=implementation,
             words_len=message_bytes8_len,
             words=message_bytes8,
@@ -1020,7 +1324,7 @@ namespace CreateHelper {
             last_input_num_bytes=last_word_num_bytes,
         );
 
-        let address = uint256_to_uint160(message_hash);
+        let address = uint256_to_uint160(msg_hash);
         return (address,);
     }
 

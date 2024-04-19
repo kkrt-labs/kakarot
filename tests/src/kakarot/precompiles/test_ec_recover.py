@@ -7,7 +7,6 @@ from ethereum.crypto.hash import Hash32, keccak256
 from ethereum.utils.byte import left_pad_zero_bytes
 
 from tests.utils.helpers import ec_sign, generate_random_private_key
-from tests.utils.syscall_handler import SyscallHandler
 from tests.utils.uint256 import int_to_uint256
 
 
@@ -62,10 +61,7 @@ class TestEcRecover:
         )  # output of cairo_keccak is in little endian, but our library reverses it back to big endian
         low, high = int_to_uint256(keccak_res)
 
-        with SyscallHandler.patch(
-            "ICairo1Helpers.library_call_keccak", lambda class_hash, data: [low, high]
-        ):
-            [output] = cairo_run("test__ec_recover", input=input_data)
+        [output] = cairo_run("test__ec_recover", input=input_data)
 
         assert bytes(output) == bytes(padded_address)
 
