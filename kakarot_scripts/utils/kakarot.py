@@ -380,7 +380,8 @@ async def eth_send_transaction(
     transaction_events = [
         event
         for event in receipt.events
-        if event.from_address == evm_account.address
+        # TODO: from_address=0 in new katana version, no reason why
+        if event.from_address in [evm_account.address, 0]
         and event.keys[0] == starknet_keccak(b"transaction_executed")
     ]
     if len(transaction_events) != 1:
