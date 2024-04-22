@@ -58,28 +58,23 @@ namespace PrecompileEcRecover {
             return (0, output, GAS_COST_EC_RECOVER, 0);
         }
 
-        // v - 27, see recover_public_key comment
-        let hash = Helpers.bytes32_to_bigint(input_padded);
-        let r = Helpers.bytes32_to_bigint(input_padded + 32 * 2);
-        let s = Helpers.bytes32_to_bigint(input_padded + 32 * 3);
+        let msg_hash = Helpers.bytes_to_uint256(32, input_padded);
+        let r = Helpers.bytes_to_uint256(32, input_padded + 32 * 2);
+        let s = Helpers.bytes_to_uint256(32, input_padded + 32 * 3);
 
-        let (public_key_point) = recover_public_key(hash, r, s, v - 27);
-        let (is_public_key_invalid) = EcRecoverHelpers.ec_point_equal(
-            public_key_point, EcPoint(BigInt3(0, 0, 0), BigInt3(0, 0, 0))
+        // v - 27, see recover_public_key comment
+        let (helpers_class) = Kakarot_cairo1_helpers_class_hash.read();
+        let (success, recovered_address) = ICairo1Helpers.library_call_recover_eth_address(
+            class_hash=helpers_class, msg_hash=msg_hash, r=r, s=s, y_parity=v - 27
         );
 
-        if (is_public_key_invalid != FALSE) {
+        if (success == 0) {
             let (output) = alloc();
             return (0, output, GAS_COST_EC_RECOVER, 0);
         }
 
-        let (helpers_class) = Kakarot_cairo1_helpers_class_hash.read();
-        let (public_address) = EcRecoverHelpers.public_key_point_to_eth_address(
-            public_key_point, helpers_class
-        );
-
         let (output) = alloc();
-        Helpers.split_word(public_address, 32, output);
+        Helpers.split_word(recovered_address, 32, output);
 
         return (32, output, GAS_COST_EC_RECOVER, 0);
     }
