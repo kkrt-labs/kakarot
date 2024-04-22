@@ -114,6 +114,11 @@ jobs:
       PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: python
     steps:
       - uses: actions/checkout@v4
+      - name: Extract Katana Version
+        id: extract_katana_version
+        run: |
+          KATANA_VERSION=$(grep -oP '^KATANA_VERSION = \K.*' Makefile)
+          echo "katana_version=$KATANA_VERSION" >> "$GITHUB_OUTPUT"
       - name: Set up Python 3.10
         uses: actions/setup-python@v4
         with:
@@ -150,7 +155,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cargo/bin
-          key: katana-v0.6.0-alpha.2
+          key: katana-${{ steps.extract_katana_version.outputs.katana_version }}
       - name: Install Katana
         if: steps.cached-katana.outputs.cache-hit != 'true'
         run: make install-katana

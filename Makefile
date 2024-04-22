@@ -8,7 +8,7 @@ endif
 
 # Kakarot SSJ artifacts for precompiles
 KKRT_SSJ_BUILD_ARTIFACT_URL = $(shell curl -L https://api.github.com/repos/kkrt-labs/kakarot-ssj/releases/latest | jq -r '.assets[0].browser_download_url')
-
+KATANA_VERSION = v0.6.1-alpha.3
 build: check
 	$(MAKE) clean
 	poetry run python ./kakarot_scripts/compile_kakarot.py
@@ -65,7 +65,7 @@ build-sol:
 	forge build --names --force
 
 install-katana:
-	cargo install --git https://github.com/dojoengine/dojo --locked --tag v0.6.1-alpha.3 katana
+	cargo install --git https://github.com/dojoengine/dojo --locked --tag "${KATANA_VERSION}" katana
 
 run-katana:
 	katana --chain-id test --validate-max-steps 4000000 --invoke-max-steps 6000000 --eth-gas-price 0 --strk-gas-price 0 --disable-fee
