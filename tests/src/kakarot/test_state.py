@@ -1,5 +1,5 @@
 import pytest
-from ethereum.shanghai.transaction import (
+from ethereum.shanghai.transactions import (
     TX_ACCESS_LIST_ADDRESS_COST,
     TX_ACCESS_LIST_STORAGE_KEY_COST,
 )
