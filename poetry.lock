@@ -1471,8 +1471,8 @@ test = ["GitPython (>=3.1.0,<3.2)", "filelock (>=3.12.3,<3.13)", "pytest (>=7.4.
 [package.source]
 type = "git"
 url = "https://github.com/ethereum/execution-specs.git"
-reference = "HEAD"
-resolved_reference = "744904ebd0ba8c9ce5ae7c5ee9bef3c5d21a38f9"
+reference = "91f71592a9656180710d914a155b608203fb37ea"
+resolved_reference = "91f71592a9656180710d914a155b608203fb37ea"
 
 [[package]]
 name = "exceptiongroup"
@@ -4455,4 +4455,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.11"
-content-hash = "4d33c90508ac117e0674a1b73e985f012259120b661d969bec6ed722cbf3dca2"
+content-hash = "4298e79e964564d52c6d88b7254d5ba23619d8554542cbd6aae751b524a2492e"
