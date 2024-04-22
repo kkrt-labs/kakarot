@@ -1,5 +1,5 @@
 import pytest
-from ethereum.shanghai.fork_types import (
+from ethereum.shanghai.transaction import (
     TX_ACCESS_LIST_ADDRESS_COST,
     TX_ACCESS_LIST_STORAGE_KEY_COST,
 )
