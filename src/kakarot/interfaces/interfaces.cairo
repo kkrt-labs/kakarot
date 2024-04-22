@@ -174,7 +174,7 @@ namespace ICairo1Helpers {
     }
 
     func recover_eth_address(msg_hash: Uint256, r: Uint256, s: Uint256, y_parity: felt) -> (
-        address: felt
+        success: felt, address: felt
     ) {
     }
 }

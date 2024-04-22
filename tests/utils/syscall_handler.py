@@ -7,7 +7,7 @@ from unittest import mock
 
 from eth_utils import keccak
 from ethereum.base_types import U256
-from ethereum.crypto.elliptic_curve import secp256k1_recover
+from ethereum.crypto.elliptic_curve import SECP256K1N, secp256k1_recover
 from ethereum.crypto.hash import keccak256
 from starkware.starknet.public.abi import (
     get_selector_from_name,
@@ -40,8 +40,19 @@ def cairo_recover_eth_address(class_hash, calldata):
     r = U256(uint256_to_int(calldata[2], calldata[3]))
     s = U256(uint256_to_int(calldata[4], calldata[5]))
     y_parity = U256(calldata[6])
-    public_key = secp256k1_recover(r, s, y_parity, msg_hash)
-    return [int.from_bytes(keccak256(public_key)[12:32], "big")]
+
+    if 0 >= r or r >= SECP256K1N:
+        return [0, 0]
+    if 0 >= s or s >= SECP256K1N:
+        return [0, 0]
+    try:
+        public_key = secp256k1_recover(r, s, y_parity, msg_hash)
+    except Exception:
+        return [0, 0]  # return [is_some: 0, address: 0]
+    return [
+        1,
+        int.from_bytes(keccak256(public_key)[12:32], "big"),
+    ]  # return [is_some: 1, address: int]
 
 
 def parse_state(state):

@@ -24,10 +24,11 @@ namespace Signature {
         }
 
         with_attr error_message("Invalid signature.") {
-            let (calculated_eth_address) = ICairo1Helpers.library_call_recover_eth_address(
+            let (success, recovered_address) = ICairo1Helpers.library_call_recover_eth_address(
                 class_hash=helpers_class, msg_hash=msg_hash, r=r, s=s, y_parity=v
             );
-            assert eth_address = calculated_eth_address;
+            assert success = 1;
+            assert eth_address = recovered_address;
         }
         return ();
     }

@@ -64,12 +64,17 @@ namespace PrecompileEcRecover {
 
         // v - 27, see recover_public_key comment
         let (helpers_class) = Kakarot_cairo1_helpers_class_hash.read();
-        let (public_address) = ICairo1Helpers.library_call_recover_eth_address(
+        let (success, recovered_address) = ICairo1Helpers.library_call_recover_eth_address(
             class_hash=helpers_class, msg_hash=msg_hash, r=r, s=s, y_parity=v - 27
         );
 
+        if (success == 0) {
+            let (output) = alloc();
+            return (0, output, GAS_COST_EC_RECOVER, 0);
+        }
+
         let (output) = alloc();
-        Helpers.split_word(public_address, 32, output);
+        Helpers.split_word(recovered_address, 32, output);
 
         return (32, output, GAS_COST_EC_RECOVER, 0);
     }
