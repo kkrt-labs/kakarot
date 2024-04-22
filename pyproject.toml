@@ -12,7 +12,6 @@ starknet-py = "^0.20.0"
 cairo-lang = "0.13.1"
 python-dotenv = "^0.21.0"
 async-lru = "^2.0.4"
-vyper = { git = "https://github.com/charles-cooper/vyper", rev = "feat/eip-3074" }
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.1.1"
@@ -45,11 +44,12 @@ pytest-env = "^1.1.3"
 amarna = "^0.1.5"
 py-evm = { git = "https://github.com/ethereum/py-evm", branch = "cancun-network-upgrade" }
 openzeppelin-cairo-contracts = "^0.6.1"
-ethereum = { git = "https://github.com/ethereum/execution-specs.git" }
+ethereum = { git = "https://github.com/ethereum/execution-specs.git", rev = "744904ebd0ba8c9ce5ae7c5ee9bef3c5d21a38f9" }
 eth-bloom = "^3.0.0"
 trie = "^3.0.0"
 cached-property = "^1.5.2"
 py-ecc = "^7.0.0"
+vyper = { git = "https://github.com/charles-cooper/vyper", rev = "feat/eip-3074" }
 
 [tool.pytest.ini_options]
 norecursedirs = "tests/ef_tests/test_data"
