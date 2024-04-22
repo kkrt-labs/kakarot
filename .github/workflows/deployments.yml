@@ -20,13 +20,13 @@ jobs:
       PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
       INFURA_KEY: ${{ secrets.INFURA_KEY }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
         with:
-          python-version: 3.9.13
+          python-version: 3.10.14
       - name: Load cached Poetry installation
         id: cached-poetry
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.local
           key: poetry-${{ runner.os }}
@@ -40,7 +40,7 @@ jobs:
       - run: poetry config installer.modern-installation false
       - name: Load cached venv
         id: cached-poetry-dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: .venv
           key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
