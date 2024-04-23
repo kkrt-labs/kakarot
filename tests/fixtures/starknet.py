@@ -14,6 +14,7 @@ from starkware.cairo.lang.compiler.cairo_compile import compile_cairo, get_modul
 from starkware.cairo.lang.compiler.scoped_name import ScopedName
 from starkware.cairo.lang.tracer.tracer_data import TracerData
 from starkware.cairo.lang.vm import cairo_runner
+from starkware.cairo.lang.vm.utils import RunResources
 from starkware.cairo.lang.vm.cairo_runner import CairoRunner
 from starkware.cairo.lang.vm.memory_dict import MemoryDict
 from starkware.cairo.lang.vm.memory_segments import FIRST_MEMORY_ADDR as PROGRAM_BASE
@@ -215,7 +216,8 @@ def cairo_run(request) -> list:
             },
             static_locals={"debug_info": debug_info(program)},
         )
-        runner.run_until_pc(stack[-1])
+        run_resources = RunResources(n_steps=4_000_000)
+        runner.run_until_pc(stack[-1], run_resources)
         runner.original_steps = runner.vm.current_step
         runner.end_run(disable_trace_padding=False)
         runner.relocate()
