@@ -20,13 +20,18 @@ Wallet = namedtuple("Wallet", ["address", "private_key", "starknet_contract"])
 
 
 @pytest.fixture(scope="session")
-def zero_fee():
+def default_fee():
     """
     Return max fee hardcoded to 0 ETH. This allows to
     set the allowed number of execute steps to whatever is passed
     when launching Katana.
     """
-    return int(0)
+    from kakarot_scripts.constants import NETWORK
+
+    if NETWORK["devnet"]:
+        return int(0)
+    else:
+        return int(1e16)
 
 
 @pytest.fixture(scope="session")
@@ -241,7 +246,7 @@ def eth_balance_of(eth: Contract, compute_starknet_address):
 
 
 @pytest.fixture(scope="session")
-def deploy_solidity_contract(zero_fee: int):
+def deploy_solidity_contract(default_fee: int):
     """
     Fixture to attach a modified web3.contract instance to an already deployed contract_account in kakarot.
     """
@@ -253,7 +258,7 @@ def deploy_solidity_contract(zero_fee: int):
         Create a web3.contract based on the basename of the target solidity file.
         """
         return await deploy(
-            contract_app, contract_name, *args, **kwargs, max_fee=zero_fee
+            contract_app, contract_name, *args, **kwargs, max_fee=default_fee
         )
 
     return _factory
