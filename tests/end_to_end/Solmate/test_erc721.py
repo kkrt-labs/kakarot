@@ -7,8 +7,8 @@ from tests.utils.errors import evm_error
 
 
 @pytest_asyncio.fixture(scope="module")
-async def erc_721(deploy_solidity_contract, owner):
-    return await deploy_solidity_contract(
+async def erc_721(deploy_contract, owner):
+    return await deploy_contract(
         "Solmate",
         "MockERC721",
         "Kakarot NFT",
@@ -18,8 +18,8 @@ async def erc_721(deploy_solidity_contract, owner):
 
 
 @pytest_asyncio.fixture(scope="module")
-async def erc_721_recipient(deploy_solidity_contract, owner):
-    return await deploy_solidity_contract(
+async def erc_721_recipient(deploy_contract, owner):
+    return await deploy_contract(
         "Solmate",
         "ERC721Recipient",
         caller_eoa=owner.starknet_contract,
@@ -27,8 +27,8 @@ async def erc_721_recipient(deploy_solidity_contract, owner):
 
 
 @pytest_asyncio.fixture(scope="module")
-async def erc_721_reverting_recipient(deploy_solidity_contract, owner):
-    return await deploy_solidity_contract(
+async def erc_721_reverting_recipient(deploy_contract, owner):
+    return await deploy_contract(
         "Solmate",
         "RevertingERC721Recipient",
         caller_eoa=owner.starknet_contract,
@@ -36,8 +36,8 @@ async def erc_721_reverting_recipient(deploy_solidity_contract, owner):
 
 
 @pytest_asyncio.fixture(scope="module")
-async def erc_721_recipient_with_wrong_return_data(deploy_solidity_contract, owner):
-    return await deploy_solidity_contract(
+async def erc_721_recipient_with_wrong_return_data(deploy_contract, owner):
+    return await deploy_contract(
         "Solmate",
         "WrongReturnDataERC721Recipient",
         caller_eoa=owner.starknet_contract,
@@ -45,8 +45,8 @@ async def erc_721_recipient_with_wrong_return_data(deploy_solidity_contract, own
 
 
 @pytest_asyncio.fixture(scope="module")
-async def erc_721_non_recipient(deploy_solidity_contract, owner):
-    return await deploy_solidity_contract(
+async def erc_721_non_recipient(deploy_contract, owner):
+    return await deploy_contract(
         "Solmate",
         "NonERC721Recipient",
         caller_eoa=owner.starknet_contract,

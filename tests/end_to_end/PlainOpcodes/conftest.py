@@ -2,8 +2,8 @@ import pytest_asyncio
 
 
 @pytest_asyncio.fixture(scope="package")
-async def counter(deploy_solidity_contract, owner):
-    return await deploy_solidity_contract(
+async def counter(deploy_contract, owner):
+    return await deploy_contract(
         "PlainOpcodes",
         "Counter",
         caller_eoa=owner.starknet_contract,
@@ -11,8 +11,8 @@ async def counter(deploy_solidity_contract, owner):
 
 
 @pytest_asyncio.fixture(scope="package")
-async def caller(deploy_solidity_contract, owner):
-    return await deploy_solidity_contract(
+async def caller(deploy_contract, owner):
+    return await deploy_contract(
         "PlainOpcodes",
         "Caller",
         caller_eoa=owner.starknet_contract,
@@ -20,8 +20,8 @@ async def caller(deploy_solidity_contract, owner):
 
 
 @pytest_asyncio.fixture(scope="package")
-async def plain_opcodes(deploy_solidity_contract, counter, owner):
-    return await deploy_solidity_contract(
+async def plain_opcodes(deploy_contract, counter, owner):
+    return await deploy_contract(
         "PlainOpcodes",
         "PlainOpcodes",
         counter.address,
@@ -30,8 +30,8 @@ async def plain_opcodes(deploy_solidity_contract, counter, owner):
 
 
 @pytest_asyncio.fixture(scope="package")
-async def revert_on_fallbacks(deploy_solidity_contract, owner):
-    return await deploy_solidity_contract(
+async def revert_on_fallbacks(deploy_contract, owner):
+    return await deploy_contract(
         "PlainOpcodes",
         "ContractRevertOnFallbackAndReceive",
         caller_eoa=owner.starknet_contract,

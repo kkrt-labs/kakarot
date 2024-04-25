@@ -7,10 +7,8 @@ from tests.utils.errors import evm_error
 @pytest.mark.Counter
 class TestCounter:
     class TestCount:
-        async def test_should_return_0_after_deployment(
-            self, deploy_solidity_contract, owner
-        ):
-            counter = await deploy_solidity_contract(
+        async def test_should_return_0_after_deployment(self, deploy_contract, owner):
+            counter = await deploy_contract(
                 "PlainOpcodes",
                 "Counter",
                 caller_eoa=owner.starknet_contract,
@@ -64,11 +62,9 @@ class TestCounter:
             assert await counter.count() == 0
 
     class TestDeploymentWithValue:
-        async def test_deployment_with_value_should_fail(
-            self, deploy_solidity_contract
-        ):
+        async def test_deployment_with_value_should_fail(self, deploy_contract):
             with evm_error():
-                await deploy_solidity_contract("PlainOpcodes", "Counter", value=1)
+                await deploy_contract("PlainOpcodes", "Counter", value=1)
 
     class TestLoops:
         @pytest.mark.parametrize("iterations", [0, 50, 100])

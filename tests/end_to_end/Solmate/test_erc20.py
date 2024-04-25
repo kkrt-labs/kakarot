@@ -10,8 +10,8 @@ TEST_AMOUNT = int(0.9 * 10**18)
 
 
 @pytest_asyncio.fixture(scope="module")
-async def erc_20(deploy_solidity_contract, owner):
-    return await deploy_solidity_contract(
+async def erc_20(deploy_contract, owner):
+    return await deploy_contract(
         "Solmate",
         "ERC20",
         "Kakarot Token",

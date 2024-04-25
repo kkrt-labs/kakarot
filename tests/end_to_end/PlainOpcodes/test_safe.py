@@ -5,8 +5,8 @@ from tests.utils.constants import ACCOUNT_BALANCE
 
 
 @pytest_asyncio.fixture(scope="package")
-async def safe(deploy_solidity_contract, owner):
-    return await deploy_solidity_contract(
+async def safe(deploy_contract, owner):
+    return await deploy_contract(
         "PlainOpcodes", "Safe", caller_eoa=owner.starknet_contract
     )
 
@@ -58,10 +58,8 @@ class TestSafe:
             assert owner_balance_after - owner_balance_before + gas_used == safe_balance
 
     class TestDeploySafeWithValue:
-        async def test_deploy_safe_with_value(
-            self, safe, deploy_solidity_contract, owner
-        ):
-            safe = await deploy_solidity_contract(
+        async def test_deploy_safe_with_value(self, safe, deploy_contract, owner):
+            safe = await deploy_contract(
                 "PlainOpcodes",
                 "Safe",
                 caller_eoa=owner.starknet_contract,
