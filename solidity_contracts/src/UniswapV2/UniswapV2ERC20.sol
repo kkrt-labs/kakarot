@@ -87,6 +87,11 @@ contract UniswapV2ERC20 is IUniswapV2ERC20 {
         return true;
     }
 
+    function mint(address to, uint value) external returns (bool) {
+        _mint(to, value);
+        return true;
+    }
+
     function permit(
         address owner,
         address spender,
