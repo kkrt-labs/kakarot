@@ -43,9 +43,6 @@ test-unit: build-sol
 test-end-to-end: build-sol deploy
 	poetry run pytest tests/end_to_end
 
-test-uniswap: build-sol deploy
-	poetry run pytest tests/end_to_end/UniswapV2
-
 deploy: build
 	poetry run python ./kakarot_scripts/deploy_kakarot.py
 
@@ -72,5 +69,3 @@ install-katana:
 
 run-katana:
 	katana --chain-id test --validate-max-steps 160000000 --invoke-max-steps 160000000 --eth-gas-price 0 --strk-gas-price 0 --disable-fee
-
-

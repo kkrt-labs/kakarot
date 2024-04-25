@@ -2,6 +2,7 @@ import pytest_asyncio
 
 TOTAL_SUPPLY = 10000 * 10**18
 
+
 @pytest_asyncio.fixture(scope="function")
 async def token_a(deploy_solidity_contract, owner):
     return await deploy_solidity_contract(
@@ -10,28 +11,26 @@ async def token_a(deploy_solidity_contract, owner):
         TOTAL_SUPPLY,
         caller_eoa=owner.starknet_contract,
     )
-#TODO: Make UniswapERC20 receive constructor to diferentiate contract addresses - For now using solmate contract
+
+
 @pytest_asyncio.fixture(scope="function")
 async def token_b(deploy_solidity_contract, owner):
     return await deploy_solidity_contract(
-        "Solmate",
-        "ERC20",
-        "Kakarot Token",
-        "KKT",
-        18,
+        "UniswapV2",
+        "ERC20Bis",
+        TOTAL_SUPPLY,
         caller_eoa=owner.starknet_contract,
     )
 
+
 @pytest_asyncio.fixture(scope="module")
-async def token_WETH(deploy_solidity_contract, owner):
+async def weth(deploy_solidity_contract, owner):
     return await deploy_solidity_contract(
-        "Solmate",
-        "ERC20",
-        "WETH",
-        "WETH",
-        18,
+        "UniswapV2Router",
+        "WETH9",
         caller_eoa=owner.starknet_contract,
     )
+
 
 @pytest_asyncio.fixture(scope="module")
 async def factory(
@@ -45,17 +44,18 @@ async def factory(
         caller_eoa=owner.starknet_contract,
     )
 
+
 @pytest_asyncio.fixture(scope="module")
 async def router(
     deploy_solidity_contract,
     owner,
     factory,
-    token_WETH,
+    weth,
 ):
     return await deploy_solidity_contract(
-        "UniswapV2",
+        "UniswapV2Router",
         "UniswapV2Router02",
         factory.address,
-        token_WETH.address,
+        weth.address,
         caller_eoa=owner.starknet_contract,
     )
