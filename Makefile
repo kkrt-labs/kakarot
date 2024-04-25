@@ -8,7 +8,7 @@ endif
 
 # Kakarot SSJ artifacts for precompiles
 KKRT_SSJ_BUILD_ARTIFACT_URL = $(shell curl -L https://api.github.com/repos/kkrt-labs/kakarot-ssj/releases/latest | jq -r '.assets[0].browser_download_url')
-KATANA_VERSION = v0.6.1-alpha.3
+KATANA_VERSION = v0.6.1-alpha.4
 build: check
 	$(MAKE) clean
 	poetry run python ./kakarot_scripts/compile_kakarot.py
