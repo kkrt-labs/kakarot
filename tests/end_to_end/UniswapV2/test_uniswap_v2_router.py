@@ -53,17 +53,19 @@ class TestUniswapV2Router:
             print("allowance_b: ", allowance_b)
 
             try:
-                success = (await router.addLiquidity(
-                    token_a.address,
-                    token_b.address,
-                    amount_A_desired,
-                    amount_B_desired,
-                    amount_A_min,
-                    amount_B_min,
-                    to_address,
-                    deadline,
-                    caller_eoa=owner.starknet_contract,
-                ))["success"]
+                success = (
+                    await router.addLiquidity(
+                        token_a.address,
+                        token_b.address,
+                        amount_A_desired,
+                        amount_B_desired,
+                        amount_A_min,
+                        amount_B_min,
+                        to_address,
+                        deadline,
+                        caller_eoa=owner.starknet_contract,
+                    )
+                )["success"]
                 assert success == 1
             except Exception as e:
                 print(f"Transaction failed: {str(e)}")
