@@ -43,6 +43,9 @@ test-unit: build-sol
 test-end-to-end: build-sol deploy
 	poetry run pytest tests/end_to_end
 
+test-uniswap: build-sol deploy
+	poetry run pytest tests/end_to_end/UniswapV2
+
 deploy: build
 	poetry run python ./kakarot_scripts/deploy_kakarot.py
 
@@ -68,4 +71,4 @@ install-katana:
 	cargo install --git https://github.com/dojoengine/dojo --locked --tag "${KATANA_VERSION}" katana
 
 run-katana:
-	katana --chain-id test --validate-max-steps 4000000 --invoke-max-steps 6000000 --eth-gas-price 0 --strk-gas-price 0 --disable-fee
+	katana --chain-id test --validate-max-steps 400000000 --invoke-max-steps 600000000 --eth-gas-price 0 --strk-gas-price 0 --disable-fee
