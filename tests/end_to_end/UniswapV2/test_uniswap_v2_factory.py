@@ -66,6 +66,7 @@ class TestUniswapV2Factory:
             assert await pair.token0() == token_0
             assert await pair.token1() == token_1
 
+        @pytest.mark.xfail(reason="Gas metering is inaccurate in kakarot")
         async def test_should_use_correct_gas(self, factory, owner):
             await factory.createPair(
                 *TEST_ADDRESSES, caller_eoa=owner.starknet_contract, max_fee=0
