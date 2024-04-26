@@ -3,7 +3,7 @@ import pytest_asyncio
 TOTAL_SUPPLY = 10000 * 10**18
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture(scope="function")
 async def token_a(deploy_solidity_contract, owner):
     return await deploy_solidity_contract(
         "UniswapV2",
