@@ -82,8 +82,8 @@ NETWORKS = {
         "explorer_url": "",
         "rpc_url": os.getenv("KAKAROT_SEPOLIA_RPC_URL"),
         "devnet": False,
-        "check_interval": 3,
-        "max_wait": 120,
+        "check_interval": 6,
+        "max_wait": 360,
     },
 }
 
