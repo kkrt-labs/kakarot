@@ -11,7 +11,7 @@ class TestUniswapV2Router:
             assert await router.factory() == factory.address
 
     class TestAddLiquidity:
-        async def test_should_add_liquidity(self, router, token_b, token_a, owner):
+        async def test_should_add_liquidity(self, router, token_a, token_b, owner):
             amount_A_desired = (
                 1000 * await token_a.decimals()
             )  # This needs to match the token's decimals
