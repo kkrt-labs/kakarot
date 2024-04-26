@@ -17,7 +17,7 @@ async def token_a(deploy_solidity_contract, owner):
 async def token_b(deploy_solidity_contract, owner):
     return await deploy_solidity_contract(
         "UniswapV2",
-        "ERC20Bis",
+        "ERC20",
         TOTAL_SUPPLY,
         caller_eoa=owner.starknet_contract,
     )
@@ -26,7 +26,7 @@ async def token_b(deploy_solidity_contract, owner):
 @pytest_asyncio.fixture(scope="module")
 async def weth(deploy_solidity_contract, owner):
     return await deploy_solidity_contract(
-        "UniswapV2Router",
+        "WETH",
         "WETH9",
         caller_eoa=owner.starknet_contract,
     )

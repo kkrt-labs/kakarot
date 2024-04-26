@@ -2,7 +2,7 @@ import pytest
 
 
 @pytest.mark.asyncio(scope="session")
-# @pytest.mark.UniswapV2Router
+@pytest.mark.UniswapV2Router
 class TestUniswapV2Router:
     class TestDeploy:
         async def test_should_set_constants(self, router, weth, factory):
@@ -12,8 +12,12 @@ class TestUniswapV2Router:
 
     class TestAddLiquidity:
         async def test_should_add_liquidity(self, router, token_b, token_a, owner):
-            amount_A_desired = 1000 * 10**18  # This needs to match the token's decimals
-            amount_B_desired = 500 * 10**18  # Assuming WETH has 18 decimals
+            amount_A_desired = (
+                1000 * await token_a.decimals()
+            )  # This needs to match the token's decimals
+            amount_B_desired = (
+                500 * await token_b.decimals()
+            )  # Assuming WETH has 18 decimals
 
             amount_A_min = 0
             amount_B_min = 0
