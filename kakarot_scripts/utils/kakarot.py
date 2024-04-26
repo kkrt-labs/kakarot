@@ -379,7 +379,7 @@ async def eth_send_transaction(
     transaction_events = [
         event
         for event in receipt.events
-        if event.from_address in [0, evm_account.address]
+        if event.from_address == evm_account.address
         and event.keys[0] == starknet_keccak(b"transaction_executed")
     ]
     if len(transaction_events) != 1:
