@@ -14,8 +14,8 @@ artifacts
 build
 
 #foundry
-/cache
-/out
+out
+cache
 /broadcast
 
 .DS_Store
@@ -33,3 +33,5 @@ logs
 
 tests/ef_tests/test_data
 !tests/ef_tests/test_data/.gitkeep
+
+bin/

@@ -1,0 +1,9 @@
+[profile.default]
+src = 'src'
+test = 'tests'
+out = '../solidity_contracts/build'
+libs = ['../lib']
+
+[rpc_endpoints]
+anvil = "http://127.0.0.1:8545"
+kakarot = "http://127.0.0.1:3030"

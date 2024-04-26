@@ -42,8 +42,8 @@ async def new_account(max_fee):
 
 
 @pytest_asyncio.fixture(scope="module")
-async def counter(deploy_solidity_contract, new_account):
-    return await deploy_solidity_contract(
+async def counter(deploy_contract, new_account):
+    return await deploy_contract(
         "PlainOpcodes",
         "Counter",
         caller_eoa=new_account.starknet_contract,

@@ -14,7 +14,7 @@ from starkware.cairo.common.cairo_secp.ec_point import EcPoint
 from starkware.cairo.common.cairo_secp.bigint import uint256_to_bigint
 from starkware.cairo.common.cairo_secp.bigint3 import BigInt3
 from starkware.cairo.common.registers import get_fp_and_pc
-from starkware.cairo.common.uint256 import Uint256, uint256_lt, uint256_le
+from starkware.cairo.common.uint256 import Uint256, uint256_lt, uint256_le, uint256_eq
 from starkware.cairo.common.default_dict import default_dict_new
 from starkware.cairo.common.dict_access import DictAccess
 
@@ -1035,7 +1035,15 @@ namespace SystemOperations {
         tempvar extra_gas = access_gas_cost + create_gas_cost + transfer_gas_cost;
         let evm = EVM.charge_gas(evm, extra_gas + memory_expansion.cost);
 
-        let gas = Gas.compute_message_call_gas(gas_param, evm.gas_left);
+        let (is_gas_zero) = uint256_eq(gas_param, Uint256(0, 0));
+        if (is_gas_zero != FALSE) {
+            let (high, low) = split_felt(evm.gas_left);
+            tempvar gas_limit = Uint256(low, high);
+        } else {
+            tempvar gas_limit = gas_param;
+        }
+        let gas_limit = Uint256([ap - 2], [ap - 1]);
+        let gas = Gas.compute_message_call_gas(gas_limit, evm.gas_left);
 
         // Charge the fixed message call gas
         let evm = EVM.charge_gas(evm, gas);
