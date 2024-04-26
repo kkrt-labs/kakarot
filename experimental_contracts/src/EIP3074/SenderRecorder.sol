@@ -8,4 +8,8 @@ contract SenderRecorder {
     function recordSender() external {
         lastSender = msg.sender;
     }
+
+    function reset() external {
+        lastSender = address(0);
+    }
 }

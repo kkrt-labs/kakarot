@@ -35,7 +35,6 @@ abstract contract BaseAuth {
 
     function authCallSimple(address to, bytes memory data, uint256 value, uint256 gasLimit)
         internal
-        pure
         returns (bool success)
     {
         assembly {

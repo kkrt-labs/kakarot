@@ -14,8 +14,8 @@ artifacts
 build
 
 #foundry
-/cache
-/out
+out
+cache
 /broadcast
 
 .DS_Store

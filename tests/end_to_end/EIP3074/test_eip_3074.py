@@ -9,8 +9,14 @@ def commit():
     return keccak(b"Some unique commit data")
 
 
+@pytest.fixture(autouse=True)
+async def cleanup(sender_recorder):
+    yield
+    await sender_recorder.reset()
+
+
 @pytest.mark.asyncio(scope="package")
-@pytest.mark.PlainOpcodes
+@pytest.mark.EIP3074
 class TestEIP3074:
     class TestEIP3074Integration:
         async def test_should_execute_authorized_call(

@@ -24,7 +24,7 @@ contract GasSponsorInvoker is BaseAuth {
         bytes32 s,
         address to,
         bytes calldata data
-    ) external pure returns (bool success) {
+    ) external returns (bool success) {
         // Ensure the transaction is authorized by the signer
         require(authSimple(authority, commit, v, r, s), "Authorization failed");
 

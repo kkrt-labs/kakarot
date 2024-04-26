@@ -1042,7 +1042,7 @@ namespace SystemOperations {
         } else {
             tempvar gas_limit = gas_param;
         }
-        tempvar gas_limit = gas_limit;
+        let gas_limit = Uint256([ap - 2], [ap - 1]);
         let gas = Gas.compute_message_call_gas(gas_limit, evm.gas_left);
 
         // Charge the fixed message call gas
