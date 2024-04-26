@@ -68,4 +68,4 @@ install-katana:
 	cargo install --git https://github.com/dojoengine/dojo --locked --tag "${KATANA_VERSION}" katana
 
 run-katana:
-	katana --chain-id test --validate-max-steps 6000000 --invoke-max-steps 140000000 --eth-gas-price 0 --strk-gas-price 0 --disable-fee
+	katana --chain-id test --validate-max-steps 6000000 --invoke-max-steps 14000000 --eth-gas-price 0 --strk-gas-price 0 --disable-fee
