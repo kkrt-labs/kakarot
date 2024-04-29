@@ -92,3 +92,33 @@ func test__validate{
 
     return ();
 }
+
+func test__write_jumpdests{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, bitwise_ptr: BitwiseBuiltin*, range_check_ptr
+}() {
+    // Given
+    tempvar jumpdests_len: felt;
+    let (jumpdests) = alloc();
+    %{
+        ids.jumpdests_len = len(program_input["jumpdests"])
+        segments.write_arg(ids.jumpdests, program_input["jumpdests"])
+    %}
+
+    // When
+    AccountContract.write_jumpdests(jumpdests_len, jumpdests);
+
+    return ();
+}
+
+func test__is_valid_jumpdest{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, bitwise_ptr: BitwiseBuiltin*, range_check_ptr
+}() -> felt {
+    // Given
+    tempvar index: felt;
+    %{ ids.index = program_input["index"] %}
+
+    // When
+    let (is_valid) = AccountContract.is_valid_jumpdest(index);
+
+    return is_valid;
+}

@@ -141,6 +141,44 @@ class TestContractAccount:
             mock_storage.assert_has_calls(calls)
             assert output[:output_len] == list(bytecode)
 
+    class TestJumpdests:
+        class TestWriteJumpdests:
+            def test__should_store_valid_jumpdests(self, cairo_run):
+                jumpdests = [0x02, 0x10, 0xFF]
+                base_address = get_storage_var_address("Account_valid_jumpdests")
+                cairo_run("test__write_jumpdests", jumpdests=jumpdests)
+
+                SyscallHandler.mock_storage.assert_any_call(
+                    address=base_address + jumpdests[0], value=1
+                )
+                SyscallHandler.mock_storage.assert_any_call(
+                    address=base_address + jumpdests[1], value=1
+                )
+                SyscallHandler.mock_storage.assert_any_call(
+                    address=base_address + jumpdests[2], value=1
+                )
+
+        class TestReadJumdpests:
+            @pytest.fixture
+            def storage(self, jumpdests):
+                base_address = get_storage_var_address("Account_valid_jumpdests")
+                valid_addresses = [base_address + jumpdest for jumpdest in jumpdests]
+
+                def _storage(address):
+                    return 1 if address in valid_addresses else 0
+
+                return _storage
+
+            @pytest.mark.parametrize("jumpdests", [[0x02, 0x10, 0xFF]])
+            def test__should_load_valid_jumpdest(self, cairo_run, jumpdests, storage):
+                with patch.object(
+                    SyscallHandler, "mock_storage", side_effect=storage
+                ) as mock_storage:
+                    assert cairo_run("test__is_valid_jumpdest", index=0x02) == 1
+                    assert cairo_run("test__is_valid_jumpdest", index=0x10) == 1
+                    assert cairo_run("test__is_valid_jumpdest", index=0xFF) == 1
+                    assert cairo_run("test__is_valid_jumpdest", index=0xABC) == 0
+
     class TestValidate:
         @pytest.mark.parametrize("seed", (41, 42))
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
