@@ -1,10 +1,14 @@
 %builtins range_check
 
+from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.uint256 import Uint256, assert_uint256_eq
 from starkware.cairo.common.memset import memset
+from starkware.cairo.common.memcpy import memcpy
+from starkware.cairo.common.default_dict import default_dict_new
 
 from utils.utils import Helpers
+from utils.dict import dict_keys
 from kakarot.constants import Constants
 
 func test__bytes_to_uint256{range_check_ptr}() -> Uint256 {
@@ -101,6 +105,28 @@ func test__try_parse_destination_from_bytes{range_check_ptr}(output_ptr: felt*) 
     // Then
     assert [output_ptr] = maybe_address.is_some;
     assert [output_ptr + 1] = maybe_address.value;
+
+    return ();
+}
+
+func test__initialize_jumpdests{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    output_ptr: felt*
+) {
+    alloc_locals;
+
+    tempvar bytecode_len;
+    let (bytecode) = alloc();
+
+    %{
+        ids.bytecode_len = len(program_input["bytecode"])
+        segments.write_arg(ids.bytecode, program_input["bytecode"])
+    %}
+
+    let (valid_jumpdests_start, valid_jumpdests) = Helpers.initialize_jumpdests(
+        bytecode_len, bytecode
+    );
+    let (keys_len, keys) = dict_keys(valid_jumpdests_start, valid_jumpdests);
+    memcpy(output_ptr, keys, keys_len);
 
     return ();
 }

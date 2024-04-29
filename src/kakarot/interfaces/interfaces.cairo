@@ -78,6 +78,9 @@ namespace IAccount {
 
     func is_jumpdest_valid(index: felt) -> (is_valid: felt) {
     }
+
+    func write_jumpdests(jumpdests_len: felt, jumpdests: felt*) {
+    }
 }
 
 @contract_interface

@@ -441,7 +441,7 @@ namespace AccountContract {
 
     func is_valid_jumpdest{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         index: felt
-    ) -> (is_valid: felt) {
+    ) -> felt {
         let (base_address) = Account_valid_jumpdests.addr();
         let index_address = base_address + index;
 
@@ -454,7 +454,7 @@ namespace AccountContract {
         tempvar syscall_ptr = syscall_ptr + StorageRead.SIZE;
         tempvar value = response.value;
 
-        return (is_valid=value);
+        return value;
     }
 }
 

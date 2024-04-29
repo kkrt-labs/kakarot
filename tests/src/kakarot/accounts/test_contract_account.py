@@ -158,7 +158,7 @@ class TestContractAccount:
                     address=base_address + jumpdests[2], value=1
                 )
 
-        class TestReadJumdpests:
+        class TestReadJumpdests:
             @pytest.fixture
             def storage(self, jumpdests):
                 base_address = get_storage_var_address("Account_valid_jumpdests")
