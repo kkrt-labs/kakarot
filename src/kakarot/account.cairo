@@ -571,6 +571,28 @@ namespace Account {
         return (valid_jumpdests_start, valid_jumpdests);
     }
 
+    func is_jumpdest_valid{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        valid_jumpdests: DictAccess*,
+    }(self: model.Account*, index: felt) -> felt {
+        let (is_cached) = dict_read{dict_ptr=valid_jumpdests}(index);
+
+        if (is_cached != 0) {
+            return TRUE;
+        }
+
+        let (is_valid) = IAccount.is_jumpdest_valid(self.address.starknet, index);
+
+        if (is_valid != 0) {
+            dict_write{dict_ptr=valid_jumpdests}(index, TRUE);
+            return TRUE;
+        }
+
+        return FALSE;
+    }
+
     func is_storage_warm{pedersen_ptr: HashBuiltin*, range_check_ptr}(
         self: model.Account*, key: Uint256*
     ) -> (model.Account*, felt) {

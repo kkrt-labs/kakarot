@@ -261,7 +261,7 @@ func write_jumpdests{
 // @param index The index of the jumpdest.
 // @return is_valid 1 if the jumpdest is valid, 0 otherwise.
 @view
-func is_valid_jumdpest{
+func is_jumpdest_valid{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(index: felt) -> (is_valid: felt) {
     return AccountContract.is_valid_jumdpest(jumpdest);

@@ -101,3 +101,36 @@ class TestAccount:
             bytecode = get_contract("PlainOpcodes", "Counter").bytecode_runtime
             output = cairo_run("test__get_jumpdests", bytecode=bytecode)
             assert set(output) == get_valid_jump_destinations(bytecode)
+
+    class TestIsJumpdestValid:
+        def test_should_return_cached_valid_jumpdest(self, cairo_run):
+            assert (
+                cairo_run(
+                    "test__is_jumpdest_valid",
+                    cached_jumpdests=[0x01, 0x10, 0x101],
+                    query=0x10,
+                )
+                == 1
+            )
+            assert (
+                cairo_run(
+                    "test__is_jumpdest_valid",
+                    cached_jumpdests=[0x01, 0x10, 0x101],
+                    query=0x101,
+                )
+                == 1
+            )
+
+        @SyscallHandler.patch(
+            "IAccount.is_jumpdest_valid",
+            lambda addr, data: [1 if data == [0x10] else 0],
+        )
+        def test_should_return_non_cached_valid_jumpdest(self, cairo_run):
+            assert (
+                cairo_run("test__is_jumpdest_valid", cached_jumpdests=[], query=0x10)
+                == 1
+            )
+            assert (
+                cairo_run("test__is_jumpdest_valid", cached_jumpdests=[], query=0x102)
+                == 0
+            )

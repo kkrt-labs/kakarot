@@ -76,7 +76,7 @@ namespace IAccount {
     func set_nonce(nonce: felt) {
     }
 
-    func is_empty() -> (is_empty: felt) {
+    func is_jumpdest_valid(index: felt) -> (is_valid: felt) {
     }
 }
 
