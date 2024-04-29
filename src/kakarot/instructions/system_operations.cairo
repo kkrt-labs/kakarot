@@ -1516,7 +1516,7 @@ namespace CreateHelper {
             account.code_len, account.code
         );
         let account = Account.cache_valid_jumpdests(
-            account, evm.message.valid_jumpdests_start, evm.message.valid_jumpdests
+            account, valid_jumpdests_start, valid_jumpdests
         );
 
         // Update local state with the updated account inner pointers.
