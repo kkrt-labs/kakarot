@@ -170,12 +170,25 @@ class TestContractAccount:
                 return _storage
 
             @pytest.mark.parametrize("jumpdests", [[0x02, 0x10, 0xFF]])
-            def test__should_load_valid_jumpdest(self, cairo_run, jumpdests, storage):
+            def test__should_return_if_jumpdest_valid(
+                self, cairo_run, jumpdests, storage
+            ):
                 with patch.object(SyscallHandler, "mock_storage", side_effect=storage):
                     assert cairo_run("test__is_valid_jumpdest", index=0x02) == 1
                     assert cairo_run("test__is_valid_jumpdest", index=0x10) == 1
                     assert cairo_run("test__is_valid_jumpdest", index=0xFF) == 1
                     assert cairo_run("test__is_valid_jumpdest", index=0xABC) == 0
+
+                    base_address = get_storage_var_address("Account_valid_jumpdests")
+                    SyscallHandler.mock_storage.assert_any_call(
+                        address=base_address + jumpdests[0]
+                    )
+                    SyscallHandler.mock_storage.assert_any_call(
+                        address=base_address + jumpdests[1]
+                    )
+                    SyscallHandler.mock_storage.assert_any_call(
+                        address=base_address + jumpdests[2]
+                    )
 
     class TestValidate:
         @pytest.mark.parametrize("seed", (41, 42))
