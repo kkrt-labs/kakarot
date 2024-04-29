@@ -6,10 +6,12 @@ from starkware.cairo.common.dict import dict_read
 from starkware.cairo.common.uint256 import Uint256, assert_uint256_eq
 from starkware.cairo.common.dict_access import DictAccess
 from starkware.cairo.common.memcpy import memcpy
+from starkware.cairo.common.default_dict import default_dict_new
 
 from kakarot.model import model
 from kakarot.account import Account
 from utils.dict import dict_keys
+from tests.utils.helpers import TestHelpers
 
 func test__init__should_return_account_with_default_dict_as_storage{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
@@ -214,4 +216,35 @@ func test__get_jumpdests{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_c
     memcpy(output_ptr, keys, keys_len);
 
     return ();
+}
+
+func test__is_jumpdest_valid{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    ) -> felt {
+    alloc_locals;
+
+    tempvar cached_jumpdests_len;
+    let (cached_jumpdests) = alloc();
+    local query;
+
+    %{
+        ids.cached_jumpdests_len = len(program_input["cached_jumpdests"])
+        segments.write_arg(ids.cached_jumpdests, program_input["cached_jumpdests"])
+        ids.query = program_input["query"]
+    %}
+
+    let (valid_jumpdests_start, valid_jumpdests) = TestHelpers.init_jumpdests_with_values(
+        cached_jumpdests_len, cached_jumpdests
+    );
+
+    let starknet_address = Account.compute_starknet_address(0);
+    tempvar address = new model.Address(starknet_address, 0);
+    let (local code: felt*) = alloc();
+    tempvar balance = new Uint256(0, 0);
+    let account = Account.init(address, 0, code, 0, balance);
+
+    with valid_jumpdests {
+        let result = Account.is_jumpdest_valid(account, query);
+    }
+
+    return result;
 }
