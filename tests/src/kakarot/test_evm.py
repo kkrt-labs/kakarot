@@ -1,5 +1,7 @@
 import pytest
 
+from tests.utils.syscall_handler import SyscallHandler
+
 
 class TestExecutionContext:
     @pytest.mark.parametrize(
@@ -18,6 +20,55 @@ class TestExecutionContext:
         ],
     )
     def test_jump(self, cairo_run, bytecode, jumpdest, new_pc, expected_return_data):
-        evm = cairo_run("test__jump", bytecode=bytecode, jumpdest=jumpdest)
+
+        with SyscallHandler.patch(
+            "IAccount.is_jumpdest_valid",
+            lambda addr, data: [1 if len(expected_return_data) == 0 else 0],
+        ):
+            evm = cairo_run("test__jump", bytecode=bytecode, jumpdest=jumpdest)
         assert evm["program_counter"] == new_pc
         assert evm["return_data"] == expected_return_data
+
+
+class TestIsJumpdestValid:
+    @pytest.mark.parametrize(
+        "cached_jumpdests, index, expected",
+        [
+            ([0x01, 0x10, 0x101], 0x10, 1),
+            ([0x01, 0x10, 0x101], 0x101, 1),
+        ],
+    )
+    def test_should_return_cached_valid_jumpdest(
+        self, cairo_run, cached_jumpdests, index, expected
+    ):
+        assert (
+            cairo_run(
+                "test__is_jumpdest_valid",
+                cached_jumpdests=cached_jumpdests,
+                index=index,
+            )
+            == expected
+        )
+
+    @SyscallHandler.patch(
+        "IAccount.is_jumpdest_valid",
+        lambda addr, data: [1 if data == [0x10] else 0],
+    )
+    @pytest.mark.parametrize(
+        "cached_jumpdests, index, expected",
+        [
+            ([], 0x10, 1),
+            ([], 0x102, 0),
+        ],
+    )
+    def test_should_return_non_cached_valid_jumpdest(
+        self, cairo_run, cached_jumpdests, index, expected
+    ):
+        assert (
+            cairo_run(
+                "test__is_jumpdest_valid",
+                cached_jumpdests=cached_jumpdests,
+                index=index,
+            )
+            == expected
+        )

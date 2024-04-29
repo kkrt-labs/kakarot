@@ -254,7 +254,8 @@ func write_jumpdests{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(jumpdests_len: felt, jumpdests: felt*) {
     Ownable.assert_only_owner();
-    return AccountContract.write_jumpdests(jumpdests_len, jumpdests);
+    AccountContract.write_jumpdests(jumpdests_len, jumpdests);
+    return ();
 }
 
 // @notice Returns whether the jumpdest at the given index is valid.
@@ -264,5 +265,6 @@ func write_jumpdests{
 func is_jumpdest_valid{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(index: felt) -> (is_valid: felt) {
-    return AccountContract.is_valid_jumdpest(jumpdest);
+    let is_valid = AccountContract.is_valid_jumpdest(index);
+    return (is_valid=is_valid);
 }
