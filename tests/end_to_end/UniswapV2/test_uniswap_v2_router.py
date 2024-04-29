@@ -16,7 +16,7 @@ class TestUniswapV2Router:
             token_b = await deploy_contract(
                 "UniswapV2",
                 "ERC20",
-                10000 * 10**18,
+                int(10000e18),
                 caller_eoa=owner.starknet_contract,
             )
 
@@ -26,13 +26,6 @@ class TestUniswapV2Router:
             amount_B_desired = (
                 500 * await token_b.decimals()
             )  # Assuming WETH has 18 decimals
-
-            amount_A_min = 0
-            amount_B_min = 0
-
-            deadline = 99999999999
-
-            to_address = owner.address
 
             await token_a.mint(
                 owner.address, amount_A_desired, caller_eoa=owner.starknet_contract
@@ -48,14 +41,16 @@ class TestUniswapV2Router:
                 router.address, amount_B_desired * 2, caller_eoa=owner.starknet_contract
             )
 
+            deadline = 99999999999
+            to_address = owner.address
             success = (
                 await router.addLiquidity(
                     token_a.address,
                     token_b.address,
                     amount_A_desired,
                     amount_B_desired,
-                    amount_A_min,
-                    amount_B_min,
+                    0,
+                    0,
                     to_address,
                     deadline,
                     caller_eoa=owner.starknet_contract,
