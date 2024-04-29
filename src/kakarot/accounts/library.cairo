@@ -547,8 +547,8 @@ namespace Internals {
         let initial_jumpdests_len = [fp - 4];
         let jumpdests = cast([fp - 3], felt*);
 
-        tempvar valid_index = jumpdests[initial_jumpdests_len - jumpdests_len];
-        tempvar storage_address = base_address + valid_index;
+        tempvar index_to_store = jumpdests[initial_jumpdests_len - jumpdests_len];
+        tempvar storage_address = base_address + index_to_store;
         tempvar syscall_ptr = syscall_ptr;
 
         assert [cast(syscall_ptr, StorageWrite*)] = StorageWrite(
