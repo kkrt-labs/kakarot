@@ -208,6 +208,12 @@ namespace Internals {
             IAccount.set_nonce(starknet_address, self.nonce);
             // Save storages
             _save_storage(starknet_address, self.storage_start, self.storage);
+
+            // Save valid jumpdests
+            let (valid_indexes) = alloc();
+            Internals._save_valid_jumpdests(
+                starknet_address, self.valid_jumpdests_start, self.valid_jumpdests, 0, valid_indexes
+            );
             return ();
         }
 
