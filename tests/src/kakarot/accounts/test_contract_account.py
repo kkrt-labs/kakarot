@@ -171,9 +171,7 @@ class TestContractAccount:
 
             @pytest.mark.parametrize("jumpdests", [[0x02, 0x10, 0xFF]])
             def test__should_load_valid_jumpdest(self, cairo_run, jumpdests, storage):
-                with patch.object(
-                    SyscallHandler, "mock_storage", side_effect=storage
-                ) as mock_storage:
+                with patch.object(SyscallHandler, "mock_storage", side_effect=storage):
                     assert cairo_run("test__is_valid_jumpdest", index=0x02) == 1
                     assert cairo_run("test__is_valid_jumpdest", index=0x10) == 1
                     assert cairo_run("test__is_valid_jumpdest", index=0xFF) == 1
