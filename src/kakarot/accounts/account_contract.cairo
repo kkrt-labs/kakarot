@@ -245,3 +245,24 @@ func get_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 func set_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(nonce: felt) {
     return AccountContract.set_nonce(nonce);
 }
+
+// @notice Write valid jumpdests in the account's storage.
+// @param jumpdests_len The length of the jumpdests array.
+// @param jumpdests The jumpdests array, containing indexes of valid jumpdests.
+@external
+func write_jumpdests{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(jumpdests_len: felt, jumpdests: felt*) {
+    Ownable.assert_only_owner();
+    return AccountContract.write_jumpdests(jumpdests_len, jumpdests);
+}
+
+// @notice Returns whether the jumpdest at the given index is valid.
+// @param index The index of the jumpdest.
+// @return is_valid 1 if the jumpdest is valid, 0 otherwise.
+@view
+func is_valid_jumdpest{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(index: felt) -> (is_valid: felt) {
+    return AccountContract.is_valid_jumdpest(jumpdest);
+}
