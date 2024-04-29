@@ -1,8 +1,11 @@
 from math import ceil
 
 import pytest
+from ethereum.cancun.vm.runtime import get_valid_jump_destinations
 from hypothesis import given, settings
 from hypothesis import strategies as st
+
+from kakarot_scripts.utils.kakarot import get_contract
 
 
 @pytest.mark.parametrize(
@@ -93,3 +96,10 @@ def test_should_return_bytes_used_in_128_word(cairo_run, word):
 def test_should_parse_destination_from_bytes(cairo_run, bytes, expected):
     result = cairo_run("test__try_parse_destination_from_bytes", bytes=list(bytes))
     assert result == expected
+
+
+class TestInitializeJumpdests:
+    def test_should_return_same_as_execution_specs(self, cairo_run):
+        bytecode = get_contract("PlainOpcodes", "Counter").bytecode_runtime
+        output = cairo_run("test__initialize_jumpdests", bytecode=bytecode)
+        assert set(output) == get_valid_jump_destinations(bytecode)

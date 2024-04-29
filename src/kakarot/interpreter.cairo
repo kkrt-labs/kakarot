@@ -8,6 +8,8 @@ from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn
 from starkware.cairo.common.math import split_felt
+from starkware.cairo.common.default_dict import default_dict_new
+from starkware.cairo.common.dict import DictAccess
 from starkware.cairo.lang.compiler.lib.registers import get_fp_and_pc
 from starkware.cairo.common.uint256 import Uint256, uint256_le
 from starkware.cairo.common.math import unsigned_div_rem
@@ -809,18 +811,27 @@ namespace Interpreter {
             assert calldata = empty;
             assert intrinsic_gas = tmp_intrinsic_gas + Gas.CREATE + init_code_gas;
             assert code_address = 0;
+            let (valid_jumpdests_start, valid_jumpdests) = Helpers.initialize_jumpdests(
+                bytecode_len=bytecode_len, bytecode=bytecode
+            );
             tempvar range_check_ptr = range_check_ptr;
+            tempvar valid_jumpdests_start = valid_jumpdests_start;
+            tempvar valid_jumpdests = valid_jumpdests;
         } else {
             assert bytecode = tmp_bytecode;
             assert calldata = tmp_calldata;
             assert intrinsic_gas = tmp_intrinsic_gas;
             assert code_address = address.evm;
+
+            let (new_dict) = default_dict_new(0);
             tempvar range_check_ptr = range_check_ptr;
+            tempvar valid_jumpdests_start = new_dict;
+            tempvar valid_jumpdests = new_dict;
         }
 
-        let (valid_jumpdests_start, valid_jumpdests) = Account.get_jumpdests(
-            bytecode_len=bytecode_len, bytecode=bytecode
-        );
+        let valid_jumpdests_start = cast([ap - 2], DictAccess*);
+        let valid_jumpdests = cast([ap - 1], DictAccess*);
+
         tempvar authorized = new model.Option(is_some=0, value=0);
         tempvar message = new model.Message(
             bytecode=bytecode,
@@ -1029,8 +1040,14 @@ namespace Internals {
             return evm;
         }
 
+        // Write bytecode and cached jumpdests to Account
         let account = State.get_account(evm.message.address.evm);
         let account = Account.set_code(account, evm.return_data_len, evm.return_data);
+        let account = Account.set_created(account, TRUE);
+        let account = Account.cache_valid_jumpdests(
+            account, evm.message.valid_jumpdests_start, evm.message.valid_jumpdests
+        );
+
         State.update_account(account);
         State.finalize();
 

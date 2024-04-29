@@ -222,10 +222,13 @@ namespace Internals {
         // Save storages
         Internals._save_storage(starknet_address, self.storage_start, self.storage);
 
-        // Update bytecode if required (SELFDESTRUCTed contract, redeployed)
-        let (bytecode_len) = IAccount.bytecode_len(starknet_address);
-        if (bytecode_len != self.code_len) {
+        // Update bytecode and jumpdests if required (SELFDESTRUCTed contract, redeployed)
+        if (self.created != FALSE) {
             IAccount.write_bytecode(starknet_address, self.code_len, self.code);
+            let (valid_indexes) = alloc();
+            Internals._save_valid_jumpdests(
+                starknet_address, self.valid_jumpdests_start, self.valid_jumpdests, 0, valid_indexes
+            );
             return ();
         }
 
@@ -294,5 +297,44 @@ namespace Internals {
         );
 
         return _save_storage(starknet_address, storage_start + DictAccess.SIZE, storage_end);
+    }
+
+    func _save_valid_jumpdests{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        starknet_address: felt,
+        jumpdests: DictAccess*,
+        jumpdests_end: DictAccess*,
+        valid_indexes_len: felt,
+        valid_indexes: felt*,
+    ) {
+        if (jumpdests == jumpdests_end) {
+            IAccount.write_jumpdests(
+                contract_address=starknet_address,
+                jumpdests_len=valid_indexes_len,
+                jumpdests=valid_indexes,
+            );
+            return ();
+        }
+
+        let is_valid = jumpdests.new_value;
+
+        // If the value is 0, it means the jumpdest is invalid and should not be saved.
+        if (is_valid == FALSE) {
+            return _save_valid_jumpdests(
+                starknet_address,
+                jumpdests + DictAccess.SIZE,
+                jumpdests_end,
+                valid_indexes_len,
+                valid_indexes,
+            );
+        }
+
+        assert valid_indexes[valid_indexes_len] = jumpdests.key;
+        return _save_valid_jumpdests(
+            starknet_address,
+            jumpdests + DictAccess.SIZE,
+            jumpdests_end,
+            valid_indexes_len + 1,
+            valid_indexes,
+        );
     }
 }

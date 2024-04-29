@@ -113,12 +113,10 @@ func test__write_jumpdests{
 func test__is_valid_jumpdest{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, bitwise_ptr: BitwiseBuiltin*, range_check_ptr
 }() -> felt {
-    // Given
     tempvar index: felt;
     %{ ids.index = program_input["index"] %}
 
-    // When
-    let (is_valid) = AccountContract.is_valid_jumpdest(index);
+    let is_valid = AccountContract.is_valid_jumpdest(index);
 
     return is_valid;
 }
