@@ -7,7 +7,7 @@ from starkware.starknet.public.abi import get_selector_from_name
 def find_cairo_functions(directory):
     function_names = []
 
-    for root, dirs, files in os.walk(directory):
+    for root, _, files in os.walk(directory):
         for file in files:
             if file.endswith(".cairo"):
                 file_path = os.path.join(root, file)
