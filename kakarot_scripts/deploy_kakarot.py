@@ -67,6 +67,7 @@ async def main():
     if NETWORK["devnet"]:
         deployments["EVM"] = await deploy(
             "EVM",
+            account.address,  # owner
             ETH_TOKEN_ADDRESS,  # native_token_address_
             class_hash["account_contract"],  # account_contract_class_hash_
             class_hash["uninitialized_account"],  # uninitialized_account_class_hash_
