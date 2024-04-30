@@ -119,7 +119,6 @@ def get_vyper_artifacts(
     ]
 
 
-@functools.lru_cache()
 def get_contract(
     contract_app: str,
     contract_name: str,

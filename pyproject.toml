@@ -152,6 +152,7 @@ markers = [
   "UniswapV2ERC20",
   "UniswapV2Factory",
   "EIP3074",
+  "UniswapV2Router",
   "AccountContract",
   "Utils",
   "Safe",
