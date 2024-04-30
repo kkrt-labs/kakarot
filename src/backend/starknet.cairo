@@ -312,11 +312,10 @@ namespace Internals {
         valid_indexes_len: felt,
         valid_indexes: felt*,
     ) {
+        alloc_locals;
         if (jumpdests == jumpdests_end) {
             IAccount.write_jumpdests(
-                contract_address=starknet_address,
-                jumpdests_len=valid_indexes_len,
-                jumpdests=valid_indexes,
+                starknet_address, jumpdests_len=valid_indexes_len, jumpdests=valid_indexes
             );
             return ();
         }
