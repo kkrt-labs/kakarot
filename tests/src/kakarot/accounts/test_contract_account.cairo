@@ -93,9 +93,7 @@ func test__validate{
     return ();
 }
 
-func test__write_jumpdests{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, bitwise_ptr: BitwiseBuiltin*, range_check_ptr
-}() {
+func test__write_jumpdests{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
     // Given
     tempvar jumpdests_len: felt;
     let (jumpdests) = alloc();
@@ -110,9 +108,8 @@ func test__write_jumpdests{
     return ();
 }
 
-func test__is_valid_jumpdest{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, bitwise_ptr: BitwiseBuiltin*, range_check_ptr
-}() -> felt {
+func test__is_valid_jumpdest{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    ) -> felt {
     tempvar index: felt;
     %{ ids.index = program_input["index"] %}
 

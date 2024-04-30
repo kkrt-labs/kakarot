@@ -527,29 +527,27 @@ namespace Internals {
     // @param index The current free index in the jumpdests_ storage.
     // @param jumpdests_len The length of the jumpdests.
     // @param jumpdests The jumpdests of the contract.
-    func write_jumpdests{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        jumpdests_len: felt, jumpdests: felt*
-    ) {
+    func write_jumpdests{syscall_ptr: felt*}(jumpdests_len: felt, jumpdests: felt*) {
         alloc_locals;
 
         if (jumpdests_len == 0) {
             return ();
         }
 
-        let (local base_address) = Account_valid_jumpdests.addr();
+        // selector!("Account_valid_jumpdests")
+        local base_address = 0x01eb4a0d1c10536edc8183a507de5f884c0a18b4877da7c986a6100d6bfda343;
         tempvar syscall_ptr = syscall_ptr;
         tempvar jumpdests_len = jumpdests_len;
 
         body:
-        let base_address = [fp];
         let syscall_ptr = cast([ap - 2], felt*);
         let jumpdests_len = [ap - 1];
         let initial_jumpdests_len = [fp - 4];
         let jumpdests = cast([fp - 3], felt*);
+        let base_address = [fp];
 
         tempvar index_to_store = jumpdests[initial_jumpdests_len - jumpdests_len];
         tempvar storage_address = base_address + index_to_store;
-        tempvar syscall_ptr = syscall_ptr;
 
         assert [cast(syscall_ptr, StorageWrite*)] = StorageWrite(
             selector=STORAGE_WRITE_SELECTOR, address=storage_address, value=1
