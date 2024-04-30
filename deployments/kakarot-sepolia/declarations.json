@@ -1,9 +1,9 @@
 {
-  "kakarot": "0x6f8f70b06f73ec3893abf9234ce40adce3cea0dc84859e27eed26d5ff73f48e",
+  "kakarot": "0x5fa636d9904ec7b1ac2c50ff36ccbe3d38db666b7fafd4107c68c8333bf0bec",
   "account_contract": "0x490cccb64e3917ecf0a80a59d0c3e449766f745c1d6db54e0050f89eb59aba1",
   "account_contract_fixture": "0x2c2520d81c315969597b2f7a0189db1b65ec19da02fe40c40d183e2e9bfb3c8",
   "uninitialized_account": "0x600f6862938312a05a0cfecba0dcaf37693efc9e4075a6adfb62e196022678e",
-  "EVM": "0x3e6d90f8f3a53aaa242efe0ba4821af777f4ec8c15ec9ec3fc7ea5afe5d7f0c",
+  "EVM": "0x6d15df70c233da830791620414901117c37a3786ef5814632af8c602b7f003b",
   "OpenzeppelinAccount": "0x6153ccf69fd20f832c794df36e19135f0070d0576144f0b47f75a226e4be530",
   "Cairo1Helpers": "0x51ae3639c06c962600f70ab2578171de13c80c56bed20d00500ef2db1f6089a",
   "Cairo1HelpersFixture": "0x4174eb7e02063970329508364f7e28679d5dddfb2a3aa675dcaad3c3c8585e4",
