@@ -1798,7 +1798,7 @@ test_cases = [
             "value": 0,
             "code": "3000",
             "calldata": "",
-            "stack": f"""{int.from_bytes(b"target_evm_address", "big")}""",
+            "stack": "{account_address}",
             "memory": "",
             "return_data": "",
             "success": 1,
