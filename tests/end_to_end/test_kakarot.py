@@ -69,7 +69,8 @@ async def origin(evm: Contract, addresses):
     is_deployed = (await evm.functions["is_deployed"].call(evm_address)).deployed
     if is_deployed:
         return evm_address
-    await evm.functions["deploy_account"].invoke_v1(evm_address, max_fee=100)
+    tx = await evm.functions["deploy_account"].invoke_v1(evm_address, max_fee=100)
+    await wait_for_transaction(tx.hash)
     return evm_address
 
 
