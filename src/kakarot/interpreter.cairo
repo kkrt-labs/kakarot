@@ -1040,12 +1040,16 @@ namespace Internals {
             return evm;
         }
 
-        // Write bytecode and cached jumpdests to Account
+        // Write bytecode and cached the final code valid jumpdests to Account
         let account = State.get_account(evm.message.address.evm);
         let account = Account.set_code(account, evm.return_data_len, evm.return_data);
         let account = Account.set_created(account, TRUE);
+
+        let (valid_jumpdests_start, valid_jumpdests) = Helpers.initialize_jumpdests(
+            account.code_len, account.code
+        );
         let account = Account.cache_valid_jumpdests(
-            account, evm.message.valid_jumpdests_start, evm.message.valid_jumpdests
+            account, valid_jumpdests_start, valid_jumpdests
         );
 
         State.update_account(account);

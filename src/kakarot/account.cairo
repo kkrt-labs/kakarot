@@ -542,9 +542,7 @@ namespace Account {
     func cache_valid_jumpdests{range_check_ptr}(
         self: model.Account*, valid_jumpdests_start: DictAccess*, valid_jumpdests: DictAccess*
     ) -> model.Account* {
-        let (copy_start, copy) = default_dict_copy(
-            self.valid_jumpdests_start, self.valid_jumpdests
-        );
+        let (copy_start, copy) = default_dict_copy(valid_jumpdests_start, valid_jumpdests);
 
         return new model.Account(
             address=self.address,

@@ -27,7 +27,7 @@ func test__save_valid_jumpdests{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, 
     local jumpdests_end: felt*;
     local contract_address: felt;
     %{
-        # jumpdests must be formated as [(key, prev, new)]
+        # jumpdests must be formatted as [(key, prev, new)]
         import itertools
         serialized_input = list(itertools.chain.from_iterable(program_input["jumpdests"]))
         segments.write_arg(ids.jumpdests_start, serialized_input)
