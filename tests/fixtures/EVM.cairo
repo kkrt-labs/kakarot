@@ -52,11 +52,12 @@ func execute{
 ) -> (model.EVM*, model.Stack*, model.Memory*, model.State*, felt) {
     alloc_locals;
     // Deploy target account
-    let evm_address = 'target_evm_address';
-    let (starknet_address) = Starknet.deploy(evm_address);
+    let evm_address = env.origin;
+    let starknet_address = Account.compute_starknet_address(evm_address);
     tempvar address = new model.Address(starknet_address, evm_address);
 
-    // Write the valid jumpdests in the storage of the executed contract
+    // Write the valid jumpdests in the storage of the executed contract.
+    // This requires the origin account to be deployed prior to the execution.
     let (valid_jumpdests_start, valid_jumpdests) = Helpers.initialize_jumpdests(
         bytecode_len, bytecode
     );
@@ -189,6 +190,25 @@ func evm_execute{
     // tests and requires a real Message.address (not Address(1, 1))
     StarknetInternals._emit_events(state.events_len, state.events);
     return result;
+}
+
+@external
+func deploy_account{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    evm_address: felt
+) -> (contract_address: felt) {
+    let (starknet_address) = Starknet.deploy(evm_address);
+    return (contract_address=starknet_address);
+}
+
+@view
+func is_deployed{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    evm_address: felt
+) -> (deployed: felt) {
+    let (starknet_address) = Kakarot_evm_to_starknet_address.read(evm_address);
+    if (starknet_address == 0) {
+        return (deployed=0);
+    }
+    return (deployed=1);
 }
 
 // @notice Compute the starknet address of a contract given its EVM address

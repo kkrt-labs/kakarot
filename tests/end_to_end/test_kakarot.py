@@ -60,15 +60,16 @@ async def class_hashes():
 @pytest_asyncio.fixture(scope="session")
 async def origin(evm: Contract, addresses):
     """
-    Deploys the origin's Starknet contract to the correct address and funds it.
+    Deploys the origin's Starknet contract to the correct address.
     """
-    from kakarot_scripts.utils.starknet import fund_address
+    from tests.utils.helpers import generate_random_private_key
 
-    evm_address = int(addresses[0].address, 16)
-    sn_address = (
-        await evm.functions["compute_starknet_address"].call(evm_address)
-    ).contract_address
-    await fund_address(sn_address, 10)
+    private_key = generate_random_private_key()
+    evm_address = int(private_key.public_key.to_checksum_address(), 16)
+    is_deployed = (await evm.functions["is_deployed"].call(evm_address)).deployed
+    if is_deployed:
+        return evm_address
+    await evm.functions["deploy_account"].invoke_v1(evm_address, max_fee=100)
     return evm_address
 
 
@@ -116,7 +117,7 @@ class TestKakarot:
                     int(x)
                     for x in params["stack"]
                     .format(
-                        account_address=int(addresses[0].address, 16),
+                        account_address=origin,
                         timestamp=result.block_timestamp,
                         block_number=result.block_number,
                     )
