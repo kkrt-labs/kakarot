@@ -210,9 +210,8 @@ namespace Internals {
             _save_storage(starknet_address, self.storage_start, self.storage);
 
             // Save valid jumpdests
-            let (valid_indexes) = alloc();
             Internals._save_valid_jumpdests(
-                starknet_address, self.valid_jumpdests_start, self.valid_jumpdests, 0, valid_indexes
+                starknet_address, self.valid_jumpdests_start, self.valid_jumpdests
             );
             return ();
         }
@@ -231,9 +230,8 @@ namespace Internals {
         // Update bytecode and jumpdests if required (SELFDESTRUCTed contract, redeployed)
         if (self.created != FALSE) {
             IAccount.write_bytecode(starknet_address, self.code_len, self.code);
-            let (valid_indexes) = alloc();
             Internals._save_valid_jumpdests(
-                starknet_address, self.valid_jumpdests_start, self.valid_jumpdests, 0, valid_indexes
+                starknet_address, self.valid_jumpdests_start, self.valid_jumpdests
             );
             return ();
         }
@@ -306,40 +304,51 @@ namespace Internals {
     }
 
     func _save_valid_jumpdests{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        starknet_address: felt,
-        jumpdests: DictAccess*,
-        jumpdests_end: DictAccess*,
-        valid_indexes_len: felt,
-        valid_indexes: felt*,
+        starknet_address: felt, dict_start: DictAccess*, dict_end: DictAccess*
     ) {
         alloc_locals;
-        if (jumpdests == jumpdests_end) {
-            IAccount.write_jumpdests(
-                starknet_address, jumpdests_len=valid_indexes_len, jumpdests=valid_indexes
-            );
+        let (local keys_start: felt*) = alloc();
+        let dict_len = dict_end - dict_start;
+        let (local len, _) = unsigned_div_rem(dict_len, DictAccess.SIZE);
+        local range_check_ptr = range_check_ptr;
+
+        if (dict_len == 0) {
             return ();
         }
 
-        let is_valid = jumpdests.new_value;
+        tempvar keys_len = 0;
+        tempvar keys = keys_start;
+        tempvar len = len;
+        tempvar dict = dict_start;
 
-        // If the value is 0, it means the jumpdest is invalid and should not be saved.
-        if (is_valid == FALSE) {
-            return _save_valid_jumpdests(
-                starknet_address,
-                jumpdests + DictAccess.SIZE,
-                jumpdests_end,
-                valid_indexes_len,
-                valid_indexes,
-            );
+        loop:
+        let keys_len = [ap - 4];
+        let keys = cast([ap - 3], felt*);
+        let len = [ap - 2];
+        let dict = cast([ap - 1], DictAccess*);
+        let is_valid = dict.new_value;
+
+        if (is_valid != 0) {
+            assert [keys] = dict.key;
+            tempvar keys_len = keys_len + 1;
+            tempvar keys = keys + 1;
+            tempvar len = len - 1;
+            tempvar dict = dict + DictAccess.SIZE;
+        } else {
+            tempvar keys_len = keys_len;
+            tempvar keys = keys;
+            tempvar len = len - 1;
+            tempvar dict = dict + DictAccess.SIZE;
         }
 
-        assert valid_indexes[valid_indexes_len] = jumpdests.key;
-        return _save_valid_jumpdests(
-            starknet_address,
-            jumpdests + DictAccess.SIZE,
-            jumpdests_end,
-            valid_indexes_len + 1,
-            valid_indexes,
-        );
+        static_assert keys_len == [ap - 4];
+        static_assert keys == [ap - 3];
+        static_assert len == [ap - 2];
+        static_assert dict == [ap - 1];
+
+        jmp loop if len != 0;
+
+        IAccount.write_jumpdests(starknet_address, jumpdests_len=keys_len, jumpdests=keys_start);
+        return ();
     }
 }

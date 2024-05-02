@@ -19,6 +19,10 @@ class TestExecutionContext:
             ),  # post-push2 opcode
         ],
     )
+    @SyscallHandler.patch(
+        "IERC20.balanceOf",
+        lambda addr, data: [0, 0],
+    )
     def test_jump(self, cairo_run, bytecode, jumpdest, new_pc, expected_return_data):
 
         with SyscallHandler.patch(
@@ -30,12 +34,12 @@ class TestExecutionContext:
         assert evm["return_data"] == expected_return_data
 
 
-class TestIsJumpdestValid:
+class TestIsValidJumpdest:
     @pytest.mark.parametrize(
         "cached_jumpdests, index, expected",
         [
-            ([0x01, 0x10, 0x101], 0x10, 1),
-            ([0x01, 0x10, 0x101], 0x101, 1),
+            ({0x01: True, 0x10: True, 0x101: True}, 0x10, 1),
+            ({0x01: True, 0x10: True, 0x101: True}, 0x101, 1),
         ],
     )
     def test_should_return_cached_valid_jumpdest(
@@ -51,14 +55,18 @@ class TestIsJumpdestValid:
         )
 
     @SyscallHandler.patch(
+        "IERC20.balanceOf",
+        lambda addr, data: [0, 0],
+    )
+    @SyscallHandler.patch(
         "IAccount.is_valid_jumpdest",
         lambda addr, data: [1 if data == [0x10] else 0],
     )
     @pytest.mark.parametrize(
         "cached_jumpdests, index, expected",
         [
-            ([], 0x10, 1),
-            ([], 0x102, 0),
+            ({}, 0x10, 1),
+            ({}, 0x102, 0),
         ],
     )
     def test_should_return_non_cached_valid_jumpdest(

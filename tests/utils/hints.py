@@ -1,3 +1,8 @@
+from collections import defaultdict
+
+from starkware.cairo.common.dict import DictTracker
+
+
 def debug_info(program):
     def _debug_info(pc):
         print(
@@ -25,3 +30,18 @@ def flatten_rlp_list(list_ptr, list_len, output_ptr, memory, segments):
             output_ptr += len(data)
 
     return output_ptr
+
+
+def new_default_dict(
+    dict_manager, segments, default_value, initial_dict, temp_segment: bool = False
+):
+    """
+    Create a new Cairo default dictionary.
+    """
+    base = segments.add_temp_segment() if temp_segment else segments.add()
+    assert base.segment_index not in dict_manager.trackers
+    dict_manager.trackers[base.segment_index] = DictTracker(
+        data=defaultdict(lambda: default_value, initial_dict),
+        current_ptr=base,
+    )
+    return base

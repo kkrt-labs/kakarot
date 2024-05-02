@@ -10,23 +10,26 @@ class TestStarknet:
             assert env["origin"] == 1
             assert env["gas_price"] == 2
 
-    class TestSaveTestStarknetJumpdests:
+    class TestSaveValidJumpdests:
+        @SyscallHandler.patch(
+            "IERC20.balanceOf",
+            lambda addr, data: [0, 0],
+        )
         @SyscallHandler.patch("IAccount.write_jumpdests", lambda addr, data: [])
         def test_should_save_jumpdests_to_storage(self, cairo_run):
-            valid_jumpdests = [(0x01, 0, 1), (0x10, 0, 1), (0x101, 0, 1)]
+            jumpdests = {0x1: True, 0x10: False, 0x101: True}
             contract_address = 0x97283590
-            valid_indexes = cairo_run(
+            cairo_run(
                 "test__save_valid_jumpdests",
-                jumpdests=valid_jumpdests,
+                jumpdests=jumpdests,
                 contract_address=contract_address,
             )
 
-            assert valid_indexes == [
-                valid_jumpdest[0] for valid_jumpdest in valid_jumpdests
+            expected_valid_jumpdests = [
+                key for key, value in jumpdests.items() if value != 0
             ]
-
             SyscallHandler.mock_call.assert_any_call(
                 contract_address=contract_address,
                 function_selector=get_selector_from_name("write_jumpdests"),
-                calldata=[len(valid_indexes), *valid_indexes],
+                calldata=[len(expected_valid_jumpdests), *expected_valid_jumpdests],
             )
