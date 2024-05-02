@@ -530,16 +530,7 @@ namespace Account {
         return starknet_account_exists;
     }
 
-    // @notice Return the valid jumpdests related to this account's code, cached during the execution of the transaction.
-    // @param self The pointer to the Account
-    // @return The pointer to the dictionary of the valid jumpdests
-    func cached_jumpdests(self: model.Account*) -> (
-        valid_jumpdests_start: DictAccess*, valid_jumpdests: DictAccess*
-    ) {
-        return (self.valid_jumpdests_start, self.valid_jumpdests);
-    }
-
-    func cache_valid_jumpdests{range_check_ptr}(
+    func set_valid_jumpdests{range_check_ptr}(
         self: model.Account*, valid_jumpdests_start: DictAccess*, valid_jumpdests: DictAccess*
     ) -> model.Account* {
         let (copy_start, copy) = default_dict_copy(valid_jumpdests_start, valid_jumpdests);

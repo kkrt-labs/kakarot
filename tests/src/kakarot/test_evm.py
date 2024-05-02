@@ -22,7 +22,7 @@ class TestExecutionContext:
     def test_jump(self, cairo_run, bytecode, jumpdest, new_pc, expected_return_data):
 
         with SyscallHandler.patch(
-            "IAccount.is_jumpdest_valid",
+            "IAccount.is_valid_jumpdest",
             lambda addr, data: [1 if len(expected_return_data) == 0 else 0],
         ):
             evm = cairo_run("test__jump", bytecode=bytecode, jumpdest=jumpdest)
@@ -43,7 +43,7 @@ class TestIsJumpdestValid:
     ):
         assert (
             cairo_run(
-                "test__is_jumpdest_valid",
+                "test__is_valid_jumpdest",
                 cached_jumpdests=cached_jumpdests,
                 index=index,
             )
@@ -51,7 +51,7 @@ class TestIsJumpdestValid:
         )
 
     @SyscallHandler.patch(
-        "IAccount.is_jumpdest_valid",
+        "IAccount.is_valid_jumpdest",
         lambda addr, data: [1 if data == [0x10] else 0],
     )
     @pytest.mark.parametrize(
@@ -66,7 +66,7 @@ class TestIsJumpdestValid:
     ):
         assert (
             cairo_run(
-                "test__is_jumpdest_valid",
+                "test__is_valid_jumpdest",
                 cached_jumpdests=cached_jumpdests,
                 index=index,
             )

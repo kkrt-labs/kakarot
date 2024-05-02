@@ -235,7 +235,7 @@ namespace EVM {
 
         let valid_jumpdests = self.message.valid_jumpdests;
         with valid_jumpdests {
-            let is_valid_jumpdest = Internals.is_jumpdest_valid(
+            let is_valid_jumpdest = Internals.is_valid_jumpdest(
                 self.message.code_address, self.message.is_create, new_pc_offset
             );
         }
@@ -289,7 +289,7 @@ namespace EVM {
 }
 
 namespace Internals {
-    func is_jumpdest_valid{
+    func is_valid_jumpdest{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
@@ -306,13 +306,9 @@ namespace Internals {
         }
 
         let code_starknet_address = Account.compute_starknet_address(code_address);
-        let (is_valid) = IAccount.is_jumpdest_valid(code_starknet_address, index);
+        let (is_valid) = IAccount.is_valid_jumpdest(code_starknet_address, index);
+        dict_write{dict_ptr=valid_jumpdests}(index, is_valid);
 
-        if (is_valid == 0) {
-            return FALSE;
-        }
-
-        dict_write{dict_ptr=valid_jumpdests}(index, TRUE);
-        return TRUE;
+        return is_valid;
     }
 }

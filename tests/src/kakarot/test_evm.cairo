@@ -23,7 +23,7 @@ func test__jump{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}
     return evm;
 }
 
-func test__is_jumpdest_valid{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+func test__is_valid_jumpdest{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     ) -> felt {
     alloc_locals;
 
@@ -42,7 +42,7 @@ func test__is_jumpdest_valid{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ran
     );
 
     with valid_jumpdests {
-        let result = Internals.is_jumpdest_valid(0, 0, index);
+        let result = Internals.is_valid_jumpdest(0, 0, index);
     }
 
     return result;

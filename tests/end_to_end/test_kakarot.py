@@ -58,7 +58,7 @@ async def class_hashes():
 
 
 @pytest_asyncio.fixture(scope="session")
-async def origin(evm: Contract, addresses):
+async def origin(evm: Contract):
     """
     Deploys the origin's Starknet contract to the correct address.
     """

@@ -22,7 +22,7 @@ class TestStarknet:
             )
 
             assert valid_indexes == [
-                valid_jumpdests[i][0] for i in range(len(valid_jumpdests))
+                valid_jumpdest[0] for valid_jumpdest in valid_jumpdests
             ]
 
             SyscallHandler.mock_call.assert_any_call(
