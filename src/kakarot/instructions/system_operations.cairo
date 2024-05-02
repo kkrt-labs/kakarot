@@ -1177,9 +1177,6 @@ namespace CallHelper {
         let stack = Stack.init();
         let memory = Memory.init();
 
-        // Use the cached jumpdests from previous calls
-        let (valid_jumpdests_start, valid_jumpdests) = Account.cached_jumpdests(code_account);
-
         if (is_staticcall != FALSE) {
             tempvar read_only = TRUE;
         } else {
@@ -1190,8 +1187,9 @@ namespace CallHelper {
         tempvar message = new model.Message(
             bytecode=code,
             bytecode_len=code_len,
-            valid_jumpdests_start=valid_jumpdests_start,
-            valid_jumpdests=valid_jumpdests,
+            // Use the cached jumpdests from previous calls
+            valid_jumpdests_start=code_account.valid_jumpdests_start,
+            valid_jumpdests=code_account.valid_jumpdests,
             calldata=calldata,
             calldata_len=args_size.low,
             value=value,
@@ -1245,7 +1243,7 @@ namespace CallHelper {
 
         // Write the valid jumpdests cached during the call in the state
         let code_account = State.get_account(evm.message.code_address);
-        let code_account = Account.cache_valid_jumpdests(
+        let code_account = Account.set_valid_jumpdests(
             code_account, evm.message.valid_jumpdests_start, evm.message.valid_jumpdests
         );
         State.update_account(code_account);
@@ -1515,7 +1513,7 @@ namespace CreateHelper {
         let (valid_jumpdests_start, valid_jumpdests) = Helpers.initialize_jumpdests(
             account.code_len, account.code
         );
-        let account = Account.cache_valid_jumpdests(
+        let account = Account.set_valid_jumpdests(
             account, valid_jumpdests_start, valid_jumpdests
         );
 
