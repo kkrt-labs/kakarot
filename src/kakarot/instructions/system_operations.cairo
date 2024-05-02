@@ -1184,10 +1184,10 @@ namespace CallHelper {
         }
 
         tempvar authorized = new model.Option(is_some=0, value=0);
+        // Use the cached jumpdests from previous calls
         tempvar message = new model.Message(
             bytecode=code,
             bytecode_len=code_len,
-            // Use the cached jumpdests from previous calls
             valid_jumpdests_start=code_account.valid_jumpdests_start,
             valid_jumpdests=code_account.valid_jumpdests,
             calldata=calldata,
@@ -1513,9 +1513,7 @@ namespace CreateHelper {
         let (valid_jumpdests_start, valid_jumpdests) = Helpers.initialize_jumpdests(
             account.code_len, account.code
         );
-        let account = Account.set_valid_jumpdests(
-            account, valid_jumpdests_start, valid_jumpdests
-        );
+        let account = Account.set_valid_jumpdests(account, valid_jumpdests_start, valid_jumpdests);
 
         // Update local state with the updated account inner pointers.
         State.update_account(account);
