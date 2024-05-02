@@ -223,7 +223,7 @@ namespace EVM {
     // @param self The pointer to the execution context.
     // @param new_pc_offset The value to update the program counter by.
     // @return EVM The pointer to the updated execution context.
-    func jump{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    func jump{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*}(
         self: model.EVM*, new_pc_offset: felt
     ) -> model.EVM* {
         let out_of_range = is_le(self.message.bytecode_len, new_pc_offset);
@@ -236,7 +236,7 @@ namespace EVM {
         let valid_jumpdests = self.message.valid_jumpdests;
         with valid_jumpdests {
             let is_valid_jumpdest = Internals.is_valid_jumpdest(
-                self.message.code_address, self.message.is_create, new_pc_offset
+                self.message.code_address, new_pc_offset
             );
         }
 
@@ -294,15 +294,19 @@ namespace Internals {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         valid_jumpdests: DictAccess*,
-    }(code_address: felt, is_create: felt, index: felt) -> felt {
+        state: model.State*,
+    }(code_address: felt, index: felt) -> felt {
         alloc_locals;
         let (is_cached) = dict_read{dict_ptr=valid_jumpdests}(index);
-        let is_create_or_cached = is_create + is_cached;
+        if (is_cached != 0) {
+            return TRUE;
+        }
 
-        // If a create message, the account is not deployed on SN, so we just return early
-        // the value cached is correct as we cache all valid jumpdests on initcodes deployment.
-        if (is_create_or_cached != 0) {
-            return is_cached;
+        // If the account was created in the same transaction,
+        // a cache miss is an invalid jumpdest as all valid jumpdests were cached on deployment.
+        let code_account = State.get_account(code_address);
+        if (code_account.created != 0) {
+            return FALSE;
         }
 
         let code_starknet_address = Account.compute_starknet_address(code_address);

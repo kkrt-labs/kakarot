@@ -66,6 +66,35 @@ namespace Account {
         );
     }
 
+    // @notice Finalizes the creation of an account by setting the account's bytecode, valid jumpdests
+    //        and marking it as created during this transaction.
+    // @param self The pointer to the Account
+    // @param code_len The length of the code
+    // @param code The pointer to the code
+    // @param valid_jumpdests_start The pointer to the start of the valid jumpdests dict
+    // @param valid_jumpdests The pointer to the next free valid jumpdests dict slot
+    // @return The updated Account
+    func finalize_creation{range_check_ptr}(
+        self: model.Account*, code_len: felt, code: felt*
+    ) -> model.Account* {
+        let (valid_jumpdests_start, valid_jumpdests) = Helpers.initialize_jumpdests(code_len, code);
+        return new model.Account(
+            address=self.address,
+            code_len=code_len,
+            code=code,
+            storage_start=self.storage_start,
+            storage=self.storage,
+            transient_storage_start=self.transient_storage_start,
+            transient_storage=self.transient_storage,
+            valid_jumpdests_start=valid_jumpdests_start,
+            valid_jumpdests=valid_jumpdests,
+            nonce=self.nonce,
+            balance=self.balance,
+            selfdestruct=self.selfdestruct,
+            created=1,
+        );
+    }
+
     // @dev Copy the Account to safely mutate the storage
     // @dev Squash dicts used internally
     // @param self The pointer to the Account

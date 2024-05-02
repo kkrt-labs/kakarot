@@ -470,7 +470,6 @@ namespace Internals {
     }
 
     // @notice Store the bytecode of the contract.
-    // @param index The current free index in the Account_bytecode storage.
     // @param bytecode_len The length of the bytecode.
     // @param bytecode The bytecode of the contract.
     func write_bytecode{syscall_ptr: felt*}(bytecode_len: felt, bytecode: felt*) {
@@ -527,17 +526,20 @@ namespace Internals {
     // @param index The current free index in the jumpdests_ storage.
     // @param jumpdests_len The length of the jumpdests.
     // @param jumpdests The jumpdests of the contract.
-    func write_jumpdests{syscall_ptr: felt*}(jumpdests_len: felt, jumpdests: felt*) {
+    func write_jumpdests{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        jumpdests_len: felt, jumpdests: felt*
+    ) {
         alloc_locals;
 
         if (jumpdests_len == 0) {
             return ();
         }
 
-        // selector!("Account_valid_jumpdests")
-        local base_address = 0x01eb4a0d1c10536edc8183a507de5f884c0a18b4877da7c986a6100d6bfda343;
+        let (local base_address) = Account_valid_jumpdests.addr();
         tempvar syscall_ptr = syscall_ptr;
         tempvar jumpdests_len = jumpdests_len;
+        local pedersen_ptr: HashBuiltin* = pedersen_ptr;
+        local range_check_ptr = range_check_ptr;
 
         body:
         let syscall_ptr = cast([ap - 2], felt*);
@@ -546,7 +548,7 @@ namespace Internals {
         let jumpdests = cast([fp - 3], felt*);
         let base_address = [fp];
 
-        tempvar index_to_store = jumpdests[initial_jumpdests_len - jumpdests_len];
+        let index_to_store = jumpdests[initial_jumpdests_len - jumpdests_len];
         tempvar storage_address = base_address + index_to_store;
 
         assert [cast(syscall_ptr, StorageWrite*)] = StorageWrite(

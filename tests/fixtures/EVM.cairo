@@ -61,9 +61,8 @@ func execute{
     let (valid_jumpdests_start, valid_jumpdests) = Helpers.initialize_jumpdests(
         bytecode_len, bytecode
     );
-    let (valid_indexes) = alloc();
     StarknetInternals._save_valid_jumpdests(
-        starknet_address, valid_jumpdests_start, valid_jumpdests, 0, valid_indexes
+        starknet_address, valid_jumpdests_start, valid_jumpdests
     );
 
     let (evm, stack, memory, state, gas_used, _) = Interpreter.execute(

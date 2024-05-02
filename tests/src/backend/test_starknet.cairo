@@ -20,27 +20,21 @@ func test__get_env{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
     return env;
 }
 
-func test__save_valid_jumpdests{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    ) -> felt* {
+func test__save_valid_jumpdests{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
     alloc_locals;
     let (local jumpdests_start: felt*) = alloc();
     local jumpdests_end: felt*;
     local contract_address: felt;
     %{
-        # jumpdests must be formatted as [(key, prev, new)]
-        import itertools
-        serialized_input = list(itertools.chain.from_iterable(program_input["jumpdests"]))
+        # jumpdests must be formatted as {index_1: True, index_3: False, index_5: True, ...}
+        serialized_input = [i for key, value in program_input["jumpdests"].items() for i in (key, 0, int(value))]
         segments.write_arg(ids.jumpdests_start, serialized_input)
         ids.jumpdests_end = ids.jumpdests_start + len(serialized_input)
         ids.contract_address = program_input["contract_address"]
     %}
-    let (valid_indexes: felt*) = alloc();
+
     StarknetInternals._save_valid_jumpdests(
-        contract_address,
-        cast(jumpdests_start, DictAccess*),
-        cast(jumpdests_end, DictAccess*),
-        0,
-        valid_indexes,
+        contract_address, cast(jumpdests_start, DictAccess*), cast(jumpdests_end, DictAccess*)
     );
-    return valid_indexes;
+    return ();
 }
