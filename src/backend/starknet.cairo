@@ -307,46 +307,41 @@ namespace Internals {
         starknet_address: felt, dict_start: DictAccess*, dict_end: DictAccess*
     ) {
         alloc_locals;
-        let (local keys_start: felt*) = alloc();
         let dict_len = dict_end - dict_start;
-        let (local len, _) = unsigned_div_rem(dict_len, DictAccess.SIZE);
-        local range_check_ptr = range_check_ptr;
-
         if (dict_len == 0) {
             return ();
         }
 
+        let (local keys_start: felt*) = alloc();
+
         tempvar keys_len = 0;
         tempvar keys = keys_start;
-        tempvar len = len;
         tempvar dict = dict_start;
+        tempvar remaining = dict_len;
 
         loop:
         let keys_len = [ap - 4];
         let keys = cast([ap - 3], felt*);
-        let len = [ap - 2];
-        let dict = cast([ap - 1], DictAccess*);
+        let dict = cast([ap - 2], DictAccess*);
         let is_valid = dict.new_value;
 
         if (is_valid != 0) {
             assert [keys] = dict.key;
             tempvar keys_len = keys_len + 1;
             tempvar keys = keys + 1;
-            tempvar len = len - 1;
             tempvar dict = dict + DictAccess.SIZE;
         } else {
             tempvar keys_len = keys_len;
             tempvar keys = keys;
-            tempvar len = len - 1;
             tempvar dict = dict + DictAccess.SIZE;
         }
+        tempvar remaining = dict_end - dict;
 
         static_assert keys_len == [ap - 4];
         static_assert keys == [ap - 3];
-        static_assert len == [ap - 2];
-        static_assert dict == [ap - 1];
+        static_assert dict == [ap - 2];
 
-        jmp loop if len != 0;
+        jmp loop if remaining != 0;
 
         IAccount.write_jumpdests(starknet_address, jumpdests_len=keys_len, jumpdests=keys_start);
         return ();

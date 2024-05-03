@@ -523,7 +523,6 @@ namespace Internals {
     }
 
     // @notice Store the jumpdests of the contract.
-    // @param index The current free index in the jumpdests_ storage.
     // @param jumpdests_len The length of the jumpdests.
     // @param jumpdests The jumpdests of the contract.
     func write_jumpdests{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
@@ -536,19 +535,19 @@ namespace Internals {
         }
 
         let (local base_address) = Account_valid_jumpdests.addr();
-        tempvar syscall_ptr = syscall_ptr;
-        tempvar jumpdests_len = jumpdests_len;
         local pedersen_ptr: HashBuiltin* = pedersen_ptr;
         local range_check_ptr = range_check_ptr;
+        tempvar syscall_ptr = syscall_ptr;
+        tempvar jumpdests = jumpdests;
+        tempvar remaining = jumpdests_len;
 
         body:
-        let syscall_ptr = cast([ap - 2], felt*);
-        let jumpdests_len = [ap - 1];
-        let initial_jumpdests_len = [fp - 4];
-        let jumpdests = cast([fp - 3], felt*);
+        let syscall_ptr = cast([ap - 3], felt*);
+        let jumpdests = cast([ap - 2], felt*);
+        let remaining = [ap - 1];
         let base_address = [fp];
 
-        let index_to_store = jumpdests[initial_jumpdests_len - jumpdests_len];
+        let index_to_store = [jumpdests];
         tempvar storage_address = base_address + index_to_store;
 
         assert [cast(syscall_ptr, StorageWrite*)] = StorageWrite(
@@ -556,9 +555,10 @@ namespace Internals {
         );
         %{ syscall_handler.storage_write(segments=segments, syscall_ptr=ids.syscall_ptr) %}
         tempvar syscall_ptr = syscall_ptr + StorageWrite.SIZE;
-        tempvar jumpdests_len = jumpdests_len - 1;
+        tempvar jumpdests = jumpdests + 1;
+        tempvar remaining = remaining - 1;
 
-        jmp body if jumpdests_len != 0;
+        jmp body if remaining != 0;
 
         return ();
     }
