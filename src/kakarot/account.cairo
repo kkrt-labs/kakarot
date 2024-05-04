@@ -557,11 +557,11 @@ namespace Account {
         return starknet_account_exists;
     }
 
-    // TODO(optimization): instead of copying the dict, we could simply _move_ the dict from the message
-    //                   to the account, and replace the message's one with an empty dict as it's no longer used.
     // @notice Set the valid jumpdests of the account.
     // @dev After executing a message, we store the valid jumpdests retrieved from storage in the account,
     //    as a cache mechanism. If a call to the same account is performed later, we will load this cache.
+    // @dev The input dictionary was previously squashed, and must be copied to a new `default_dict` to allow
+    //     accesses to keys with no associated values.
     // @param self The pointer to the Account
     // @param valid_jumpdests_start The start of the valid jumpdests dict
     // @param valid_jumpdests The valid jumpdests dict
