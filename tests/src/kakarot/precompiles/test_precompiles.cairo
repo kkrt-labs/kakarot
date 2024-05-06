@@ -2,10 +2,11 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.memcpy import memcpy
+from starkware.cairo.common.alloc import alloc
 
 from kakarot.precompiles.precompiles import Precompiles
 
-func test__is_precompile{range_check_ptr}(output_ptr: felt*) {
+func test__is_precompile{range_check_ptr}() -> felt {
     alloc_locals;
     // Given
     local address;
@@ -13,24 +14,24 @@ func test__is_precompile{range_check_ptr}(output_ptr: felt*) {
 
     // When
     let is_precompile = Precompiles.is_precompile(address);
-    assert [output_ptr] = is_precompile;
-    return ();
+    return is_precompile;
 }
 
 func test__precompiles_run{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(output_ptr: felt*) {
+}() -> (output: felt*, reverted: felt) {
     alloc_locals;
     // Given
     local address;
-    %{ ids.address = program_input["address"] %}
+    local input_len;
+    let (local input) = alloc();
+    %{
+        ids.address = program_input["address"]
+        ids.input_len = len(program_input["input"])
+        segments.write_arg(ids.input, program_input["input"])
+    %}
 
     // When
-    let result = Precompiles.exec_precompile(
-        evm_address=address, input_len=0, input=cast(0, felt*)
-    );
-
-    memcpy(output_ptr, result.output, result.output_len);
-    assert [output_ptr + result.output_len] = result.reverted;
-    return ();
+    let result = Precompiles.exec_precompile(evm_address=address, input_len=input_len, input=input);
+    return (result.output, result.reverted);
 }

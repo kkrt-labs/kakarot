@@ -180,4 +180,9 @@ namespace ICairo1Helpers {
         success: felt, address: felt
     ) {
     }
+
+    func verify_signature_secp256r1(
+        msg_hash: Uint256, r: Uint256, s: Uint256, x: Uint256, y: Uint256
+    ) -> (is_valid: felt) {
+    }
 }
