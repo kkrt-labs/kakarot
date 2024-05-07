@@ -19,7 +19,7 @@ func test__is_precompile{range_check_ptr}() -> felt {
 
 func test__precompiles_run{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() -> (output: felt*, reverted: felt) {
+}() -> (output: felt*, reverted: felt, gas_used: felt) {
     alloc_locals;
     // Given
     local address;
@@ -33,5 +33,5 @@ func test__precompiles_run{
 
     // When
     let result = Precompiles.exec_precompile(evm_address=address, input_len=input_len, input=input);
-    return (result.output, result.reverted);
+    return (result.output, result.reverted, result.gas_used);
 }
