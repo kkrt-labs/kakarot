@@ -47,7 +47,10 @@ namespace PrecompileP256Verify {
     ) {
         alloc_locals;
 
-        pad_end(input_len, input, 160);
+        let (output) = alloc();
+        if (input_len != 160) {
+            return (0, output, GAS_COST_P256_VERIFY, 0);
+        }
 
         let msg_hash = Helpers.bytes32_to_uint256(input);
         let r = Helpers.bytes32_to_uint256(input + 32);
@@ -61,7 +64,6 @@ namespace PrecompileP256Verify {
             class_hash=helpers_class, msg_hash=msg_hash, r=r, s=s, x=x, y=y
         );
 
-        let (output) = alloc();
         if (is_valid == 0) {
             return (0, output, GAS_COST_P256_VERIFY, 0);
         }
