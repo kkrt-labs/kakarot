@@ -138,7 +138,9 @@ class TestSystemOperations:
 
         @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
         @SyscallHandler.patch("IAccount.get_nonce", lambda addr, data: [NONCE])
-        @SyscallHandler.patch("IAccount.bytecode", lambda addr, data: [3, 0x1, 0x2, 0x3])
+        @SyscallHandler.patch(
+            "IAccount.bytecode", lambda addr, data: [3, 0x1, 0x2, 0x3]
+        )
         def test__should_fail_authority_has_code(
             self, cairo_run, private_key, invoker_address, message
         ):
