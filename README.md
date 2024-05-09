@@ -165,7 +165,7 @@ make run-katana
 make test
 
 # Run only unit tests
-make test-units
+make test-unit
 
 # Run only integration tests
 make test-integration
