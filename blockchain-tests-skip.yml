@@ -522,7 +522,7 @@ testname:
 # Keeping some skipped tests because of a probable memory leak somewhere
 # causing cargo test to just crash at some point
 regex:
-  eip4895_withdrawals:
+  withdrawals:
     - .*
   eip4844_blobs:
     - .*
