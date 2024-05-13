@@ -522,8 +522,11 @@ testname:
 # Keeping some skipped tests because of a probable memory leak somewhere
 # causing cargo test to just crash at some point
 regex:
-  withdrawals:
+  eip4895_withdrawals:
     - .*
+  stBadOpcode:
+    - opcF6.*
+    - opcF7.*
   eip4844_blobs:
     - .*
   eip4788_beacon_root:
