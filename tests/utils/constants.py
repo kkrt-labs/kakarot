@@ -49,8 +49,17 @@ MAGIC = 0x04
 # Taken from eth_account.account.Account.sign_transaction docstring
 # https://eth-account.readthedocs.io/en/stable/eth_account.html?highlight=sign_transaction#eth_account.account.Account.sign_transaction
 TRANSACTIONS = [
+    # pre- EIP 155 tx
     {
         # Note that the address must be in checksum format or native bytes:
+        "to": "0xF0109fC8DF283027b6285cc889F5aA624EaC1F55",
+        "value": 1_000_000_000,
+        "gas": 2_000_000,
+        "gasPrice": 234567897654321,
+        "nonce": 0,
+        "data": b"",
+    },
+    {
         "to": "0xF0109fC8DF283027b6285cc889F5aA624EaC1F55",
         "value": 1_000_000_000,
         "gas": 2_000_000,

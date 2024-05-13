@@ -46,7 +46,14 @@ namespace EthTransaction {
         let amount = Helpers.bytes_to_uint256(sub_items[4].data_len, sub_items[4].data);
         let payload_len = sub_items[5].data_len;
         let payload = sub_items[5].data;
-        let chain_id = Helpers.bytes_to_felt(sub_items[6].data_len, sub_items[6].data);
+
+        // pre eip-155 txs have 6 fields, post eip-155 txs have 9 fields
+        if (sub_items_len == 6) {
+            tempvar chain_id = 0;
+        } else {
+            let chain_id = Helpers.bytes_to_felt(sub_items[6].data_len, sub_items[6].data);
+        }
+        let chain_id = [ap - 1];
 
         tempvar tx = new model.EthTransaction(
             signer_nonce=nonce,

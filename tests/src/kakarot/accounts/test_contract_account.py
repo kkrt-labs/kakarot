@@ -12,7 +12,7 @@ from starkware.starknet.public.abi import (
     get_storage_var_address,
 )
 
-from tests.utils.constants import CAIRO1_HELPERS_CLASS_HASH, TRANSACTIONS
+from tests.utils.constants import CAIRO1_HELPERS_CLASS_HASH, CHAIN_ID, TRANSACTIONS
 from tests.utils.errors import cairo_error
 from tests.utils.helpers import (
     generate_random_evm_address,
@@ -170,17 +170,20 @@ class TestContractAccount:
                 "test__validate",
                 address=int(address, 16),
                 nonce=transaction["nonce"],
-                chain_id=transaction["chainId"],
+                chain_id=CHAIN_ID,
                 r=int_to_uint256(signed.r),
                 s=int_to_uint256(signed.s),
                 v=signed["v"],
                 tx_data=tx_data,
             )
 
-        @pytest.mark.parametrize("transaction", TRANSACTIONS)
-        async def test_should_raise_with_wrong_chain_id(self, cairo_run, transaction):
+        @pytest.mark.parametrize("transaction", TRANSACTIONS[1:])
+        async def test_should_raise_with_wrong_signed_chain_id(
+            self, cairo_run, transaction
+        ):
             private_key = generate_random_private_key()
             address = private_key.public_key.to_checksum_address()
+            transaction["chainId"] += 1
             signed = Account.sign_transaction(transaction, private_key)
 
             encoded_unsigned_tx = rlp_encode_signed_data(transaction)
@@ -190,7 +193,7 @@ class TestContractAccount:
                     "test__validate",
                     address=int(address, 16),
                     nonce=transaction["nonce"],
-                    chain_id=transaction["chainId"] + 1,
+                    chain_id=CHAIN_ID,
                     r=int_to_uint256(signed.r),
                     s=int_to_uint256(signed.s),
                     v=signed["v"],
@@ -211,7 +214,7 @@ class TestContractAccount:
                     "test__validate",
                     address=int(address, 16),
                     nonce=transaction["nonce"],
-                    chain_id=transaction["chainId"],
+                    chain_id=CHAIN_ID,
                     r=int_to_uint256(signed.r),
                     s=int_to_uint256(signed.s),
                     v=signed["v"],
@@ -232,7 +235,7 @@ class TestContractAccount:
                     "test__validate",
                     address=int(address, 16),
                     nonce=transaction["nonce"],
-                    chain_id=transaction["chainId"],
+                    chain_id=CHAIN_ID,
                     r=int_to_uint256(signed.r),
                     s=int_to_uint256(signed.s),
                     v=signed["v"],

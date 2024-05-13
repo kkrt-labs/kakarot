@@ -632,16 +632,24 @@ namespace Internals {
         alloc_locals;
         let tx = EthTransaction.decode(tx_data_len, tx_data);
         assert tx.signer_nonce = account_nonce;
-        assert tx.chain_id = chain_id;
 
         // Note: here, the validate process assumes an ECDSA signature, and r, s, v field
         // Technically, the transaction type can determine the signature scheme.
         let tx_type = EthTransaction.get_tx_type(tx_data);
         local y_parity: felt;
         if (tx_type == 0) {
-            assert y_parity = (v - 2 * chain_id - 35);
+            let is_eip155_tx = is_le(v, 28);
+            if (is_eip155_tx != FALSE) {
+                assert y_parity = v - 27;
+            } else {
+                assert y_parity = (v - 2 * chain_id - 35);
+                assert tx.chain_id = chain_id;
+            }
+            tempvar range_check_ptr = range_check_ptr;
         } else {
             assert y_parity = v;
+            assert tx.chain_id = chain_id;
+            tempvar range_check_ptr = range_check_ptr;
         }
 
         let (local words: felt*) = alloc();
