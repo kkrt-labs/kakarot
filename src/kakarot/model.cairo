@@ -73,6 +73,8 @@ namespace model {
         storage: DictAccess*,
         transient_storage_start: DictAccess*,
         transient_storage: DictAccess*,
+        valid_jumpdests_start: DictAccess*,
+        valid_jumpdests: DictAccess*,
         nonce: felt,
         balance: Uint256*,
         selfdestruct: felt,

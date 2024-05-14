@@ -208,6 +208,11 @@ namespace Internals {
             IAccount.set_nonce(starknet_address, self.nonce);
             // Save storages
             _save_storage(starknet_address, self.storage_start, self.storage);
+
+            // Save valid jumpdests
+            Internals._save_valid_jumpdests(
+                starknet_address, self.valid_jumpdests_start, self.valid_jumpdests
+            );
             return ();
         }
 
@@ -222,10 +227,12 @@ namespace Internals {
         // Save storages
         Internals._save_storage(starknet_address, self.storage_start, self.storage);
 
-        // Update bytecode if required (SELFDESTRUCTed contract, redeployed)
-        let (bytecode_len) = IAccount.bytecode_len(starknet_address);
-        if (bytecode_len != self.code_len) {
+        // Update bytecode and jumpdests if required (SELFDESTRUCTed contract, redeployed)
+        if (self.created != FALSE) {
             IAccount.write_bytecode(starknet_address, self.code_len, self.code);
+            Internals._save_valid_jumpdests(
+                starknet_address, self.valid_jumpdests_start, self.valid_jumpdests
+            );
             return ();
         }
 
@@ -294,5 +301,45 @@ namespace Internals {
         );
 
         return _save_storage(starknet_address, storage_start + DictAccess.SIZE, storage_end);
+    }
+
+    func _save_valid_jumpdests{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        starknet_address: felt, dict_start: DictAccess*, dict_end: DictAccess*
+    ) {
+        alloc_locals;
+        let dict_len = dict_end - dict_start;
+        if (dict_len == 0) {
+            return ();
+        }
+
+        let (local keys_start: felt*) = alloc();
+
+        tempvar keys = keys_start;
+        tempvar dict = dict_start;
+        tempvar remaining = dict_len;
+
+        loop:
+        let keys = cast([ap - 3], felt*);
+        let dict = cast([ap - 2], DictAccess*);
+        let is_valid = dict.new_value;
+
+        if (is_valid != 0) {
+            assert [keys] = dict.key;
+            tempvar keys = keys + 1;
+            tempvar dict = dict + DictAccess.SIZE;
+        } else {
+            tempvar keys = keys;
+            tempvar dict = dict + DictAccess.SIZE;
+        }
+        tempvar remaining = dict_end - dict;
+
+        static_assert keys == [ap - 3];
+        static_assert dict == [ap - 2];
+
+        jmp loop if remaining != 0;
+
+        let keys_len = keys - keys_start;
+        IAccount.write_jumpdests(starknet_address, jumpdests_len=keys_len, jumpdests=keys_start);
+        return ();
     }
 }

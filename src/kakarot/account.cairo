@@ -48,6 +48,7 @@ namespace Account {
     ) -> model.Account* {
         let (storage_start) = default_dict_new(0);
         let (transient_storage_start) = default_dict_new(0);
+        let (valid_jumpdests_start) = default_dict_new(0);
         return new model.Account(
             address=address,
             code_len=code_len,
@@ -56,6 +57,8 @@ namespace Account {
             storage=storage_start,
             transient_storage_start=transient_storage_start,
             transient_storage=transient_storage_start,
+            valid_jumpdests_start=valid_jumpdests_start,
+            valid_jumpdests=valid_jumpdests_start,
             nonce=nonce,
             balance=balance,
             selfdestruct=0,
@@ -72,6 +75,9 @@ namespace Account {
         let (transient_storage_start, transient_storage) = default_dict_copy(
             self.transient_storage_start, self.transient_storage
         );
+        let (valid_jumpdests_start, valid_jumpdests) = default_dict_copy(
+            self.valid_jumpdests_start, self.valid_jumpdests
+        );
         return new model.Account(
             address=self.address,
             code_len=self.code_len,
@@ -80,6 +86,8 @@ namespace Account {
             storage=storage,
             transient_storage_start=transient_storage_start,
             transient_storage=transient_storage,
+            valid_jumpdests_start=valid_jumpdests_start,
+            valid_jumpdests=valid_jumpdests,
             nonce=self.nonce,
             balance=self.balance,
             selfdestruct=self.selfdestruct,
@@ -157,6 +165,8 @@ namespace Account {
                 storage=storage,
                 transient_storage_start=self.transient_storage_start,
                 transient_storage=self.transient_storage,
+                valid_jumpdests_start=self.valid_jumpdests_start,
+                valid_jumpdests=self.valid_jumpdests,
                 nonce=self.nonce,
                 balance=self.balance,
                 selfdestruct=self.selfdestruct,
@@ -194,6 +204,8 @@ namespace Account {
             storage=storage,
             transient_storage_start=self.transient_storage_start,
             transient_storage=self.transient_storage,
+            valid_jumpdests_start=self.valid_jumpdests_start,
+            valid_jumpdests=self.valid_jumpdests,
             nonce=self.nonce,
             balance=self.balance,
             selfdestruct=self.selfdestruct,
@@ -221,6 +233,8 @@ namespace Account {
             storage=storage,
             transient_storage_start=self.transient_storage_start,
             transient_storage=self.transient_storage,
+            valid_jumpdests_start=self.valid_jumpdests_start,
+            valid_jumpdests=self.valid_jumpdests,
             nonce=self.nonce,
             balance=self.balance,
             selfdestruct=self.selfdestruct,
@@ -248,6 +262,8 @@ namespace Account {
             storage=self.storage,
             transient_storage_start=self.transient_storage_start,
             transient_storage=transient_storage,
+            valid_jumpdests_start=self.valid_jumpdests_start,
+            valid_jumpdests=self.valid_jumpdests,
             nonce=self.nonce,
             balance=self.balance,
             selfdestruct=self.selfdestruct,
@@ -284,6 +300,8 @@ namespace Account {
             storage=self.storage,
             transient_storage_start=self.transient_storage_start,
             transient_storage=transient_storage,
+            valid_jumpdests_start=self.valid_jumpdests_start,
+            valid_jumpdests=self.valid_jumpdests,
             nonce=self.nonce,
             balance=self.balance,
             selfdestruct=self.selfdestruct,
@@ -292,14 +310,19 @@ namespace Account {
         return (self, value_ptr);
     }
 
-    // @notice Set the code of the Account
-    // @dev The only reason to set code after creation is in deploy transaction where
+    // @notice Set the account's bytecode, valid jumpdests and mark it as created during this
+    // transaction.
+    // @dev The only reason to set code after creation is in create/deploy operations where
     //      the account exists from the beginning for setting storages, but the
-    //      deployed bytecode is known at the end (the return_data of the tx).
+    //      deployed bytecode is known at the end (the return_data of the operation).
     // @param self The pointer to the Account.
     // @param code_len The len of the code
     // @param code The code array
-    func set_code(self: model.Account*, code_len: felt, code: felt*) -> model.Account* {
+    // @return The updated Account with the code and valid jumpdests set
+    func set_code{range_check_ptr}(
+        self: model.Account*, code_len: felt, code: felt*
+    ) -> model.Account* {
+        let (valid_jumpdests_start, valid_jumpdests) = Helpers.initialize_jumpdests(code_len, code);
         return new model.Account(
             address=self.address,
             code_len=code_len,
@@ -308,10 +331,12 @@ namespace Account {
             storage=self.storage,
             transient_storage_start=self.transient_storage_start,
             transient_storage=self.transient_storage,
+            valid_jumpdests_start=valid_jumpdests_start,
+            valid_jumpdests=valid_jumpdests,
             nonce=self.nonce,
             balance=self.balance,
             selfdestruct=self.selfdestruct,
-            created=self.created,
+            created=1,
         );
     }
 
@@ -327,6 +352,8 @@ namespace Account {
             storage=self.storage,
             transient_storage_start=self.transient_storage_start,
             transient_storage=self.transient_storage,
+            valid_jumpdests_start=self.valid_jumpdests_start,
+            valid_jumpdests=self.valid_jumpdests,
             nonce=nonce,
             balance=self.balance,
             selfdestruct=self.selfdestruct,
@@ -344,6 +371,8 @@ namespace Account {
             storage=self.storage,
             transient_storage_start=self.transient_storage_start,
             transient_storage=self.transient_storage,
+            valid_jumpdests_start=self.valid_jumpdests_start,
+            valid_jumpdests=self.valid_jumpdests,
             nonce=self.nonce,
             balance=self.balance,
             selfdestruct=self.selfdestruct,
@@ -396,6 +425,8 @@ namespace Account {
             storage=self.storage,
             transient_storage_start=self.transient_storage_start,
             transient_storage=self.transient_storage,
+            valid_jumpdests_start=self.valid_jumpdests_start,
+            valid_jumpdests=self.valid_jumpdests,
             nonce=self.nonce,
             balance=balance,
             selfdestruct=self.selfdestruct,
@@ -415,6 +446,8 @@ namespace Account {
             storage=self.storage,
             transient_storage_start=self.transient_storage_start,
             transient_storage=self.transient_storage,
+            valid_jumpdests_start=self.valid_jumpdests_start,
+            valid_jumpdests=self.valid_jumpdests,
             nonce=self.nonce,
             balance=self.balance,
             selfdestruct=1,
@@ -502,73 +535,35 @@ namespace Account {
         return starknet_account_exists;
     }
 
-    // @notice Initializes a dictionary of valid jump destinations in EVM bytecode.
-    // @param bytecode_len The length of the bytecode.
-    // @param bytecode The EVM bytecode to analyze.
-    // @return (valid_jumpdests_start, valid_jumpdests) The starting and ending pointers of the valid jump destinations.
-    //
-    // @dev This function iterates over the bytecode from the current index 'i'.
-    // If the opcode at the current index is between 0x5f and 0x7f (PUSHN opcodes) (inclusive),
-    // it skips the next 'n_args' opcodes, where 'n_args' is the opcode minus 0x5f.
-    // If the opcode is 0x5b (JUMPDEST), it marks the current index as a valid jump destination.
-    // It continues by jumping back to the body flag until it has processed the entire bytecode.
-    func get_jumpdests{range_check_ptr}(bytecode_len: felt, bytecode: felt*) -> (
-        valid_jumpdests_start: DictAccess*, valid_jumpdests: DictAccess*
-    ) {
-        alloc_locals;
-        let (local valid_jumpdests_start: DictAccess*) = default_dict_new(0);
-        tempvar range_check_ptr = range_check_ptr;
-        tempvar valid_jumpdests = valid_jumpdests_start;
-        tempvar i = 0;
-        jmp body if bytecode_len != 0;
+    // @notice Set the valid jumpdests of the account.
+    // @dev After executing a message, we store the valid jumpdests retrieved from storage in the account,
+    //    as a cache mechanism. If a call to the same account is performed later, we will load this cache.
+    // @dev The input dictionary was previously squashed, and must be copied to a new `default_dict` to allow
+    //     accesses to keys with no associated values.
+    // @param self The pointer to the Account
+    // @param valid_jumpdests_start The start of the valid jumpdests dict
+    // @param valid_jumpdests The valid jumpdests dict
+    // @return The updated Account
+    func set_valid_jumpdests{range_check_ptr}(
+        self: model.Account*, valid_jumpdests_start: DictAccess*, valid_jumpdests: DictAccess*
+    ) -> model.Account* {
+        let (copy_start, copy) = default_dict_copy(valid_jumpdests_start, valid_jumpdests);
 
-        static_assert range_check_ptr == [ap - 3];
-        jmp end;
-
-        body:
-        let bytecode_len = [fp - 4];
-        let bytecode = cast([fp - 3], felt*);
-        let range_check_ptr = [ap - 3];
-        let valid_jumpdests = cast([ap - 2], DictAccess*);
-        let i = [ap - 1];
-
-        tempvar opcode = [bytecode + i];
-        let is_opcode_ge_0x5f = Helpers.is_le_unchecked(0x5f, opcode);
-        let is_opcode_le_0x7f = Helpers.is_le_unchecked(opcode, 0x7f);
-        let is_push_opcode = is_opcode_ge_0x5f * is_opcode_le_0x7f;
-        let next_i = i + 1 + is_push_opcode * (opcode - 0x5f);  // 0x5f is the first PUSHN opcode, opcode - 0x5f is the number of arguments.
-
-        if (opcode == 0x5b) {
-            dict_write{dict_ptr=valid_jumpdests}(i, TRUE);
-            tempvar valid_jumpdests = valid_jumpdests;
-            tempvar next_i = next_i;
-            tempvar range_check_ptr = range_check_ptr;
-        } else {
-            tempvar valid_jumpdests = valid_jumpdests;
-            tempvar next_i = next_i;
-            tempvar range_check_ptr = range_check_ptr;
-        }
-
-        // continue_loop != 0 => next_i - bytecode_len < 0 <=> next_i < bytecode_len
-        tempvar a = next_i - bytecode_len;
-        %{ memory[ap] = 0 if 0 <= (ids.a % PRIME) < range_check_builtin.bound else 1 %}
-        ap += 1;
-        let continue_loop = [ap - 1];
-        tempvar range_check_ptr = range_check_ptr;
-        tempvar valid_jumpdests = valid_jumpdests;
-        tempvar i = next_i;
-        static_assert range_check_ptr == [ap - 3];
-        static_assert valid_jumpdests == [ap - 2];
-        static_assert i == [ap - 1];
-        jmp body if continue_loop != 0;
-
-        end:
-        let range_check_ptr = [ap - 3];
-        let i = [ap - 1];
-        // Verify that i >= bytecode_len to ensure loop terminated correctly.
-        let check = Helpers.is_le_unchecked(bytecode_len, i);
-        assert check = 1;
-        return (valid_jumpdests_start, valid_jumpdests);
+        return new model.Account(
+            address=self.address,
+            code_len=self.code_len,
+            code=self.code,
+            storage_start=self.storage_start,
+            storage=self.storage,
+            transient_storage_start=self.transient_storage_start,
+            transient_storage=self.transient_storage,
+            valid_jumpdests_start=copy_start,
+            valid_jumpdests=copy,
+            nonce=self.nonce,
+            balance=self.balance,
+            selfdestruct=self.selfdestruct,
+            created=self.created,
+        );
     }
 
     func is_storage_warm{pedersen_ptr: HashBuiltin*, range_check_ptr}(
@@ -587,6 +582,8 @@ namespace Account {
             storage=storage,
             transient_storage_start=self.transient_storage_start,
             transient_storage=self.transient_storage,
+            valid_jumpdests_start=self.valid_jumpdests_start,
+            valid_jumpdests=self.valid_jumpdests,
             nonce=self.nonce,
             balance=self.balance,
             selfdestruct=self.selfdestruct,
@@ -619,6 +616,8 @@ namespace Account {
             storage=storage_ptr,
             transient_storage_start=self.transient_storage_start,
             transient_storage=self.transient_storage,
+            valid_jumpdests_start=self.valid_jumpdests_start,
+            valid_jumpdests=self.valid_jumpdests,
             nonce=self.nonce,
             balance=self.balance,
             selfdestruct=self.selfdestruct,

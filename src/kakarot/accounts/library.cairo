@@ -63,6 +63,10 @@ func Account_evm_address() -> (evm_address: felt) {
 func Account_cairo1_helpers_class_hash() -> (res: felt) {
 }
 
+@storage_var
+func Account_valid_jumpdests() -> (is_valid: felt) {
+}
+
 @event
 func transaction_executed(response_len: felt, response: felt*, success: felt, gas_used: felt) {
 }
@@ -426,6 +430,32 @@ namespace AccountContract {
         let (latest_cairo1_helpers_class) = IKakarot.get_cairo1_helpers_class_hash(kakarot_address);
         return (latest_account_class, latest_cairo1_helpers_class);
     }
+
+    func write_jumpdests{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        jumpdests_len: felt, jumpdests: felt*
+    ) {
+        // Recursively store the jumpdests.
+        Internals.write_jumpdests(jumpdests_len=jumpdests_len, jumpdests=jumpdests);
+        return ();
+    }
+
+    func is_valid_jumpdest{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        index: felt
+    ) -> felt {
+        let (base_address) = Account_valid_jumpdests.addr();
+        let index_address = base_address + index;
+
+        let syscall = [cast(syscall_ptr, StorageRead*)];
+        assert syscall.request = StorageReadRequest(
+            selector=STORAGE_READ_SELECTOR, address=index_address
+        );
+        %{ syscall_handler.storage_read(segments=segments, syscall_ptr=ids.syscall_ptr) %}
+        let response = syscall.response;
+        tempvar syscall_ptr = syscall_ptr + StorageRead.SIZE;
+        tempvar value = response.value;
+
+        return value;
+    }
 }
 
 namespace Internals {
@@ -440,7 +470,6 @@ namespace Internals {
     }
 
     // @notice Store the bytecode of the contract.
-    // @param index The current free index in the bytecode_ storage.
     // @param bytecode_len The length of the bytecode.
     // @param bytecode The bytecode of the contract.
     func write_bytecode{syscall_ptr: felt*}(bytecode_len: felt, bytecode: felt*) {
@@ -489,6 +518,47 @@ namespace Internals {
         tempvar count = BYTES_PER_FELT;
 
         jmp body if bytecode_len != 0;
+
+        return ();
+    }
+
+    // @notice Store the jumpdests of the contract.
+    // @param jumpdests_len The length of the jumpdests.
+    // @param jumpdests The jumpdests of the contract.
+    func write_jumpdests{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        jumpdests_len: felt, jumpdests: felt*
+    ) {
+        alloc_locals;
+
+        if (jumpdests_len == 0) {
+            return ();
+        }
+
+        let (local base_address) = Account_valid_jumpdests.addr();
+        local pedersen_ptr: HashBuiltin* = pedersen_ptr;
+        local range_check_ptr = range_check_ptr;
+        tempvar syscall_ptr = syscall_ptr;
+        tempvar jumpdests = jumpdests;
+        tempvar remaining = jumpdests_len;
+
+        body:
+        let syscall_ptr = cast([ap - 3], felt*);
+        let jumpdests = cast([ap - 2], felt*);
+        let remaining = [ap - 1];
+        let base_address = [fp];
+
+        let index_to_store = [jumpdests];
+        tempvar storage_address = base_address + index_to_store;
+
+        assert [cast(syscall_ptr, StorageWrite*)] = StorageWrite(
+            selector=STORAGE_WRITE_SELECTOR, address=storage_address, value=1
+        );
+        %{ syscall_handler.storage_write(segments=segments, syscall_ptr=ids.syscall_ptr) %}
+        tempvar syscall_ptr = syscall_ptr + StorageWrite.SIZE;
+        tempvar jumpdests = jumpdests + 1;
+        tempvar remaining = remaining - 1;
+
+        jmp body if remaining != 0;
 
         return ();
     }

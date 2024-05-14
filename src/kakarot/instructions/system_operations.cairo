@@ -163,7 +163,7 @@ namespace SystemOperations {
 
         // Create child message
         let (calldata: felt*) = alloc();
-        let (valid_jumpdests_start, valid_jumpdests) = Account.get_jumpdests(
+        let (valid_jumpdests_start, valid_jumpdests) = Helpers.initialize_jumpdests(
             bytecode_len=size.low, bytecode=bytecode
         );
         tempvar authorized = new model.Option(is_some=0, value=0);
@@ -190,6 +190,7 @@ namespace SystemOperations {
 
         let target_account = State.get_account(target_address);
         let target_account = Account.set_nonce(target_account, 1);
+        let target_account = Account.set_created(target_account, 1);
         State.update_account(target_account);
 
         let transfer = model.Transfer(evm.message.address, target_account.address, [value]);
@@ -1176,9 +1177,6 @@ namespace CallHelper {
         tempvar parent = new model.Parent(evm, stack, memory, state);
         let stack = Stack.init();
         let memory = Memory.init();
-        let (valid_jumpdests_start, valid_jumpdests) = Account.get_jumpdests(
-            bytecode_len=code_len, bytecode=code
-        );
 
         if (is_staticcall != FALSE) {
             tempvar read_only = TRUE;
@@ -1187,11 +1185,12 @@ namespace CallHelper {
         }
 
         tempvar authorized = new model.Option(is_some=0, value=0);
+        // Use the cached jumpdests from previous calls
         tempvar message = new model.Message(
             bytecode=code,
             bytecode_len=code_len,
-            valid_jumpdests_start=valid_jumpdests_start,
-            valid_jumpdests=valid_jumpdests,
+            valid_jumpdests_start=code_account.valid_jumpdests_start,
+            valid_jumpdests=code_account.valid_jumpdests,
             calldata=calldata,
             calldata_len=args_size.low,
             value=value,
@@ -1242,6 +1241,13 @@ namespace CallHelper {
             tempvar state = state;
         }
         let state = cast([ap - 1], model.State*);
+
+        // Write the valid jumpdests cached during the call in the state
+        let code_account = State.get_account(evm.message.code_address);
+        let code_account = Account.set_valid_jumpdests(
+            code_account, evm.message.valid_jumpdests_start, evm.message.valid_jumpdests
+        );
+        State.update_account(code_account);
 
         if (evm.reverted == Errors.EXCEPTIONAL_HALT) {
             // If the call has halted exceptionnaly, the return_data is empty
@@ -1502,10 +1508,11 @@ namespace CreateHelper {
             return evm;
         }
 
-        // Write bytecode to Account
+        // Write bytecode and valid jumpdests to Account
         let account = State.get_account(evm.message.address.evm);
         let account = Account.set_code(account, evm.return_data_len, evm.return_data);
-        let account = Account.set_created(account, TRUE);
+
+        // Update local state with the updated account inner pointers.
         State.update_account(account);
 
         tempvar evm = new model.EVM(

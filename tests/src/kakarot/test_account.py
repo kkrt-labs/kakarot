@@ -1,7 +1,5 @@
 import pytest
-from ethereum.shanghai.vm.runtime import get_valid_jump_destinations
 
-from kakarot_scripts.utils.kakarot import get_contract
 from tests.utils.syscall_handler import SyscallHandler
 from tests.utils.uint256 import int_to_uint256
 
@@ -95,9 +93,3 @@ class TestAccount:
         ):
             output = cairo_run("test__has_code_or_nonce", nonce=nonce, code=code)
             assert output == expected_result
-
-    class TestGetJumpdests:
-        def test_should_return_same_as_execution_specs(self, cairo_run):
-            bytecode = get_contract("PlainOpcodes", "Counter").bytecode_runtime
-            output = cairo_run("test__get_jumpdests", bytecode=bytecode)
-            assert set(output) == get_valid_jump_destinations(bytecode)

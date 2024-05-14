@@ -5,10 +5,13 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.math import assert_le, split_felt, assert_nn_le, unsigned_div_rem
 from starkware.cairo.common.math_cmp import is_le, is_nn
 from starkware.cairo.common.memcpy import memcpy
+from starkware.cairo.common.dict_access import DictAccess
+from starkware.cairo.common.bool import TRUE, FALSE
+from starkware.cairo.common.default_dict import default_dict_new
+from starkware.cairo.common.dict import dict_write
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.cairo_secp.bigint import BigInt3, bigint_to_uint256, uint256_to_bigint
-from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.hash_state import hash_finalize, hash_init, hash_update
 
@@ -926,5 +929,74 @@ namespace Helpers {
         tempvar range_check_ptr = range_check_ptr + 1;
         tempvar res = 0;
         ret;
+    }
+
+    // @notice Initializes a dictionary of valid jump destinations in EVM bytecode.
+    // @param bytecode_len The length of the bytecode.
+    // @param bytecode The EVM bytecode to analyze.
+    // @return (valid_jumpdests_start, valid_jumpdests) The starting and ending pointers of the valid jump destinations.
+    //
+    // @dev This function iterates over the bytecode from the current index 'i'.
+    // If the opcode at the current index is between 0x5f and 0x7f (PUSHN opcodes) (inclusive),
+    // it skips the next 'n_args' opcodes, where 'n_args' is the opcode minus 0x5f.
+    // If the opcode is 0x5b (JUMPDEST), it marks the current index as a valid jump destination.
+    // It continues by jumping back to the body flag until it has processed the entire bytecode.
+    func initialize_jumpdests{range_check_ptr}(bytecode_len: felt, bytecode: felt*) -> (
+        valid_jumpdests_start: DictAccess*, valid_jumpdests: DictAccess*
+    ) {
+        alloc_locals;
+        let (local valid_jumpdests_start: DictAccess*) = default_dict_new(0);
+        tempvar range_check_ptr = range_check_ptr;
+        tempvar valid_jumpdests = valid_jumpdests_start;
+        tempvar i = 0;
+        jmp body if bytecode_len != 0;
+
+        static_assert range_check_ptr == [ap - 3];
+        jmp end;
+
+        body:
+        let bytecode_len = [fp - 4];
+        let bytecode = cast([fp - 3], felt*);
+        let range_check_ptr = [ap - 3];
+        let valid_jumpdests = cast([ap - 2], DictAccess*);
+        let i = [ap - 1];
+
+        tempvar opcode = [bytecode + i];
+        let is_opcode_ge_0x5f = Helpers.is_le_unchecked(0x5f, opcode);
+        let is_opcode_le_0x7f = Helpers.is_le_unchecked(opcode, 0x7f);
+        let is_push_opcode = is_opcode_ge_0x5f * is_opcode_le_0x7f;
+        let next_i = i + 1 + is_push_opcode * (opcode - 0x5f);  // 0x5f is the first PUSHN opcode, opcode - 0x5f is the number of arguments.
+
+        if (opcode == 0x5b) {
+            dict_write{dict_ptr=valid_jumpdests}(i, TRUE);
+            tempvar valid_jumpdests = valid_jumpdests;
+            tempvar next_i = next_i;
+            tempvar range_check_ptr = range_check_ptr;
+        } else {
+            tempvar valid_jumpdests = valid_jumpdests;
+            tempvar next_i = next_i;
+            tempvar range_check_ptr = range_check_ptr;
+        }
+
+        // continue_loop != 0 => next_i - bytecode_len < 0 <=> next_i < bytecode_len
+        tempvar a = next_i - bytecode_len;
+        %{ memory[ap] = 0 if 0 <= (ids.a % PRIME) < range_check_builtin.bound else 1 %}
+        ap += 1;
+        let continue_loop = [ap - 1];
+        tempvar range_check_ptr = range_check_ptr;
+        tempvar valid_jumpdests = valid_jumpdests;
+        tempvar i = next_i;
+        static_assert range_check_ptr == [ap - 3];
+        static_assert valid_jumpdests == [ap - 2];
+        static_assert i == [ap - 1];
+        jmp body if continue_loop != 0;
+
+        end:
+        let range_check_ptr = [ap - 3];
+        let i = [ap - 1];
+        // Verify that i >= bytecode_len to ensure loop terminated correctly.
+        let check = Helpers.is_le_unchecked(bytecode_len, i);
+        assert check = 1;
+        return (valid_jumpdests_start, valid_jumpdests);
     }
 }

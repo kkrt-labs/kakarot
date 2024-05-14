@@ -6,6 +6,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.default_dict import default_dict_new
+from starkware.cairo.common.dict import dict_write
 from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.memset import memset
 from starkware.cairo.common.uint256 import Uint256, uint256_eq, assert_uint256_eq
@@ -34,7 +35,7 @@ namespace TestHelpers {
         tempvar address = new model.Address(
             starknet=starknet_contract_address, evm=evm_contract_address
         );
-        let (valid_jumpdests_start, valid_jumpdests) = Account.get_jumpdests(
+        let (valid_jumpdests_start, valid_jumpdests) = Helpers.initialize_jumpdests(
             bytecode_len=bytecode_len, bytecode=bytecode
         );
         tempvar zero = new Uint256(0, 0);
@@ -113,6 +114,43 @@ namespace TestHelpers {
             Memory.store_n(serialized_memory_len, serialized_memory, 0);
         }
         return memory;
+    }
+
+    func init_jumpdests_with_values(jumpdests_len: felt, jumpdests: felt*) -> (
+        DictAccess*, DictAccess*
+    ) {
+        alloc_locals;
+        let (local valid_jumpdests_start) = default_dict_new(0);
+        let valid_jumpdests = valid_jumpdests_start;
+
+        tempvar valid_jumpdests = valid_jumpdests;
+        tempvar jumpdests_len = jumpdests_len;
+        tempvar jumpdests = jumpdests;
+
+        jmp cond;
+
+        loop:
+        let valid_jumpdests = cast([ap - 3], DictAccess*);
+        let jumpdests_len = [ap - 2];
+        let jumpdests = cast([ap - 1], felt*);
+
+        dict_write{dict_ptr=valid_jumpdests}(jumpdests[jumpdests_len - 1], 1);
+
+        tempvar jumpdests_len = jumpdests_len - 1;
+        tempvar jumpdests = jumpdests;
+
+        static_assert valid_jumpdests == [ap - 3];
+        static_assert jumpdests_len == [ap - 2];
+        static_assert jumpdests == [ap - 1];
+
+        cond:
+        let jumpdests_len = [ap - 2];
+        jmp loop if jumpdests_len != 0;
+
+        let valid_jumpdests = cast([ap - 3], DictAccess*);
+        let valid_jumpdests_start = cast([fp], DictAccess*);
+
+        return (valid_jumpdests_start, valid_jumpdests);
     }
 
     func assert_array_equal(array_0_len: felt, array_0: felt*, array_1_len: felt, array_1: felt*) {

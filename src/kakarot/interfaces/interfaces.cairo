@@ -76,7 +76,10 @@ namespace IAccount {
     func set_nonce(nonce: felt) {
     }
 
-    func is_empty() -> (is_empty: felt) {
+    func is_valid_jumpdest(index: felt) -> (is_valid: felt) {
+    }
+
+    func write_jumpdests(jumpdests_len: felt, jumpdests: felt*) {
     }
 }
 

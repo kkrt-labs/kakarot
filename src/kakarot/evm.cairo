@@ -9,13 +9,15 @@ from starkware.cairo.common.math_cmp import is_le, is_le_felt
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.uint256 import Uint256
-from starkware.cairo.common.dict import dict_read
+from starkware.cairo.common.dict import dict_read, dict_write, DictAccess
 from starkware.cairo.common.default_dict import default_dict_finalize
 
 from kakarot.errors import Errors
 from kakarot.model import model
+from kakarot.account import Account
 from kakarot.stack import Stack
 from kakarot.state import State
+from kakarot.interfaces.interfaces import IAccount
 
 // @title EVM related functions.
 // @notice This file contains functions related to the execution context.
@@ -221,7 +223,9 @@ namespace EVM {
     // @param self The pointer to the execution context.
     // @param new_pc_offset The value to update the program counter by.
     // @return EVM The pointer to the updated execution context.
-    func jump{range_check_ptr}(self: model.EVM*, new_pc_offset: felt) -> model.EVM* {
+    func jump{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*}(
+        self: model.EVM*, new_pc_offset: felt
+    ) -> model.EVM* {
         let out_of_range = is_le(self.message.bytecode_len, new_pc_offset);
         if (out_of_range != FALSE) {
             let (revert_reason_len, revert_reason) = Errors.invalidJumpDestError();
@@ -230,7 +234,12 @@ namespace EVM {
         }
 
         let valid_jumpdests = self.message.valid_jumpdests;
-        let (is_valid_jumpdest) = dict_read{dict_ptr=valid_jumpdests}(new_pc_offset);
+        with valid_jumpdests {
+            let is_valid_jumpdest = Internals.is_valid_jumpdest(
+                self.message.code_address, new_pc_offset
+            );
+        }
+
         tempvar message = new model.Message(
             bytecode=self.message.bytecode,
             bytecode_len=self.message.bytecode_len,
@@ -276,5 +285,34 @@ namespace EVM {
             gas_refund=self.gas_refund,
             reverted=self.reverted,
         );
+    }
+}
+
+namespace Internals {
+    func is_valid_jumpdest{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        valid_jumpdests: DictAccess*,
+        state: model.State*,
+    }(code_address: felt, index: felt) -> felt {
+        alloc_locals;
+        let (is_cached) = dict_read{dict_ptr=valid_jumpdests}(index);
+        if (is_cached != 0) {
+            return TRUE;
+        }
+
+        // If the account was created in the same transaction,
+        // a cache miss is an invalid jumpdest as all valid jumpdests were cached on deployment.
+        let code_account = State.get_account(code_address);
+        if (code_account.created != 0) {
+            return FALSE;
+        }
+
+        let code_starknet_address = Account.compute_starknet_address(code_address);
+        let (is_valid) = IAccount.is_valid_jumpdest(code_starknet_address, index);
+        dict_write{dict_ptr=valid_jumpdests}(index, is_valid);
+
+        return is_valid;
     }
 }

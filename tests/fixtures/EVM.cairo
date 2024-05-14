@@ -10,9 +10,11 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.registers import get_fp_and_pc
 from starkware.cairo.common.math_cmp import is_not_zero
 from starkware.cairo.common.uint256 import Uint256
+from starkware.starknet.common.syscalls import get_caller_address
 
 // Local dependencies
 from kakarot.library import Kakarot
+from kakarot.events import evm_contract_deployed
 from kakarot.interpreter import Interpreter
 from kakarot.account import Account
 from kakarot.model import model
@@ -24,28 +26,17 @@ from kakarot.storages import (
     Kakarot_cairo1_helpers_class_hash,
     Kakarot_coinbase,
     Kakarot_block_gas_limit,
+    Kakarot_evm_to_starknet_address,
+)
+from kakarot.kakarot import (
+    constructor,
+    get_account_contract_class_hash,
+    get_cairo1_helpers_class_hash,
+    get_native_token,
 )
 from backend.starknet import Starknet, Internals as StarknetInternals
 from utils.dict import dict_keys, dict_values
-
-// Constructor
-@constructor
-func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    native_token_address: felt,
-    account_contract_class_hash: felt,
-    uninitialized_account_class_hash: felt,
-    cairo1_helpers_class_hash: felt,
-    coinbase: felt,
-    block_gas_limit: felt,
-) {
-    Kakarot_native_token_address.write(native_token_address);
-    Kakarot_account_contract_class_hash.write(account_contract_class_hash);
-    Kakarot_uninitialized_account_class_hash.write(uninitialized_account_class_hash);
-    Kakarot_cairo1_helpers_class_hash.write(cairo1_helpers_class_hash);
-    Kakarot_coinbase.write(coinbase);
-    Kakarot_block_gas_limit.write(block_gas_limit);
-    return ();
-}
+from utils.utils import Helpers
 
 func execute{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
@@ -60,9 +51,20 @@ func execute{
     access_list: felt*,
 ) -> (model.EVM*, model.Stack*, model.Memory*, model.State*, felt) {
     alloc_locals;
-    let evm_address = 'target_evm_address';
+    // Deploy target account
+    let evm_address = env.origin;
     let starknet_address = Account.compute_starknet_address(evm_address);
     tempvar address = new model.Address(starknet_address, evm_address);
+
+    // Write the valid jumpdests in the storage of the executed contract.
+    // This requires the origin account to be deployed prior to the execution.
+    let (valid_jumpdests_start, valid_jumpdests) = Helpers.initialize_jumpdests(
+        bytecode_len, bytecode
+    );
+    StarknetInternals._save_valid_jumpdests(
+        starknet_address, valid_jumpdests_start, valid_jumpdests
+    );
+
     let (evm, stack, memory, state, gas_used, _) = Interpreter.execute(
         env=env,
         address=address,
@@ -189,6 +191,25 @@ func evm_execute{
     return result;
 }
 
+@external
+func deploy_account{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    evm_address: felt
+) -> (contract_address: felt) {
+    let (starknet_address) = Starknet.deploy(evm_address);
+    return (contract_address=starknet_address);
+}
+
+@view
+func is_deployed{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    evm_address: felt
+) -> (deployed: felt) {
+    let (starknet_address) = Kakarot_evm_to_starknet_address.read(evm_address);
+    if (starknet_address == 0) {
+        return (deployed=0);
+    }
+    return (deployed=1);
+}
+
 // @notice Compute the starknet address of a contract given its EVM address
 // @param evm_address The EVM address of the contract
 // @return contract_address The starknet address of the contract
@@ -198,4 +219,31 @@ func compute_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ra
 ) -> (contract_address: felt) {
     let starknet_address = Account.compute_starknet_address(evm_address);
     return (contract_address=starknet_address);
+}
+
+// @notice Register the calling Starknet address for the given EVM address
+// @dev    Only the corresponding computed Starknet address can make this call to ensure that registered accounts are actually deployed.
+// @param evm_address The EVM address of the account.
+@external
+func register_account{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    evm_address: felt
+) {
+    alloc_locals;
+
+    let (existing_address) = Kakarot_evm_to_starknet_address.read(evm_address);
+    with_attr error_message("Kakarot: account already registered") {
+        assert existing_address = 0;
+    }
+
+    let (local caller_address: felt) = get_caller_address();
+    let starknet_address = Account.compute_starknet_address(evm_address);
+    local starknet_address = starknet_address;
+
+    with_attr error_message("Kakarot: Caller should be {starknet_address}, got {caller_address}") {
+        assert starknet_address = caller_address;
+    }
+
+    evm_contract_deployed.emit(evm_address, starknet_address);
+    Kakarot_evm_to_starknet_address.write(evm_address, starknet_address);
+    return ();
 }
