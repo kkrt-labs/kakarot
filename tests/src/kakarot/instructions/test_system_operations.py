@@ -74,7 +74,7 @@ class TestSystemOperations:
                 "Kakarot_evm_to_starknet_address", invoker_address, 0x1234
             ):
                 stack, evm = cairo_run(
-                    "test__auth",
+                    "test__auth_with_initial_authority_unset",
                     stack=stack,
                     memory=memory,
                     invoker_address=invoker_address,
@@ -103,7 +103,7 @@ class TestSystemOperations:
                 "Kakarot_evm_to_starknet_address", invoker_address, 0x1234
             ):
                 stack, evm = cairo_run(
-                    "test__auth",
+                    "test__auth_with_initial_authority_set",
                     stack=stack,
                     memory=memory,
                     invoker_address=invoker_address,
@@ -119,7 +119,7 @@ class TestSystemOperations:
             self, cairo_run, private_key, invoker_address, message
         ):
             invoker_address += 1
-            _, msg_hash, stack, memory = prepare_stack_and_memory(
+            _, _, stack, memory = prepare_stack_and_memory(
                 invoker_address, message, private_key
             )
 
@@ -127,7 +127,32 @@ class TestSystemOperations:
                 "Kakarot_evm_to_starknet_address", invoker_address, 0x1234
             ):
                 stack, evm = cairo_run(
-                    "test__auth",
+                    "test__auth_with_initial_authority_set",
+                    stack=stack,
+                    memory=memory,
+                    invoker_address=invoker_address,
+                )
+
+            assert stack == ["0x0"]
+            assert evm["message"]["authorized"] == {"is_some": 0, "value": 0}
+
+        @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
+        @SyscallHandler.patch("IAccount.get_nonce", lambda addr, data: [NONCE])
+        @SyscallHandler.patch(
+            "IAccount.bytecode", lambda addr, data: [3, 0x1, 0x2, 0x3]
+        )
+        def test__should_fail_authority_has_code(
+            self, cairo_run, private_key, invoker_address, message
+        ):
+            _, _, stack, memory = prepare_stack_and_memory(
+                invoker_address, message, private_key
+            )
+
+            with SyscallHandler.patch(
+                "Kakarot_evm_to_starknet_address", invoker_address, 0x1234
+            ):
+                stack, evm = cairo_run(
+                    "test__auth_with_initial_authority_set",
                     stack=stack,
                     memory=memory,
                     invoker_address=invoker_address,
