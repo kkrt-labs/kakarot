@@ -38,17 +38,28 @@ def rlp_encode_signed_data(tx: dict) -> bytes:
 
         return encoded_unsigned_tx
     else:
-        legacy_tx = [
-            tx["nonce"],
-            tx["gasPrice"],
-            tx["gas"],
-            int(tx["to"], 16),
-            tx["value"],
-            tx["data"],
-            tx["chainId"],
-            0,
-            0,
-        ]
+        legacy_tx = (
+            [
+                tx["nonce"],
+                tx["gasPrice"],
+                tx["gas"],
+                int(tx["to"], 16),
+                tx["value"],
+                tx["data"],
+                tx["chainId"],
+                0,
+                0,
+            ]
+            if "chainId" in tx
+            else [
+                tx["nonce"],
+                tx["gasPrice"],
+                tx["gas"],
+                int(tx["to"], 16),
+                tx["value"],
+                tx["data"],
+            ]
+        )
         encoded_unsigned_tx = rlp.encode(legacy_tx)
 
         return encoded_unsigned_tx
