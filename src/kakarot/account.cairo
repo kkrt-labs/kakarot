@@ -319,7 +319,10 @@ namespace Account {
     // @param code_len The len of the code
     // @param code The code array
     // @return The updated Account with the code and valid jumpdests set
-    func set_code(self: model.Account*, code_len: felt, code: felt*) -> model.Account* {
+    func set_code{range_check_ptr}(
+        self: model.Account*, code_len: felt, code: felt*
+    ) -> model.Account* {
+        let (valid_jumpdests_start, valid_jumpdests) = Helpers.initialize_jumpdests(code_len, code);
         return new model.Account(
             address=self.address,
             code_len=code_len,
@@ -328,12 +331,12 @@ namespace Account {
             storage=self.storage,
             transient_storage_start=self.transient_storage_start,
             transient_storage=self.transient_storage,
-            valid_jumpdests_start=self.valid_jumpdests_start,
-            valid_jumpdests=self.valid_jumpdests,
+            valid_jumpdests_start=valid_jumpdests_start,
+            valid_jumpdests=valid_jumpdests,
             nonce=self.nonce,
             balance=self.balance,
             selfdestruct=self.selfdestruct,
-            created=self.created,
+            created=1,
         );
     }
 
