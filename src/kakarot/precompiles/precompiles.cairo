@@ -58,17 +58,16 @@ namespace Precompiles {
         if (is_rollup_precompile_ != 0) {
             // Rollup precompiles start at address 0x100. The last ethereum precompile is at address 0x0a.
             // The offset is computed as relative to the last ethereum precompile.
-            tempvar offset = 1 + 3 * (
-                (LAST_ETHEREUM_PRECOMPILE_ADDRESS + 1) +
-                (evm_address - FIRST_ROLLUP_PRECOMPILE_ADDRESS)
+            tempvar index = (LAST_ETHEREUM_PRECOMPILE_ADDRESS + 1) + (
+                evm_address - FIRST_ROLLUP_PRECOMPILE_ADDRESS
             );
-            tempvar range_check_ptr = range_check_ptr;
         } else {
             // Compute the corresponding offset in the jump table:
             // count 1 for "next line" and 3 steps per precompile evm_address: call, precompile, ret
-            tempvar offset = 1 + 3 * evm_address;
-            tempvar range_check_ptr = range_check_ptr;
+            tempvar index = evm_address;
         }
+
+        tempvar offset = 1 + 3 * index;
 
         // Prepare arguments
         [ap] = syscall_ptr, ap++;
