@@ -56,25 +56,19 @@ namespace Precompiles {
     ) {
         let is_rollup_precompile_ = is_rollup_precompile(evm_address);
         if (is_rollup_precompile_ != 0) {
-            // Rollup precompiles start at address 0x100
-            tempvar offset = 1 + 3 * (evm_address - FIRST_ROLLUP_PRECOMPILE_ADDRESS);
-
-            [ap] = syscall_ptr, ap++;
-            [ap] = pedersen_ptr, ap++;
-            [ap] = range_check_ptr, ap++;
-            [ap] = bitwise_ptr, ap++;
-            [ap] = evm_address, ap++;
-            [ap] = input_len, ap++;
-            [ap] = input, ap++;
-
-            jmp rel offset;
-            call PrecompileP256Verify.run;  // 0x100
-            ret;
+            // Rollup precompiles start at address 0x100. The last ethereum precompile is at address 0x0a.
+            // The offset is computed as relative to the last ethereum precompile.
+            tempvar offset = 1 + 3 * (
+                (LAST_ETHEREUM_PRECOMPILE_ADDRESS + 1) +
+                (evm_address - FIRST_ROLLUP_PRECOMPILE_ADDRESS)
+            );
+            tempvar range_check_ptr = range_check_ptr;
+        } else {
+            // Compute the corresponding offset in the jump table:
+            // count 1 for "next line" and 3 steps per precompile evm_address: call, precompile, ret
+            tempvar offset = 1 + 3 * evm_address;
+            tempvar range_check_ptr = range_check_ptr;
         }
-
-        // Compute the corresponding offset in the jump table:
-        // count 1 for "next line" and 3 steps per precompile evm_address: call, precompile, ret
-        tempvar offset = 1 + 3 * evm_address;
 
         // Prepare arguments
         [ap] = syscall_ptr, ap++;
@@ -108,6 +102,10 @@ namespace Precompiles {
         call PrecompileBlake2f.run;  // 0x9
         ret;
         call not_implemented_precompile;  // 0x0a: POINT_EVALUATION_PRECOMPILE
+        ret;
+        // Rollup precompiles. Offset must have been computed appropriately,
+        // based on the address of the precompile and the last ethereum precompile
+        call PrecompileP256Verify.run;  // offset 0x0b: precompile 0x100
         ret;
     }
 
