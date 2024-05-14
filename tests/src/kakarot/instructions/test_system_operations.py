@@ -103,7 +103,7 @@ class TestSystemOperations:
                 "Kakarot_evm_to_starknet_address", invoker_address, 0x1234
             ):
                 stack, evm = cairo_run(
-                    "test__auth_with_initial_authority_unset",
+                    "test__auth_with_initial_authority_set",
                     stack=stack,
                     memory=memory,
                     invoker_address=invoker_address,
