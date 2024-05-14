@@ -66,33 +66,6 @@ namespace Account {
         );
     }
 
-    // @notice Finalizes the creation of an account by setting the account's bytecode, valid jumpdests
-    //        and marking it as created during this transaction.
-    // @param self The pointer to the Account
-    // @param code_len The length of the code
-    // @param code The pointer to the code
-    // @return The updated Account with the code and valid jumpdests set
-    func finalize_creation{range_check_ptr}(
-        self: model.Account*, code_len: felt, code: felt*
-    ) -> model.Account* {
-        let (valid_jumpdests_start, valid_jumpdests) = Helpers.initialize_jumpdests(code_len, code);
-        return new model.Account(
-            address=self.address,
-            code_len=code_len,
-            code=code,
-            storage_start=self.storage_start,
-            storage=self.storage,
-            transient_storage_start=self.transient_storage_start,
-            transient_storage=self.transient_storage,
-            valid_jumpdests_start=valid_jumpdests_start,
-            valid_jumpdests=valid_jumpdests,
-            nonce=self.nonce,
-            balance=self.balance,
-            selfdestruct=self.selfdestruct,
-            created=1,
-        );
-    }
-
     // @dev Copy the Account to safely mutate the storage
     // @dev Squash dicts used internally
     // @param self The pointer to the Account
@@ -337,13 +310,15 @@ namespace Account {
         return (self, value_ptr);
     }
 
-    // @notice Set the code of the Account
-    // @dev The only reason to set code after creation is in deploy transaction where
+    // @notice Set the account's bytecode, valid jumpdests and mark it as created during this
+    // transaction.
+    // @dev The only reason to set code after creation is in create/deploy operations where
     //      the account exists from the beginning for setting storages, but the
-    //      deployed bytecode is known at the end (the return_data of the tx).
+    //      deployed bytecode is known at the end (the return_data of the operation).
     // @param self The pointer to the Account.
     // @param code_len The len of the code
     // @param code The code array
+    // @return The updated Account with the code and valid jumpdests set
     func set_code(self: model.Account*, code_len: felt, code: felt*) -> model.Account* {
         return new model.Account(
             address=self.address,

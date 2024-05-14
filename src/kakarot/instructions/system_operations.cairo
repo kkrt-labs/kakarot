@@ -1510,7 +1510,7 @@ namespace CreateHelper {
 
         // Write bytecode and valid jumpdests to Account
         let account = State.get_account(evm.message.address.evm);
-        let account = Account.finalize_creation(account, evm.return_data_len, evm.return_data);
+        let account = Account.set_code(account, evm.return_data_len, evm.return_data);
 
         // Update local state with the updated account inner pointers.
         State.update_account(account);
