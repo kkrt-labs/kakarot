@@ -72,7 +72,9 @@ namespace TestHelpers {
         return init_evm_at_address(bytecode_len, bytecode, 0, 0);
     }
 
-    func init_evm_at_address_with_authority_set{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    func init_evm_at_address_with_authority_set{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    }(
         bytecode_len: felt,
         bytecode: felt*,
         starknet_contract_address: felt,

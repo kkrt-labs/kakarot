@@ -68,7 +68,9 @@ func test__auth_with_initial_authority_set{
     let state = State.init();
 
     let (bytecode) = alloc();
-    let evm = TestHelpers.init_evm_at_address_with_authority_set(0, bytecode, 0x1234, invoker_address);
+    let evm = TestHelpers.init_evm_at_address_with_authority_set(
+        0, bytecode, 0x1234, invoker_address
+    );
 
     with stack, state, memory {
         let evm = SystemOperations.exec_auth(evm);
