@@ -950,7 +950,35 @@ namespace SystemOperations {
 
         if (calculated_eth_address != authority) {
             Stack.push_uint128(0);
-            return evm;
+            tempvar authorized = new model.Option(is_some=0, value=0);
+            tempvar message = new model.Message(
+                bytecode=evm.message.bytecode,
+                bytecode_len=evm.message.bytecode_len,
+                valid_jumpdests_start=evm.message.valid_jumpdests_start,
+                valid_jumpdests=evm.message.valid_jumpdests,
+                calldata=evm.message.calldata,
+                calldata_len=evm.message.calldata_len,
+                value=evm.message.value,
+                caller=evm.message.caller,
+                parent=evm.message.parent,
+                address=evm.message.address,
+                code_address=evm.message.code_address,
+                read_only=evm.message.read_only,
+                is_create=evm.message.is_create,
+                authorized=authorized,
+                depth=evm.message.depth,
+                env=evm.message.env,
+            );
+            return new model.EVM(
+                message=message,
+                return_data_len=evm.return_data_len,
+                return_data=evm.return_data,
+                program_counter=evm.program_counter,
+                stopped=evm.stopped,
+                gas_left=evm.gas_left,
+                gas_refund=evm.gas_refund,
+                reverted=evm.reverted,
+            );
         }
 
         Stack.push_uint128(1);
