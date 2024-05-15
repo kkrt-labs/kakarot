@@ -1,7 +1,7 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.math_cmp import is_le, is_not_zero
+from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_in_range
 from starkware.starknet.common.syscalls import library_call
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.memcpy import memcpy
@@ -12,16 +12,29 @@ from kakarot.errors import Errors
 from kakarot.precompiles.blake2f import PrecompileBlake2f
 from kakarot.precompiles.datacopy import PrecompileDataCopy
 from kakarot.precompiles.ec_recover import PrecompileEcRecover
+from kakarot.precompiles.p256verify import PrecompileP256Verify
 from kakarot.precompiles.ripemd160 import PrecompileRIPEMD160
 from kakarot.precompiles.sha256 import PrecompileSHA256
 
-const LAST_PRECOMPILE_ADDRESS = 0x0a;
+const LAST_ETHEREUM_PRECOMPILE_ADDRESS = 0x0a;
+const FIRST_ROLLUP_PRECOMPILE_ADDRESS = 0x100;
+const LAST_ROLLUP_PRECOMPILE_ADDRESS = 0x100;
 const EXEC_PRECOMPILE_SELECTOR = 0x01e3e7ac032066525c37d0791c3c0f5fbb1c17f1cb6fe00afc206faa3fbd18e1;
 
 // @title Precompile related functions.
 namespace Precompiles {
     func is_precompile{range_check_ptr}(address: felt) -> felt {
-        return is_not_zero(address) * is_le(address, LAST_PRECOMPILE_ADDRESS);
+        let is_rollup_precompile_ = is_rollup_precompile(address);
+        return is_not_zero(address) * (
+            is_le(address, LAST_ETHEREUM_PRECOMPILE_ADDRESS) + is_rollup_precompile_
+        );
+    }
+
+    // @notice Return whether the address is a RIP precompile, starting from addresses 0x100.
+    func is_rollup_precompile{range_check_ptr}(address: felt) -> felt {
+        return is_in_range(
+            address, FIRST_ROLLUP_PRECOMPILE_ADDRESS, LAST_ROLLUP_PRECOMPILE_ADDRESS + 1
+        );
     }
 
     // @notice Executes associated function of precompiled evm_address.
@@ -41,9 +54,20 @@ namespace Precompiles {
     }(evm_address: felt, input_len: felt, input: felt*) -> (
         output_len: felt, output: felt*, gas_used: felt, reverted: felt
     ) {
+        let is_rollup_precompile_ = is_rollup_precompile(evm_address);
+        if (is_rollup_precompile_ != 0) {
+            // Rollup precompiles start at address 0x100. The last ethereum precompile is at address 0x0a.
+            // The offset is computed as relative to the last ethereum precompile.
+            tempvar index = (LAST_ETHEREUM_PRECOMPILE_ADDRESS + 1) + (
+                evm_address - FIRST_ROLLUP_PRECOMPILE_ADDRESS
+            );
+        } else {
+            tempvar index = evm_address;
+        }
+
         // Compute the corresponding offset in the jump table:
-        // count 1 for "next line" and 3 steps per precompile evm_address: call, precompile, ret
-        tempvar offset = 1 + 3 * evm_address;
+        // count 1 for "next line" and 3 steps per index: call, precompile, ret
+        tempvar offset = 1 + 3 * index;
 
         // Prepare arguments
         [ap] = syscall_ptr, ap++;
@@ -77,6 +101,10 @@ namespace Precompiles {
         call PrecompileBlake2f.run;  // 0x9
         ret;
         call not_implemented_precompile;  // 0x0a: POINT_EVALUATION_PRECOMPILE
+        ret;
+        // Rollup precompiles. Offset must have been computed appropriately,
+        // based on the address of the precompile and the last ethereum precompile
+        call PrecompileP256Verify.run;  // offset 0x0b: precompile 0x100
         ret;
     }
 

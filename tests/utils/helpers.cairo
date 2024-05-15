@@ -88,7 +88,7 @@ namespace TestHelpers {
         tempvar address = new model.Address(
             starknet=starknet_contract_address, evm=evm_contract_address
         );
-        let (valid_jumpdests_start, valid_jumpdests) = Account.get_jumpdests(
+        let (valid_jumpdests_start, valid_jumpdests) = Helpers.initialize_jumpdests(
             bytecode_len=bytecode_len, bytecode=bytecode
         );
         tempvar zero = new Uint256(0, 0);
