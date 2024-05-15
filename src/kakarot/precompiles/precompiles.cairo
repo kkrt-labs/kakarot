@@ -62,11 +62,11 @@ namespace Precompiles {
                 evm_address - FIRST_ROLLUP_PRECOMPILE_ADDRESS
             );
         } else {
-            // Compute the corresponding offset in the jump table:
-            // count 1 for "next line" and 3 steps per precompile evm_address: call, precompile, ret
             tempvar index = evm_address;
         }
 
+        // Compute the corresponding offset in the jump table:
+        // count 1 for "next line" and 3 steps per index: call, precompile, ret
         tempvar offset = 1 + 3 * index;
 
         // Prepare arguments
