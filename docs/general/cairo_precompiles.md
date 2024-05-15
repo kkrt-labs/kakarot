@@ -59,10 +59,10 @@ pragma solidity >=0.7.0 <0.9.0;
 /// @notice Solidity interface that allows developers to interact with Cairo precompile methods. The precompile has one method `call_contract`.
 
 /// @dev The Cairo precompile contract's address.
-address constant CAIRO_PRECOMPILE_ADDRESS = 0x00000000000000000000000000000000000abde1;
+address constant CAIRO_PRECOMPILE_ADDRESS = 0x00000000000000000000000000000000000AbDe1;
 
 /// @dev The Cairo precompile contract's instance.
-Cairo constant CAIRO_PRECOMPILE_CONTRACT = ICairo(CAIRO_PRECOMPILE_ADDRESS);
+ICairo constant CAIRO_PRECOMPILE_CONTRACT = ICairo(CAIRO_PRECOMPILE_ADDRESS);
 
 interface ICairo {
     /// @dev Call Cairo contract deployed on the Starknet appchain
@@ -87,7 +87,7 @@ increment a counter:
 pub mod Counter {
     #[storage]
     struct Storage{
-        counter: u128
+        counter: u256
     }
 
     #[external(v0)]
@@ -96,7 +96,7 @@ pub mod Counter {
     }
 
     #[external(v0)]
-    pub fn set_counter(ref self: ContractState, new_counter: u128) {
+    pub fn set_counter(ref self: ContractState, new_counter: u256) {
         self.counter.write(new_counter);
     }
 
@@ -114,7 +114,6 @@ import "./ICairo.sol";
 
 contract MyContract {
     /// @dev The Cairo precompile contract's instance.
-    Cairo constant CAIRO_PRECOMPILE_CONTRACT = ICairo(CAIRO_PRECOMPILE_ADDRESS);
 
     /// @dev The cairo contract to call - assuming it's deployed at address 0xabc
     uint256 constant CAIRO_CONTRACT_ADDRESS = 0xabc;
@@ -123,6 +122,11 @@ contract MyContract {
     uint256 constant FUNCTION_SELECTOR_INC =
     0x03b82f69851fa1625b367ea6c116252a84257da483dcec4d4e4bc270eb5c70a7;
 
+    /// @dev The cairo function selector to call - `set_counter()`
+    uint256 constant FUNCTION_SET_COUNTER = 0x0107cf8c3d109449e1beb4ac1ba726d3673b6f088ae454a9e0f18cb225be4712;
+
+    /// @notice Calls the Cairo contract to increment its internal counter
+    /// @return The return data of the call, serialized as bytes
     function incrementCairoCounter() public returns (bytes memory) {
         // `inc` takes no arguments, so data is empty
         bytes memory data = "";
@@ -130,10 +134,16 @@ contract MyContract {
         return CAIRO_PRECOMPILE_CONTRACT.call_contract(CAIRO_CONTRACT_ADDRESS, FUNCTION_SELECTOR_INC, data);
     }
 
-    function setCairoCounter(uint128 newCounter) public returns (bytes memory) {
-        bytes memory data = abi.encode(newCounter);
+    /// @notice Calls the Cairo contract to set its internal counter to an arbitrary value
+    /// @dev The counter value is split into two 128-bit values to match the Cairo contract's expected inputs (u256 is composed of two u128s)
+    /// @param newCounter The new counter value to set
+    /// @return The return data of the call, serialized as bytes
+    function setCairoCounter(uint256 newCounter) public returns (bytes memory) {
+        uint128 newCounterLow = uint128(newCounter);
+        uint128 newCounterHigh = uint128(newCounter >> 128);
+        bytes memory data = abi.encode(newCounterLow, newCounterHigh);
 
-        return CAIRO_PRECOMPILE_CONTRACT.call_contract(CAIRO_CONTRACT_ADDRESS, FUNCTION_SELECTOR_SET_COUNTER, data);
+        return CAIRO_PRECOMPILE_CONTRACT.call_contract(CAIRO_CONTRACT_ADDRESS, FUNCTION_SET_COUNTER, data);
     }
 }
 ```
@@ -154,3 +164,7 @@ precompile. Each 256-bit word in the calldata is truncated to 251 bit and packed
 into a `felt252`. The resulting `Array<felt252>` is then passed to the
 precompile. Similarly, the return data of the Cairo contract is deserialized
 into 32-bytes words, and stored in the return data of the EVM call.
+
+> Note: It is left to the responsibility of the wrapper contract developer to
+> ensure that the calldata is correctly serialized to match the Cairo contract's
+> expected inputs, and to properly deserialize the return data.
