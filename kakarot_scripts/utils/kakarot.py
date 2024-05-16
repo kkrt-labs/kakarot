@@ -11,7 +11,7 @@ from eth_account._utils.typed_transactions import TypedTransaction
 from eth_keys import keys
 from eth_utils.address import to_checksum_address
 from hexbytes import HexBytes
-from starknet_py.net.account.account import Account
+from starknet_py.net.account.account import Account as InnerAccount
 from starknet_py.net.client_errors import ClientError
 from starknet_py.net.client_models import Call, Event
 from starknet_py.net.models.transaction import InvokeV1
@@ -27,6 +27,7 @@ from web3.exceptions import LogTopicError, MismatchedABI, NoABIFunctionsFound
 from web3.types import LogReceipt
 
 from kakarot_scripts.constants import EVM_ADDRESS, EVM_PRIVATE_KEY, NETWORK, RPC_CLIENT
+from kakarot_scripts.utils.account import Account, EthAccount, StarknetAccount
 from kakarot_scripts.utils.starknet import call as _call_starknet
 from kakarot_scripts.utils.starknet import fund_address as _fund_starknet_address
 from kakarot_scripts.utils.starknet import get_contract as _get_starknet_contract
@@ -158,7 +159,7 @@ async def deploy(
     contract = get_contract(contract_app, contract_name, caller_eoa=caller_eoa)
     max_fee = kwargs.pop("max_fee", None)
     value = kwargs.pop("value", 0)
-    receipt, response, success, gas_used = await eth_send_transaction(
+    _, response, success, _ = await eth_send_transaction(
         to=0,
         gas=int(TRANSACTION_GAS_LIMIT),
         data=contract.constructor(*args, **kwargs).data_in_transaction,
@@ -307,9 +308,9 @@ async def get_eoa(private_key=None, amount=10) -> Account:
         private_key.public_key.to_checksum_address(), amount
     )
 
-    return Account(
+    inner = InnerAccount(
         address=starknet_address,
-        client=RPC_CLIENT,
+        client=RPC_CLIENT.client,
         chain=NETWORK["chain_id"],
         # This is somehow a hack because we put EVM private key into a
         # Stark signer KeyPair to have both a regular Starknet account
@@ -317,7 +318,17 @@ async def get_eoa(private_key=None, amount=10) -> Account:
         key_pair=KeyPair(int(private_key), private_key.public_key),
     )
 
+    if NETWORK["rpc_type"] == "starknet":
+        StarknetAccount(inner)
+    elif NETWORK["rpc_type"] == "eth":
+        return EthAccount(inner)
+    else:
+        raise ValueError(f"Unsupported RPC type {NETWORK['rpc_type']}")
 
+
+# TODO: modify in order to send a web3 tx if the network is eth.
+# modify the kakarot utils in order for the utils to be aware of the
+# network they are working on: starknet/eth.
 async def eth_send_transaction(
     to: Union[int, str],
     data: Union[str, bytes],
@@ -349,6 +360,11 @@ async def eth_send_transaction(
         hex(evm_account.signer.private_key),
     )
 
+    if NETWORK["rpc_type"] == "eth":
+        tx_hash = RPC_CLIENT.eth.send_raw_transaction(evm_tx.rawTransaction)
+        receipt = await RPC_CLIENT.get_transaction_receipt(tx_hash)
+        return receipt, [], receipt["status"], receipt["gasUsed"]
+
     encoded_unsigned_tx = rlp_encode_signed_data(typed_transaction.as_dict())
 
     prepared_invoke = await evm_account._prepare_invoke(
@@ -371,7 +387,6 @@ async def eth_send_transaction(
         sender_address=prepared_invoke.sender_address,
         calldata=prepared_invoke.calldata,
     )
-
     response = await evm_account.client.send_transaction(prepared_invoke)
 
     await wait_for_transaction(tx_hash=response.transaction_hash)
@@ -409,18 +424,22 @@ async def deploy_and_fund_evm_address(evm_address: str, amount: float):
     """
     Deploy an EOA linked to the given EVM address and fund it with amount ETH.
     """
-    starknet_address = (
-        await _call_starknet(
-            "kakarot", "compute_starknet_address", int(evm_address, 16)
-        )
-    ).contract_address
+    if NETWORK["rpc_type"] == "eth":
+        # skip funding, account should have an initial balance
+        return evm_address
+    else:
+        starknet_address = (
+            await _call_starknet(
+                "kakarot", "compute_starknet_address", int(evm_address, 16)
+            )
+        ).contract_address
 
-    if not await _contract_exists(starknet_address):
-        await fund_address(evm_address, amount)
-        await _invoke_starknet(
-            "kakarot", "deploy_externally_owned_account", int(evm_address, 16)
-        )
-    return starknet_address
+        if not await _contract_exists(starknet_address):
+            await fund_address(evm_address, amount)
+            await _invoke_starknet(
+                "kakarot", "deploy_externally_owned_account", int(evm_address, 16)
+            )
+        return starknet_address
 
 
 async def fund_address(address: Union[str, int], amount: float):

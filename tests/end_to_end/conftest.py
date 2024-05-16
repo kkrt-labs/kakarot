@@ -284,8 +284,8 @@ def get_solidity_contract():
 @pytest.fixture
 def block_with_tx_hashes(starknet):
     """
-    Not using starknet object because of
-    https://github.com/software-mansion/starknet.py/issues/1174.
+    Return the block with the transaction hashes for the given block number.
+    If no block number is provided, returns the pending block.
     """
 
     async def _factory(block_number: Optional[int] = None):

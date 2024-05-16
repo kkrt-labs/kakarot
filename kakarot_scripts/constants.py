@@ -4,12 +4,14 @@ import os
 from enum import Enum, IntEnum
 from math import ceil, log
 from pathlib import Path
+from typing import Optional
 
 import requests
 from dotenv import load_dotenv
 from eth_keys import keys
-from starknet_py.net.full_node_client import FullNodeClient
 from starknet_py.net.models.chains import StarknetChainId
+
+from kakarot_scripts.utils.client import EthereumClient, StarknetClient
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -118,30 +120,43 @@ if NETWORK["private_key"] is None:
     logger.warning(f"⚠️  {prefix}_PRIVATE_KEY not set, defaulting to PRIVATE_KEY")
     NETWORK["private_key"] = os.getenv("PRIVATE_KEY")
 
-RPC_CLIENT = FullNodeClient(node_url=NETWORK["rpc_url"])
+RPC_URL = NETWORK["rpc_url"]
 
-try:
-    response = requests.post(
-        RPC_CLIENT.url,
-        json={
-            "jsonrpc": "2.0",
-            "method": "starknet_chainId",
-            "params": [],
-            "id": 0,
-        },
-    )
-    payload = json.loads(response.text)
 
-    chain_id = int(payload["result"], 16)
-except (
-    requests.exceptions.ConnectionError,
-    requests.exceptions.MissingSchema,
-    requests.exceptions.InvalidSchema,
-) as e:
-    logger.info(
-        f"⚠️  Could not get chain Id from {NETWORK['rpc_url']}: {e}, defaulting to KKRT"
-    )
-    chain_id = int.from_bytes(b"KKRT", "big")
+# Try to get chain id from the RPC.
+# Returns None if it fails
+def try_chain_id(method: str) -> Optional[int]:
+    try:
+        response = requests.post(
+            RPC_URL,
+            json={
+                "jsonrpc": "2.0",
+                "method": method,
+                "params": [],
+                "id": 0,
+            },
+        )
+        payload = json.loads(response.text)
+        return int(payload["result"], 16)
+    except Exception:
+        logger.info(f"⚠️  Could not get chain Id from {RPC_URL} using method {method}")
+        return None
+
+
+chain_id = try_chain_id("eth_chainId")
+rpc_type = "eth"
+
+rpc_type = rpc_type if chain_id else "starknet"
+chain_id = chain_id or try_chain_id("starknet_chainId")
+
+chain_id = chain_id or int.from_bytes(b"KKRT", "big")
+
+if rpc_type == "starknet":
+    RPC_CLIENT = StarknetClient(RPC_URL)
+elif rpc_type == "eth":
+    RPC_CLIENT = EthereumClient(RPC_URL)
+else:
+    raise ValueError(f"Unknown rpc_type {rpc_type}")
 
 
 class ChainId(IntEnum):
@@ -149,6 +164,7 @@ class ChainId(IntEnum):
 
 
 NETWORK["chain_id"] = ChainId.chain_id
+NETWORK["rpc_type"] = rpc_type
 
 ETH_TOKEN_ADDRESS = 0x49D36570D4E46F48E99674BD3FCC84644DDD6B96F7C741B1562B82F9E004DC7
 COINBASE = 0xCA40796AFB5472ABAED28907D5ED6FC74C04954A

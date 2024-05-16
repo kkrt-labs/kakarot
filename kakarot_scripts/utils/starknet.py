@@ -121,7 +121,7 @@ async def get_starknet_account(
 
     return Account(
         address=address,
-        client=RPC_CLIENT,
+        client=RPC_CLIENT.client,
         chain=NETWORK["chain_id"],
         key_pair=key_pair,
     )
@@ -145,7 +145,7 @@ def get_contract(
     return Contract(
         address or get_deployments()[contract_name]["address"],
         get_abi(contract_name, cairo_version),
-        provider or RPC_CLIENT,
+        provider or RPC_CLIENT.client,
         cairo_version=get_artifact_version(contract_name).value,
     )
 
@@ -564,7 +564,7 @@ async def wait_for_transaction(tx_hash):
     try:
         await RPC_CLIENT.wait_for_tx(
             tx_hash,
-            check_interval=NETWORK["check_interval"],
+            interval=NETWORK["check_interval"],
             retries=int(NETWORK["max_wait"] / NETWORK["check_interval"]),
         )
         return "✅"
