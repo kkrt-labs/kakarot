@@ -38,11 +38,11 @@ As such, the execution flow of an EVM message will be as follows:
 
 ```mermaid
 flowchart TD
-    A[Solidity contract] -->|ICairo.call_contract| B
+    A[Solidity contract] -->|CALL| B
     B{address type}
     B -->|EVM Contract| D[Execute contract]
     B -->|EVM Precompiles| E[Execute EVM precompile]
-    B -->|Cairo Precompile| F{Whitelisted caller code ?}
+    B -->|Cairo Precompile| F{Whitelisted caller code?}
     F --> |yes| G[Call Cairo contract]
     F --> |no| H[Call fails]
 ```
@@ -56,7 +56,7 @@ The solidity interface for the Cairo precompiles is as follows:
 
 pragma solidity >=0.7.0 <0.9.0;
 
-/// @notice Solidity interface that allows developers to interact with Cairo precompile methods. The precompile has one method `call_contract`.
+/// @notice Solidity interface that allows developers to interact with Cairo contracts and classes. This interface can be  the `call_contract` and `library_call`
 
 /// @dev The Cairo precompile contract's address.
 address constant CAIRO_PRECOMPILE_ADDRESS = 0x00000000000000000000000000000000000AbDe1;
@@ -65,15 +65,21 @@ address constant CAIRO_PRECOMPILE_ADDRESS = 0x0000000000000000000000000000000000
 ICairo constant CAIRO_PRECOMPILE_CONTRACT = ICairo(CAIRO_PRECOMPILE_ADDRESS);
 
 interface ICairo {
-    /// @dev Call Cairo contract deployed on the Starknet appchain
-    function call_contract(uint256 contractAddress, uint256 functionSelector, bytes calldata data) external returns (bytes memory);
+    /// @dev Call a Cairo contract deployed on the Starknet appchain
+    function call_contract(uint256 contractAddress, uint256 functionSelector, uint256[] data) external returns (bytes memory);
+
+    /// @dev Call a Cairo class declared on the Starknet appchain
+    function library_call(uint256 classHash, uint256 functionSelector, uint256[] data) external returns (bytes memory);
+
 }
 ```
 
-It contains a single method `call_contract` that allows the user to call a Cairo
-contract deployed on the Starknet appchain. The method takes three arguments:
+It contains a two methods, `call_contract` and `library_call` that allows the
+user to call a Cairo contract or class deployed on the Starknet appchain. The
+method takes three arguments:
 
-- `contractAddress`: The address of the Cairo contract to call
+- `contractAddress` or `classHash`: The address of the Cairo contract to call /
+  class hash to call
 - `functionSelector`: The selector of the function to call, as `sn_keccak` of
   the entrypoint name.
 - `data`: The calldata to pass to the Cairo contract, as individual bytes.
@@ -114,6 +120,7 @@ import "./ICairo.sol";
 
 contract MyContract {
     /// @dev The Cairo precompile contract's instance.
+    ICairo constant CAIRO_PRECOMPILE_CONTRACT = ICairo(CAIRO_PRECOMPILE_ADDRESS);
 
     /// @dev The cairo contract to call - assuming it's deployed at address 0xabc
     uint256 constant CAIRO_CONTRACT_ADDRESS = 0xabc;
@@ -149,21 +156,24 @@ contract MyContract {
 ```
 
 Once deployed, the contract can be called to increment the counter in a Cairo
-contract deployed at address `0xabc`. The deployment address will need to be
-communicated to Kakarot for the precompile to be whitelisted.
+contract deployed at starknet address `0xabc`. The deployment address will need
+to be communicated to Kakarot for the precompile to be whitelisted.
 
 Internally, a new logic flow is implemented when processing message calls. If
 the target address is the Cairo precompile address, we check if the code_address
 of the message is whitelisted. If it is, we execute the Cairo contract. If it is
 not, we revert the transaction.
 
-To execute the Cairo contract, we need to convert the calldata in bytes to the
-expected Cairo inputs, serialized to an `Array<felt252>`. This serialization
-process must be done upfront, in the Solidity contract, before calling the
-precompile. Each 256-bit word in the calldata is truncated to 251 bit and packed
-into a `felt252`. The resulting `Array<felt252>` is then passed to the
-precompile. Similarly, the return data of the Cairo contract is deserialized
-into 32-bytes words, and stored in the return data of the EVM call.
+To execute the Cairo contract, we need to convert the EVM calldata, expressed as
+a bytes[], to the expected Cairo inputs, serialized to an `Array<felt252>`. Each
+256-bit word sequence in the EVM calldata must correspond to an element of at
+most, 251 bit, Cairo's native field element. For example, consider the
+`setCairoCounter` function above. The `newCounter` argument is 256 bits, and
+thus split into two 128-bit values to match the expected Cairo input. If we want
+to increase the counter by 1, the data sent would be `data = ["00" * 63 + "01"].
+
+Similarly, the return data of the Cairo contract is deserialized into 32-bytes
+words, and stored in the return data of the EVM call.
 
 > Note: It is left to the responsibility of the wrapper contract developer to
 > ensure that the calldata is correctly serialized to match the Cairo contract's
