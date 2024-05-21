@@ -4,36 +4,54 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_in_range
 from starkware.starknet.common.syscalls import library_call
 from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.memcpy import memcpy
 
 from kakarot.interfaces.interfaces import ICairo1Helpers
 from kakarot.storages import Kakarot_cairo1_helpers_class_hash
 from kakarot.errors import Errors
 from kakarot.precompiles.blake2f import PrecompileBlake2f
+from kakarot.precompiles.kakarot_precompiles import KakarotPrecompiles
 from kakarot.precompiles.datacopy import PrecompileDataCopy
 from kakarot.precompiles.ec_recover import PrecompileEcRecover
 from kakarot.precompiles.p256verify import PrecompileP256Verify
 from kakarot.precompiles.ripemd160 import PrecompileRIPEMD160
 from kakarot.precompiles.sha256 import PrecompileSHA256
+from utils.utils import Helpers
 
 const LAST_ETHEREUM_PRECOMPILE_ADDRESS = 0x0a;
 const FIRST_ROLLUP_PRECOMPILE_ADDRESS = 0x100;
 const LAST_ROLLUP_PRECOMPILE_ADDRESS = 0x100;
 const EXEC_PRECOMPILE_SELECTOR = 0x01e3e7ac032066525c37d0791c3c0f5fbb1c17f1cb6fe00afc206faa3fbd18e1;
+const FIRST_KAKAROT_PRECOMPILE_ADDRESS = 0x75001;
+const LAST_KAKAROT_PRECOMPILE_ADDRESS = 0x75001;
 
 // @title Precompile related functions.
 namespace Precompiles {
+    // @notice Return whether the address is a precompile address.
+    // @dev Ethereum precompiles start at address 0x01.
+    // @dev RIP precompiles start at address FIRST_ROLLUP_PRECOMPILE_ADDRESS.
+    // @dev Kakarot precompiles start at address FIRST_KAKAROT_PRECOMPILE_ADDRESS.
     func is_precompile{range_check_ptr}(address: felt) -> felt {
+        alloc_locals;
         let is_rollup_precompile_ = is_rollup_precompile(address);
+        let is_kakarot_precompile_ = is_kakarot_precompile(address);
         return is_not_zero(address) * (
-            is_le(address, LAST_ETHEREUM_PRECOMPILE_ADDRESS) + is_rollup_precompile_
+            is_le(address, LAST_ETHEREUM_PRECOMPILE_ADDRESS) +
+            is_rollup_precompile_ +
+            is_kakarot_precompile_
         );
     }
 
-    // @notice Return whether the address is a RIP precompile, starting from addresses 0x100.
     func is_rollup_precompile{range_check_ptr}(address: felt) -> felt {
         return is_in_range(
             address, FIRST_ROLLUP_PRECOMPILE_ADDRESS, LAST_ROLLUP_PRECOMPILE_ADDRESS + 1
+        );
+    }
+
+    func is_kakarot_precompile{range_check_ptr}(address: felt) -> felt {
+        return is_in_range(
+            address, FIRST_KAKAROT_PRECOMPILE_ADDRESS, LAST_KAKAROT_PRECOMPILE_ADDRESS + 1
         );
     }
 
@@ -62,7 +80,17 @@ namespace Precompiles {
                 evm_address - FIRST_ROLLUP_PRECOMPILE_ADDRESS
             );
         } else {
-            tempvar index = evm_address;
+            let is_kakarot_precompile_ = is_kakarot_precompile(evm_address);
+            if (is_kakarot_precompile_ != 0) {
+                // Kakarot precompiles start at address FIRST_KAKAROT_PRECOMPILE_ADDRESS.
+                // The offset is computed as relative to the last ethereum precompile + the amount of rollup precompiles.
+                let rollup_precompiles_count = LAST_ROLLUP_PRECOMPILE_ADDRESS -
+                    FIRST_ROLLUP_PRECOMPILE_ADDRESS + 1;
+                tempvar index = (LAST_ETHEREUM_PRECOMPILE_ADDRESS + 1) + rollup_precompiles_count +
+                    (evm_address - FIRST_KAKAROT_PRECOMPILE_ADDRESS);
+            } else {
+                tempvar index = evm_address;
+            }
         }
 
         // Compute the corresponding offset in the jump table:
@@ -105,6 +133,11 @@ namespace Precompiles {
         // Rollup precompiles. Offset must have been computed appropriately,
         // based on the address of the precompile and the last ethereum precompile
         call PrecompileP256Verify.run;  // offset 0x0b: precompile 0x100
+        ret;
+        // Kakarot precompiles. Offset must have been computed appropriately,
+        // based on the address of the precompile, the last ethereum precompile, and
+        // the amount of rollup precompiles.
+        call KakarotPrecompiles.cairo_precompile;  // offset 0x0c: precompile 0x75001
         ret;
     }
 
