@@ -157,7 +157,7 @@ class TestContractAccount:
 
         class TestReadJumpdests:
             @pytest.fixture
-            def storage(self, jumpdests):
+            def store_jumpdests(self, jumpdests):
                 base_address = get_storage_var_address("Account_valid_jumpdests")
                 valid_addresses = [base_address + jumpdest for jumpdest in jumpdests]
 
@@ -168,9 +168,11 @@ class TestContractAccount:
 
             @pytest.mark.parametrize("jumpdests", [[0x02, 0x10, 0xFF]])
             def test__should_return_if_jumpdest_valid(
-                self, cairo_run, jumpdests, storage
+                self, cairo_run, jumpdests, store_jumpdests
             ):
-                with patch.object(SyscallHandler, "mock_storage", side_effect=storage):
+                with patch.object(
+                    SyscallHandler, "mock_storage", side_effect=store_jumpdests
+                ):
                     for jumpdest in jumpdests:
                         assert cairo_run("test__is_valid_jumpdest", index=jumpdest) == 1
 
@@ -179,6 +181,66 @@ class TestContractAccount:
                         call(address=base_address + jumpdest) for jumpdest in jumpdests
                     ]
                     SyscallHandler.mock_storage.assert_has_calls(calls)
+
+            @pytest.fixture
+            def patch_account_storage(self, account_code):
+                code_len_address = get_storage_var_address("Account_bytecode_len")
+                base_jumpdests_address = get_storage_var_address(
+                    "Account_valid_jumpdests"
+                )
+                chunks = wrap(account_code, 2 * 31)
+
+                def _storage(address, value=None):
+                    if value is not None:
+                        SyscallHandler.patches[address] = value
+                        return
+                    if address == code_len_address:
+                        return len(bytes.fromhex(account_code))
+                    elif address >= base_jumpdests_address:
+                        return 0
+                    return int(chunks[address], 16)
+
+                return _storage
+
+            # Code contains both valid and invalid jumpdests
+            # PUSH1 4  // Offset 0
+            # JUMP     // Offset 2 (previous instruction occupies 2 bytes)
+            # INVALID  // Offset 3
+            # JUMPDEST // Offset 4
+            # PUSH1 1  // Offset 5
+            # PUSH1 0x5B // invalid jumpdest
+            @pytest.mark.parametrize(
+                "account_code, jumpdests, results",
+                [("600456fe5b6001605b", [0x04, 0x08], [1, 0])],
+            )
+            def test__should_return_if_jumpdest_valid_when_not_stored(
+                self, cairo_run, account_code, jumpdests, results, patch_account_storage
+            ):
+                with patch.object(
+                    SyscallHandler, "mock_storage", side_effect=patch_account_storage
+                ):
+                    for jumpdest, result in zip(jumpdests, results):
+                        assert (
+                            cairo_run("test__is_valid_jumpdest", index=jumpdest)
+                            == result
+                        )
+
+                    base_address = get_storage_var_address("Account_valid_jumpdests")
+                    jumpdests_initialized_address = get_storage_var_address(
+                        "Account_jumpdests_initialized"
+                    )
+                    expected_read_calls = [
+                        call(address=base_address + jumpdest) for jumpdest in jumpdests
+                    ] + [call(address=jumpdests_initialized_address)]
+
+                    expected_write_calls = [
+                        call(address=base_address + jumpdest, value=1)
+                        for jumpdest, result in zip(jumpdests, results)
+                        if result == 1
+                    ] + [call(address=jumpdests_initialized_address, value=1)]
+
+                    SyscallHandler.mock_storage.assert_has_calls(expected_read_calls)
+                    SyscallHandler.mock_storage.assert_has_calls(expected_write_calls)
 
     class TestValidate:
         @pytest.mark.parametrize("seed", (41, 42))

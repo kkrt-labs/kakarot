@@ -3,6 +3,7 @@
 from openzeppelin.access.ownable.library import Ownable, Ownable_owner
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE
+from starkware.cairo.common.dict_access import DictAccess
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math import unsigned_div_rem, split_int, split_felt
 from starkware.cairo.common.memcpy import memcpy
@@ -33,6 +34,7 @@ from utils.eth_transaction import EthTransaction
 from utils.uint256 import uint256_add
 from utils.bytes import bytes_to_bytes8_little_endian
 from utils.signature import Signature
+from utils.utils import Helpers
 
 // @dev: should always be zero for EOAs
 @storage_var
@@ -65,6 +67,10 @@ func Account_cairo1_helpers_class_hash() -> (res: felt) {
 
 @storage_var
 func Account_valid_jumpdests() -> (is_valid: felt) {
+}
+
+@storage_var
+func Account_jumpdests_initialized() -> (initialized: felt) {
 }
 
 @event
@@ -431,17 +437,23 @@ namespace AccountContract {
         return (latest_account_class, latest_cairo1_helpers_class);
     }
 
+    // @notice Writes an array of valid jumpdests indexes to storage.
+    // @param jumpdests_len The length of the jumpdests array.
+    // @param jumpdests The jumpdests array.
     func write_jumpdests{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         jumpdests_len: felt, jumpdests: felt*
     ) {
         // Recursively store the jumpdests.
-        Internals.write_jumpdests(jumpdests_len=jumpdests_len, jumpdests=jumpdests);
+        Internals.write_jumpdests(
+            jumpdests_len=jumpdests_len, jumpdests=jumpdests, iteration_size=1
+        );
         return ();
     }
 
     func is_valid_jumpdest{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         index: felt
     ) -> felt {
+        alloc_locals;
         let (base_address) = Account_valid_jumpdests.addr();
         let index_address = base_address + index;
 
@@ -454,7 +466,32 @@ namespace AccountContract {
         tempvar syscall_ptr = syscall_ptr + StorageRead.SIZE;
         tempvar value = response.value;
 
-        return value;
+        if (value != 0) {
+            return value;
+        }
+
+        // Jumpdest is invalid - we verify that the jumpdests have been stored, and if not,
+        // we store them. call the appropriate function check & store
+        let (initialized) = Account_jumpdests_initialized.read();
+
+        if (initialized != FALSE) {
+            return value;
+        }
+
+        let (bytecode_len) = Account_bytecode_len.read();
+        let (bytecode) = Internals.load_bytecode(bytecode_len);
+        let (valid_jumpdests_start, valid_jumpdests) = Helpers.initialize_jumpdests(
+            bytecode_len, bytecode
+        );
+        let (jumpdests_len, _) = unsigned_div_rem(
+            valid_jumpdests - valid_jumpdests_start, DictAccess.SIZE
+        );
+        Internals.write_jumpdests(
+            jumpdests_len=jumpdests_len,
+            jumpdests=cast(valid_jumpdests_start, felt*),
+            iteration_size=DictAccess.SIZE,
+        );
+        return is_valid_jumpdest(index=index);
     }
 }
 
@@ -523,10 +560,13 @@ namespace Internals {
     }
 
     // @notice Store the jumpdests of the contract.
-    // @param jumpdests_len The length of the jumpdests.
-    // @param jumpdests The jumpdests of the contract.
+    // @dev This function can be used by either passing an array of valid jumpdests,
+    // or a dict that only contains valid entries (i.e. no invalid index has been read).
+    // @param jumpdests_len The length of the valid jumpdests.
+    // @param jumpdests The jumpdests of the contract. Can be an array of valid indexes or a dict.
+    // @param iteration_size The size of the object we are iterating over.
     func write_jumpdests{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        jumpdests_len: felt, jumpdests: felt*
+        jumpdests_len: felt, jumpdests: felt*, iteration_size: felt
     ) {
         alloc_locals;
 
@@ -546,6 +586,7 @@ namespace Internals {
         let jumpdests = cast([ap - 2], felt*);
         let remaining = [ap - 1];
         let base_address = [fp];
+        let iteration_size = [fp - 3];
 
         let index_to_store = [jumpdests];
         tempvar storage_address = base_address + index_to_store;
@@ -555,11 +596,12 @@ namespace Internals {
         );
         %{ syscall_handler.storage_write(segments=segments, syscall_ptr=ids.syscall_ptr) %}
         tempvar syscall_ptr = syscall_ptr + StorageWrite.SIZE;
-        tempvar jumpdests = jumpdests + 1;
+        tempvar jumpdests = jumpdests + iteration_size;
         tempvar remaining = remaining - 1;
 
         jmp body if remaining != 0;
 
+        Account_jumpdests_initialized.write(1);
         return ();
     }
 
