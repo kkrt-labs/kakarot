@@ -466,29 +466,32 @@ namespace AccountContract {
         tempvar syscall_ptr = syscall_ptr + StorageRead.SIZE;
         tempvar value = response.value;
 
-        if (value == 0) {
-            // Jumpdest is invalid - we verify that the jumpdests have been stored, and if not,
-            // we store them. call the appropriate function check & store
-            let (initialized) = Account_jumpdests_initialized.read();
-            if (initialized == 0) {
-                let (bytecode_len) = Account_bytecode_len.read();
-                let (bytecode) = Internals.load_bytecode(bytecode_len);
-                let (valid_jumpdests_start, valid_jumpdests) = Helpers.initialize_jumpdests(
-                    bytecode_len, bytecode
-                );
-                let (jumpdests_len, _) = unsigned_div_rem(
-                    valid_jumpdests - valid_jumpdests_start, DictAccess.SIZE
-                );
-                Internals.write_jumpdests(
-                    jumpdests_len=jumpdests_len,
-                    jumpdests=cast(valid_jumpdests_start, felt*),
-                    iteration_size=DictAccess.SIZE,
-                );
-                return is_valid_jumpdest(index=index);
-            }
+        if (value != 0) {
             return value;
         }
-        return value;
+
+        // Jumpdest is invalid - we verify that the jumpdests have been stored, and if not,
+        // we store them. call the appropriate function check & store
+        let (initialized) = Account_jumpdests_initialized.read();
+
+        if (initialized != FALSE) {
+            return value;
+        }
+
+        let (bytecode_len) = Account_bytecode_len.read();
+        let (bytecode) = Internals.load_bytecode(bytecode_len);
+        let (valid_jumpdests_start, valid_jumpdests) = Helpers.initialize_jumpdests(
+            bytecode_len, bytecode
+        );
+        let (jumpdests_len, _) = unsigned_div_rem(
+            valid_jumpdests - valid_jumpdests_start, DictAccess.SIZE
+        );
+        Internals.write_jumpdests(
+            jumpdests_len=jumpdests_len,
+            jumpdests=cast(valid_jumpdests_start, felt*),
+            iteration_size=DictAccess.SIZE,
+        );
+        return is_valid_jumpdest(index=index);
     }
 }
 
