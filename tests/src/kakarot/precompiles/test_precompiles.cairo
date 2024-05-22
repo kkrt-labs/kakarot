@@ -33,5 +33,9 @@ func test__precompiles_run{
 
     // When
     let result = Precompiles.exec_precompile(evm_address=address, input_len=input_len, input=input);
-    return (result.output, result.reverted, result.gas_used);
+    let output_len = result.output_len;
+    let (output) = alloc();
+    memcpy(dst=output, src=result.output, len=output_len);
+
+    return (output, result.reverted, result.gas_used);
 }

@@ -130,3 +130,21 @@ func test__initialize_jumpdests{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, 
 
     return ();
 }
+
+func test__load_256_bits_array{range_check_ptr}() -> (felt, felt*) {
+    alloc_locals;
+
+    // Given
+    let (data) = alloc();
+    local data_len: felt;
+    %{
+        segments.write_arg(ids.data, program_input["data"])
+        ids.data_len = len(program_input["data"])
+    %}
+
+    // When
+    let (result_len, result) = Helpers.load_256_bits_array(data_len, data);
+
+    // Then
+    return (result_len, result);
+}

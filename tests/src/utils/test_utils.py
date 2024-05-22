@@ -98,6 +98,29 @@ def test_should_parse_destination_from_bytes(cairo_run, bytes, expected):
     assert result == expected
 
 
+@pytest.mark.parametrize(
+    "data, expected",
+    [
+        (b"", []),  # An empty field
+        (
+            bytes.fromhex(
+                "0800000000000000000000000000000000000000000000000000000000000000"
+            ),
+            [0x800000000000000000000000000000000000000000000000000000000000000],
+        ),  # 251-bit word
+        # two 128-bit words
+        (
+            bytes.fromhex("8000".zfill(64) + "7000".zfill(64)),
+            [0x8000, 0x7000],
+        ),
+    ],
+)
+def test_should_load_256_bits_array(cairo_run, data, expected):
+    result_len, result = cairo_run("test__load_256_bits_array", data=data)
+    assert result == expected
+    assert result_len == len(expected)
+
+
 class TestInitializeJumpdests:
     def test_should_return_same_as_execution_specs(self, cairo_run):
         bytecode = get_contract("PlainOpcodes", "Counter").bytecode_runtime
