@@ -30,12 +30,15 @@ from kakarot.instructions.push_operations import PushOperations
 from kakarot.instructions.sha3 import Sha3
 from kakarot.instructions.stop_and_math_operations import StopAndMathOperations
 from kakarot.instructions.system_operations import CallHelper, CreateHelper, SystemOperations
+from kakarot.interfaces.interfaces import IAccount
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.precompiles.precompiles import Precompiles
 from kakarot.stack import Stack
 from kakarot.state import State
+from kakarot.storages import Kakarot_account_contract_class_hash
 from kakarot.gas import Gas
+from backend.starknet import Starknet
 from utils.utils import Helpers
 from utils.array import count_not_zero
 from utils.uint256 import uint256_sub, uint256_add
@@ -908,6 +911,22 @@ namespace Interpreter {
             let account = Account.set_nonce(account, nonce);  // Increase the nonce of the sender of the tx
             let account = Account.set_created(account, is_deploy_tx);
             State.update_account(account);
+
+            // Upgrade the target starknet contract's class if it's not the latest one.
+            // The code_account must be deployed on starknet already.
+            if (account.created == FALSE) {
+                Starknet.check_and_upgrade_account_class(address);
+                tempvar syscall_ptr = syscall_ptr;
+                tempvar pedersen_ptr = pedersen_ptr;
+                tempvar range_check_ptr = range_check_ptr;
+            } else {
+                tempvar syscall_ptr = syscall_ptr;
+                tempvar pedersen_ptr = pedersen_ptr;
+                tempvar range_check_ptr = range_check_ptr;
+            }
+            let syscall_ptr = cast([ap - 3], felt*);
+            let pedersen_ptr = cast([ap - 2], HashBuiltin*);
+            let range_check_ptr = [ap - 1];
         }
 
         if (is_collision != 0) {

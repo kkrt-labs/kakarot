@@ -124,6 +124,16 @@ namespace AccountContract {
         return (implementation=implementation);
     }
 
+    func set_implementation{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        new_implementation: felt
+    ) {
+        // Access control check.
+        Ownable.assert_only_owner();
+        replace_class(new_implementation);
+        Account_implementation.write(new_implementation);
+        return ();
+    }
+
     // @return address The EVM address of the account
     func get_evm_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
         address: felt

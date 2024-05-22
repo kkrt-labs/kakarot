@@ -60,6 +60,20 @@ func get_evm_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
     return AccountContract.get_evm_address();
 }
 
+@view
+func get_implementation{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    implementation: felt
+) {
+    return AccountContract.get_implementation();
+}
+
+@external
+func set_implementation{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    implementation_class: felt
+) {
+    return AccountContract.set_implementation(implementation_class);
+}
+
 // @notice Checks if the account was initialized.
 // @return is_initialized: 1 if the account has been initialized 0 otherwise.
 @view

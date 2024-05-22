@@ -2,6 +2,7 @@ from collections import namedtuple
 
 import pytest
 import pytest_asyncio
+from eth_utils import keccak
 from starknet_py.net.full_node_client import FullNodeClient
 from starkware.starknet.public.abi import get_storage_var_address
 
@@ -50,9 +51,17 @@ async def counter(deploy_contract, new_account):
     )
 
 
+@pytest_asyncio.fixture(scope="module")
+async def caller(deploy_contract, owner):
+    return await deploy_contract(
+        "PlainOpcodes",
+        "Caller",
+        caller_eoa=owner.starknet_contract,
+    )
+
+
 @pytest.fixture(autouse=True)
 async def cleanup(invoke, class_hashes):
-    yield
     await invoke(
         "kakarot",
         "set_account_contract_class_hash",
@@ -72,6 +81,18 @@ async def assert_counter_transaction_success(counter, new_account):
     assert await counter.count() == prev_count + 1
 
 
+async def assert_caller_contract_increases_counter(caller, counter, new_account):
+    """
+    Assert that the transaction sent, other than upgrading the account contract, is successful.
+    """
+    prev_count = await counter.count()
+    inc_selector = keccak(b"inc()")[0:4]
+    await caller.call(
+        counter.address, inc_selector, caller_eoa=new_account.starknet_contract
+    )
+    assert await counter.count() == prev_count + 1
+
+
 @pytest.mark.asyncio(scope="session")
 @pytest.mark.AccountContract
 class TestAccount:
@@ -83,6 +104,7 @@ class TestAccount:
             counter,
             new_account,
             class_hashes,
+            cleanup,
         ):
             prev_class = await starknet.get_class_hash_at(
                 new_account.starknet_contract.address
@@ -135,3 +157,70 @@ class TestAccount:
                 )
                 == target_class
             )
+
+    class TestAutoUpgradeContracts:
+        async def test_should_upgrade_outdated_contract_transaction_target(
+            self,
+            starknet: FullNodeClient,
+            invoke,
+            call,
+            counter,
+            new_account,
+            class_hashes,
+        ):
+            counter_starknet_address = (
+                await call(
+                    "kakarot",
+                    "get_starknet_address",
+                    int(counter.address, 16),
+                )
+            ).starknet_address
+            prev_class = await starknet.get_class_hash_at(counter_starknet_address)
+            target_class = class_hashes["account_contract_fixture"]
+            assert prev_class != target_class
+            assert prev_class == class_hashes["account_contract"]
+
+            await invoke(
+                "kakarot",
+                "set_account_contract_class_hash",
+                target_class,
+            )
+
+            await assert_counter_transaction_success(counter, new_account)
+
+            new_class = await starknet.get_class_hash_at(counter_starknet_address)
+            assert new_class == target_class
+
+        async def test_should_upgrade_outdated_contract_called_contract(
+            self,
+            starknet: FullNodeClient,
+            invoke,
+            counter,
+            call,
+            caller,
+            new_account,
+            class_hashes,
+            cleanup,
+        ):
+            counter_starknet_address = (
+                await call(
+                    "kakarot",
+                    "get_starknet_address",
+                    int(counter.address, 16),
+                )
+            ).starknet_address
+            prev_class = await starknet.get_class_hash_at(counter_starknet_address)
+            target_class = class_hashes["account_contract_fixture"]
+            assert prev_class != target_class
+            assert prev_class == class_hashes["account_contract"]
+
+            await invoke(
+                "kakarot",
+                "set_account_contract_class_hash",
+                target_class,
+            )
+
+            await assert_caller_contract_increases_counter(caller, counter, new_account)
+
+            new_class = await starknet.get_class_hash_at(counter_starknet_address)
+            assert new_class == target_class

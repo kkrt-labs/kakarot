@@ -52,6 +52,12 @@ namespace IAccount {
     func get_evm_address() -> (evm_address: felt) {
     }
 
+    func get_implementation() -> (implementation: felt) {
+    }
+
+    func set_implementation(implementation: felt) {
+    }
+
     func version() -> (version: felt) {
     }
 

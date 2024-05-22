@@ -27,9 +27,10 @@ from kakarot.gas import Gas
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
-from kakarot.storages import Kakarot_cairo1_helpers_class_hash
+from kakarot.storages import Kakarot_cairo1_helpers_class_hash, Kakarot_account_contract_class_hash
 from kakarot.state import State
 from kakarot.precompiles.ec_recover import EcRecoverHelpers
+from backend.starknet import Starknet
 from utils.utils import Helpers
 from utils.array import slice, pad_end
 from utils.bytes import (
@@ -1201,6 +1202,22 @@ namespace CallHelper {
 
         let to_starknet_address = Account.compute_starknet_address(to);
         tempvar to_address = new model.Address(starknet=to_starknet_address, evm=to);
+
+        // Upgrade the target starknet contract's class if it's not the latest one.
+        // The code_account must be deployed on starknet already.
+        if (code_account.created == FALSE) {
+            Starknet.check_and_upgrade_account_class(code_account.address);
+            tempvar syscall_ptr = syscall_ptr;
+            tempvar pedersen_ptr = pedersen_ptr;
+            tempvar range_check_ptr = range_check_ptr;
+        } else {
+            tempvar syscall_ptr = syscall_ptr;
+            tempvar pedersen_ptr = pedersen_ptr;
+            tempvar range_check_ptr = range_check_ptr;
+        }
+        let syscall_ptr = cast([ap - 3], felt*);
+        let pedersen_ptr = cast([ap - 2], HashBuiltin*);
+        let range_check_ptr = [ap - 1];
 
         tempvar parent = new model.Parent(evm, stack, memory, state);
         let stack = Stack.init();
