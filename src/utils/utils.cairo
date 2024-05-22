@@ -260,6 +260,48 @@ namespace Helpers {
         return current;
     }
 
+    // @notice This function is used to convert a sequence of 32 bytes big-endian
+    // to a felt.
+    // @dev If the value doesn't fit in a felt, the value will be wrapped around.
+    // @param val: pointer to the first byte of the 32.
+    // @return res: felt representation of the given input in bytes32.
+    @known_ap_change
+    func bytes32_to_felt(val: felt*) -> felt {
+        let current = [val] * 256 ** 31;
+        let current = current + [val + 1] * 256 ** 30;
+        let current = current + [val + 2] * 256 ** 29;
+        let current = current + [val + 3] * 256 ** 28;
+        let current = current + [val + 4] * 256 ** 27;
+        let current = current + [val + 5] * 256 ** 26;
+        let current = current + [val + 6] * 256 ** 25;
+        let current = current + [val + 7] * 256 ** 24;
+        let current = current + [val + 8] * 256 ** 23;
+        let current = current + [val + 9] * 256 ** 22;
+        let current = current + [val + 10] * 256 ** 21;
+        let current = current + [val + 11] * 256 ** 20;
+        let current = current + [val + 12] * 256 ** 19;
+        let current = current + [val + 13] * 256 ** 18;
+        let current = current + [val + 14] * 256 ** 17;
+        let current = current + [val + 15] * 256 ** 16;
+        let current = current + [val + 16] * 256 ** 15;
+        let current = current + [val + 17] * 256 ** 14;
+        let current = current + [val + 18] * 256 ** 13;
+        let current = current + [val + 19] * 256 ** 12;
+        let current = current + [val + 20] * 256 ** 11;
+        let current = current + [val + 21] * 256 ** 10;
+        let current = current + [val + 22] * 256 ** 9;
+        let current = current + [val + 23] * 256 ** 8;
+        let current = current + [val + 24] * 256 ** 7;
+        let current = current + [val + 25] * 256 ** 6;
+        let current = current + [val + 26] * 256 ** 5;
+        let current = current + [val + 27] * 256 ** 4;
+        let current = current + [val + 28] * 256 ** 3;
+        let current = current + [val + 29] * 256 ** 2;
+        let current = current + [val + 30] * 256 ** 1;
+        let current = current + [val + 31];
+        return current;
+    }
+
     // @notice Load sequences of 8 bytes little endian into an array of felts
     // @param len: final length of the output.
     // @param input: pointer to bytes array input.
@@ -271,6 +313,43 @@ namespace Helpers {
         let loaded = bytes_to_64_bits_little_felt(input);
         assert [output] = loaded;
         return load_64_bits_array(len - 1, input + 8, output + 1);
+    }
+
+    // @notice Load sequence of 32 bytes into an array of felts
+    // @dev If the input doesn't fit in a felt, the value will be wrapped around.
+    // @param input_len: The number of bytes in the input.
+    // @param input: pointer to bytes array input.
+    // @param output: pointer to bytes array output.
+    func load_256_bits_array(input_len: felt, input: felt*) -> (output_len: felt, output: felt*) {
+        alloc_locals;
+        let (local output_start) = alloc();
+        if (input_len == 0) {
+            return (0, output_start);
+        }
+
+        tempvar ptr = input;
+        tempvar output = output_start;
+        tempvar remaining = input_len;
+
+        loop:
+        let ptr = cast([ap - 3], felt*);
+        let output = cast([ap - 2], felt*);
+        let remaining = [ap - 1];
+
+        let loaded = bytes32_to_felt(ptr);
+        assert [output] = loaded;
+
+        tempvar ptr = ptr + 32;
+        tempvar output = output + 1;
+        tempvar remaining = remaining - 32;
+
+        static_assert ptr == [ap - 3];
+        static_assert output == [ap - 2];
+        static_assert remaining == [ap - 1];
+        jmp loop if remaining != 0;
+
+        let output_len = output - output_start;
+        return (output_len, output_start);
     }
 
     // @notice Divides a 128-bit number with remainder.

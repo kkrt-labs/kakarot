@@ -2,6 +2,7 @@ import pytest
 from starkware.starknet.public.abi import get_selector_from_name
 
 from tests.utils.constants import (
+    CAIRO_PRECOMPILE_GAS,
     FIRST_KAKAROT_PRECOMPILE_ADDRESS,
     FIRST_ROLLUP_PRECOMPILE_ADDRESS,
     LAST_ETHEREUM_PRECOMPILE_ADDRESS,
@@ -67,11 +68,15 @@ class TestPrecompiles:
 
         class TestKakarotPrecompiles:
             @SyscallHandler.patch("ICairo.inc", lambda addr, data: [])
-            @SyscallHandler.patch("ICairo.get", lambda addr, data: [123456])
             @pytest.mark.parametrize(
                 "address, input_data, expected_return_data, expected_reverted",
                 [
-                    (0x75001, bytes.fromhex("0abcdef0"), [], True),
+                    (
+                        0x75001,
+                        bytes.fromhex("0abcdef0"),
+                        list(b"Kakarot: OutOfBoundsRead"),
+                        True,
+                    ),  # invalid input
                     (
                         0x75001,
                         bytes.fromhex(
@@ -86,14 +91,27 @@ class TestPrecompiles:
                     (
                         0x75001,
                         bytes.fromhex(
-                            "b3eb2c1b"
+                            "5a9af197"
                             + "c0de".zfill(64)
                             + hex(get_selector_from_name("get"))[2:].zfill(64)
-                            + "0".zfill(64)
+                            + "1".zfill(64)  # data_len
+                            + "1".zfill(64)  # data
                         ),
-                        [],
+                        [1],
                         False,
                     ),  # library_call
+                    (
+                        0x75001,
+                        bytes.fromhex(
+                            "5a9af197"
+                            + "c0de".zfill(64)
+                            + hex(get_selector_from_name("get"))[2:].zfill(64)
+                            + "1".zfill(64)  # data_len
+                            + "1".zfill(64)  # data
+                        ),
+                        [1],
+                        False,  # contract_address over 32bytes (overflows a felt)
+                    ),
                 ],
             )
             def test__cairo_precompiles(
@@ -104,10 +122,19 @@ class TestPrecompiles:
                 expected_return_data,
                 expected_reverted,
             ):
-                return_data, reverted, gas_used = cairo_run(
-                    "test__precompiles_run", address=address, input=input_data
-                )
+                with SyscallHandler.patch(
+                    "ICairo.get", lambda addr, data: expected_return_data
+                ):
+                    return_data, reverted, gas_used = cairo_run(
+                        "test__precompiles_run", address=address, input=input_data
+                    )
                 assert (reverted != 0) == expected_reverted
+                assert return_data == expected_return_data
+                assert gas_used == CAIRO_PRECOMPILE_GAS
+
+                input_data[4 + 2 * 32 : 4 + 3 * 32]
+                breakpoint()
+
                 return
 
     class TestIsPrecompile:
