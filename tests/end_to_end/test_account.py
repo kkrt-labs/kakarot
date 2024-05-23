@@ -42,7 +42,7 @@ async def new_account(max_fee):
     return account
 
 
-@pytest_asyncio.fixture(scope="module")
+@pytest_asyncio.fixture(scope="function")
 async def counter(deploy_contract, new_account):
     return await deploy_contract(
         "PlainOpcodes",
@@ -62,6 +62,8 @@ async def caller(deploy_contract, owner):
 
 @pytest.fixture(autouse=True)
 async def cleanup(invoke, class_hashes):
+    yield
+
     await invoke(
         "kakarot",
         "set_account_contract_class_hash",
