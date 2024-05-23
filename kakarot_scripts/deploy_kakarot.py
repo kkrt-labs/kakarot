@@ -50,6 +50,16 @@ async def main():
         )
         if deployed_class_hash != class_hash["kakarot"]:
             await invoke("kakarot", "upgrade", class_hash["kakarot"])
+            await invoke(
+                "kakarot",
+                "set_account_contract_class_hash",
+                class_hash["account_contract"],
+            )
+            await invoke(
+                "kakarot",
+                "set_cairo1_helpers_class_hash",
+                class_hash["uninitialized_account"],
+            )
         else:
             logger.info("✅ Kakarot already up to date.")
     else:
