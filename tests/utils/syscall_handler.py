@@ -16,7 +16,7 @@ from starkware.starknet.public.abi import (
     get_storage_var_address,
 )
 
-from tests.utils.constants import CHAIN_ID
+from tests.utils.constants import ACCOUNT_CLASS_IMPLEMENTATION, CHAIN_ID
 from tests.utils.uint256 import int_to_uint256, uint256_to_int
 
 
@@ -173,6 +173,10 @@ class SyscallHandler:
         get_selector_from_name(
             "verify_signature_secp256r1"
         ): cairo_verify_signature_secp256r1,
+        get_selector_from_name("get_implementation"): lambda addr, data: [
+            ACCOUNT_CLASS_IMPLEMENTATION
+        ],
+        get_selector_from_name("set_implementation"): lambda addr, data: [],
     }
 
     def get_contract_address(self, segments, syscall_ptr):

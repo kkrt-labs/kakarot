@@ -1195,6 +1195,7 @@ namespace CallHelper {
         Memory.load_n(args_size.low, calldata, args_offset.low);
 
         // 2. Build child_evm
+
         let code_account = State.get_account(code_address);
         local code_len: felt = code_account.code_len;
         local code: felt* = code_account.code;

@@ -118,11 +118,15 @@ namespace Account {
                 address=address, code_len=0, code=bytecode, nonce=0, balance=balance_ptr
             );
             return account;
-        } else {
-            tempvar address = new model.Address(starknet=starknet_address, evm=evm_address);
-            let balance = fetch_balance(address);
-            assert balance_ptr = new Uint256(balance.low, balance.high);
         }
+
+        tempvar address = new model.Address(starknet=starknet_address, evm=evm_address);
+        let balance = fetch_balance(address);
+        assert balance_ptr = new Uint256(balance.low, balance.high);
+
+        // Upgrade the target starknet contract's class if it's not the latest one.
+        // The contract must be deployed on starknet already.
+        Internals.check_and_upgrade_account_class(address);
 
         let (bytecode_len, bytecode) = IAccount.bytecode(contract_address=starknet_address);
         let (nonce) = IAccount.get_nonce(contract_address=starknet_address);
@@ -670,5 +674,17 @@ namespace Internals {
         dict_write{dict_ptr=storage_ptr}(key=storage_addr, new_value=cast(value_ptr, felt));
 
         return _cache_storage_keys(evm_address, storage_keys_len - 1, storage_keys + Uint256.SIZE);
+    }
+
+    func check_and_upgrade_account_class{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    }(address: model.Address*) {
+        let (account_impl) = IAccount.get_implementation(address.starknet);
+        let (latest_impl) = Kakarot_account_contract_class_hash.read();
+        if (account_impl == latest_impl) {
+            return ();
+        }
+        IAccount.set_implementation(address.starknet, latest_impl);
+        return ();
     }
 }

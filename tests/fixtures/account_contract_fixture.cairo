@@ -18,6 +18,10 @@ from kakarot.accounts.account_contract import (
     storage,
     get_nonce,
     set_nonce,
+    get_implementation,
+    set_implementation,
+    is_valid_jumpdest,
+    write_jumpdests,
 )
 
 // make sure the class hash is different
