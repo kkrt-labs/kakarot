@@ -1195,20 +1195,10 @@ namespace CallHelper {
     ) -> model.EVM* {
         alloc_locals;
 
-        // 1. Calldata
-        let (calldata: felt*) = alloc();
-        Memory.load_n(args_size.low, calldata, args_offset.low);
-
-        // 2. Build child_evm
-        let code_account = State.get_account(code_address);
-        local code_len: felt = code_account.code_len;
-        local code: felt* = code_account.code;
-
-        let to_starknet_address = Account.compute_starknet_address(to);
-        tempvar to_address = new model.Address(starknet=to_starknet_address, evm=to);
-
+        // - Outside regular EVM flow - //
         // Upgrade the target starknet contract's class if it's not the latest one.
         // The code_account must be deployed on starknet already.
+        let code_account = State.get_account(code_address);
         let (deployed_starknet_address) = Kakarot_evm_to_starknet_address.read(code_address);
         if (deployed_starknet_address != FALSE) {
             Starknet.check_and_upgrade_account_class(code_account.address);
@@ -1223,6 +1213,17 @@ namespace CallHelper {
         let syscall_ptr = cast([ap - 3], felt*);
         let pedersen_ptr = cast([ap - 2], HashBuiltin*);
         let range_check_ptr = [ap - 1];
+
+        // 1. Calldata
+        let (calldata: felt*) = alloc();
+        Memory.load_n(args_size.low, calldata, args_offset.low);
+
+        // 2. Build child_evm
+        local code_len: felt = code_account.code_len;
+        local code: felt* = code_account.code;
+
+        let to_starknet_address = Account.compute_starknet_address(to);
+        tempvar to_address = new model.Address(starknet=to_starknet_address, evm=to);
 
         tempvar parent = new model.Parent(evm, stack, memory, state);
         let stack = Stack.init();

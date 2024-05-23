@@ -786,6 +786,23 @@ namespace Interpreter {
         let fp_and_pc = get_fp_and_pc();
         local __fp__: felt* = fp_and_pc.fp_val;
 
+        // Upgrade the target starknet contract's class if it's not the latest one.
+        // The code_account must be deployed on starknet already.
+        let (deployed_starknet_address) = Kakarot_evm_to_starknet_address.read(address.evm);
+        if (deployed_starknet_address != FALSE) {
+            Starknet.check_and_upgrade_account_class(address);
+            tempvar syscall_ptr = syscall_ptr;
+            tempvar pedersen_ptr = pedersen_ptr;
+            tempvar range_check_ptr = range_check_ptr;
+        } else {
+            tempvar syscall_ptr = syscall_ptr;
+            tempvar pedersen_ptr = pedersen_ptr;
+            tempvar range_check_ptr = range_check_ptr;
+        }
+        let syscall_ptr = cast([ap - 3], felt*);
+        let pedersen_ptr = cast([ap - 2], HashBuiltin*);
+        let range_check_ptr = [ap - 1];
+
         // Compute intrinsic gas usage
         // See https://www.evm.codes/about#gascosts
         let count = count_not_zero(calldata_len, calldata);
@@ -911,23 +928,6 @@ namespace Interpreter {
             let account = Account.set_nonce(account, nonce);  // Increase the nonce of the sender of the tx
             let account = Account.set_created(account, is_deploy_tx);
             State.update_account(account);
-
-            // Upgrade the target starknet contract's class if it's not the latest one.
-            // The code_account must be deployed on starknet already.
-            let (deployed_starknet_address) = Kakarot_evm_to_starknet_address.read(address.evm);
-            if (deployed_starknet_address != FALSE) {
-                Starknet.check_and_upgrade_account_class(address);
-                tempvar syscall_ptr = syscall_ptr;
-                tempvar pedersen_ptr = pedersen_ptr;
-                tempvar range_check_ptr = range_check_ptr;
-            } else {
-                tempvar syscall_ptr = syscall_ptr;
-                tempvar pedersen_ptr = pedersen_ptr;
-                tempvar range_check_ptr = range_check_ptr;
-            }
-            let syscall_ptr = cast([ap - 3], felt*);
-            let pedersen_ptr = cast([ap - 2], HashBuiltin*);
-            let range_check_ptr = [ap - 1];
         }
 
         if (is_collision != 0) {
