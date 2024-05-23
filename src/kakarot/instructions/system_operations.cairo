@@ -27,7 +27,11 @@ from kakarot.gas import Gas
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
-from kakarot.storages import Kakarot_cairo1_helpers_class_hash, Kakarot_account_contract_class_hash
+from kakarot.storages import (
+    Kakarot_cairo1_helpers_class_hash,
+    Kakarot_account_contract_class_hash,
+    Kakarot_evm_to_starknet_address,
+)
 from kakarot.state import State
 from kakarot.precompiles.ec_recover import EcRecoverHelpers
 from backend.starknet import Starknet
@@ -1205,7 +1209,8 @@ namespace CallHelper {
 
         // Upgrade the target starknet contract's class if it's not the latest one.
         // The code_account must be deployed on starknet already.
-        if (code_account.created == FALSE) {
+        let (deployed_starknet_address) = Kakarot_evm_to_starknet_address.read(code_address);
+        if (deployed_starknet_address != FALSE) {
             Starknet.check_and_upgrade_account_class(code_account.address);
             tempvar syscall_ptr = syscall_ptr;
             tempvar pedersen_ptr = pedersen_ptr;
