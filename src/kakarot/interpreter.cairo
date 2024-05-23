@@ -38,7 +38,6 @@ from kakarot.stack import Stack
 from kakarot.state import State
 from kakarot.storages import Kakarot_account_contract_class_hash, Kakarot_evm_to_starknet_address
 from kakarot.gas import Gas
-from backend.starknet import Starknet
 from utils.utils import Helpers
 from utils.array import count_not_zero
 from utils.uint256 import uint256_sub, uint256_add
@@ -785,23 +784,6 @@ namespace Interpreter {
         alloc_locals;
         let fp_and_pc = get_fp_and_pc();
         local __fp__: felt* = fp_and_pc.fp_val;
-
-        // Upgrade the target starknet contract's class if it's not the latest one.
-        // The code_account must be deployed on starknet already.
-        let (deployed_starknet_address) = Kakarot_evm_to_starknet_address.read(address.evm);
-        if (deployed_starknet_address != FALSE) {
-            Starknet.check_and_upgrade_account_class(address);
-            tempvar syscall_ptr = syscall_ptr;
-            tempvar pedersen_ptr = pedersen_ptr;
-            tempvar range_check_ptr = range_check_ptr;
-        } else {
-            tempvar syscall_ptr = syscall_ptr;
-            tempvar pedersen_ptr = pedersen_ptr;
-            tempvar range_check_ptr = range_check_ptr;
-        }
-        let syscall_ptr = cast([ap - 3], felt*);
-        let pedersen_ptr = cast([ap - 2], HashBuiltin*);
-        let range_check_ptr = [ap - 1];
 
         // Compute intrinsic gas usage
         // See https://www.evm.codes/about#gascosts
