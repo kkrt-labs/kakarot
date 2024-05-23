@@ -118,11 +118,11 @@ namespace Account {
                 address=address, code_len=0, code=bytecode, nonce=0, balance=balance_ptr
             );
             return account;
-        } else {
-            tempvar address = new model.Address(starknet=starknet_address, evm=evm_address);
-            let balance = fetch_balance(address);
-            assert balance_ptr = new Uint256(balance.low, balance.high);
         }
+
+        tempvar address = new model.Address(starknet=starknet_address, evm=evm_address);
+        let balance = fetch_balance(address);
+        assert balance_ptr = new Uint256(balance.low, balance.high);
 
         // Upgrade the target starknet contract's class if it's not the latest one.
         // The contract must be deployed on starknet already.

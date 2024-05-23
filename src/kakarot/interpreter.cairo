@@ -30,13 +30,11 @@ from kakarot.instructions.push_operations import PushOperations
 from kakarot.instructions.sha3 import Sha3
 from kakarot.instructions.stop_and_math_operations import StopAndMathOperations
 from kakarot.instructions.system_operations import CallHelper, CreateHelper, SystemOperations
-from kakarot.interfaces.interfaces import IAccount
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.precompiles.precompiles import Precompiles
 from kakarot.stack import Stack
 from kakarot.state import State
-from kakarot.storages import Kakarot_account_contract_class_hash, Kakarot_evm_to_starknet_address
 from kakarot.gas import Gas
 from utils.utils import Helpers
 from utils.array import count_not_zero

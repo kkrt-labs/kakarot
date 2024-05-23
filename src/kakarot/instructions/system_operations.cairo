@@ -27,11 +27,7 @@ from kakarot.gas import Gas
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
-from kakarot.storages import (
-    Kakarot_cairo1_helpers_class_hash,
-    Kakarot_account_contract_class_hash,
-    Kakarot_evm_to_starknet_address,
-)
+from kakarot.storages import Kakarot_cairo1_helpers_class_hash
 from kakarot.state import State
 from kakarot.precompiles.ec_recover import EcRecoverHelpers
 from utils.utils import Helpers
