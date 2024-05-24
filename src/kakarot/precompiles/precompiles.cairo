@@ -72,27 +72,34 @@ namespace Precompiles {
     }(evm_address: felt, input_len: felt, input: felt*) -> (
         output_len: felt, output: felt*, gas_used: felt, reverted: felt
     ) {
-        let is_rollup_precompile_ = is_rollup_precompile(evm_address);
-        if (is_rollup_precompile_ != 0) {
-            // Rollup precompiles start at address 0x100. The last ethereum precompile is at address 0x0a.
-            // The offset is computed as relative to the last ethereum precompile.
-            tempvar index = (LAST_ETHEREUM_PRECOMPILE_ADDRESS + 1) + (
-                evm_address - FIRST_ROLLUP_PRECOMPILE_ADDRESS
-            );
-        } else {
-            let is_kakarot_precompile_ = is_kakarot_precompile(evm_address);
-            if (is_kakarot_precompile_ != 0) {
-                // Kakarot precompiles start at address FIRST_KAKAROT_PRECOMPILE_ADDRESS.
-                // The offset is computed as relative to the last ethereum precompile + the amount of rollup precompiles.
-                let rollup_precompiles_count = LAST_ROLLUP_PRECOMPILE_ADDRESS -
-                    FIRST_ROLLUP_PRECOMPILE_ADDRESS + 1;
-                tempvar index = (LAST_ETHEREUM_PRECOMPILE_ADDRESS + 1) + rollup_precompiles_count +
-                    (evm_address - FIRST_KAKAROT_PRECOMPILE_ADDRESS);
-            } else {
-                tempvar index = evm_address;
-            }
-        }
+        let is_eth_precompile = is_le(evm_address, LAST_ETHEREUM_PRECOMPILE_ADDRESS);
+        jmp eth_precompile if is_eth_precompile != 0;
 
+        let is_rollup_precompile_ = is_rollup_precompile(evm_address);
+        jmp rollup_precompile if is_rollup_precompile_ != 0;
+
+        let is_kakarot_precompile_ = is_kakarot_precompile(evm_address);
+        jmp kakarot_precompile if is_kakarot_precompile_ != 0;
+
+        eth_precompile:
+        tempvar index = evm_address;
+        jmp call_precompile;
+
+        rollup_precompile:
+        tempvar index = (LAST_ETHEREUM_PRECOMPILE_ADDRESS + 1) + (
+            evm_address - FIRST_ROLLUP_PRECOMPILE_ADDRESS
+        );
+        jmp call_precompile;
+
+        kakarot_precompile:
+        let rollup_precompiles_count = LAST_ROLLUP_PRECOMPILE_ADDRESS -
+            FIRST_ROLLUP_PRECOMPILE_ADDRESS + 1;
+        tempvar index = (LAST_ETHEREUM_PRECOMPILE_ADDRESS + 1) + rollup_precompiles_count + (
+            evm_address - FIRST_KAKAROT_PRECOMPILE_ADDRESS
+        );
+        jmp call_precompile;
+
+        call_precompile:
         // Compute the corresponding offset in the jump table:
         // count 1 for "next line" and 3 steps per index: call, precompile, ret
         tempvar offset = 1 + 3 * index;

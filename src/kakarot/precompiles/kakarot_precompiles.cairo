@@ -32,18 +32,18 @@ namespace KakarotPrecompiles {
         }
 
         // Load selector from first 4 bytes of input.
-        let selector = Helpers.bytes_to_felt(4, input);
+        let selector = Helpers.bytes4_to_felt(input);
         let input = input + 4;
 
         // Load address and cairo selector called
         // Safe to assume that the 32 bytes in input do not overflow a felt (whitelisted precompiles)
-        let starknet_address = Helpers.bytes_to_felt(32, input);
-        let starknet_selector = Helpers.bytes_to_felt(32, input + 32);
+        let starknet_address = Helpers.bytes32_to_felt(input);
+        let starknet_selector = Helpers.bytes32_to_felt(input + 32);
         let input = input + 64;
 
         // Load input data by packing all
         // If the input data is larger than the size of a felt, it will wrap around the felt size.
-        let input_words_len = Helpers.bytes_to_felt(32, input);
+        let input_words_len = Helpers.bytes32_to_felt(input);
         let input_bytes_len = input_words_len * 32;
         let input_ptr = input + 32;
         let (data_len, data) = Helpers.load_256_bits_array(input_bytes_len, input_ptr);

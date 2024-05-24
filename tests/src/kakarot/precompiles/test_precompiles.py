@@ -81,9 +81,9 @@ class TestPrecompiles:
                         0x75001,
                         bytes.fromhex(
                             "b3eb2c1b"
-                            + "c0de".zfill(64)
-                            + hex(get_selector_from_name("inc"))[2:].zfill(64)
-                            + "0".zfill(64)
+                            + f"{0xc0de:064x}"
+                            + f"{get_selector_from_name('inc'):064x}"
+                            + f"{0x00:064x}"
                         ),
                         [],
                         False,
@@ -92,26 +92,14 @@ class TestPrecompiles:
                         0x75001,
                         bytes.fromhex(
                             "5a9af197"
-                            + "c0de".zfill(64)
-                            + hex(get_selector_from_name("get"))[2:].zfill(64)
-                            + "1".zfill(64)  # data_len
-                            + "1".zfill(64)  # data
+                            + f"{0xc0de:064x}"
+                            + f"{get_selector_from_name('get'):064x}"
+                            + f"{0x01:064x}"  # data_len
+                            + f"{0x01:064x}"  # data
                         ),
                         [1],
                         False,
                     ),  # library_call
-                    (
-                        0x75001,
-                        bytes.fromhex(
-                            "5a9af197"
-                            + "c0de".zfill(64)
-                            + hex(get_selector_from_name("get"))[2:].zfill(64)
-                            + "1".zfill(64)  # data_len
-                            + "1".zfill(64)  # data
-                        ),
-                        [1],
-                        False,  # contract_address over 32bytes (overflows a felt)
-                    ),
                 ],
             )
             def test__cairo_precompiles(
@@ -133,7 +121,6 @@ class TestPrecompiles:
                 assert gas_used == CAIRO_PRECOMPILE_GAS
 
                 input_data[4 + 2 * 32 : 4 + 3 * 32]
-                breakpoint()
 
                 return
 
