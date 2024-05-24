@@ -232,6 +232,18 @@ namespace Helpers {
         return res;
     }
 
+    // @notice This function is used to convert a sequence of 4 bytes big-endian
+    // to a felt.
+    // @param val: pointer to the first byte of the 4.
+    // @return res: felt representation of the given input in bytes4.
+    func bytes4_to_felt(val: felt*) -> felt {
+        let current = [val] * 256 ** 3;
+        let current = current + [val + 1] * 256 ** 2;
+        let current = current + [val + 2] * 256;
+        let current = current + [val + 3];
+        return current;
+    }
+
     // @notice This function is used to convert a sequence of 20 bytes big-endian
     // to felt.
     // @param val: pointer to the first byte of the 20.
