@@ -85,6 +85,7 @@ async def main():
             COINBASE,
             BLOCK_GAS_LIMIT,
         )
+        deployments["Counter"] = await deploy("Counter")
 
     dump_deployments(deployments)
 
