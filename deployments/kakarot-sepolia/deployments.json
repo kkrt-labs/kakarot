@@ -1,7 +1,7 @@
 {
   "kakarot": {
-    "address": "0x11c5faab8a76b3caff6e243b8d13059a7fb723a0ca12bbaadde95fb9e501bda",
-    "tx": "0x207a62725950583c5dc7afd67220c11ad99154d9c64b75708efb46b667b0818",
+    "address": "0xb839Fcad840d14575E381932e570468648eE79f7",
+    "tx": "0x7cc015bc2974a90f1ba4e43cd358084a372a4ddb30ae9236f3472d74c38aa373",
     "artifact": "build/kakarot.json"
   }
 }
