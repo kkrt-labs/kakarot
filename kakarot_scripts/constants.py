@@ -181,6 +181,7 @@ COMPILED_CONTRACTS = [
     {"contract_name": "OpenzeppelinAccount", "is_account_contract": True},
     {"contract_name": "ERC20", "is_account_contract": False},
     {"contract_name": "replace_class", "is_account_contract": False},
+    {"contract_name": "Counter", "is_account_contract": False},
 ]
 DECLARED_CONTRACTS = [
     {"contract_name": "kakarot", "cairo_version": ArtifactType.cairo0},
@@ -192,6 +193,7 @@ DECLARED_CONTRACTS = [
     {"contract_name": "Cairo1Helpers", "cairo_version": ArtifactType.cairo1},
     {"contract_name": "Cairo1HelpersFixture", "cairo_version": ArtifactType.cairo1},
     {"contract_name": "replace_class", "cairo_version": ArtifactType.cairo0},
+    {"contract_name": "Counter", "cairo_version": ArtifactType.cairo0},
 ]
 
 EVM_PRIVATE_KEY = os.getenv("EVM_PRIVATE_KEY")
