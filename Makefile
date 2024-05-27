@@ -6,8 +6,10 @@ endif
 
 .PHONY: build test coverage
 
-# Kakarot SSJ artifacts for precompiles
-KKRT_SSJ_BUILD_ARTIFACT_URL = $(shell curl -L https://api.github.com/repos/kkrt-labs/kakarot-ssj/releases/latest | jq -r '.assets[0].browser_download_url')
+# 154615699 corresponds to release v0.1.7 of Kakarot SSJ.
+KKRT_SSJ_RELEASE_ID = 154615699
+# Kakarot SSJ artifacts for precompiles.
+KKRT_SSJ_BUILD_ARTIFACT_URL = $(shell curl -L https://api.github.com/repos/kkrt-labs/kakarot-ssj/releases/${KKRT_SSJ_RELEASE_ID} | jq -r '.assets[0].browser_download_url')
 KATANA_VERSION = v0.7.0-alpha.0
 build: check
 	$(MAKE) clean
