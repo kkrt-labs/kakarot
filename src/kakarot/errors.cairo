@@ -438,6 +438,42 @@ namespace Errors {
         return (35, error);
     }
 
+    func invalidCairoSelector() -> (error_len: felt, error: felt*) {
+        let (error) = get_label_location(invalid_cairo_selector_message);
+        return (29, error);
+
+        invalid_cairo_selector_message:
+        dw 'K';
+        dw 'a';
+        dw 'k';
+        dw 'a';
+        dw 'r';
+        dw 'o';
+        dw 't';
+        dw ':';
+        dw ' ';
+        dw 'i';
+        dw 'n';
+        dw 'v';
+        dw 'a';
+        dw 'l';
+        dw 'i';
+        dw 'd';
+        dw 'C';
+        dw 'a';
+        dw 'i';
+        dw 'r';
+        dw 'o';
+        dw 'S';
+        dw 'e';
+        dw 'l';
+        dw 'e';
+        dw 'c';
+        dw 't';
+        dw 'o';
+        dw 'r';
+    }
+
     func balanceError() -> (error_len: felt, error: felt*) {
         let (error) = get_label_location(balance_error_message);
         return (40, error);

@@ -135,6 +135,17 @@ async def eth(deployer) -> Contract:
     return await get_eth_contract(provider=deployer)
 
 
+@pytest_asyncio.fixture(scope="session")
+async def cairo_counter(deployer) -> Contract:
+    """
+    Return a cached version of the cairo_counter contract.
+    """
+
+    from kakarot_scripts.utils.starknet import get_contract
+
+    return await get_contract("Counter", provider=deployer)
+
+
 @pytest.fixture(scope="session")
 def fund_starknet_address(deployer, eth):
     """

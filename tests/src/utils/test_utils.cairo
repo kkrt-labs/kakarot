@@ -148,3 +148,33 @@ func test__load_256_bits_array{range_check_ptr}() -> (felt, felt*) {
     // Then
     return (result_len, result);
 }
+
+func test__bytes4_to_felt{range_check_ptr}() -> felt {
+    alloc_locals;
+
+    // Given
+    let (data) = alloc();
+    %{ segments.write_arg(ids.data, program_input["data"]) %}
+
+    // When
+    let result = Helpers.bytes4_to_felt(data);
+
+    // Then
+    return result;
+}
+
+func test__felt_array_to_bytes32_array{range_check_ptr}() -> felt* {
+    alloc_locals;
+
+    let (data) = alloc();
+    local data_len: felt;
+    %{
+        segments.write_arg(ids.data, program_input["data"])
+        ids.data_len = len(program_input["data"])
+    %}
+
+    let (output) = alloc();
+    Helpers.felt_array_to_bytes32_array(data_len, data, output);
+
+    return output;
+}

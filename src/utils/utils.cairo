@@ -16,7 +16,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.hash_state import hash_finalize, hash_init, hash_update
 
 from kakarot.model import model
-from utils.bytes import uint256_to_bytes32
+from utils.bytes import uint256_to_bytes32, felt_to_bytes32
 
 // @title Helper Functions
 // @notice This file contains a selection of helper function that simplify tasks such as type conversion and bit manipulation
@@ -362,6 +362,27 @@ namespace Helpers {
 
         let output_len = output - output_start;
         return (output_len, output_start);
+    }
+
+    func felt_array_to_bytes32_array{range_check_ptr}(
+        input_len: felt, input: felt*, output: felt*
+    ) {
+        if (input_len == 0) {
+            let output_len = input_len * 32;
+            return ();
+        }
+        felt_to_bytes32(output, [input]);
+        return felt_array_to_bytes32_array(input_len - 1, input + 1, output + 32);
+    }
+
+    func _felt_array_to_bytes32_array{range_check_ptr}(
+        input_len: felt, input: felt*, output: felt*
+    ) {
+        if (input_len == 0) {
+            return ();
+        }
+        felt_to_bytes32(output, [input]);
+        return _felt_array_to_bytes32_array(input_len - 1, input + 1, output + 32);
     }
 
     // @notice Divides a 128-bit number with remainder.
