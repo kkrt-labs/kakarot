@@ -121,6 +121,34 @@ def test_should_load_256_bits_array(cairo_run, data, expected):
     assert result_len == len(expected)
 
 
+@pytest.mark.parametrize(
+    "data, expected",
+    [
+        ([0xAB, 0xCD, 0xEF, 0x01], 0xABCDEF01),
+        ([0x00, 0x00, 0x05, 0x67], 0x567),
+    ],
+)
+def test_should_convert_byts4_to_felt(cairo_run, data, expected):
+    output = cairo_run("test__bytes4_to_felt", data=data)
+    assert output == expected
+
+
+@pytest.mark.parametrize(
+    "data, expected",
+    [
+        ([0x8000, 0x7000], bytes.fromhex(f"{0x8000:064x}" + f"{0x7000:064x}")),
+        ([0x8000], bytes.fromhex(f"{0x8000:064x}")),
+        (
+            [0x8000, 0x7000, 0x6000],
+            bytes.fromhex(f"{0x8000:064x}" + f"{0x7000:064x}" + f"{0x6000:064x}"),
+        ),
+    ],
+)
+def test_should_serialize_felt_in_bytes32_array(cairo_run, data, expected):
+    result_len, result = cairo_run("test__felt_array_to_bytes32_array", data=data)
+    assert bytes(result) == expected
+
+
 class TestInitializeJumpdests:
     def test_should_return_same_as_execution_specs(self, cairo_run):
         bytecode = get_contract("PlainOpcodes", "Counter").bytecode_runtime

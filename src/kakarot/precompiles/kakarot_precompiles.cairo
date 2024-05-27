@@ -31,41 +31,52 @@ namespace KakarotPrecompiles {
             );
         }
 
+        // Input is formatted as:
+        // [selectore: bytes4][starknet_address: bytes32][starknet_selector:bytes32][data_offset: bytes32][data_len: bytes32][data: bytes[]]
+
         // Load selector from first 4 bytes of input.
         let selector = Helpers.bytes4_to_felt(input);
-        let input = input + 4;
+        let args_ptr = input + 4;
 
         // Load address and cairo selector called
         // Safe to assume that the 32 bytes in input do not overflow a felt (whitelisted precompiles)
-        let starknet_address = Helpers.bytes32_to_felt(input);
-        let starknet_selector = Helpers.bytes32_to_felt(input + 32);
-        let input = input + 64;
+        let starknet_address = Helpers.bytes32_to_felt(args_ptr);
+
+        let starknet_selector_ptr = args_ptr + 32;
+        let starknet_selector = Helpers.bytes32_to_felt(starknet_selector_ptr);
+
+        let data_offset_ptr = args_ptr + 64;
+        let data_offset = Helpers.bytes32_to_felt(data_offset_ptr);
+        let data_len_ptr = args_ptr + data_offset;
 
         // Load input data by packing all
         // If the input data is larger than the size of a felt, it will wrap around the felt size.
-        let input_words_len = Helpers.bytes32_to_felt(input);
-        let input_bytes_len = input_words_len * 32;
-        let input_ptr = input + 32;
-        let (data_len, data) = Helpers.load_256_bits_array(input_bytes_len, input_ptr);
-
-        // TODO -> bytes to felt for data
+        let data_words_len = Helpers.bytes32_to_felt(data_len_ptr);
+        let data_bytes_len = data_words_len * 32;
+        let data_ptr = data_len_ptr + 32;
+        let (data_len, data) = Helpers.load_256_bits_array(data_bytes_len, data_ptr);
 
         if (selector == CALL_CONTRACT_SOLIDITY_SELECTOR) {
             let (retdata_size, retdata) = call_contract(
                 starknet_address, starknet_selector, data_len, data
             );
-            return (retdata_size, retdata, CAIRO_PRECOMPILE_GAS, 0);
+            let (output) = alloc();
+            let output_len = retdata_size * 32;
+            Helpers.felt_array_to_bytes32_array(retdata_size, retdata, output);
+            return (output_len, output, CAIRO_PRECOMPILE_GAS, 0);
         }
 
         if (selector == LIBRARY_CALL_SOLIDITY_SELECTOR) {
             let (retdata_size, retdata) = library_call(
                 starknet_address, starknet_selector, data_len, data
             );
-            return (retdata_size, retdata, CAIRO_PRECOMPILE_GAS, 0);
+            let (output) = alloc();
+            let output_len = retdata_size * 32;
+            Helpers.felt_array_to_bytes32_array(retdata_size, retdata, output);
+            return (output_len, output, CAIRO_PRECOMPILE_GAS, 0);
         }
 
-        // TODO! add custom error
-        let (return_data) = alloc();
-        return (0, return_data, CAIRO_PRECOMPILE_GAS, 1);
+        let (revert_reason_len, revert_reason) = Errors.invalidCairoSelector();
+        return (revert_reason_len, revert_reason, CAIRO_PRECOMPILE_GAS, 1);
     }
 }

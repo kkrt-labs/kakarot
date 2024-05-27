@@ -83,7 +83,8 @@ class TestPrecompiles:
                             "b3eb2c1b"
                             + f"{0xc0de:064x}"
                             + f"{get_selector_from_name('inc'):064x}"
-                            + f"{0x00:064x}"
+                            + f"{0x60:064x}"  # data_offset
+                            + f"{0x00:064x}"  # data_len
                         ),
                         [],
                         False,
@@ -94,6 +95,7 @@ class TestPrecompiles:
                             "5a9af197"
                             + f"{0xc0de:064x}"
                             + f"{get_selector_from_name('get'):064x}"
+                            + f"{0x60:064x}"  # data_offset
                             + f"{0x01:064x}"  # data_len
                             + f"{0x01:064x}"  # data
                         ),
@@ -119,8 +121,6 @@ class TestPrecompiles:
                 assert (reverted != 0) == expected_reverted
                 assert return_data == expected_return_data
                 assert gas_used == CAIRO_PRECOMPILE_GAS
-
-                input_data[4 + 2 * 32 : 4 + 3 * 32]
 
                 return
 
