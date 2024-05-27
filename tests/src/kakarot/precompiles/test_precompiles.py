@@ -74,7 +74,7 @@ class TestPrecompiles:
                     (
                         0x75001,
                         bytes.fromhex("0abcdef0"),
-                        list(b"Kakarot: OutOfBoundsRead"),
+                        b"Kakarot: OutOfBoundsRead",
                         True,
                     ),  # invalid input
                     (
@@ -86,22 +86,23 @@ class TestPrecompiles:
                             + f"{0x60:064x}"  # data_offset
                             + f"{0x00:064x}"  # data_len
                         ),
-                        [],
+                        b"",
                         False,
                     ),  # call_contract
                     (
                         0x75001,
                         bytes.fromhex(
-                            "5a9af197"
+                            "b3eb2c1b"
                             + f"{0xc0de:064x}"
                             + f"{get_selector_from_name('get'):064x}"
                             + f"{0x60:064x}"  # data_offset
                             + f"{0x01:064x}"  # data_len
                             + f"{0x01:064x}"  # data
                         ),
-                        [1],
+                        bytes.fromhex(f"{0x01:064x}"),
                         False,
-                    ),  # library_call
+                    ),  # call_contract with return data
+                    # TODO! test library call
                 ],
             )
             def test__cairo_precompiles(
@@ -112,14 +113,19 @@ class TestPrecompiles:
                 expected_return_data,
                 expected_reverted,
             ):
+                # The expected returndata is a list of 32-byte words where each word is a felt returned by the precompile.
+                cairo_return_data = [
+                    int.from_bytes(expected_return_data[i : i + 32], "big")
+                    for i in range(0, len(expected_return_data), 32)
+                ]
                 with SyscallHandler.patch(
-                    "ICairo.get", lambda addr, data: expected_return_data
+                    "ICairo.get", lambda addr, data: cairo_return_data
                 ):
                     return_data, reverted, gas_used = cairo_run(
                         "test__precompiles_run", address=address, input=input_data
                     )
                 assert (reverted != 0) == expected_reverted
-                assert return_data == expected_return_data
+                assert bytes(return_data) == expected_return_data
                 assert gas_used == CAIRO_PRECOMPILE_GAS
 
                 return

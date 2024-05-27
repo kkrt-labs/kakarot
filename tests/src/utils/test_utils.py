@@ -128,7 +128,7 @@ def test_should_load_256_bits_array(cairo_run, data, expected):
         ([0x00, 0x00, 0x05, 0x67], 0x567),
     ],
 )
-def test_should_convert_byts4_to_felt(cairo_run, data, expected):
+def test_should_convert_bytes4_to_felt(cairo_run, data, expected):
     output = cairo_run("test__bytes4_to_felt", data=data)
     assert output == expected
 
@@ -145,7 +145,7 @@ def test_should_convert_byts4_to_felt(cairo_run, data, expected):
     ],
 )
 def test_should_serialize_felt_in_bytes32_array(cairo_run, data, expected):
-    result_len, result = cairo_run("test__felt_array_to_bytes32_array", data=data)
+    result = cairo_run("test__felt_array_to_bytes32_array", data=data)
     assert bytes(result) == expected
 
 
