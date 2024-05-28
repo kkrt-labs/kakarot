@@ -7,15 +7,15 @@ contract CairoCounterCaller  {
     /// @dev The cairo contract to call - assuming it's deployed at address 0xabc
     uint256 cairoCounterAddress;
 
-    /// @dev The cairo function selector to call - `inc()`
-    uint256 constant FUNCTION_SELECTOR_INC =
-    0x03b82f69851fa1625b367ea6c116252a84257da483dcec4d4e4bc270eb5c70a7;
+    /// @dev The cairo function selector to call - `inc`
+    uint256 constant FUNCTION_SELECTOR_INC = uint256(keccak256("inc")) % 2**250;
 
-    /// @dev The cairo function selector to call - `set_counter()`
-    uint256 constant FUNCTION_SELECTOR_SET_COUNTER = 0x0107cf8c3d109449e1beb4ac1ba726d3673b6f088ae454a9e0f18cb225be4712;
+    /// @dev The cairo function selector to call - `set_counter`
+    uint256 constant FUNCTION_SELECTOR_SET_COUNTER = uint256(keccak256("set_counter")) % 2**250;
 
-    /// @dev The cairo function selector to call - `get()`
-    uint256 constant FUNCTION_SELECTOR_GET = 0x17c00f03de8b5bd58d2016b59d251c13056b989171c5852949903bc043bc27;
+    /// @dev The cairo function selector to call - `get`
+    uint256 constant FUNCTION_SELECTOR_GET = uint256(keccak256("get")) % 2**250;
+
 
     constructor(uint256 cairoContractAddress) {
         cairoCounterAddress = cairoContractAddress;
@@ -41,6 +41,7 @@ contract CairoCounterCaller  {
     /// @dev The counter value is split into two 128-bit values to match the Cairo contract's expected inputs (u256 is composed of two u128s)
     /// @param newCounter The new counter value to set
     function setCairoCounter(uint256 newCounter) external{
+        // The u256 input must be split into two u128 values to match the expected cairo input
         uint128 newCounterLow = uint128(newCounter);
         uint128 newCounterHigh = uint128(newCounter >> 128);
 

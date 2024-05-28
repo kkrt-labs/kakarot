@@ -4,12 +4,11 @@ import pytest_asyncio
 from kakarot_scripts.utils.starknet import get_deployments, wait_for_transaction
 
 
-# TODO: check why cleanup causes tests to fail
 @pytest.fixture(autouse=True)
 async def cleanup(get_contract, max_fee):
     yield
     cairo_counter = get_contract("Counter")
-    tx = await cairo_counter.functions["set_counter"].invoke_v1(0, 0, max_fee=max_fee)
+    tx = await cairo_counter.functions["set_counter"].invoke_v1(0, max_fee=max_fee)
     await wait_for_transaction(tx.hash)
 
 

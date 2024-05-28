@@ -97,7 +97,6 @@ func felt_to_bytes20{range_check_ptr}(dst: felt*, value: felt) {
     return ();
 }
 
-// TODO: optimize using tail recursion to avoid reverse
 func felt_to_bytes32{range_check_ptr}(dst: felt*, value: felt) {
     alloc_locals;
     let (bytes32: felt*) = alloc();
