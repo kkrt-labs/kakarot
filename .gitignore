@@ -10,6 +10,7 @@ venv
 deployments/*
 !deployments/kakarot-sepolia/
 !deployments/starknet-sepolia/
+!deployments/kakarot-staging/
 artifacts
 build
 
