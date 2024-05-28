@@ -3,9 +3,11 @@ pragma solidity >=0.7.0 <0.9.0;
 
 import "./CairoLib.sol";
 
+using CairoLib for uint256;
+
 contract CairoCounterCaller  {
     /// @dev The cairo contract to call
-    uint256 cairoCounterAddress;
+    uint256 cairoCounter;
 
     /// @dev The cairo function selector to call - `inc`
     uint256 constant FUNCTION_SELECTOR_INC = uint256(keccak256("inc")) % 2**250;
@@ -18,13 +20,11 @@ contract CairoCounterCaller  {
 
 
     constructor(uint256 cairoContractAddress) {
-        cairoCounterAddress = cairoContractAddress;
+        cairoCounter = cairoContractAddress;
     }
 
     function getCairoCounter() public view returns (uint256 counterValue) {
-        // `get_counter` takes no arguments, so data is empty
-        uint256[] memory data;
-        bytes memory returnData = CairoLib.staticcallContract(cairoCounterAddress, FUNCTION_SELECTOR_GET, data);
+        bytes memory returnData = cairoCounter.staticcallContract(FUNCTION_SELECTOR_GET);
 
         // The return data is a 256-bit integer, so we can directly cast it to uint256
         return abi.decode(returnData, (uint256));
@@ -32,9 +32,7 @@ contract CairoCounterCaller  {
 
     /// @notice Calls the Cairo contract to increment its internal counter
     function incrementCairoCounter() external {
-        // `inc` takes no arguments, so data is empty
-        uint256[] memory data;
-        CairoLib.callContract(cairoCounterAddress, FUNCTION_SELECTOR_INC, data);
+        cairoCounter.callContract("inc");
     }
 
     /// @notice Calls the Cairo contract to set its internal counter to an arbitrary value
@@ -48,6 +46,6 @@ contract CairoCounterCaller  {
         uint256[] memory data = new uint256[](2);
         data[0] = uint256(newCounterLow);
         data[1] = uint256(newCounterHigh);
-        CairoLib.callContract(cairoCounterAddress, FUNCTION_SELECTOR_SET_COUNTER, data);
+        cairoCounter.callContract(FUNCTION_SELECTOR_SET_COUNTER, data);
     }
 }

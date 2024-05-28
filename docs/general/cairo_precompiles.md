@@ -49,9 +49,9 @@ flowchart TD
 
 ## Implementation
 
-The solidity part for the Cairo precompiles will include a library that allows
-developers to interact with the Cairo precompiles. This library will contain
-methods to call a Cairo contract or class, either via `call` or `staticcall`.
+The solidity part for the Cairo precompiles includes a library that allows
+developers to interact with the Cairo precompiles. This library contains methods
+to call a Cairo contract or class, either via `call` or `staticcall`.
 
 > Note: The behavior of high-level `calls` in solidity prevents calling
 > precompiles directly. As such, the library will use the low-level `call` and
@@ -105,7 +105,7 @@ library CairoLib {
 ```
 
 It contains three functions, `callContract`, `staticcallContract` and
-`libraryCall` that allows the user to call a Cairo contract or class deployed on
+`libraryCall` that allow the user to call a Cairo contract or class deployed on
 the Starknet appchain. The method takes three arguments:
 
 - `contractAddress` or `classHash`: The address of the Cairo contract to call /
@@ -136,6 +136,11 @@ pub mod Counter {
         self.counter.write(new_counter);
     }
 
+    #[external(v0)]
+    pub fn get(self: @ContractState) -> u256 {
+        self.counter.read()
+    }
+
 }
 ```
 
@@ -149,7 +154,7 @@ import "./CairoLib.sol";
 
 contract CairoCounterCaller  {
     /// @dev The cairo contract to call
-    uint256 cairoCounterAddress;
+    uint256 cairoCounter;
 
     /// @dev The cairo function selector to call - `inc`
     uint256 constant FUNCTION_SELECTOR_INC = uint256(keccak256("inc")) % 2**250;
@@ -162,13 +167,13 @@ contract CairoCounterCaller  {
 
 
     constructor(uint256 cairoContractAddress) {
-        cairoCounterAddress = cairoContractAddress;
+        cairoCounter = cairoContractAddress;
     }
 
     function getCairoCounter() public view returns (uint256 counterValue) {
         // `get_counter` takes no arguments, so data is empty
         uint256[] memory data;
-        bytes memory returnData = CairoLib.staticcallContract(cairoCounterAddress, FUNCTION_SELECTOR_GET, data);
+        bytes memory returnData = CairoLib.staticcallContract(cairoCounter, FUNCTION_SELECTOR_GET, data);
 
         // The return data is a 256-bit integer, so we can directly cast it to uint256
         return abi.decode(returnData, (uint256));
@@ -178,7 +183,7 @@ contract CairoCounterCaller  {
     function incrementCairoCounter() external {
         // `inc` takes no arguments, so data is empty
         uint256[] memory data;
-        CairoLib.callContract(cairoCounterAddress, FUNCTION_SELECTOR_INC, data);
+        CairoLib.callContract(cairoCounter, FUNCTION_SELECTOR_INC, data);
     }
 
     /// @notice Calls the Cairo contract to set its internal counter to an arbitrary value
@@ -192,16 +197,15 @@ contract CairoCounterCaller  {
         uint256[] memory data = new uint256[](2);
         data[0] = uint256(newCounterLow);
         data[1] = uint256(newCounterHigh);
-        CairoLib.callContract(cairoCounterAddress, FUNCTION_SELECTOR_SET_COUNTER, data);
+        CairoLib.callContract(cairoCounter, FUNCTION_SELECTOR_SET_COUNTER, data);
     }
 }
 
 ```
 
 Once deployed, the contract can be called to increment the counter in a Cairo
-contract deployed at starknet address `cairoCounterAddress`. The deployment
-address will need to be communicated to Kakarot for the precompile to be
-whitelisted.
+contract deployed at starknet address `cairoCounter`. The deployment address
+will need to be communicated to Kakarot for the precompile to be whitelisted.
 
 Internally, a new logic flow is implemented when processing message calls. If
 the target address is the Cairo precompile address, we check if the code_address
@@ -209,15 +213,29 @@ of the message is whitelisted. If it is, we execute the Cairo contract. If it is
 not, we revert the transaction.
 
 To execute the Cairo contract, we need to convert the EVM calldata, expressed as
-a `bytes[]`, to the expected Cairo inputs, serialized to an `Array<felt252>`.
-Each 256-bit word sequence in the EVM calldata must correspond to an element of
-at most, 251 bit, Cairo's native field element. For example, consider the
-`setCairoCounter` function above. The `newCounter` argument is 256 bits, and
-thus split into two 128-bit values to match the expected Cairo input. If we want
-to increase the counter by 1, the data sent would be `data = ["00" * 63 + "01"].
+a `bytes`, to the expected Cairo calldata format `Array<felt252>`. In Solidity,
+the `data` sent with the call will be represented as a `uint256[]`, where each
+`uint256` element will be cast to a `felt252` in Cairo. Therefore, each 256-bit
+word sequence in the EVM calldata must correspond to an element of at most 251
+bits, which is Cairo's native field element size. If the value being passed is
+less than 251 bits, it can be directly cast to a `felt252` in Cairo.
 
-Similarly, the return data of the Cairo contract is deserialized into 32-bytes
-words, and stored in the return data of the EVM call.
+For example, consider the `setCairoCounter` function mentioned above. If we want
+to increase the counter by 1, the `data` in Solidity would be:
+
+```solidity
+uint256[] memory data = new uint256[](2);
+data[0] = 0;
+data[1] = 1;
+```
+
+In this case, the Cairo expected input is a `u256`, which is composed of two
+`felt` values. Therefore, the `newCounter` value is split into two values
+smaller than the field element size, and the resulting `data` array is of
+size 2.
+
+Similarly, the return data of the Cairo contract is deserialized into a
+`uint256[]` where each returned felt has been cast to a uint256.
 
 > Note: It is left to the responsibility of the wrapper contract developer to
 > ensure that the calldata is correctly serialized to match the Cairo contract's
