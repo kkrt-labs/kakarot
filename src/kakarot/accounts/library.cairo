@@ -182,8 +182,8 @@ namespace AccountContract {
         let (address) = Account_evm_address.read();
         let (tx_info) = get_tx_info();
 
-        // Assert signature field is of length 5: r_low, r_high, s_low, s_high, v
-        assert tx_info.signature_len = 5;
+        // Assert signature field is of length 6: r_low, r_high, s_low, s_high, v, retry field
+        assert tx_info.signature_len = 6;
         let r = Uint256(tx_info.signature[0], tx_info.signature[1]);
         let s = Uint256(tx_info.signature[2], tx_info.signature[3]);
         let v = tx_info.signature[4];
