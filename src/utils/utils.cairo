@@ -375,16 +375,6 @@ namespace Helpers {
         return felt_array_to_bytes32_array(input_len - 1, input + 1, output + 32);
     }
 
-    func _felt_array_to_bytes32_array{range_check_ptr}(
-        input_len: felt, input: felt*, output: felt*
-    ) {
-        if (input_len == 0) {
-            return ();
-        }
-        felt_to_bytes32(output, [input]);
-        return _felt_array_to_bytes32_array(input_len - 1, input + 1, output + 32);
-    }
-
     // @notice Divides a 128-bit number with remainder.
     // @dev This is almost identical to cairo.common.math.unsigned_dev_rem, but supports the case
     // @dev of div == 2**128 as well.

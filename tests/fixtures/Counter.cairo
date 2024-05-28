@@ -18,9 +18,9 @@ func inc{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
 
 @external
 func set_counter{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    new_counter_low: felt, new_counter_high: felt
+    new_counter: Uint256
 ) {
-    Counter.write(value=Uint256(new_counter_low, new_counter_high));
+    Counter.write(new_counter);
     return ();
 }
 
