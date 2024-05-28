@@ -5,8 +5,8 @@ library CairoLib {
     /// @dev The Cairo precompile contract's address.
     address constant CAIRO_PRECOMPILE_ADDRESS = 0x0000000000000000000000000000000000075001;
 
-    /// @dev Performs a low-level call to a Cairo contract deployed on the Starknet appchain.
-    /// @param contractAddress The address of the Cairo contract.
+    /// @notice Performs a low-level call to a Cairo contract deployed on the Starknet appchain.
+    /// @dev Used with intent to modify the state of the Cairo contract.
     /// @param functionSelector The function selector of the Cairo contract function to be called.
     /// @param data The input data for the Cairo contract function.
     /// @return returnData The return data from the Cairo contract function.
@@ -28,7 +28,8 @@ library CairoLib {
         returnData = result;
     }
 
-    /// @dev Performs a low-level call to a Cairo contract deployed on the Starknet appchain.
+    /// @notice Performs a low-level call to a Cairo contract deployed on the Starknet appchain.
+    /// @dev Used with intent to read the state of the Cairo contract.
     /// @param contractAddress The address of the Cairo contract.
     /// @param functionSelector The function selector of the Cairo contract function to be called.
     /// @param data The input data for the Cairo contract function.

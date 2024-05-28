@@ -4,7 +4,7 @@ pragma solidity >=0.7.0 <0.9.0;
 import "./CairoLib.sol";
 
 contract CairoCounterCaller  {
-    /// @dev The cairo contract to call - assuming it's deployed at address 0xabc
+    /// @dev The cairo contract to call
     uint256 cairoCounterAddress;
 
     /// @dev The cairo function selector to call - `inc`
