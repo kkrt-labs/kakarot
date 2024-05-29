@@ -104,6 +104,9 @@ library CairoLib {
 
 ```
 
+> The full library can be found in
+> [CairoLib.sol](../../solidity_contracts/src/CairoPrecompiles/CairoLib.sol)
+
 It contains three functions, `callContract`, `staticcallContract` and
 `libraryCall` that allow the user to call a Cairo contract or class deployed on
 the Starknet appchain. The method takes three arguments:
