@@ -109,7 +109,7 @@ ln -s <YOUR_PATH_TO_YOUR_PYTHON_VENV_BINARIES>/starknet-compile-deprecated <YOUR
 
 ## Build
 
-To build the Cairo files:
+To build the CairoZero files:
 
 ```bash
 make build
@@ -122,6 +122,14 @@ To build the test Solidity smart contracts:
 # curl -L https://foundry.paradigm.xyz | bash
 # foundryup
 make build-sol
+```
+
+To build the Cairo1 files:
+
+```bash
+# install scarb via ASDF if you haven't done it already
+# https://docs.swmansion.com/scarb/download.html#install-via-asdf
+make build-cairo1
 ```
 
 ## Code style

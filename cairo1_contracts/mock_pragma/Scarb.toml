@@ -1,0 +1,13 @@
+[package]
+name = "mock_pragma"
+version = "0.1.0"
+edition = "2023_10"
+
+# See more keys and their definitions at https://docs.swmansion.com/scarb/docs/reference/manifest.html
+
+[dependencies]
+starknet = "2.2.0"
+pragma = { git = "https://github.com/astraly-labs/pragma-oracle", tag = "v1.0.5" }
+
+[[target.starknet-contract]]
+casm = true
