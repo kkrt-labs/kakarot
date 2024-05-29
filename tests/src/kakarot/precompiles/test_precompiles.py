@@ -102,7 +102,19 @@ class TestPrecompiles:
                         bytes.fromhex(f"{0x01:064x}"),
                         False,
                     ),  # call_contract with return data
-                    # TODO! test library call
+                    (
+                        0x75001,
+                        bytes.fromhex(
+                            "5a9af197"
+                            + f"{0xc0de:064x}"
+                            + f"{get_selector_from_name('get'):064x}"
+                            + f"{0x60:064x}"  # data_offset
+                            + f"{0x01:064x}"  # data_len
+                            + f"{0x00:064x}"  # data
+                        ),
+                        bytes.fromhex(f"{0x00:064x}"),
+                        False,
+                    ),  # library call
                 ],
             )
             def test__cairo_precompiles(
@@ -124,7 +136,7 @@ class TestPrecompiles:
                     return_data, reverted, gas_used = cairo_run(
                         "test__precompiles_run", address=address, input=input_data
                     )
-                assert (reverted != 0) == expected_reverted
+                assert bool(reverted) == expected_reverted
                 assert bytes(return_data) == expected_return_data
                 assert gas_used == CAIRO_PRECOMPILE_GAS
 
