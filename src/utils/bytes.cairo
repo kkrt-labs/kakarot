@@ -97,6 +97,16 @@ func felt_to_bytes20{range_check_ptr}(dst: felt*, value: felt) {
     return ();
 }
 
+func felt_to_bytes32{range_check_ptr}(dst: felt*, value: felt) {
+    alloc_locals;
+    let (bytes32: felt*) = alloc();
+    let (high, low) = split_felt(value);
+    split_int(low, 16, 256, 256, bytes32);
+    split_int(high, 16, 256, 256, bytes32 + 16);
+    reverse(dst, 32, bytes32);
+    return ();
+}
+
 func uint256_to_bytes_little{range_check_ptr}(dst: felt*, n: Uint256) -> felt {
     alloc_locals;
     let (local highest_byte, safe_high) = unsigned_div_rem(n.high, 2 ** 120);
