@@ -282,14 +282,46 @@ def get_solidity_contract():
 
 
 @pytest.fixture
-def block_with_tx_hashes(starknet):
-    """
-    Not using starknet object because of
-    https://github.com/software-mansion/starknet.py/issues/1174.
-    """
+def block_number(starknet):
+    from kakarot_scripts.constants import WEB3
 
-    async def _factory(block_number: Optional[int] = None):
-        return await starknet.get_block_with_tx_hashes(block_number=block_number)
+    async def _factory(block_number: Optional[Union[int, str]] = "latest"):
+        if WEB3.is_connected():
+            return WEB3.eth.get_block(block_number).number
+
+        return (
+            await starknet.get_block_with_tx_hashes(block_number=block_number)
+        ).block_number
+
+    return _factory
+
+
+@pytest.fixture
+def block_timestamp(starknet):
+    from kakarot_scripts.constants import WEB3
+
+    async def _factory(block_number: Optional[Union[int, str]] = "latest"):
+        if WEB3.is_connected():
+            return WEB3.eth.get_block(block_number).timestamp
+
+        return (
+            await starknet.get_block_with_tx_hashes(block_number=block_number)
+        ).timestamp
+
+    return _factory
+
+
+@pytest.fixture
+def block_hash(starknet):
+    from kakarot_scripts.constants import WEB3
+
+    async def _factory(block_number: Optional[Union[int, str]] = "latest"):
+        if WEB3.is_connected():
+            return WEB3.eth.get_block(block_number).hash
+
+        return (
+            await starknet.get_block_with_tx_hashes(block_number=block_number)
+        ).block_hash
 
     return _factory
 
