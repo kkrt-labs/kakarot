@@ -45,7 +45,7 @@ test: build-sol deploy
 test-unit: build-sol
 	poetry run pytest tests/src -m "not NoCI" -n logical
 
-test-end-to-end: build-sol deploy
+test-end-to-end: build-sol build-cairo1 deploy
 	poetry run pytest tests/end_to_end
 
 deploy: build

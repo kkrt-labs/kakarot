@@ -19,7 +19,7 @@ from starknet_py.net.models.transaction import InvokeV1
 from starknet_py.net.signer.stark_curve_signer import KeyPair
 from starkware.starknet.public.abi import starknet_keccak
 from web3 import Web3
-from web3._utils.abi import map_abi_data
+from web3._utils.abi import get_abi_output_types, map_abi_data
 from web3._utils.events import get_event_data
 from web3._utils.normalizers import BASE_RETURN_NORMALIZERS
 from web3.contract import Contract as Web3Contract
@@ -288,7 +288,7 @@ def _wrap_kakarot(fun: str, caller_eoa: Optional[Account] = None):
                 if result.success == 0:
                     raise EvmTransactionError(bytes(result.return_data))
                 result = result.return_data
-            types = [o["type"] for o in abi["outputs"]]
+            types = get_abi_output_types(abi)
             decoded = decode(types, bytes(result))
             normalized = map_abi_data(BASE_RETURN_NORMALIZERS, types, decoded)
             return normalized[0] if len(normalized) == 1 else normalized

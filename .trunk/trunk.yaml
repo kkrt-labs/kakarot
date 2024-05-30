@@ -56,6 +56,7 @@ lint:
       paths: [poetry.lock]
     - linters: [ALL]
       paths:
+        - cairo1_contracts
         - logs*
         - lib*
         - resources*

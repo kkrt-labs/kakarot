@@ -204,6 +204,7 @@ DECLARED_CONTRACTS = [
     {"contract_name": "Cairo1HelpersFixture", "cairo_version": ArtifactType.cairo1},
     {"contract_name": "replace_class", "cairo_version": ArtifactType.cairo0},
     {"contract_name": "Counter", "cairo_version": ArtifactType.cairo0},
+    {"contract_name": "MockPragmaOracle", "cairo_version": ArtifactType.cairo1},
 ]
 
 EVM_PRIVATE_KEY = os.getenv("EVM_PRIVATE_KEY")

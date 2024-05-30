@@ -86,6 +86,7 @@ async def main():
             BLOCK_GAS_LIMIT,
         )
         deployments["Counter"] = await deploy("Counter")
+        deployments["MockPragmaOracle"] = await deploy("MockPragmaOracle")
 
     dump_deployments(deployments)
 

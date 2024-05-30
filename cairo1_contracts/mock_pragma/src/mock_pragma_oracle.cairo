@@ -37,12 +37,36 @@ mod MockPragmaOracle {
     #[external(v0)]
     impl IPragmaOracleImpl of IOracle<ContractState> {
         fn get_data_median(self: @ContractState, data_type: DataType) -> PragmaPricesResponse {
-            PragmaPricesResponse {
-                price: self.price.read(),
-                decimals: self.decimals.read(),
-                last_updated_timestamp: self.last_updated_timestamp.read(),
-                num_sources_aggregated: self.num_sources_aggregated.read(),
-                expiration_timestamp: Option::None,
+            match data_type {
+                DataType::SpotEntry => {
+                    PragmaPricesResponse {
+                        price: self.price.read(),
+                        decimals: self.decimals.read(),
+                        last_updated_timestamp: self.last_updated_timestamp.read(),
+                        num_sources_aggregated: self.num_sources_aggregated.read(),
+                        expiration_timestamp: Option::None,
+                    }
+                },
+                DataType::FutureEntry => {
+                    PragmaPricesResponse {
+                        price: self.price.read(),
+                        decimals: self.decimals.read(),
+                        last_updated_timestamp: self.last_updated_timestamp.read(),
+                        num_sources_aggregated: self.num_sources_aggregated.read(),
+                        expiration_timestamp: Option::Some(
+                            self.last_updated_timestamp.read() + 1000
+                        ),
+                    }
+                },
+                DataType::GenericEntry => {
+                    PragmaPricesResponse {
+                        price: self.price.read(),
+                        decimals: self.decimals.read(),
+                        last_updated_timestamp: self.last_updated_timestamp.read(),
+                        num_sources_aggregated: self.num_sources_aggregated.read(),
+                        expiration_timestamp: Option::None,
+                    }
+                }
             }
         }
     }

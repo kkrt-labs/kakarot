@@ -11,3 +11,4 @@ pragma = { git = "https://github.com/astraly-labs/pragma-oracle", tag = "v1.0.5"
 
 [[target.starknet-contract]]
 casm = true
+casm-add-pythonic-hints = true
