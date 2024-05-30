@@ -2,6 +2,7 @@ import re
 from contextlib import contextmanager
 
 import pytest
+from web3 import Web3
 
 
 @contextmanager
@@ -13,7 +14,8 @@ def evm_error(message=None):
         # FIXME: When all the other Kakarot errors are fixed (e.g. Kakarot: StateModificationError)
         # FIXME: uncomment this
         # assert e.typename == "EvmTransactionError"
-        if message is None:
+        # When Web3 is connected, it's not possible to have the return_data so we skip the check
+        if message is None or Web3().is_connected():
             return
         revert_reason = bytes(e.value.args[0])
         message = message.encode() if isinstance(message, str) else message

@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from eth_keys import keys
 from starknet_py.net.full_node_client import FullNodeClient
 from starknet_py.net.models.chains import StarknetChainId
+from web3 import Web3
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -127,6 +128,7 @@ if NETWORK["private_key"] is None:
     NETWORK["private_key"] = os.getenv("PRIVATE_KEY")
 
 RPC_CLIENT = FullNodeClient(node_url=NETWORK["rpc_url"])
+WEB3 = Web3()
 
 try:
     response = requests.post(

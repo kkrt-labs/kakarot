@@ -36,7 +36,7 @@ class TestUniswapV2ERC20:
                     other.address, TEST_AMOUNT, caller_eoa=owner.starknet_contract
                 )
             )["receipt"]
-            events = token_a.events.parse_starknet_events(receipt.events)
+            events = token_a.events.parse_events(receipt)
             assert events["Approval"] == [
                 {
                     "owner": owner.address,
@@ -56,7 +56,7 @@ class TestUniswapV2ERC20:
                     other.address, TEST_AMOUNT, caller_eoa=owner.starknet_contract
                 )
             )["receipt"]
-            events = token_a.events.parse_starknet_events(receipt.events)
+            events = token_a.events.parse_events(receipt)
             assert events["Transfer"] == [
                 {
                     "from": owner.address,
@@ -98,7 +98,7 @@ class TestUniswapV2ERC20:
                     caller_eoa=other.starknet_contract,
                 )
             )["receipt"]
-            events = token_a.events.parse_starknet_events(receipt.events)
+            events = token_a.events.parse_events(receipt)
             assert events["Transfer"] == [
                 {"from": owner.address, "to": other.address, "value": TEST_AMOUNT}
             ]
@@ -121,7 +121,7 @@ class TestUniswapV2ERC20:
                     caller_eoa=other.starknet_contract,
                 )
             )["receipt"]
-            events = token_a.events.parse_starknet_events(receipt.events)
+            events = token_a.events.parse_events(receipt)
             assert events["Transfer"] == [
                 {"from": owner.address, "to": other.address, "value": TEST_AMOUNT}
             ]
@@ -158,7 +158,7 @@ class TestUniswapV2ERC20:
                     caller_eoa=owner.starknet_contract,
                 )
             )["receipt"]
-            events = token_a.events.parse_starknet_events(receipt.events)
+            events = token_a.events.parse_events(receipt)
             assert events["Approval"] == [
                 {"owner": owner.address, "spender": other.address, "value": TEST_AMOUNT}
             ]

@@ -1,6 +1,7 @@
 """
 Copied from cairo_coverage.
 """
+
 from collections import defaultdict
 from dataclasses import dataclass
 from os import get_terminal_size

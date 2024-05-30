@@ -5,6 +5,7 @@ from pathlib import Path
 from types import MethodType
 from typing import List, Optional, Union, cast
 
+from eth_abi import decode
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_account import Account as EvmAccount
 from eth_account._utils.typed_transactions import TypedTransaction
@@ -13,7 +14,7 @@ from eth_utils.address import to_checksum_address
 from hexbytes import HexBytes
 from starknet_py.net.account.account import Account
 from starknet_py.net.client_errors import ClientError
-from starknet_py.net.client_models import Call, Event
+from starknet_py.net.client_models import Call
 from starknet_py.net.models.transaction import InvokeV1
 from starknet_py.net.signer.stark_curve_signer import KeyPair
 from starkware.starknet.public.abi import starknet_keccak
@@ -26,7 +27,13 @@ from web3.contract.contract import ContractEvents
 from web3.exceptions import LogTopicError, MismatchedABI, NoABIFunctionsFound
 from web3.types import LogReceipt
 
-from kakarot_scripts.constants import EVM_ADDRESS, EVM_PRIVATE_KEY, NETWORK, RPC_CLIENT
+from kakarot_scripts.constants import (
+    EVM_ADDRESS,
+    EVM_PRIVATE_KEY,
+    NETWORK,
+    RPC_CLIENT,
+    WEB3,
+)
 from kakarot_scripts.utils.starknet import call as _call_starknet
 from kakarot_scripts.utils.starknet import fund_address as _fund_starknet_address
 from kakarot_scripts.utils.starknet import get_contract as _get_starknet_contract
@@ -133,7 +140,7 @@ def get_contract(
 
     contract = cast(
         Web3Contract,
-        Web3().eth.contract(
+        WEB3.eth.contract(
             address=to_checksum_address(address) if address is not None else address,
             abi=artifacts["abi"],
             bytecode=artifacts["bytecode"],
@@ -146,7 +153,7 @@ def get_contract(
             setattr(contract, fun, MethodType(_wrap_kakarot(fun, caller_eoa), contract))
     except NoABIFunctionsFound:
         pass
-    contract.events.parse_starknet_events = MethodType(_parse_events, contract.events)
+    contract.events.parse_events = MethodType(_parse_events, contract.events)
     return contract
 
 
@@ -169,7 +176,13 @@ async def deploy(
     if success == 0:
         raise EvmTransactionError(bytes(response))
 
-    starknet_address, evm_address = response
+    if WEB3.is_connected():
+        evm_address = int(receipt.contractAddress or receipt.to, 16)
+        starknet_address = (
+            await _call_starknet("kakarot", "compute_starknet_address", evm_address)
+        ).contract_address
+    else:
+        starknet_address, evm_address = response
     contract.address = Web3.to_checksum_address(f"0x{evm_address:040x}")
     contract.starknet_address = starknet_address
     logger.info(f"✅ {contract_name} deployed at address {contract.address}")
@@ -177,14 +190,17 @@ async def deploy(
     return contract
 
 
-def _parse_events(cls: ContractEvents, starknet_events: List[Event]):
+def get_log_receipts(tx_receipt):
+    if WEB3.is_connected():
+        return tx_receipt.logs
+
     kakarot_address = get_deployments()["kakarot"]["address"]
     kakarot_events = [
         event
-        for event in starknet_events
+        for event in tx_receipt.events
         if event.from_address == kakarot_address and event.keys[0] < 2**160
     ]
-    log_receipts = [
+    return [
         LogReceipt(
             address=to_checksum_address(f"0x{event.keys[0]:040x}"),
             blockHash=bytes(),
@@ -209,6 +225,10 @@ def _parse_events(cls: ContractEvents, starknet_events: List[Event]):
         for log_index, event in enumerate(kakarot_events)
     ]
 
+
+def _parse_events(cls: ContractEvents, tx_receipt):
+    log_receipts = get_log_receipts(tx_receipt)
+
     return {
         event_abi.get("name"): _get_matching_logs_for_event(event_abi, log_receipts)
         for event_abi in cls._events
@@ -217,10 +237,9 @@ def _parse_events(cls: ContractEvents, starknet_events: List[Event]):
 
 def _get_matching_logs_for_event(event_abi, log_receipts) -> List[dict]:
     logs = []
-    codec = Web3().codec
     for log_receipt in log_receipts:
         try:
-            event_data = get_event_data(codec, event_abi, log_receipt)
+            event_data = get_event_data(WEB3.codec, event_abi, log_receipt)
             logs += [event_data["args"]]
         except (MismatchedABI, LogTopicError, InsufficientDataBytes):
             pass
@@ -242,30 +261,35 @@ def _wrap_kakarot(fun: str, caller_eoa: Optional[Account] = None):
         )._encode_transaction_data()
 
         if abi["stateMutability"] in ["pure", "view"]:
-            kakarot_contract = _get_starknet_contract("kakarot")
             origin = (
                 int(caller_eoa_.signer.public_key.to_address(), 16)
                 if caller_eoa_
                 else int(EVM_ADDRESS, 16)
             )
-            result = await kakarot_contract.functions["eth_call"].call(
-                nonce=0,
-                origin=origin,
-                to={
-                    "is_some": 1,
-                    "value": int(self.address, 16),
-                },
-                gas_limit=gas_limit,
-                gas_price=gas_price,
-                value=value,
-                data=list(HexBytes(calldata)),
-                access_list=[],
-            )
-            if result.success == 0:
-                raise EvmTransactionError(bytes(result.return_data))
-            codec = Web3().codec
+            payload = {
+                "nonce": 0,
+                "from": Web3.to_checksum_address(f"{origin:040x}"),
+                "to": self.address,
+                "gas_limit": gas_limit,
+                "gas_price": gas_price,
+                "value": value,
+                "data": HexBytes(calldata),
+                "access_list": [],
+            }
+            if WEB3.is_connected():
+                result = WEB3.eth.call(payload)
+            else:
+                kakarot_contract = _get_starknet_contract("kakarot")
+                payload["to"] = {"is_some": 1, "value": int(payload["to"], 16)}
+                payload["data"] = list(payload["data"])
+                payload["origin"] = int(payload["from"], 16)
+                del payload["from"]
+                result = await kakarot_contract.functions["eth_call"].call(**payload)
+                if result.success == 0:
+                    raise EvmTransactionError(bytes(result.return_data))
+                result = result.return_data
             types = [o["type"] for o in abi["outputs"]]
-            decoded = codec.decode(types, bytes(result.return_data))
+            decoded = decode(types, bytes(result))
             normalized = map_abi_data(BASE_RETURN_NORMALIZERS, types, decoded)
             return normalized[0] if len(normalized) == 1 else normalized
 
@@ -328,7 +352,12 @@ async def eth_send_transaction(
 ):
     """Execute the data at the EVM contract to on Kakarot."""
     evm_account = caller_eoa or await get_eoa()
-    nonce = await evm_account.get_nonce()
+    if WEB3.is_connected():
+        nonce = WEB3.eth.get_transaction_count(
+            evm_account.signer.public_key.to_checksum_address()
+        )
+    else:
+        nonce = await evm_account.get_nonce()
 
     payload = {
         "type": 0x2,
@@ -336,7 +365,7 @@ async def eth_send_transaction(
         "nonce": nonce,
         "gas": gas,
         "maxPriorityFeePerGas": 1,
-        "maxFeePerGas": 1,
+        "maxFeePerGas": 100,
         "to": to_checksum_address(to) if to else None,
         "value": value,
         "data": data,
@@ -348,6 +377,11 @@ async def eth_send_transaction(
         typed_transaction.as_dict(),
         hex(evm_account.signer.private_key),
     )
+
+    if WEB3.is_connected():
+        tx_hash = WEB3.eth.send_raw_transaction(evm_tx.rawTransaction)
+        receipt = WEB3.eth.wait_for_transaction_receipt(tx_hash)
+        return receipt, [], receipt.status, receipt.gasUsed
 
     encoded_unsigned_tx = rlp_encode_signed_data(typed_transaction.as_dict())
 

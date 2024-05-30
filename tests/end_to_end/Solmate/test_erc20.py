@@ -215,7 +215,7 @@ class TestERC20:
                     caller_eoa=owner.starknet_contract,
                 )
             )["receipt"]
-            events = erc_20.events.parse_starknet_events(receipt.events)
+            events = erc_20.events.parse_events(receipt)
 
             assert events["Approval"] == [
                 {
@@ -255,12 +255,12 @@ class TestERC20:
                 )
 
         async def test_permit_should_fail_with_bad_deadline(
-            self, erc_20, block_with_tx_hashes, owner, other
+            self, erc_20, block_timestamp, owner, other
         ):
             nonce = await erc_20.nonces(owner.address)
 
-            pending_timestamp = (await block_with_tx_hashes("pending")).timestamp
-            deadline = pending_timestamp - 1
+            pending_timestamp = await block_timestamp("latest")
+            deadline = pending_timestamp - 10
             digest = get_approval_digest(
                 "Kakarot Token",
                 erc_20.address,
