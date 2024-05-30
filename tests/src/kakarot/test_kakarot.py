@@ -3,11 +3,10 @@ from types import MethodType
 from unittest.mock import PropertyMock, patch
 
 import pytest
-from eth_abi import encode
+from eth_abi import decode, encode
 from eth_utils import keccak
 from eth_utils.address import to_checksum_address
 from starkware.starknet.public.abi import get_storage_var_address
-from web3 import Web3
 from web3._utils.abi import map_abi_data
 from web3._utils.normalizers import BASE_RETURN_NORMALIZERS
 from web3.exceptions import NoABIFunctionsFound
@@ -51,9 +50,8 @@ def get_contract(cairo_run):
                 if abi["stateMutability"] not in ["pure", "view"]:
                     return evm, state, gas
 
-                codec = Web3().codec
                 types = [o["type"] for o in abi["outputs"]]
-                decoded = codec.decode(types, bytes(evm["return_data"]))
+                decoded = decode(types, bytes(evm["return_data"]))
                 normalized = map_abi_data(BASE_RETURN_NORMALIZERS, types, decoded)
                 return normalized[0] if len(normalized) == 1 else normalized
 
