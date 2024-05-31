@@ -46,7 +46,7 @@ Kakarot is a work in progress, and it is not ready for production.
 
 ## Supported opcodes
 
-We support 100% of EVM [opcodes](docs/supported_opcodes.md) and 6 out of 9
+We support 100% of EVM opcodes and 6 out of 9
 precompiles.
 
 ## Documentation
