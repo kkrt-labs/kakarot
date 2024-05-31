@@ -240,15 +240,42 @@ namespace StopAndMathOperations {
         jmp end;
 
         addmod_not_zero:
-        // (a + b) mod n  = (a mod n + b mod n)mod n
+        // (a + b) mod n  = (a mod n + b mod n) mod n
         let (_, a_mod_n) = uint256_unsigned_div_rem(popped[0], popped[2]);
         let (_, b_mod_n) = uint256_unsigned_div_rem(popped[1], popped[2]);
         let (sum, carry) = uint256_add(a_mod_n, b_mod_n);
-        let (_, result) = uint256_unsigned_div_rem(sum, popped[2]);
+
+        if (carry != 0) {
+            // If the sum has overflown, we carry on the (2**256 % n) to the sum.
+            let max_u256 = Uint256(ALL_ONES, ALL_ONES);
+            let (_, overflow_mod_n) = uint256_unsigned_div_rem(max_u256, popped[2]);
+
+            // We computed (2**256 - 1) % n, add 1 to get (2**256 % n)
+            let (n_min_one) = uint256_sub(popped[2], Uint256(1, 0));
+            let (is_n_min_one) = uint256_eq(n_min_one, overflow_mod_n);
+            if (is_n_min_one != 0) {
+                tempvar overflow_mod_n = Uint256(0, 0);
+                tempvar range_check_ptr = range_check_ptr;
+            } else {
+                let (overflow_mod_n_, _) = uint256_add(overflow_mod_n, Uint256(1, 0));
+                tempvar overflow_mod_n = overflow_mod_n_;
+                tempvar range_check_ptr = range_check_ptr;
+            }
+
+            let (adjusted_sum, carry2) = uint256_add(sum, overflow_mod_n);
+            with_attr error_message("Addmod: carry2 was set") {
+                assert carry2 = 0;
+            }
+            tempvar bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
+            tempvar range_check_ptr = range_check_ptr;
+            tempvar result = adjusted_sum;
+            jmp end;
+        }
+
+        let (_, sum_mod_n) = uint256_unsigned_div_rem(sum, popped[2]);
         tempvar bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
         tempvar range_check_ptr = range_check_ptr;
-        tempvar result = result;
-
+        tempvar result = sum_mod_n;
         jmp end;
 
         MULMOD:

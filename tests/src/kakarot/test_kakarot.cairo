@@ -17,6 +17,7 @@ func eth_call{
     tempvar to: model.Option;
     tempvar gas_limit;
     tempvar gas_price;
+    tempvar nonce;
     let (value_ptr) = alloc();
     tempvar data_len: felt;
     let (data) = alloc();
@@ -32,6 +33,7 @@ func eth_call{
         ids.to.value = program_input.get("to", 0)
         ids.gas_limit = program_input.get("gas_limit", int(2**63 - 1))
         ids.gas_price = program_input.get("gas_price", 0)
+        ids.nonce = program_input.get("nonce", 0)
         segments.write_arg(ids.value_ptr, int_to_uint256(program_input.get("value", 0)))
         data = bytes.fromhex(program_input.get("data", "").replace("0x", ""))
         ids.data_len = len(data)
@@ -40,7 +42,7 @@ func eth_call{
     %}
 
     let (evm, state, gas_used, _) = Kakarot.eth_call(
-        nonce=0,
+        nonce=nonce,
         origin=origin,
         to=to,
         gas_limit=gas_limit,
