@@ -288,6 +288,31 @@ namespace Kakarot {
         return ();
     }
 
+    // @notice Writes to an account's bytecode
+    // @param evm_address The evm address of the account.
+    // @param bytecode_len The length of the bytecode.
+    // @param bytecode The bytecode to write.
+    func write_account_bytecode{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        evm_address: felt, bytecode_len: felt, bytecode: felt*
+    ) {
+        alloc_locals;
+        let starknet_address = Account.compute_starknet_address(evm_address);
+        IAccount.write_bytecode(starknet_address, bytecode_len, bytecode);
+        return ();
+    }
+
+    // @notice Writes to an account's nonce
+    // @param evm_address The evm address of the account.
+    // @param nonce The nonce to write.
+    func write_account_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        evm_address: felt, nonce: felt
+    ) {
+        alloc_locals;
+        let starknet_address = Account.compute_starknet_address(evm_address);
+        IAccount.set_nonce(starknet_address, nonce);
+        return ();
+    }
+
     // @notice Get the EVM address from the transaction
     // @dev When to=None, it's a deploy tx so we first compute the target address
     // @param to The transaction to parameter

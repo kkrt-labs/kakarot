@@ -6,6 +6,7 @@ import pytest_asyncio
 from starknet_py.contract import Contract
 from starknet_py.net.full_node_client import FullNodeClient
 
+from kakarot_scripts.utils.kakarot import get_solidity_artifacts
 from kakarot_scripts.utils.starknet import wait_for_transaction
 from tests.end_to_end.bytecodes import test_cases
 from tests.utils.constants import PRE_FUND_AMOUNT, TRANSACTION_GAS_LIMIT
@@ -216,6 +217,62 @@ class TestKakarot:
             receipt = await starknet.get_transaction_receipt(tx.hash)
             assert receipt.execution_status.name == "REVERTED"
             assert "Kakarot: account already registered" in receipt.revert_reason
+
+    class TestSetAccountStorage:
+        async def test_should_set_account_bytecode(
+            self,
+            starknet: FullNodeClient,
+            deploy_externally_owned_account,
+            invoke,
+            compute_starknet_address,
+            get_contract,
+            random_seed,
+        ):
+            counter_artifacts = get_solidity_artifacts("PlainOpcodes", "Counter")
+            evm_address = generate_random_evm_address(random_seed)
+            await compute_starknet_address(evm_address)
+            await deploy_externally_owned_account(evm_address)
+
+            bytecode = list(bytes.fromhex(counter_artifacts["bytecode"][2:]))
+            await invoke(
+                "kakarot",
+                "write_account_bytecode",
+                int(evm_address, 16),
+                bytecode,
+            )
+
+            eoa = get_contract(
+                "account_contract", address=await compute_starknet_address(evm_address)
+            )
+            stored_code = (await eoa.functions["bytecode"].call()).bytecode
+            assert stored_code == bytecode
+
+        async def test_should_set_account_nonce(
+            self,
+            starknet: FullNodeClient,
+            deploy_externally_owned_account,
+            invoke,
+            compute_starknet_address,
+            get_contract,
+            random_seed,
+        ):
+            evm_address = generate_random_evm_address(random_seed)
+            await compute_starknet_address(evm_address)
+            await deploy_externally_owned_account(evm_address)
+            eoa = get_contract(
+                "account_contract", address=await compute_starknet_address(evm_address)
+            )
+            prev_nonce = (await eoa.functions["get_nonce"].call()).nonce
+
+            await invoke(
+                "kakarot",
+                "write_account_nonce",
+                int(evm_address, 16),
+                prev_nonce + 1,
+            )
+
+            stored_nonce = (await eoa.functions["get_nonce"].call()).nonce
+            assert stored_nonce == prev_nonce + 1
 
     class TestEthCallNativeCoinTransfer:
         async def test_eth_call_should_succeed(
