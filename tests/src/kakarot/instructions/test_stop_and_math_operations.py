@@ -21,7 +21,34 @@ class TestStopMathOperations:
                 (Opcodes.MOD, [3, 2, 1], 3 % 2),
                 (Opcodes.SMOD, [3, 2, 1], 3 % 2),
                 (Opcodes.ADDMOD, [3, 2, 2], (3 + 2) % 2),
-                (Opcodes.MULMOD, [3, 2, 2], (3 * 2) % 2),
+                (Opcodes.ADDMOD, [3, 2, 2], (3 + 2) % 2),
+                (
+                    Opcodes.ADDMOD,
+                    [
+                        0x92343C8FA1D4651383994E908DC7A65B8AE59BB5161379B3B4D8EB2881C3A8A1,
+                        0x9F728D298865647B33FBBEF974967E10D881FCCA251FB1FB72F314033E17E76A,
+                        0xFFFFFFFF00000001000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFF,
+                    ],
+                    0x31A6C9BA2A39C98DB7950D8A025E246C6367987E3B332BAF27CBFF2BBFDB900C,
+                ),
+                (
+                    Opcodes.MULMOD,
+                    [
+                        0xCAD9D0F127DE33D7EEAC15ACD9232B4FB7D4ABBD9E4AC4AC2F044EA995F80831,
+                        0xCAD9D0F127DE33D7EEAC15ACD9232B4FB7D4ABBD9E4AC4AC2F044EA995F80831,
+                        0xFFFFFFFF00000001000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFF,
+                    ],
+                    0xE6228DFC2D312EF258CB5EA9536EBAD8D6EDE5BE03564700D6878D191844E865,
+                ),
+                (
+                    Opcodes.MULMOD,
+                    [
+                        0xE6228DFC2D312EF258CB5EA9536EBAD8D6EDE5BE03564700D6878D191844E865,
+                        0xCAD9D0F127DE33D7EEAC15ACD9232B4FB7D4ABBD9E4AC4AC2F044EA995F80831,
+                        0xFFFFFFFF00000001000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFF,
+                    ],
+                    0x92343C8FA1D4651383994E908DC7A65B8AE59BB5161379B3B4D8EB2881C3A8A1,
+                ),
                 (Opcodes.EXP, [3, 2], (3**2)),
                 (Opcodes.EXP, [3, 1], (3**1)),
                 (Opcodes.EXP, [3, 0], (3**0)),

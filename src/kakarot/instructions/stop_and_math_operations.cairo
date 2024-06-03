@@ -240,15 +240,40 @@ namespace StopAndMathOperations {
         jmp end;
 
         addmod_not_zero:
-        // (a + b) mod n  = (a mod n + b mod n)mod n
-        let (_, a_mod_n) = uint256_unsigned_div_rem(popped[0], popped[2]);
-        let (_, b_mod_n) = uint256_unsigned_div_rem(popped[1], popped[2]);
-        let (sum, carry) = uint256_add(a_mod_n, b_mod_n);
-        let (_, result) = uint256_unsigned_div_rem(sum, popped[2]);
+        // (a + b) mod n  = (a mod n + b mod n) mod n
+        let (_, x) = uint256_unsigned_div_rem(popped[0], popped[2]);
+        let (_, y) = uint256_unsigned_div_rem(popped[1], popped[2]);
+        // x, y in range [0, n-1] thus:
+        // if x + y < n then x + y mod n = x + y
+        // if x + y >= n then x + y mod n = x + y - n
+        let (sum, carry) = uint256_add(x, y);
+
+        if (carry != 0) {
+            // result = (2**256) - (n - overflown_sum)
+            // <=> result = (2**256 - 1) - (n - overflown_sum - 1)
+            // as n > overflown_sum we can't have an underflow
+            let max_u256 = Uint256(ALL_ONES, ALL_ONES);
+            let (overflown_part) = uint256_sub(popped[2], sum);
+            let (to_remove) = uint256_sub(overflown_part, Uint256(1, 0));
+            let (result) = uint256_sub(max_u256, to_remove);
+            tempvar bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
+            tempvar range_check_ptr = range_check_ptr;
+            tempvar result = result;
+            jmp end;
+        }
+
+        let (is_sum_lt_n) = uint256_lt(sum, popped[2]);
+        if (is_sum_lt_n != 0) {
+            tempvar bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
+            tempvar range_check_ptr = range_check_ptr;
+            tempvar result = sum;
+            jmp end;
+        }
+
+        let (result) = uint256_sub(sum, popped[2]);
         tempvar bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
         tempvar range_check_ptr = range_check_ptr;
         tempvar result = result;
-
         jmp end;
 
         MULMOD:
