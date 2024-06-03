@@ -69,8 +69,6 @@ func execute{
         env=env,
         address=address,
         is_deploy_tx=0,
-        bytecode_len=bytecode_len,
-        bytecode=bytecode,
         calldata_len=calldata_len,
         calldata=calldata,
         value=value,

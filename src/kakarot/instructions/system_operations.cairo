@@ -22,6 +22,7 @@ from kakarot.account import Account
 from kakarot.interfaces.interfaces import IAccount, ICairo1Helpers
 from kakarot.constants import Constants
 from kakarot.errors import Errors
+from kakarot.patches import patched_address
 from kakarot.evm import EVM
 from kakarot.gas import Gas
 from kakarot.memory import Memory
@@ -1195,7 +1196,8 @@ namespace CallHelper {
         Memory.load_n(args_size.low, calldata, args_offset.low);
 
         // 2. Build child_evm
-
+        // !TEMPORARY: patch the address code of the arachnid proxy
+        let code_address = patched_address(code_address);
         let code_account = State.get_account(code_address);
         local code_len: felt = code_account.code_len;
         local code: felt* = code_account.code;

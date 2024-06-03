@@ -21,6 +21,8 @@ from kakarot.storages import (
     Kakarot_prev_randao,
     Kakarot_block_gas_limit,
     Kakarot_evm_to_starknet_address,
+    Kakarot_patched_addresses,
+    Kakarot_original_patched_addresses,
 )
 from kakarot.events import evm_contract_deployed
 from kakarot.interpreter import Interpreter
@@ -97,16 +99,12 @@ namespace Kakarot {
             starknet=starknet_contract_address, evm=evm_contract_address
         );
 
-        let (bytecode_len, bytecode) = Starknet.get_bytecode(address.evm);
-
         let env = Starknet.get_env(origin, gas_price);
 
         let (evm, stack, memory, state, gas_used, required_gas) = Interpreter.execute(
             env,
             address,
             is_deploy_tx,
-            bytecode_len,
-            bytecode,
             data_len,
             data,
             value,
@@ -328,5 +326,23 @@ namespace Kakarot {
         }
 
         return (evm_address=evm_address);
+    }
+
+    func set_patched_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        origin_address: felt, patched_address: felt
+    ) {
+        let (current_patch) = Kakarot_patched_addresses.read(origin_address);
+        Kakarot_patched_addresses.write(origin_address, patched_address);
+        if (patched_address != 0) {
+            Kakarot_original_patched_addresses.write(patched_address, origin_address);
+        }
+        return ();
+    }
+
+    func get_patched_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        origin_address: felt
+    ) -> (patched_address: felt) {
+        let (patched_address) = Kakarot_patched_addresses.read(origin_address);
+        return (patched_address=patched_address);
     }
 }

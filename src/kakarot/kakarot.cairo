@@ -191,6 +191,21 @@ func get_cairo1_helpers_class_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin
     return Kakarot.get_cairo1_helpers_class_hash();
 }
 
+@external
+func set_patched_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    origin_address: felt, patched_address: felt
+) {
+    Ownable.assert_only_owner();
+    return Kakarot.set_patched_address(origin_address, patched_address);
+}
+
+@view
+func get_patched_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    origin_address: felt
+) -> (patched_address: felt) {
+    return Kakarot.get_patched_address(origin_address);
+}
+
 // @notice Returns the registered starknet address for a given EVM address.
 // @dev Returns 0 if no contract is deployed for this EVM address.
 // @param evm_address The EVM address to transform to a starknet address

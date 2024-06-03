@@ -39,3 +39,11 @@ func Kakarot_prev_randao() -> (res: Uint256) {
 @storage_var
 func Kakarot_block_gas_limit() -> (res: felt) {
 }
+
+@storage_var
+func Kakarot_patched_addresses(evm_address: felt) -> (patch: felt) {
+}
+
+@storage_var
+func Kakarot_original_patched_addresses(patch: felt) -> (original: felt) {
+}

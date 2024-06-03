@@ -16,6 +16,8 @@ from starkware.cairo.common.math import unsigned_div_rem
 from starkware.starknet.common.syscalls import get_tx_info
 
 // Internal dependencies
+from backend.starknet import Starknet
+from kakarot.patches import patched_address
 from kakarot.account import Account
 from kakarot.constants import opcodes_label, Constants
 from kakarot.errors import Errors
@@ -770,8 +772,6 @@ namespace Interpreter {
         env: model.Environment*,
         address: model.Address*,
         is_deploy_tx: felt,
-        bytecode_len: felt,
-        bytecode: felt*,
         calldata_len: felt,
         calldata: felt*,
         value: Uint256*,
@@ -790,40 +790,49 @@ namespace Interpreter {
         let calldata_gas = zeroes * 4 + count * 16;
         let intrinsic_gas = Gas.TX_BASE_COST + calldata_gas;
 
-        // If is_deploy_tx is TRUE, then
-        // bytecode is data and data is empty
-        // else, bytecode and data are kept as is
-        let bytecode_len = calldata_len * is_deploy_tx + bytecode_len * (1 - is_deploy_tx);
-        let calldata_len = calldata_len * (1 - is_deploy_tx);
-
-        let tmp_bytecode = bytecode;
         let tmp_calldata = calldata;
+        let tmp_calldata_len = calldata_len;
         let tmp_intrinsic_gas = intrinsic_gas;
+        local bytecode_len: felt;
         local bytecode: felt*;
+        local calldata_len: felt;
         local calldata: felt*;
         local intrinsic_gas: felt;
         local code_address: felt;
         if (is_deploy_tx != FALSE) {
+            assert bytecode_len = tmp_calldata_len;
+            assert bytecode = tmp_calldata;
+            assert calldata_len = 0;
             let (empty: felt*) = alloc();
+            assert calldata = empty;
             let (init_code_words, _) = unsigned_div_rem(bytecode_len + 31, 32);
             let init_code_gas = Gas.INIT_CODE_WORD_COST * init_code_words;
-            assert bytecode = tmp_calldata;
-            assert calldata = empty;
             assert intrinsic_gas = tmp_intrinsic_gas + Gas.CREATE + init_code_gas;
             assert code_address = 0;
             let (valid_jumpdests_start, valid_jumpdests) = Helpers.initialize_jumpdests(
                 bytecode_len=bytecode_len, bytecode=bytecode
             );
+            tempvar syscall_ptr = syscall_ptr;
+            tempvar pedersen_ptr = pedersen_ptr;
             tempvar range_check_ptr = range_check_ptr;
             tempvar valid_jumpdests_start = valid_jumpdests_start;
             tempvar valid_jumpdests = valid_jumpdests;
         } else {
-            assert bytecode = tmp_bytecode;
+            // !TEMPORARY: patch the address code of the arachnid proxy
+            let code_address_ = patched_address(address.evm);
+            assert code_address = code_address_;
+
+            let (bytecode_len_, bytecode_) = Starknet.get_bytecode(code_address);
+            let (new_dict) = default_dict_new(0);
+
+            assert calldata_len = tmp_calldata_len;
             assert calldata = tmp_calldata;
             assert intrinsic_gas = tmp_intrinsic_gas;
-            assert code_address = address.evm;
+            assert bytecode_len = bytecode_len_;
+            assert bytecode = bytecode_;
 
-            let (new_dict) = default_dict_new(0);
+            tempvar syscall_ptr = syscall_ptr;
+            tempvar pedersen_ptr = pedersen_ptr;
             tempvar range_check_ptr = range_check_ptr;
             tempvar valid_jumpdests_start = new_dict;
             tempvar valid_jumpdests = new_dict;

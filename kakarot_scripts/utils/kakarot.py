@@ -190,6 +190,35 @@ async def deploy(
     return contract
 
 
+async def deploy_raw_bytecode(
+    bytecode: Union[str, bytes], *args, **kwargs
+) -> (int, int):
+    logger.info(f"⏳ Deploying contract from bytecode")
+    caller_eoa = kwargs.pop("caller_eoa", None)
+    max_fee = kwargs.pop("max_fee", None)
+    value = kwargs.pop("value", 0)
+    receipt, response, success, gas_used = await eth_send_transaction(
+        to=0,
+        gas=int(TRANSACTION_GAS_LIMIT),
+        data=bytecode,
+        caller_eoa=caller_eoa,
+        max_fee=max_fee,
+        value=value,
+    )
+    if success == 0:
+        raise EvmTransactionError(bytes(response))
+
+    if WEB3.is_connected():
+        evm_address = int(receipt.contractAddress or receipt.to, 16)
+        starknet_address = (
+            await _call_starknet("kakarot", "compute_starknet_address", evm_address)
+        ).contract_address
+    else:
+        starknet_address, evm_address = response
+    logger.info(f"✅ Contract deployed at address {evm_address}")
+    return evm_address, starknet_address
+
+
 def get_log_receipts(tx_receipt):
     if WEB3.is_connected():
         return tx_receipt.logs
@@ -340,6 +369,44 @@ async def get_eoa(private_key=None, amount=10) -> Account:
         # and the access to the private key
         key_pair=KeyPair(int(private_key), private_key.public_key),
     )
+
+
+async def eth_call(
+    to: Union[int, str],
+    calldata: Union[str, bytes],
+    gas_limit: int = 21_000,
+    gas_price: int = 0,
+    value: Union[int, str] = 0,
+    caller_eoa: Optional[Account] = None,
+):
+    origin = (
+        int(caller_eoa.signer.public_key.to_address(), 16)
+        if caller_eoa
+        else int(EVM_ADDRESS, 16)
+    )
+    payload = {
+        "nonce": 0,
+        "from": Web3.to_checksum_address(f"{origin:040x}"),
+        "to": to,
+        "gas_limit": gas_limit,
+        "gas_price": gas_price,
+        "value": value,
+        "data": HexBytes(calldata),
+        "access_list": [],
+    }
+    if WEB3.is_connected():
+        result = WEB3.eth.call(payload)
+    else:
+        kakarot_contract = _get_starknet_contract("kakarot")
+        payload["to"] = {"is_some": 1, "value": int(payload["to"], 16)}
+        payload["data"] = list(payload["data"])
+        payload["origin"] = int(payload["from"], 16)
+        del payload["from"]
+        result = await kakarot_contract.functions["eth_call"].call(**payload)
+        if result.success == 0:
+            raise EvmTransactionError(bytes(result.return_data))
+        result = result.return_data
+    return result
 
 
 async def eth_send_transaction(
