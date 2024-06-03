@@ -6,18 +6,11 @@ import "./CairoLib.sol";
 using CairoLib for uint256;
 
 contract PragmaCaller  {
-    /// @dev The starknet address of the pragma mock
-    uint256 pragmaMock;
+    /// @dev The starknet address of the pragma oracle
+    uint256 pragmaOracle;
 
-    /// @dev The cairo function selector to call - `inc`
-    uint256 constant FUNCTION_SELECTOR_INC = uint256(keccak256("inc")) % 2**250;
-
-    /// @dev The cairo function selector to call - `set_counter`
+    /// @dev The cairo function selector to call - `get_data_median`
     uint256 constant FUNCTION_SELECTOR_GET_DATA_MEDIAN = uint256(keccak256("get_data_median")) % 2**250;
-
-    /// @dev The cairo function selector to call - `get`
-    uint256 constant FUNCTION_SELECTOR_GET = uint256(keccak256("get")) % 2**250;
-
 
     struct PragmaPricesResponse{
         uint256 price;
@@ -39,8 +32,8 @@ contract PragmaCaller  {
         uint256 expirationTimestamp;
     }
 
-    constructor(uint256 pragmaMockAddress) {
-        pragmaMock = pragmaMockAddress;
+    constructor(uint256 pragmaOracleAddress) {
+        pragmaOracle = pragmaOracleAddress;
     }
 
     function getDataMedianSpot(DataRequest memory request) public view returns (PragmaPricesResponse memory response) {
@@ -53,7 +46,7 @@ contract PragmaCaller  {
             data[2] = request.expirationTimestamp;
         }
 
-        bytes memory returnData = pragmaMock.staticcallContract(FUNCTION_SELECTOR_GET_DATA_MEDIAN, data);
+        bytes memory returnData = pragmaOracle.staticcallContract(FUNCTION_SELECTOR_GET_DATA_MEDIAN, data);
 
         assembly {
             // Load the values from the return data

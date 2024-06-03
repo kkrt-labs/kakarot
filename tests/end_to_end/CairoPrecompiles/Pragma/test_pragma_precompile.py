@@ -13,7 +13,7 @@ def serialize_cairo_response(cairo_dict: OrderedDict) -> Tuple:
     Serialize the return data of a Cairo call to a tuple
     with the same format as the one returned by the Solidity contract.
     """
-    # A None value in the Cairo response is equivalent to (True, 0) in the Solidity response.
+    # A None value in the Cairo response is equivalent to a value 0 in the Solidity response.
     return tuple(value if value is not None else 0 for value in cairo_dict.values())
 
 
@@ -62,81 +62,79 @@ async def pragma_caller(deploy_contract, owner):
 
 @pytest.mark.asyncio(scope="module")
 @pytest.mark.CairoPrecompiles
-class TestCairoPrecompiles:
-    class TestCounterPrecompiles:
+class TestPragmaPrecompile:
 
-        @pytest.mark.parametrize(
-            "data_type, mocked_values",
-            [
+    @pytest.mark.parametrize(
+        "data_type, mocked_values",
+        [
+            (
+                {"SpotEntry": int.from_bytes(b"BTC/USD", byteorder="big")},
                 (
-                    {"SpotEntry": int.from_bytes(b"BTC/USD", byteorder="big")},
-                    (
-                        int.from_bytes(b"BTC/USD", byteorder="big"),
-                        70000,
-                        18,
-                        1717143838,
-                        1,
-                    ),
+                    int.from_bytes(b"BTC/USD", byteorder="big"),
+                    70000,
+                    18,
+                    1717143838,
+                    1,
                 ),
+            ),
+            (
+                {"FutureEntry": (int.from_bytes(b"ETH/USD", byteorder="big"), 0)},
                 (
-                    {"FutureEntry": (int.from_bytes(b"ETH/USD", byteorder="big"), 0)},
-                    (
-                        int.from_bytes(b"ETH/USD", byteorder="big"),
-                        4000,
-                        18,
-                        1717143838,
-                        1,
-                    ),
+                    int.from_bytes(b"ETH/USD", byteorder="big"),
+                    4000,
+                    18,
+                    1717143838,
+                    1,
                 ),
+            ),
+            (
+                {"GenericEntry": int.from_bytes(b"SOL/USD", byteorder="big")},
                 (
-                    {"GenericEntry": int.from_bytes(b"SOL/USD", byteorder="big")},
-                    (
-                        int.from_bytes(b"SOL/USD", byteorder="big"),
-                        180,
-                        18,
-                        1717143838,
-                        1,
-                    ),
+                    int.from_bytes(b"SOL/USD", byteorder="big"),
+                    180,
+                    18,
+                    1717143838,
+                    1,
                 ),
-            ],
-        )
-        async def test_should_get_cairo_counter(
-            self, get_contract, pragma_caller, data_type, mocked_values, max_fee
-        ):
-            cairo_pragma = get_contract("MockPragmaOracle")
-            (cairo_res,) = await cairo_pragma.functions["get_data_median"].call(
-                data_type
+            ),
+        ],
+    )
+    async def test_should_return_data_median_for_query(
+        self, get_contract, pragma_caller, data_type, mocked_values, max_fee
+    ):
+        cairo_pragma = get_contract("MockPragmaOracle")
+        (cairo_res,) = await cairo_pragma.functions["get_data_median"].call(data_type)
+        solidity_input = serialize_data_type(data_type)
+        sol_res = await pragma_caller.getDataMedianSpot(solidity_input)
+        serialized_cairo_res = serialize_cairo_response(cairo_res)
+
+        (
+            res_price,
+            res_decimals,
+            res_last_updated_timestamp,
+            res_num_sources_aggregated,
+            res_maybe_expiration_timestamp,
+        ) = sol_res
+
+        (
+            _,
+            mocked_price,
+            mocked_decimals,
+            mocked_last_updated_timestamp,
+            mocked_num_sources_aggregated,
+        ) = mocked_values
+
+        assert serialized_cairo_res == sol_res
+        assert res_price == mocked_price
+        assert res_decimals == mocked_decimals
+        assert res_last_updated_timestamp == mocked_last_updated_timestamp
+        assert res_num_sources_aggregated == mocked_num_sources_aggregated
+
+        if data_type.get("FutureEntry"):
+            assert (
+                res_maybe_expiration_timestamp
+                == mocked_last_updated_timestamp
+                + 1000  # behavior coded inside the mock
             )
-            solidity_input = serialize_data_type(data_type)
-            sol_res = await pragma_caller.getDataMedianSpot(solidity_input)
-            serialized_cairo_res = serialize_cairo_response(cairo_res)
-
-            (
-                res_price,
-                res_decimals,
-                res_last_updated_timestamp,
-                res_num_sources_aggregated,
-                res_maybe_expiration_timestamp,
-            ) = sol_res
-
-            (
-                _,
-                mocked_price,
-                mocked_decimals,
-                mocked_last_updated_timestamp,
-                mocked_num_sources_aggregated,
-            ) = mocked_values
-
-            assert serialized_cairo_res == sol_res
-            assert res_price == mocked_price
-            assert res_decimals == mocked_decimals
-            assert res_last_updated_timestamp == mocked_last_updated_timestamp
-            assert res_num_sources_aggregated == mocked_num_sources_aggregated
-
-            if data_type.get("FutureEntry"):
-                assert (
-                    res_maybe_expiration_timestamp
-                    == mocked_last_updated_timestamp + 1000
-                )
-            else:
-                assert res_maybe_expiration_timestamp == 0
+        else:
+            assert res_maybe_expiration_timestamp == 0
