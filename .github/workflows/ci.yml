@@ -150,6 +150,10 @@ jobs:
         uses: foundry-rs/foundry-toolchain@v1
         with:
           version: nightly
+      - name: Install Scarb
+        uses: software-mansion/setup-scarb@v1
+        with:
+          tool-versions: ./cairo1_contracts/mock_pragma/.tool-versions #TODO: support multiple tool-versions files
       - name: Load cached katana
         id: cached-katana
         uses: actions/cache@v4
