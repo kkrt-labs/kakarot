@@ -1,6 +1,6 @@
 import pytest
 
-from kakarot_scripts.constants import COINBASE, NETWORK
+from kakarot_scripts.constants import BLOCK_GAS_LIMIT, COINBASE, NETWORK
 
 test_cases = [
     {
@@ -931,7 +931,7 @@ test_cases = [
             "value": 0,
             "code": "4500",
             "calldata": "",
-            "stack": "7000000",
+            "stack": str(BLOCK_GAS_LIMIT),
             "memory": "",
             "return_data": "",
             "success": 1,
