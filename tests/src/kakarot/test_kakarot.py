@@ -14,6 +14,7 @@ from web3.exceptions import NoABIFunctionsFound
 from kakarot_scripts.ef_tests.fetch import EF_TESTS_PARSED_DIR
 from tests.utils.constants import TRANSACTION_GAS_LIMIT
 from tests.utils.errors import cairo_error
+from tests.utils.helpers import pack_calldata
 from tests.utils.syscall_handler import SyscallHandler, parse_state
 
 CONTRACT_ADDRESS = 1234
@@ -37,6 +38,7 @@ def get_contract(cairo_run):
                 data = self.get_function_by_name(fun)(
                     *args, **kwargs
                 )._encode_transaction_data()
+                packed_data = pack_calldata(data)
                 evm, state, gas = cairo_run(
                     "eth_call",
                     origin=origin,
@@ -44,7 +46,7 @@ def get_contract(cairo_run):
                     gas_limit=gas_limit,
                     gas_price=gas_price,
                     value=value,
-                    data=data,
+                    packed_data=packed_data,
                 )
                 abi = self.get_function_by_name(fun).abi
                 if abi["stateMutability"] not in ["pure", "view"]:
@@ -126,10 +128,13 @@ class TestKakarot:
             with cairo_error():
                 cairo_run("test__register_account", evm_address=EVM_ADDRESS)
 
-    @pytest.mark.NoCI
     class TestEthCall:
         @pytest.mark.SolmateERC20
-        async def test_erc20_transfer(self, get_contract):
+        @SyscallHandler.patch(
+            "IAccount.is_valid_jumpdest",
+            lambda addr, data: [1],
+        )
+        def test_erc20_transfer(self, get_contract):
             erc20 = get_contract("Solmate", "ERC20")
             amount = int(1e18)
             initial_state = {
@@ -148,7 +153,11 @@ class TestKakarot:
             assert not evm["reverted"]
 
         @pytest.mark.SolmateERC721
-        async def test_erc721_transfer(self, get_contract):
+        @SyscallHandler.patch(
+            "IAccount.is_valid_jumpdest",
+            lambda addr, data: [1],
+        )
+        def test_erc721_transfer(self, get_contract):
             erc721 = get_contract("Solmate", "ERC721")
             token_id = 1337
             initial_state = {
@@ -170,6 +179,7 @@ class TestKakarot:
                 )
             assert not evm["reverted"]
 
+        @pytest.mark.NoCI
         @pytest.mark.EFTests
         @pytest.mark.parametrize(
             "ef_blockchain_test", EF_TESTS_PARSED_DIR.glob("*.json")
@@ -192,7 +202,7 @@ class TestKakarot:
                     gas_limit=int(tx["gasLimit"], 16),
                     gas_price=int(tx["gasPrice"], 16),
                     value=int(tx["value"], 16),
-                    data=tx["data"],
+                    packed_data=pack_calldata(tx["data"]),
                 )
 
             parsed_state = {
@@ -230,6 +240,6 @@ class TestKakarot:
                     gas_limit=0,
                     gas_price=0,
                     value=0,
-                    data="0xADD_DATA",
+                    data=pack_calldata("0xADD_DATA"),
                 )
             assert not evm["reverted"]

@@ -241,3 +241,54 @@ def merge_access_list(access_list):
             }
         )
     return merged_list
+
+
+def pack_calldata(data: Union[List[int], str]) -> List[int]:
+    """
+    Packs the incoming calldata bytes 31-bytes at a time in big-endian order.
+    Returns a serialized array with the following elements:
+    - data_len: full length of input data
+    - full_words: full 31-byte words
+    - last_word: the last word taking less than 31 bytes
+    """
+    if isinstance(data, str):
+        data = bytes.fromhex(data.removeprefix("0x"))
+    else:
+        data = bytes(data)
+
+    full_words_len, last_word_bytes = divmod(len(data), 31)
+
+    full_words = [
+        int.from_bytes(data[i : i + 31], byteorder="big")
+        for i in range(0, full_words_len * 31, 31)
+    ]
+
+    last_word = (
+        int.from_bytes(data[full_words_len * 31 :], byteorder="big")
+        if last_word_bytes
+        else 0
+    )
+    return [*full_words, last_word_bytes, last_word]
+
+
+def packed_calldata_to_bytes(packed_data: List[int]) -> bytes:
+    """
+    Converts the packed calldata to bytes.
+    The input should follow the format:
+    - input[0]: total amount of bytes
+    - input[1:-1]: full words of 31 bytes each
+    - input[-1]: last word of less than 31 bytes
+    Returns the packed calldata as a bytes
+    """
+    *full_words, last_word_len, last_word = packed_data
+
+    unpacked_data = bytearray()
+    unpacked_data.extend(
+        b"".join(word.to_bytes(31, byteorder="big") for word in full_words)
+    )
+    unpacked_data.extend(bytes(last_word_len))
+
+    if last_word_len:
+        unpacked_data.extend(last_word.to_bytes(last_word_len, byteorder="big"))
+
+    return bytes(unpacked_data)

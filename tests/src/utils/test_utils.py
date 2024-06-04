@@ -161,7 +161,6 @@ def test_should_unpack_felt_array_to_bytes32_array(cairo_run, data, expected):
 def test_should_unpack_felt_array_to_bytes31_array(cairo_run, data):
     result = cairo_run("test__felt_array_to_bytes31_array", data=data)
     expected = b"".join(word.to_bytes(31, "big") for word in data)
-    breakpoint()
     assert bytes(result) == expected
 
 

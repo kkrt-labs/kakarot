@@ -8,6 +8,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.starknet.common.syscalls import get_caller_address
 from starkware.cairo.common.math_cmp import is_not_zero
+from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.uint256 import Uint256
 
 from backend.starknet import Starknet
@@ -28,6 +29,7 @@ from kakarot.interpreter import Interpreter
 from kakarot.instructions.system_operations import CreateHelper
 from kakarot.interfaces.interfaces import IAccount, IERC20
 from utils.utils import Helpers
+from utils.bytes import felt_to_bytes_i
 from kakarot.model import model
 
 // @title Kakarot main library file.
@@ -103,8 +105,14 @@ namespace Kakarot {
 
         let env = Starknet.get_env(origin, gas_price);
 
+        let full_words_len = packed_data_len - 2;
+        let last_word_bytes = packed_data[packed_data_len - 2];
+        let last_word = packed_data[packed_data_len - 1];
+
         let (data) = alloc();
-        let data_len = Helpers.felt_array_to_bytes31_array(packed_data_len, packed_data, data);
+        let data_len = full_words_len * 31 + last_word_bytes;
+        Helpers.felt_array_to_bytes31_array(full_words_len, packed_data, data);
+        felt_to_bytes_i(data + (full_words_len * 31), last_word, last_word_bytes);
 
         let (evm, stack, memory, state, gas_used, required_gas) = Interpreter.execute(
             env,

@@ -41,7 +41,11 @@ from kakarot_scripts.utils.starknet import get_deployments
 from kakarot_scripts.utils.starknet import invoke as _invoke_starknet
 from kakarot_scripts.utils.starknet import wait_for_transaction
 from tests.utils.constants import TRANSACTION_GAS_LIMIT
-from tests.utils.helpers import rlp_encode_signed_data
+from tests.utils.helpers import (
+    pack_calldata,
+    packed_calldata_to_bytes,
+    rlp_encode_signed_data,
+)
 from tests.utils.uint256 import int_to_uint256
 
 logging.basicConfig()
@@ -259,6 +263,7 @@ def _wrap_kakarot(fun: str, caller_eoa: Optional[Account] = None):
         calldata = self.get_function_by_name(fun)(
             *args, **kwargs
         )._encode_transaction_data()
+        packed_calldata = pack_calldata(calldata)
 
         if abi["stateMutability"] in ["pure", "view"]:
             origin = (
@@ -273,7 +278,7 @@ def _wrap_kakarot(fun: str, caller_eoa: Optional[Account] = None):
                 "gas_limit": gas_limit,
                 "gas_price": gas_price,
                 "value": value,
-                "data": HexBytes(calldata),
+                "data": packed_calldata,
                 "access_list": [],
             }
             if WEB3.is_connected():
@@ -359,6 +364,9 @@ async def eth_send_transaction(
     else:
         nonce = await evm_account.get_nonce()
 
+    packed_calldata = pack_calldata(data)
+    packed_calldata_bytes = packed_calldata_to_bytes(packed_calldata)
+
     payload = {
         "type": 0x2,
         "chainId": NETWORK["chain_id"],
@@ -368,7 +376,7 @@ async def eth_send_transaction(
         "maxFeePerGas": 100,
         "to": to_checksum_address(to) if to else None,
         "value": value,
-        "data": data,
+        "data": packed_calldata_bytes,
     }
 
     typed_transaction = TypedTransaction.from_dict(payload)

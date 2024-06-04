@@ -371,10 +371,9 @@ namespace Helpers {
     // @param output: pointer to the output array.
     func felt_array_to_bytes31_array{range_check_ptr}(
         input_len: felt, input: felt*, output: felt*
-    ) -> felt {
+    ) {
         if (input_len == 0) {
-            let output_len = input_len * 31;
-            return output_len;
+            return ();
         }
         felt_to_bytes31(output, [input]);
         return felt_array_to_bytes31_array(input_len - 1, input + 1, output + 31);
@@ -389,7 +388,6 @@ namespace Helpers {
         input_len: felt, input: felt*, output: felt*
     ) {
         if (input_len == 0) {
-            let output_len = input_len * 32;
             return ();
         }
         felt_to_bytes32(output, [input]);

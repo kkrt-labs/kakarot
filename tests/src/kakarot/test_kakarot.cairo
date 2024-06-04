@@ -19,8 +19,8 @@ func eth_call{
     tempvar gas_price;
     tempvar nonce;
     let (value_ptr) = alloc();
-    tempvar data_len: felt;
-    let (data) = alloc();
+    tempvar packed_data_len: felt;
+    let (packed_data) = alloc();
     tempvar access_list_len: felt;
     let (access_list) = alloc();
 
@@ -35,9 +35,9 @@ func eth_call{
         ids.gas_price = program_input.get("gas_price", 0)
         ids.nonce = program_input.get("nonce", 0)
         segments.write_arg(ids.value_ptr, int_to_uint256(program_input.get("value", 0)))
-        data = bytes.fromhex(program_input.get("data", "").replace("0x", ""))
-        ids.data_len = len(data)
-        segments.write_arg(ids.data, list(data))
+        packed_data = program_input.get("packed_data", [])
+        ids.packed_data_len = len(packed_data)
+        segments.write_arg(ids.packed_data, list(packed_data))
         ids.access_list_len = 0
     %}
 
@@ -48,8 +48,8 @@ func eth_call{
         gas_limit=gas_limit,
         gas_price=gas_price,
         value=cast(value_ptr, Uint256*),
-        data_len=data_len,
-        data=data,
+        packed_data_len=packed_data_len,
+        packed_data=packed_data,
         access_list_len=access_list_len,
         access_list=access_list,
     );
