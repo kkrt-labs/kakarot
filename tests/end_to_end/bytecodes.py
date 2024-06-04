@@ -931,7 +931,7 @@ test_cases = [
             "value": 0,
             "code": "4500",
             "calldata": "",
-            "stack": "20000000",
+            "stack": "7000000",
             "memory": "",
             "return_data": "",
             "success": 1,
