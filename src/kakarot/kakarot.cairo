@@ -173,6 +173,17 @@ func set_account_contract_class_hash{
     return Kakarot.set_account_contract_class_hash(account_contract_class_hash);
 }
 
+// @notice Sets the authorization of an EVM address to call Cairo Precompiles
+// @param evm_address The EVM address
+// @param authorized Whether the EVM address is authorized or not
+@external
+func set_authorized_cairo_precompile_caller{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+}(evm_address: felt, authorized: felt) {
+    Ownable.assert_only_owner();
+    return Kakarot.set_authorized_cairo_precompile_caller(evm_address, authorized);
+}
+
 // @notice Set the Cairo1Helpers class hash
 // @param cairo1_helpers_class_hash The Cairo1Helpers class hash
 @external

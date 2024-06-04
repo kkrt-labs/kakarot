@@ -21,6 +21,7 @@ from kakarot.storages import (
     Kakarot_prev_randao,
     Kakarot_block_gas_limit,
     Kakarot_evm_to_starknet_address,
+    Kakarot_authorized_cairo_precompiles_callers,
 )
 from kakarot.events import evm_contract_deployed
 from kakarot.interpreter import Interpreter
@@ -258,6 +259,16 @@ namespace Kakarot {
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     }(cairo1_helpers_class_hash: felt) {
         Kakarot_cairo1_helpers_class_hash.write(cairo1_helpers_class_hash);
+        return ();
+    }
+
+    // @notice Sets the authorization of an EVM address to call Cairo Precompiles
+    // @param evm_address The EVM address
+    // @param authorized Whether the EVM address is authorized or not
+    func set_authorized_cairo_precompile_caller{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    }(evm_address: felt, authorized: felt) {
+        Kakarot_authorized_cairo_precompiles_callers.write(evm_address, authorized);
         return ();
     }
 

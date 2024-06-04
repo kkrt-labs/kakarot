@@ -3,6 +3,7 @@ from typing import OrderedDict, Tuple
 import pytest
 import pytest_asyncio
 
+from kakarot_scripts.utils.kakarot import EvmTransactionError
 from kakarot_scripts.utils.starknet import get_deployments, wait_for_transaction
 
 ENTRY_TYPE_INDEX = {"SpotEntry": 0, "FutureEntry": 1, "GenericEntry": 2}
@@ -40,13 +41,19 @@ def serialize_data_type(data_type: dict) -> Tuple:
 
 
 @pytest.fixture(autouse=True)
-async def setup(get_contract, mocked_values, max_fee):
+async def setup(get_contract, invoke, mocked_values, pragma_caller, max_fee):
     pragma_oracle = get_contract("MockPragmaOracle")
     tx = await pragma_oracle.functions["set_price"].invoke_v1(
         *mocked_values,
         max_fee=max_fee,
     )
     await wait_for_transaction(tx.hash)
+    await invoke(
+        "kakarot",
+        "set_authorized_cairo_precompile_caller",
+        int(pragma_caller.address, 16),
+        True,
+    )
 
 
 @pytest_asyncio.fixture(scope="module")
@@ -138,3 +145,35 @@ class TestPragmaPrecompile:
             )
         else:
             assert res_maybe_expiration_timestamp == 0
+
+    @pytest.mark.parametrize(
+        "data_type, mocked_values",
+        [
+            (
+                {"SpotEntry": int.from_bytes(b"BTC/USD", byteorder="big")},
+                (
+                    int.from_bytes(b"BTC/USD", byteorder="big"),
+                    70000,
+                    18,
+                    1717143838,
+                    1,
+                ),
+            ),
+        ],
+    )
+    async def test_should_fail_unauthorized_caller(
+        self, get_contract, pragma_caller, invoke, data_type, max_fee, mocked_values
+    ):
+        await invoke(
+            "kakarot",
+            "set_authorized_cairo_precompile_caller",
+            int(pragma_caller.address, 16),
+            False,
+        )
+        cairo_pragma = get_contract("MockPragmaOracle")
+        (cairo_res,) = await cairo_pragma.functions["get_data_median"].call(data_type)
+        solidity_input = serialize_data_type(data_type)
+
+        with pytest.raises(EvmTransactionError) as e:
+            await pragma_caller.getDataMedianSpot(solidity_input)
+        assert "CairoLib: call_contract failed" in str(e.value)

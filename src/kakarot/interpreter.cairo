@@ -65,11 +65,15 @@ namespace Interpreter {
         let is_pc_ge_code_len = is_le(evm.message.bytecode_len, pc);
         if (is_pc_ge_code_len != FALSE) {
             let is_precompile = Precompiles.is_precompile(evm.message.code_address);
+            let caller_address = evm.message.caller;
             if (is_precompile != FALSE) {
                 let (
                     output_len, output, gas_used, precompile_reverted
                 ) = Precompiles.exec_precompile(
-                    evm.message.code_address, evm.message.calldata_len, evm.message.calldata
+                    evm.message.code_address,
+                    evm.message.calldata_len,
+                    evm.message.calldata,
+                    caller_address,
                 );
                 let evm = EVM.charge_gas(evm, gas_used);
                 let evm_reverted = is_not_zero(evm.reverted);
