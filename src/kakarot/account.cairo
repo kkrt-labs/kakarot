@@ -22,6 +22,8 @@ from starkware.cairo.common.hash_state import (
 from starkware.starknet.common.storage import normalize_address
 from starkware.starknet.common.syscalls import get_contract_address
 
+from openzeppelin.access.ownable.library import Ownable
+
 from kakarot.constants import Constants
 from kakarot.storages import (
     Kakarot_uninitialized_account_class_hash,
