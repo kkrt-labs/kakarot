@@ -17,8 +17,8 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 load_dotenv()
 
-# Hardcode block gas limit to 20M
-BLOCK_GAS_LIMIT = 20_000_000
+# Hardcode block gas limit to 7M
+BLOCK_GAS_LIMIT = 7_000_000
 
 BEACON_ROOT_ADDRESS = "0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02"
 
@@ -131,18 +131,21 @@ RPC_CLIENT = FullNodeClient(node_url=NETWORK["rpc_url"])
 WEB3 = Web3()
 
 try:
-    response = requests.post(
-        RPC_CLIENT.url,
-        json={
-            "jsonrpc": "2.0",
-            "method": "starknet_chainId",
-            "params": [],
-            "id": 0,
-        },
-    )
-    payload = json.loads(response.text)
+    if WEB3.is_connected():
+        chain_id = WEB3.eth.chain_id
+    else:
+        response = requests.post(
+            RPC_CLIENT.url,
+            json={
+                "jsonrpc": "2.0",
+                "method": "starknet_chainId",
+                "params": [],
+                "id": 0,
+            },
+        )
+        payload = json.loads(response.text)
 
-    chain_id = int(payload["result"], 16)
+        chain_id = int(payload["result"], 16)
 except (
     requests.exceptions.ConnectionError,
     requests.exceptions.MissingSchema,

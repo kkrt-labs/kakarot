@@ -3,5 +3,15 @@
     "address": "0x2824d6ed6759ac4c4a54a39b78d04c0e48be8937237026bf8c3bf46a8bea722",
     "tx": "0x1f45a18adeb4392601cba7e3fd5683bac007378cede633fe6df0b5c95267e9d",
     "artifact": "build/kakarot.json"
+  },
+  "EVM": {
+    "address": "0x3c710d6ea68220a3c5f39e7728f24ebcd178d38e4135474bd66c34297b89b0",
+    "tx": "0x72ce89a5f301b8767248039a6e78e9caca4c666765136240225ac01468b5a8a",
+    "artifact": "build/fixtures/EVM.json"
+  },
+  "Counter": {
+    "address": "0x3735b9c1dfd45b40149c0227b9981b6dbd14168d5f0f9a1c7a7b3faad9cd630",
+    "tx": "0x4b135a5df36ac6446be7a8b6bed8ba991377db19c9b375c19434ff6c25ef1f1",
+    "artifact": "build/fixtures/Counter.json"
   }
 }
