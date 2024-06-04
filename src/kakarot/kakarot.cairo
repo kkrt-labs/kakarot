@@ -62,6 +62,7 @@ func upgrade{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 func set_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     native_token_address: felt
 ) {
+    Ownable.assert_only_owner();
     return Kakarot.set_native_token(native_token_address);
 }
 
@@ -79,6 +80,7 @@ func get_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
 // @param base_fee The new base fee.
 @external
 func set_base_fee{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(base_fee: felt) {
+    Ownable.assert_only_owner();
     return Kakarot.set_base_fee(base_fee);
 }
 
@@ -95,6 +97,7 @@ func get_base_fee{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
 // @param coinbase The new coinbase address.
 @external
 func set_coinbase{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(coinbase: felt) {
+    Ownable.assert_only_owner();
     return Kakarot.set_coinbase(coinbase);
 }
 
@@ -113,6 +116,7 @@ func get_coinbase{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
 func set_prev_randao{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     prev_randao: Uint256
 ) {
+    Ownable.assert_only_owner();
     return Kakarot.set_prev_randao(prev_randao);
 }
 
@@ -131,6 +135,7 @@ func get_prev_randao{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
 func set_block_gas_limit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     gas_limit_: felt
 ) {
+    Ownable.assert_only_owner();
     return Kakarot.set_block_gas_limit(gas_limit_);
 }
 

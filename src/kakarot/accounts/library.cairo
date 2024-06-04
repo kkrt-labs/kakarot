@@ -127,8 +127,6 @@ namespace AccountContract {
     func set_implementation{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         new_implementation: felt
     ) {
-        // Access control check.
-        Ownable.assert_only_owner();
         replace_class(new_implementation);
         Account_implementation.write(new_implementation);
         return ();
@@ -353,8 +351,6 @@ namespace AccountContract {
         bitwise_ptr: BitwiseBuiltin*,
     }(bytecode_len: felt, bytecode: felt*) {
         alloc_locals;
-        // Access control check.
-        Ownable.assert_only_owner();
         // Recursively store the bytecode.
         Account_bytecode_len.write(bytecode_len);
         Internals.write_bytecode(bytecode_len=bytecode_len, bytecode=bytecode);
@@ -408,8 +404,6 @@ namespace AccountContract {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(storage_addr: felt, value: Uint256) {
-        // Access control check.
-        Ownable.assert_only_owner();
         // Write State
         storage_write(address=storage_addr + 0, value=value.low);
         storage_write(address=storage_addr + 1, value=value.high);
@@ -430,8 +424,6 @@ namespace AccountContract {
     func set_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         new_nonce: felt
     ) {
-        // Access control check.
-        Ownable.assert_only_owner();
         Account_nonce.write(new_nonce);
         return ();
     }
