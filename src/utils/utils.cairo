@@ -16,7 +16,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.hash_state import hash_finalize, hash_init, hash_update
 
 from kakarot.model import model
-from utils.bytes import uint256_to_bytes32, felt_to_bytes32
+from utils.bytes import uint256_to_bytes32, felt_to_bytes32, felt_to_bytes31
 
 // @title Helper Functions
 // @notice This file contains a selection of helper function that simplify tasks such as type conversion and bit manipulation
@@ -364,6 +364,27 @@ namespace Helpers {
         return (output_len, output_start);
     }
 
+    // @notice Converts an array of felt to an array of bytes.
+    // @dev Each input felt is converted to 31 bytes.
+    // @param input_len: The number of felts in the input.
+    // @param input: pointer to the input array.
+    // @param output: pointer to the output array.
+    func felt_array_to_bytes31_array{range_check_ptr}(
+        input_len: felt, input: felt*, output: felt*
+    ) -> felt {
+        if (input_len == 0) {
+            let output_len = input_len * 31;
+            return output_len;
+        }
+        felt_to_bytes31(output, [input]);
+        return felt_array_to_bytes31_array(input_len - 1, input + 1, output + 31);
+    }
+
+    // @notice Converts an array of felt to an array of bytes.
+    // @dev Each input felt is converted to 32 bytes.
+    // @param input_len: The number of felts in the input.
+    // @param input: pointer to the input array.
+    // @param output: pointer to the output array.
     func felt_array_to_bytes32_array{range_check_ptr}(
         input_len: felt, input: felt*, output: felt*
     ) {

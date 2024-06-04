@@ -178,3 +178,19 @@ func test__felt_array_to_bytes32_array{range_check_ptr}() -> felt* {
 
     return output;
 }
+
+func test__felt_array_to_bytes31_array{range_check_ptr}() -> felt* {
+    alloc_locals;
+
+    let (data) = alloc();
+    local data_len: felt;
+    %{
+        segments.write_arg(ids.data, program_input["data"])
+        ids.data_len = len(program_input["data"])
+    %}
+
+    let (output) = alloc();
+    Helpers.felt_array_to_bytes31_array(data_len, data, output);
+
+    return output;
+}

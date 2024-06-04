@@ -4,6 +4,7 @@
 
 from openzeppelin.access.ownable.library import Ownable
 from starkware.cairo.common.bool import FALSE, TRUE
+from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.starknet.common.syscalls import get_caller_address
 from starkware.cairo.common.math_cmp import is_not_zero
@@ -26,6 +27,7 @@ from kakarot.events import evm_contract_deployed
 from kakarot.interpreter import Interpreter
 from kakarot.instructions.system_operations import CreateHelper
 from kakarot.interfaces.interfaces import IAccount, IERC20
+from utils.utils import Helpers
 from kakarot.model import model
 
 // @title Kakarot main library file.
@@ -64,8 +66,8 @@ namespace Kakarot {
     // @param gas_limit Integer of the gas provided for the transaction execution
     // @param gas_price Integer of the gas price used for each paid gas
     // @param value Integer of the value sent with this transaction
-    // @param data_len The length of the data
-    // @param data Hash of the method signature and encoded parameters. For details see Ethereum Contract ABI in the Solidity documentation
+    // @param packed_packed_data_len The length of the 31-bytes packed calldata
+    // @param packed_data packed calldata, containing the hash of the method signature and encoded parameters. For details see Ethereum Contract ABI in the Solidity documentation
     // @param access_list_len The length of the access list
     // @param access_list The access list provided in the transaction serialized as a list of [address, storage_keys_len, ...storage_keys]
     // @return evm The EVM post-execution
@@ -83,8 +85,8 @@ namespace Kakarot {
         gas_limit: felt,
         gas_price: felt,
         value: Uint256*,
-        data_len: felt,
-        data: felt*,
+        packed_data_len: felt,
+        packed_data: felt*,
         access_list_len: felt,
         access_list: felt*,
     ) -> (model.EVM*, model.State*, felt, felt) {
@@ -100,6 +102,9 @@ namespace Kakarot {
         let (bytecode_len, bytecode) = Starknet.get_bytecode(address.evm);
 
         let env = Starknet.get_env(origin, gas_price);
+
+        let (data) = alloc();
+        let data_len = Helpers.felt_array_to_bytes31_array(packed_data_len, packed_data, data);
 
         let (evm, stack, memory, state, gas_used, required_gas) = Interpreter.execute(
             env,

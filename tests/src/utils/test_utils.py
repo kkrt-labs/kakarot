@@ -144,8 +144,24 @@ def test_should_convert_bytes4_to_felt(cairo_run, data, expected):
         ),
     ],
 )
-def test_should_serialize_felt_in_bytes32_array(cairo_run, data, expected):
+def test_should_unpack_felt_array_to_bytes32_array(cairo_run, data, expected):
     result = cairo_run("test__felt_array_to_bytes32_array", data=data)
+    assert bytes(result) == expected
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        ([2**248 - 1] * 10),
+        ([2**248 - 1, 2**128]),
+        [2**2],
+        [0],
+    ],
+)
+def test_should_unpack_felt_array_to_bytes31_array(cairo_run, data):
+    result = cairo_run("test__felt_array_to_bytes31_array", data=data)
+    expected = b"".join(word.to_bytes(31, "big") for word in data)
+    breakpoint()
     assert bytes(result) == expected
 
 
