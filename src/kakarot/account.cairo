@@ -679,12 +679,13 @@ namespace Internals {
     func check_and_upgrade_account_class{
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     }(address: model.Address*) {
+        // Access control check.
+        Ownable.assert_only_owner();
         let (account_impl) = IAccount.get_implementation(address.starknet);
         let (latest_impl) = Kakarot_account_contract_class_hash.read();
         if (account_impl == latest_impl) {
             return ();
         }
-        IAccount.set_implementation(address.starknet, latest_impl);
         return ();
     }
 }

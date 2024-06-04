@@ -124,7 +124,6 @@ namespace Kakarot {
     func set_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         native_token_address: felt
     ) {
-        Ownable.assert_only_owner();
         Kakarot_native_token_address.write(native_token_address);
         return ();
     }
@@ -144,7 +143,6 @@ namespace Kakarot {
     func set_base_fee{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         base_fee: felt
     ) {
-        Ownable.assert_only_owner();
         Kakarot_base_fee.write(base_fee);
         return ();
     }
@@ -163,7 +161,6 @@ namespace Kakarot {
     func set_coinbase{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         coinbase: felt
     ) {
-        Ownable.assert_only_owner();
         Kakarot_coinbase.write(coinbase);
         return ();
     }
@@ -182,7 +179,6 @@ namespace Kakarot {
     func set_prev_randao{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         prev_randao: Uint256
     ) {
-        Ownable.assert_only_owner();
         Kakarot_prev_randao.write(prev_randao);
         return ();
     }
@@ -201,7 +197,6 @@ namespace Kakarot {
     func set_block_gas_limit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         block_gas_limit: felt
     ) {
-        Ownable.assert_only_owner();
         Kakarot_block_gas_limit.write(block_gas_limit);
         return ();
     }

@@ -203,6 +203,8 @@ func __execute__{
 func write_bytecode{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(bytecode_len: felt, bytecode: felt*) {
+    // Access control check.
+    Ownable.assert_only_owner();
     return AccountContract.write_bytecode(bytecode_len, bytecode);
 }
 
@@ -234,6 +236,8 @@ func bytecode_len{
 func write_storage{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(storage_addr: felt, value: Uint256) {
+    // Access control check.
+    Ownable.assert_only_owner();
     return AccountContract.write_storage(storage_addr, value);
 }
 
@@ -257,6 +261,8 @@ func get_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 // @notice This function set the contract account nonce
 @external
 func set_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(nonce: felt) {
+    // Access control check.
+    Ownable.assert_only_owner();
     return AccountContract.set_nonce(nonce);
 }
 
@@ -267,6 +273,7 @@ func set_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 func write_jumpdests{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(jumpdests_len: felt, jumpdests: felt*) {
+    // Access control check.
     Ownable.assert_only_owner();
     AccountContract.write_jumpdests(jumpdests_len, jumpdests);
     return ();
