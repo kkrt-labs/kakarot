@@ -391,6 +391,44 @@ namespace Errors {
         return (28, error);
     }
 
+    func unauthorizedPrecompile() -> (error_len: felt, error: felt*) {
+        let (error) = get_label_location(unauthorized_precompile_error_message);
+        return (31, error);
+
+        unauthorized_precompile_error_message:
+        dw 'K';
+        dw 'a';
+        dw 'k';
+        dw 'a';
+        dw 'r';
+        dw 'o';
+        dw 't';
+        dw ':';
+        dw ' ';
+        dw 'u';
+        dw 'n';
+        dw 'a';
+        dw 'u';
+        dw 't';
+        dw 'h';
+        dw 'o';
+        dw 'r';
+        dw 'i';
+        dw 'z';
+        dw 'e';
+        dw 'd';
+        dw 'P';
+        dw 'r';
+        dw 'e';
+        dw 'c';
+        dw 'o';
+        dw 'm';
+        dw 'p';
+        dw 'i';
+        dw 'l';
+        dw 'e';
+    }
+
     func notImplementedPrecompile(address: felt) -> (error_len: felt, error: felt*) {
         alloc_locals;
         let (error) = alloc();

@@ -1,9 +1,12 @@
+%lang starknet
+
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import call_contract, library_call
 
 from kakarot.errors import Errors
+from kakarot.storages import Kakarot_authorized_cairo_precompiles_callers
 from utils.utils import Helpers
 
 const CALL_CONTRACT_SOLIDITY_SELECTOR = 0xb3eb2c1b;
@@ -12,6 +15,13 @@ const LIBRARY_CALL_SOLIDITY_SELECTOR = 0x5a9af197;
 const CAIRO_PRECOMPILE_GAS = 10000;
 
 namespace KakarotPrecompiles {
+    func is_caller_whitelisted{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        caller_address: felt
+    ) -> felt {
+        let (res) = Kakarot_authorized_cairo_precompiles_callers.read(caller_address);
+        return res;
+    }
+
     func cairo_precompile{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,

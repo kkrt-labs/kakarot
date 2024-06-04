@@ -12,15 +12,23 @@ async def cleanup(get_contract, max_fee):
     await wait_for_transaction(tx.hash)
 
 
-@pytest_asyncio.fixture(scope="module")
-async def cairo_counter_caller(deploy_contract, owner):
+@pytest_asyncio.fixture()
+async def cairo_counter_caller(deploy_contract, invoke, owner):
     cairo_counter_address = get_deployments()["Counter"]["address"]
-    return await deploy_contract(
+    counter_contract = await deploy_contract(
         "CairoPrecompiles",
         "CairoCounterCaller",
         cairo_counter_address,
         caller_eoa=owner.starknet_contract,
     )
+
+    await invoke(
+        "kakarot",
+        "set_authorized_cairo_precompile_caller",
+        int(counter_contract.address, 16),
+        True,
+    )
+    return counter_contract
 
 
 @pytest.mark.asyncio(scope="module")
@@ -54,3 +62,14 @@ class TestCairoPrecompiles:
             new_count = (await cairo_counter.functions["get"].call()).count
 
             assert new_count == count
+
+        async def test_should_fail_precompile_caller_not_whitelisted(
+            self, deploy_contract, get_contract, max_fee
+        ):
+            cairo_counter = get_contract("Counter")
+            cairo_counter_caller = await deploy_contract(
+                "CairoPrecompiles", "CairoCounterCaller", cairo_counter.address
+            )
+            with pytest.raises(Exception) as e:
+                await cairo_counter_caller.incrementCairoCounter(max_fee=max_fee)
+            assert "CairoLib: call_contract failed" in str(e.value)

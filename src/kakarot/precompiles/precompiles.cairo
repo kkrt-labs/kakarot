@@ -69,17 +69,36 @@ namespace Precompiles {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(evm_address: felt, input_len: felt, input: felt*) -> (
+    }(evm_address: felt, input_len: felt, input: felt*, caller_address: felt) -> (
         output_len: felt, output: felt*, gas_used: felt, reverted: felt
     ) {
         let is_eth_precompile = is_le(evm_address, LAST_ETHEREUM_PRECOMPILE_ADDRESS);
+        tempvar syscall_ptr = syscall_ptr;
+        tempvar pedersen_ptr = pedersen_ptr;
+        tempvar range_check_ptr = range_check_ptr;
         jmp eth_precompile if is_eth_precompile != 0;
 
         let is_rollup_precompile_ = is_rollup_precompile(evm_address);
+        tempvar syscall_ptr = syscall_ptr;
+        tempvar pedersen_ptr = pedersen_ptr;
+        tempvar range_check_ptr = range_check_ptr;
         jmp rollup_precompile if is_rollup_precompile_ != 0;
 
         let is_kakarot_precompile_ = is_kakarot_precompile(evm_address);
-        jmp kakarot_precompile if is_kakarot_precompile_ != 0;
+        let is_whitelisted = KakarotPrecompiles.is_caller_whitelisted(caller_address);
+        tempvar is_kakarot_and_whitelisted = is_kakarot_precompile_ * is_whitelisted;
+        tempvar syscall_ptr = syscall_ptr;
+        tempvar pedersen_ptr = pedersen_ptr;
+        tempvar range_check_ptr = range_check_ptr;
+        jmp kakarot_precompile if is_kakarot_and_whitelisted != 0;
+
+        // Prepare arguments if none of the above conditions are met
+        [ap] = syscall_ptr, ap++;
+        [ap] = pedersen_ptr, ap++;
+        [ap] = range_check_ptr, ap++;
+        [ap] = bitwise_ptr, ap++;
+        call unauthorized_precompile;
+        ret;
 
         eth_precompile:
         tempvar index = evm_address;
@@ -146,6 +165,21 @@ namespace Precompiles {
         // the amount of rollup precompiles.
         call KakarotPrecompiles.cairo_precompile;  // offset 0x0c: precompile 0x75001
         ret;
+    }
+
+    // @notice A placeholder for attempts to call a precompile without permissions
+    // @dev Halts execution.
+    // @param evm_address The evm_address.
+    // @param input_len The length of the input array.
+    // @param input The input array.
+    func unauthorized_precompile{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }() -> (output_len: felt, output: felt*, gas_used: felt, reverted: felt) {
+        let (revert_reason_len, revert_reason) = Errors.unauthorizedPrecompile();
+        return (revert_reason_len, revert_reason, 0, Errors.EXCEPTIONAL_HALT);
     }
 
     // @notice A placeholder for precompile that don't exist.
