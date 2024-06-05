@@ -161,7 +161,7 @@ except (
 
 class ChainId(IntEnum):
     chain_id = chain_id
-    starknet_chain_id = (starknet_chain_id,)
+    starknet_chain_id = starknet_chain_id
 
 
 NETWORK["chain_id"] = ChainId.chain_id
