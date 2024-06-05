@@ -384,7 +384,7 @@ async def eth_send_transaction(
         return receipt, [], receipt.status, receipt.gasUsed
 
     encoded_unsigned_tx = rlp_encode_signed_data(typed_transaction.as_dict())
-    packed_encoded_unsigned_tx = pack_calldata(encoded_unsigned_tx)
+    packed_encoded_unsigned_tx = pack_calldata(bytes(encoded_unsigned_tx))
 
     prepared_invoke = await evm_account._prepare_invoke(
         calls=[

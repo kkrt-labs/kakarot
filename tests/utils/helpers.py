@@ -243,29 +243,13 @@ def merge_access_list(access_list):
     return merged_list
 
 
-def pack_calldata(data: Union[List[int], str]) -> List[int]:
+def pack_calldata(data: bytes) -> List[int]:
     """
     Pack the incoming calldata bytes 31-bytes at a time in big-endian order.
     Returns a serialized array with the following elements:
     - data_len: full length of input data
     - full_words: full 31-byte words
-    - last_word: the last word taking less than 31 bytes.
+    - last_word: the last word taking less than or equal to 31 bytes.
     """
-    if isinstance(data, str):
-        data = bytes.fromhex(data.removeprefix("0x"))
-    else:
-        data = bytes(data)
 
-    full_words_len, last_word_bytes = divmod(len(data), 31)
-
-    full_words = [
-        int.from_bytes(data[i : i + 31], byteorder="big")
-        for i in range(0, full_words_len * 31, 31)
-    ]
-
-    last_word = (
-        int.from_bytes(data[full_words_len * 31 :], byteorder="big")
-        if last_word_bytes
-        else 0
-    )
-    return [full_words_len * 31 + last_word_bytes, *full_words, last_word]
+    return [len(data), *[int(chunk, 16) for chunk in wrap(data.hex(), 2 * 31)]]
