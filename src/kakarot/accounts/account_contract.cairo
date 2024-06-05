@@ -71,6 +71,8 @@ func get_implementation{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_ch
 func set_implementation{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     implementation_class: felt
 ) {
+    // Access control check.
+    Ownable.assert_only_owner();
     return AccountContract.set_implementation(implementation_class);
 }
 

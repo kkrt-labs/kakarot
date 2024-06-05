@@ -688,6 +688,7 @@ namespace Internals {
         if (account_impl == latest_impl) {
             return ();
         }
+        IAccount.set_implementation(address.starknet, latest_impl);
         return ();
     }
 }
