@@ -1120,4 +1120,130 @@ namespace Helpers {
         assert check = 1;
         return (valid_jumpdests_start, valid_jumpdests);
     }
+
+    const BYTES_PER_FELT = 31;
+
+    // @notice Load packed bytes from an array of bytes packed in 31-byte words and a final word.
+    // @param input_len The length of the input.
+    // @param input The input, an array of 31-bytes words and a final word.
+    // @param bytes_len The total amount of bytes to load.
+    // @returns bytes An array of individual bytes loaded from the packed input.
+    func load_packed_bytes{range_check_ptr}(input_len: felt, input: felt*, bytes_len: felt) -> (
+        bytes: felt*
+    ) {
+        alloc_locals;
+
+        let (local bytes: felt*) = alloc();
+        local bound = 256;
+        local base = 256;
+
+        if (bytes_len == 0) {
+            return (bytes=bytes);
+        }
+
+        let (local chunk_counts, local remainder) = unsigned_div_rem(bytes_len, BYTES_PER_FELT);
+
+        tempvar remaining_bytes = bytes_len;
+        tempvar range_check_ptr = range_check_ptr;
+        tempvar index = 0;
+        tempvar empty = 0;
+        tempvar value = 0;
+        tempvar count = 0;
+
+        static_assert remaining_bytes == [ap - 6];
+        static_assert range_check_ptr == [ap - 5];
+        static_assert index == [ap - 4];
+        static_assert value == [ap - 2];
+        static_assert count == [ap - 1];
+
+        read:
+        let remaining_bytes = [ap - 6];
+        let range_check_ptr = [ap - 5];
+        let index = [ap - 4];
+        let value = [ap - 2];
+        let count = [ap - 1];
+        let input = cast([fp - 4], felt*);
+
+        let value = input[index];
+
+        let remainder = [fp + 4];
+        let chunk_counts = [fp + 3];
+        tempvar remaining_chunk = chunk_counts - index;
+        jmp full_chunk if remaining_chunk != 0;
+        tempvar count = remainder;
+        jmp next;
+
+        full_chunk:
+        tempvar count = BYTES_PER_FELT;
+
+        next:
+        tempvar remaining_bytes = remaining_bytes;
+        tempvar range_check_ptr = range_check_ptr;
+        tempvar index = index + 1;
+        tempvar value = value;
+        tempvar count = count;
+
+        static_assert remaining_bytes == [ap - 6];
+        static_assert range_check_ptr == [ap - 5];
+        static_assert index == [ap - 4];
+        static_assert value == [ap - 2];
+        static_assert count == [ap - 1];
+
+        body:
+        let remaining_bytes = [ap - 6];
+        let range_check_ptr = [ap - 5];
+        let index = [ap - 4];
+        let value = [ap - 2];
+        let count = [ap - 1];
+
+        let base = [fp + 1];
+        let bound = [fp + 2];
+        let bytes = cast([fp], felt*);
+
+        tempvar offset = (index - 1) * BYTES_PER_FELT + count - 1;
+        let output = bytes + offset;
+
+        // Put byte in output and assert that 0 <= byte < bound
+        // See math.split_int
+        %{
+            memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
+            assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
+        %}
+        tempvar a = [output];
+        %{
+            from starkware.cairo.common.math_utils import assert_integer
+            assert_integer(ids.a)
+            assert 0 <= ids.a % PRIME < range_check_builtin.bound, f'a = {ids.a} is out of range.'
+        %}
+        assert a = [range_check_ptr];
+        tempvar a = bound - 1 - a;
+        %{
+            from starkware.cairo.common.math_utils import assert_integer
+            assert_integer(ids.a)
+            assert 0 <= ids.a % PRIME < range_check_builtin.bound, f'a = {ids.a} is out of range.'
+        %}
+        assert a = [range_check_ptr + 1];
+
+        tempvar value = (value - [output]) / base;
+        tempvar remaining_bytes = remaining_bytes - 1;
+        tempvar range_check_ptr = range_check_ptr + 2;
+        tempvar index = index;
+        tempvar empty = 0;
+        tempvar value = value;
+        tempvar count = count - 1;
+
+        jmp cond if remaining_bytes != 0;
+
+        let bytes = cast([fp], felt*);
+        return (bytes=bytes);
+
+        cond:
+        static_assert remaining_bytes == [ap - 6];
+        static_assert range_check_ptr == [ap - 5];
+        static_assert index == [ap - 4];
+        static_assert value == [ap - 2];
+        static_assert count == [ap - 1];
+        jmp body if count != 0;
+        jmp read;
+    }
 }

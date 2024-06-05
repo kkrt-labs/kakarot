@@ -4,8 +4,10 @@ import pytest
 from ethereum.cancun.vm.runtime import get_valid_jump_destinations
 from hypothesis import given, settings
 from hypothesis import strategies as st
+import random
 
 from kakarot_scripts.utils.kakarot import get_contract
+from tests.utils.helpers import pack_calldata
 
 
 @pytest.mark.parametrize(
@@ -169,3 +171,11 @@ class TestInitializeJumpdests:
         bytecode = get_contract("PlainOpcodes", "Counter").bytecode_runtime
         output = cairo_run("test__initialize_jumpdests", bytecode=bytecode)
         assert set(output) == get_valid_jump_destinations(bytecode)
+
+
+class TestLoadPackedBytes:
+    def test_should_load_packed_bytes(self, cairo_run):
+        bytes = random.randbytes(100)
+        packed_bytes = pack_calldata(bytes)
+        output = cairo_run("test__load_packed_bytes", data=packed_bytes)
+        assert output == list(bytes)
