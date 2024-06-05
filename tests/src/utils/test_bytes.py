@@ -26,6 +26,24 @@ class TestBytes:
             res = bytes(output)
             assert bytes.fromhex(f"{n:x}".rjust(len(res) * 2, "0")) == res
 
+    class TestFeltToBytesI:
+        @pytest.mark.parametrize(
+            "n",
+            [
+                "0x123",
+                "0x10",
+                "0x123400",
+                "0x00FFFFFF00",
+                hex(2**128),
+                hex(PRIME - 1),
+            ],
+        )
+        def test_should_return_bytes_with_padding(self, cairo_run, n):
+            bytes_used = ((len(n) - 2) + 1) // 2
+            output = cairo_run("test__felt_to_bytes_i", n=int(n, 16), i=bytes_used)
+            res = bytes(output)
+            assert bytes.fromhex(n[2:].rjust(bytes_used * 2, "0")) == res
+
     class TestFeltToBytes20:
         @pytest.mark.parametrize("n", [0, 10, 1234, 0xFFFFFF, 2**128, PRIME - 1])
         def test_should_return_bytes20(self, cairo_run, n):
