@@ -5,7 +5,7 @@ from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.memset import memset
 from starkware.cairo.common.registers import get_label_location
 
-from utils.array import reverse, pad_end
+from utils.array import reverse
 
 func felt_to_ascii{range_check_ptr}(dst: felt*, n: felt) -> felt {
     alloc_locals;
@@ -79,18 +79,6 @@ func felt_to_bytes(dst: felt*, value: felt) -> felt {
     alloc_locals;
     let (local bytes: felt*) = alloc();
     let bytes_len = felt_to_bytes_little(bytes, value);
-    reverse(dst, bytes_len, bytes);
-
-    return bytes_len;
-}
-
-// @notice Split a felt into an array of bytes of size i
-// @dev The array is padded with zeros if the felt is smaller than i bytes
-func felt_to_bytes_i{range_check_ptr}(dst: felt*, value: felt, bytes_len: felt) -> felt {
-    alloc_locals;
-    let (local bytes: felt*) = alloc();
-    let actual_len = felt_to_bytes_little(bytes, value);
-    pad_end(actual_len, bytes, bytes_len);
     reverse(dst, bytes_len, bytes);
 
     return bytes_len;
