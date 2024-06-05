@@ -198,8 +198,6 @@ namespace AccountContract {
             packed_tx_data_len - 1, packed_tx_data + 1, tx_data_len
         );
 
-        let tx = EthTransaction.decode(tx_data_len, tx_data);
-
         Internals.validate(address, tx_info.nonce, chain_id, r, s, v, tx_data_len, tx_data);
 
         validate(

@@ -1131,27 +1131,18 @@ namespace Helpers {
         tempvar remaining_bytes = bytes_len;
         tempvar range_check_ptr = range_check_ptr;
         tempvar index = 0;
-        // needs to increment ap by 1 for nothing as in `next` index (and the rest) are
-        // off-by-one
-        tempvar empty = 0;
         tempvar value = 0;
         tempvar count = 0;
 
-        static_assert remaining_bytes == [ap - 6];
-        static_assert range_check_ptr == [ap - 5];
-        static_assert index == [ap - 4];
-        static_assert value == [ap - 2];
-        static_assert count == [ap - 1];
-
         read:
-        let remaining_bytes = [ap - 6];
-        let range_check_ptr = [ap - 5];
-        let index = [ap - 4];
+        let remaining_bytes = [ap - 5];
+        let range_check_ptr = [ap - 4];
+        let index = [ap - 3];
         let value = [ap - 2];
         let count = [ap - 1];
         let input = cast([fp - 4], felt*);
 
-        let value = input[index];
+        tempvar value = input[index];
 
         let remainder = [fp + 4];
         let chunk_counts = [fp + 3];
@@ -1170,16 +1161,10 @@ namespace Helpers {
         tempvar value = value;
         tempvar count = count;
 
-        static_assert remaining_bytes == [ap - 6];
-        static_assert range_check_ptr == [ap - 5];
-        static_assert index == [ap - 4];
-        static_assert value == [ap - 2];
-        static_assert count == [ap - 1];
-
         body:
-        let remaining_bytes = [ap - 6];
-        let range_check_ptr = [ap - 5];
-        let index = [ap - 4];
+        let remaining_bytes = [ap - 5];
+        let range_check_ptr = [ap - 4];
+        let index = [ap - 3];
         let value = [ap - 2];
         let count = [ap - 1];
 
@@ -1215,7 +1200,6 @@ namespace Helpers {
         tempvar remaining_bytes = remaining_bytes - 1;
         tempvar range_check_ptr = range_check_ptr + 2;
         tempvar index = index;
-        tempvar empty = 0;
         tempvar value = value;
         tempvar count = count - 1;
 
@@ -1225,11 +1209,6 @@ namespace Helpers {
         return (bytes=bytes);
 
         cond:
-        static_assert remaining_bytes == [ap - 6];
-        static_assert range_check_ptr == [ap - 5];
-        static_assert index == [ap - 4];
-        static_assert value == [ap - 2];
-        static_assert count == [ap - 1];
         jmp body if count != 0;
         jmp read;
     }
