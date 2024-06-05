@@ -32,7 +32,7 @@ from kakarot.errors import Errors
 from kakarot.constants import Constants
 from utils.eth_transaction import EthTransaction
 from utils.uint256 import uint256_add
-from utils.bytes import bytes_to_bytes8_little_endian, felt_to_bytes_i
+from utils.bytes import bytes_to_bytes8_little_endian
 from utils.signature import Signature
 from utils.utils import Helpers
 
