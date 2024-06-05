@@ -193,17 +193,10 @@ namespace AccountContract {
         let packed_tx_data_len = [call_array].data_len;
         let packed_tx_data = calldata + [call_array].data_offset;
 
-        let total_len_bytes = [packed_tx_data];
-        let full_words_count = packed_tx_data_len - 2;
-        let full_words_bytes = full_words_count * 31;
-        let full_words_ptr = packed_tx_data + 1;
-        let last_word_bytes = total_len_bytes - full_words_bytes;
-        let last_word = packed_tx_data[packed_tx_data_len - 1];
-
-        let (tx_data) = alloc();
-        let tx_data_len = total_len_bytes;
-        Helpers.felt_array_to_bytes31_array(full_words_count, full_words_ptr, tx_data);
-        felt_to_bytes_i(tx_data + full_words_bytes, last_word, last_word_bytes);
+        let tx_data_len = [packed_tx_data];
+        let (tx_data) = Helpers.load_packed_bytes(
+            packed_tx_data_len - 1, packed_tx_data + 1, tx_data_len
+        );
 
         let tx = EthTransaction.decode(tx_data_len, tx_data);
 
@@ -247,17 +240,10 @@ namespace AccountContract {
         let packed_tx_data_len = [call_array].data_len;
         let packed_tx_data = calldata + [call_array].data_offset;
 
-        let total_len_bytes = [packed_tx_data];
-        let full_words_count = packed_tx_data_len - 2;
-        let full_words_bytes = full_words_count * 31;
-        let full_words_ptr = packed_tx_data + 1;
-        let last_word_bytes = total_len_bytes - full_words_bytes;
-        let last_word = packed_tx_data[packed_tx_data_len - 1];
-
-        let (tx_data) = alloc();
-        let tx_data_len = total_len_bytes;
-        Helpers.felt_array_to_bytes31_array(full_words_count, full_words_ptr, tx_data);
-        felt_to_bytes_i(tx_data + full_words_bytes, last_word, last_word_bytes);
+        let tx_data_len = [packed_tx_data];
+        let (tx_data) = Helpers.load_packed_bytes(
+            packed_tx_data_len - 1, packed_tx_data + 1, tx_data_len
+        );
 
         let tx = EthTransaction.decode(tx_data_len, tx_data);
 
