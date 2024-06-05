@@ -5,7 +5,7 @@ from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.memset import memset
 from starkware.cairo.common.registers import get_label_location
 
-from utils.array import reverse
+from utils.array import reverse, pad_end
 
 func felt_to_ascii{range_check_ptr}(dst: felt*, n: felt) -> felt {
     alloc_locals;
@@ -84,6 +84,18 @@ func felt_to_bytes(dst: felt*, value: felt) -> felt {
     return bytes_len;
 }
 
+// @notice Split a felt into an array of bytes of size i
+// @dev The array is padded with zeros if the felt is smaller than i bytes
+func felt_to_bytes_i{range_check_ptr}(dst: felt*, value: felt, bytes_len: felt) -> felt {
+    alloc_locals;
+    let (local bytes: felt*) = alloc();
+    let actual_len = felt_to_bytes_little(bytes, value);
+    pad_end(actual_len, bytes, bytes_len);
+    reverse(dst, bytes_len, bytes);
+
+    return bytes_len;
+}
+
 // @notice Split a felt into an array of 20 bytes, big endian
 // @dev Truncate the high 12 bytes
 func felt_to_bytes20{range_check_ptr}(dst: felt*, value: felt) {
@@ -94,6 +106,19 @@ func felt_to_bytes20{range_check_ptr}(dst: felt*, value: felt) {
     split_int(low, 16, 256, 256, bytes20);
     split_int(high, 4, 256, 256, bytes20 + 16);
     reverse(dst, 20, bytes20);
+    return ();
+}
+
+// @notice Split a felt into an array of 31 bytes, big endian
+// @dev Truncate the high 1 byte
+func felt_to_bytes31{range_check_ptr}(dst: felt*, value: felt) {
+    alloc_locals;
+    let (bytes31: felt*) = alloc();
+    let (high, low) = split_felt(value);
+    let (_, high) = unsigned_div_rem(high, 2 ** 120);
+    split_int(low, 16, 256, 256, bytes31);
+    split_int(high, 15, 256, 256, bytes31 + 16);
+    reverse(dst, 31, bytes31);
     return ();
 }
 

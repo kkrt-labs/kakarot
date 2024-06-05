@@ -32,7 +32,7 @@ from kakarot.errors import Errors
 from kakarot.constants import Constants
 from utils.eth_transaction import EthTransaction
 from utils.uint256 import uint256_add
-from utils.bytes import bytes_to_bytes8_little_endian
+from utils.bytes import bytes_to_bytes8_little_endian, felt_to_bytes_i
 from utils.signature import Signature
 from utils.utils import Helpers
 
@@ -189,16 +189,25 @@ namespace AccountContract {
         let v = tx_info.signature[4];
         let (_, chain_id) = unsigned_div_rem(tx_info.chain_id, 2 ** 32);
 
-        Internals.validate(
-            address,
-            tx_info.nonce,
-            chain_id,
-            r,
-            s,
-            v,
-            [call_array].data_len,
-            calldata + [call_array].data_offset,
-        );
+        // Unpack the tx data
+        let packed_tx_data_len = [call_array].data_len;
+        let packed_tx_data = calldata + [call_array].data_offset;
+
+        let total_len_bytes = [packed_tx_data];
+        let full_words_count = packed_tx_data_len - 2;
+        let full_words_bytes = full_words_count * 31;
+        let full_words_ptr = packed_tx_data + 1;
+        let last_word_bytes = total_len_bytes - full_words_bytes;
+        let last_word = packed_tx_data[packed_tx_data_len - 1];
+
+        let (tx_data) = alloc();
+        let tx_data_len = total_len_bytes;
+        Helpers.felt_array_to_bytes31_array(full_words_count, full_words_ptr, tx_data);
+        felt_to_bytes_i(tx_data + full_words_bytes, last_word, last_word_bytes);
+
+        let tx = EthTransaction.decode(tx_data_len, tx_data);
+
+        Internals.validate(address, tx_info.nonce, chain_id, r, s, v, tx_data_len, tx_data);
 
         validate(
             call_array_len=call_array_len - 1,
@@ -234,7 +243,23 @@ namespace AccountContract {
             return (response_len=0);
         }
 
-        let tx = EthTransaction.decode([call_array].data_len, calldata + [call_array].data_offset);
+        // Unpack the tx data
+        let packed_tx_data_len = [call_array].data_len;
+        let packed_tx_data = calldata + [call_array].data_offset;
+
+        let total_len_bytes = [packed_tx_data];
+        let full_words_count = packed_tx_data_len - 2;
+        let full_words_bytes = full_words_count * 31;
+        let full_words_ptr = packed_tx_data + 1;
+        let last_word_bytes = total_len_bytes - full_words_bytes;
+        let last_word = packed_tx_data[packed_tx_data_len - 1];
+
+        let (tx_data) = alloc();
+        let tx_data_len = total_len_bytes;
+        Helpers.felt_array_to_bytes31_array(full_words_count, full_words_ptr, tx_data);
+        felt_to_bytes_i(tx_data + full_words_bytes, last_word, last_word_bytes);
+
+        let tx = EthTransaction.decode(tx_data_len, tx_data);
 
         // No matter the status of the execution in EVM terms (success - failure - rejected), the nonce of the
         // transaction sender must be incremented, as the protocol nonce is.  While we use the protocol nonce for the

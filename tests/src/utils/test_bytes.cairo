@@ -12,6 +12,7 @@ from utils.bytes import (
     uint256_to_bytes,
     uint256_to_bytes32,
     bytes_to_bytes8_little_endian,
+    felt_to_bytes_i,
 )
 
 func test__felt_to_ascii{range_check_ptr}(output_ptr: felt*) {
@@ -38,6 +39,19 @@ func test__felt_to_bytes(output_ptr: felt*) {
     %{ ids.n = program_input["n"] %}
 
     felt_to_bytes(output_ptr, n);
+    return ();
+}
+
+func test__felt_to_bytes_i{range_check_ptr}(output_ptr: felt*) {
+    alloc_locals;
+    tempvar n: felt;
+    tempvar i: felt;
+    %{
+        ids.n = program_input["n"]
+        ids.i = program_input["i"]
+    %}
+
+    felt_to_bytes_i(output_ptr, n, i);
     return ();
 }
 
