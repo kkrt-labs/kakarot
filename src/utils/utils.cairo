@@ -16,7 +16,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.hash_state import hash_finalize, hash_init, hash_update
 
 from kakarot.model import model
-from utils.bytes import uint256_to_bytes32, felt_to_bytes32, felt_to_bytes31
+from utils.bytes import uint256_to_bytes32, felt_to_bytes32
 
 // @title Helper Functions
 // @notice This file contains a selection of helper function that simplify tasks such as type conversion and bit manipulation
@@ -362,21 +362,6 @@ namespace Helpers {
 
         let output_len = output - output_start;
         return (output_len, output_start);
-    }
-
-    // @notice Converts an array of felt to an array of bytes.
-    // @dev Each input felt is converted to 31 bytes.
-    // @param input_len: The number of felts in the input.
-    // @param input: pointer to the input array.
-    // @param output: pointer to the output array.
-    func felt_array_to_bytes31_array{range_check_ptr}(
-        input_len: felt, input: felt*, output: felt*
-    ) {
-        if (input_len == 0) {
-            return ();
-        }
-        felt_to_bytes31(output, [input]);
-        return felt_array_to_bytes31_array(input_len - 1, input + 1, output + 31);
     }
 
     // @notice Converts an array of felt to an array of bytes.
@@ -1124,7 +1109,7 @@ namespace Helpers {
     const BYTES_PER_FELT = 31;
 
     // @notice Load packed bytes from an array of bytes packed in 31-byte words and a final word.
-    // @param input_len The length of the input.
+    // @param input_len The total amount of bytes in the array.
     // @param input The input, an array of 31-bytes words and a final word.
     // @param bytes_len The total amount of bytes to load.
     // @returns bytes An array of individual bytes loaded from the packed input.
@@ -1146,6 +1131,8 @@ namespace Helpers {
         tempvar remaining_bytes = bytes_len;
         tempvar range_check_ptr = range_check_ptr;
         tempvar index = 0;
+        // needs to increment ap by 1 for nothing as in `next` index (and the rest) are
+        // off-by-one
         tempvar empty = 0;
         tempvar value = 0;
         tempvar count = 0;

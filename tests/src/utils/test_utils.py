@@ -1,10 +1,10 @@
+import random
 from math import ceil
 
 import pytest
 from ethereum.cancun.vm.runtime import get_valid_jump_destinations
 from hypothesis import given, settings
 from hypothesis import strategies as st
-import random
 
 from kakarot_scripts.utils.kakarot import get_contract
 from tests.utils.helpers import pack_calldata
@@ -148,21 +148,6 @@ def test_should_convert_bytes4_to_felt(cairo_run, data, expected):
 )
 def test_should_unpack_felt_array_to_bytes32_array(cairo_run, data, expected):
     result = cairo_run("test__felt_array_to_bytes32_array", data=data)
-    assert bytes(result) == expected
-
-
-@pytest.mark.parametrize(
-    "data",
-    [
-        ([2**248 - 1] * 10),
-        ([2**248 - 1, 2**128]),
-        [2**2],
-        [0],
-    ],
-)
-def test_should_unpack_felt_array_to_bytes31_array(cairo_run, data):
-    result = cairo_run("test__felt_array_to_bytes31_array", data=data)
-    expected = b"".join(word.to_bytes(31, "big") for word in data)
     assert bytes(result) == expected
 
 
