@@ -241,3 +241,15 @@ def merge_access_list(access_list):
             }
         )
     return merged_list
+
+
+def pack_calldata(data: bytes) -> List[int]:
+    """
+    Pack the incoming calldata bytes 31-bytes at a time in big-endian order.
+    Returns a serialized array with the following elements:
+    - data_len: full length of input data
+    - full_words: full 31-byte words
+    - last_word: the last word taking less than or equal to 31 bytes.
+    """
+
+    return [len(data), *[int(chunk, 16) for chunk in wrap(data.hex(), 2 * 31)]]

@@ -189,16 +189,16 @@ namespace AccountContract {
         let v = tx_info.signature[4];
         let (_, chain_id) = unsigned_div_rem(tx_info.chain_id, 2 ** 32);
 
-        Internals.validate(
-            address,
-            tx_info.nonce,
-            chain_id,
-            r,
-            s,
-            v,
-            [call_array].data_len,
-            calldata + [call_array].data_offset,
+        // Unpack the tx data
+        let packed_tx_data_len = [call_array].data_len;
+        let packed_tx_data = calldata + [call_array].data_offset;
+
+        let tx_data_len = [packed_tx_data];
+        let (tx_data) = Helpers.load_packed_bytes(
+            packed_tx_data_len - 1, packed_tx_data + 1, tx_data_len
         );
+
+        Internals.validate(address, tx_info.nonce, chain_id, r, s, v, tx_data_len, tx_data);
 
         validate(
             call_array_len=call_array_len - 1,
@@ -234,7 +234,16 @@ namespace AccountContract {
             return (response_len=0);
         }
 
-        let tx = EthTransaction.decode([call_array].data_len, calldata + [call_array].data_offset);
+        // Unpack the tx data
+        let packed_tx_data_len = [call_array].data_len;
+        let packed_tx_data = calldata + [call_array].data_offset;
+
+        let tx_data_len = [packed_tx_data];
+        let (tx_data) = Helpers.load_packed_bytes(
+            packed_tx_data_len - 1, packed_tx_data + 1, tx_data_len
+        );
+
+        let tx = EthTransaction.decode(tx_data_len, tx_data);
 
         // No matter the status of the execution in EVM terms (success - failure - rejected), the nonce of the
         // transaction sender must be incremented, as the protocol nonce is.  While we use the protocol nonce for the

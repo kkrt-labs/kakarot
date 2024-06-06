@@ -42,7 +42,7 @@ from kakarot_scripts.utils.starknet import get_deployments
 from kakarot_scripts.utils.starknet import invoke as _invoke_starknet
 from kakarot_scripts.utils.starknet import wait_for_transaction
 from tests.utils.constants import TRANSACTION_GAS_LIMIT
-from tests.utils.helpers import rlp_encode_signed_data
+from tests.utils.helpers import pack_calldata, rlp_encode_signed_data
 from tests.utils.uint256 import int_to_uint256
 
 logging.basicConfig()
@@ -385,13 +385,14 @@ async def eth_send_transaction(
         return receipt, [], receipt.status, receipt.gasUsed
 
     encoded_unsigned_tx = rlp_encode_signed_data(typed_transaction.as_dict())
+    packed_encoded_unsigned_tx = pack_calldata(bytes(encoded_unsigned_tx))
 
     prepared_invoke = await evm_account._prepare_invoke(
         calls=[
             Call(
                 to_addr=0xDEAD,  # unused in current EOA implementation
                 selector=0xDEAD,  # unused in current EOA implementation
-                calldata=encoded_unsigned_tx,
+                calldata=packed_encoded_unsigned_tx,
             )
         ],
         max_fee=int(5e17) if max_fee is None else max_fee,

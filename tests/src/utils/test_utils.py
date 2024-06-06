@@ -1,3 +1,4 @@
+import random
 from math import ceil
 
 import pytest
@@ -6,6 +7,7 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from kakarot_scripts.utils.kakarot import get_contract
+from tests.utils.helpers import pack_calldata
 
 
 @pytest.mark.parametrize(
@@ -144,7 +146,7 @@ def test_should_convert_bytes4_to_felt(cairo_run, data, expected):
         ),
     ],
 )
-def test_should_serialize_felt_in_bytes32_array(cairo_run, data, expected):
+def test_should_unpack_felt_array_to_bytes32_array(cairo_run, data, expected):
     result = cairo_run("test__felt_array_to_bytes32_array", data=data)
     assert bytes(result) == expected
 
@@ -154,3 +156,11 @@ class TestInitializeJumpdests:
         bytecode = get_contract("PlainOpcodes", "Counter").bytecode_runtime
         output = cairo_run("test__initialize_jumpdests", bytecode=bytecode)
         assert set(output) == get_valid_jump_destinations(bytecode)
+
+
+class TestLoadPackedBytes:
+    def test_should_load_packed_bytes(self, cairo_run):
+        bytes = random.randbytes(100)
+        packed_bytes = pack_calldata(bytes)
+        output = cairo_run("test__load_packed_bytes", data=packed_bytes)
+        assert output == list(bytes)
