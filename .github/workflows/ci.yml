@@ -177,6 +177,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: kkrt-labs/ef-tests
+          ref: feat/kakarot-signature-length
       - name: Checkout local skip file
         uses: actions/checkout@v4
         with:
