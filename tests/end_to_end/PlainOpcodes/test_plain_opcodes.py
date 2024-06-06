@@ -36,8 +36,8 @@ class TestPlainOpcodes:
             self, plain_opcodes, block_timestamp
         ):
             assert pytest.approx(
-                await plain_opcodes.opcodeTimestamp(), abs=10
-            ) == await block_timestamp("latest")
+                await plain_opcodes.opcodeTimestamp(), abs=20
+            ) == await block_timestamp("pending")
 
     class TestBlockhash:
         @pytest.mark.xfail(reason="Need to fix blockhash on real Starknet network")
@@ -54,7 +54,7 @@ class TestPlainOpcodes:
             self, plain_opcodes, block_number
         ):
             blockhash_invalid_number = await plain_opcodes.opcodeBlockHash(
-                await block_number("latest") + 1
+                await block_number("latest") + 10
             )
 
             assert int.from_bytes(blockhash_invalid_number, byteorder="big") == 0

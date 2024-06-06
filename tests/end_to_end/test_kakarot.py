@@ -58,7 +58,7 @@ async def class_hashes():
 
 
 @pytest_asyncio.fixture(scope="session")
-async def origin(evm: Contract):
+async def origin(evm: Contract, max_fee):
     """
     Deploys the origin's Starknet contract to the correct address.
     """
@@ -69,7 +69,7 @@ async def origin(evm: Contract):
     is_deployed = (await evm.functions["is_deployed"].call(evm_address)).deployed
     if is_deployed:
         return evm_address
-    tx = await evm.functions["deploy_account"].invoke_v1(evm_address, max_fee=100)
+    tx = await evm.functions["deploy_account"].invoke_v1(evm_address, max_fee=max_fee)
     await wait_for_transaction(tx.hash)
     return evm_address
 
@@ -100,7 +100,6 @@ class TestKakarot:
             params: dict,
             request,
             evm: Contract,
-            addresses,
             max_fee,
             origin,
         ):
@@ -167,8 +166,6 @@ class TestKakarot:
     class TestDeployExternallyOwnedAccount:
         async def test_should_deploy_starknet_contract_at_corresponding_address(
             self,
-            starknet: FullNodeClient,
-            fund_starknet_address,
             deploy_externally_owned_account,
             compute_starknet_address,
             get_contract,
@@ -186,11 +183,8 @@ class TestKakarot:
         async def test_should_fail_when_sender_is_not_account(
             self,
             starknet: FullNodeClient,
-            fund_starknet_address,
-            deploy_externally_owned_account,
             register_account,
             compute_starknet_address,
-            get_contract,
             random_seed,
         ):
             evm_address = generate_random_evm_address(random_seed)
@@ -204,11 +198,8 @@ class TestKakarot:
         async def test_should_fail_when_account_is_already_registered(
             self,
             starknet: FullNodeClient,
-            fund_starknet_address,
             deploy_externally_owned_account,
             register_account,
-            compute_starknet_address,
-            get_contract,
         ):
             evm_address = generate_random_evm_address(random_seed)
             await deploy_externally_owned_account(evm_address)

@@ -33,6 +33,7 @@ from kakarot_scripts.constants import (
     NETWORK,
     RPC_CLIENT,
     WEB3,
+    ChainId,
 )
 from kakarot_scripts.utils.starknet import call as _call_starknet
 from kakarot_scripts.utils.starknet import fund_address as _fund_starknet_address
@@ -334,7 +335,7 @@ async def get_eoa(private_key=None, amount=10) -> Account:
     return Account(
         address=starknet_address,
         client=RPC_CLIENT,
-        chain=NETWORK["chain_id"],
+        chain=ChainId.starknet_chain_id,
         # This is somehow a hack because we put EVM private key into a
         # Stark signer KeyPair to have both a regular Starknet account
         # and the access to the private key
