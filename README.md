@@ -90,9 +90,9 @@ The easiest way to get started is to use
 - or from VSCode, open the project and use "Dev Containers: Rebuild container"
   (requires Docker on your host machine)
 
-Otherwise, you can proceed with a regular installation on your host. The environment setup instructions are
-available in the [contribution guide](./docs/CONTRIBUTING.md).
-
+Otherwise, you can proceed with a regular installation on your host. The
+environment setup instructions are available in the
+[contribution guide](./docs/CONTRIBUTING.md).
 
 ## Build
 
