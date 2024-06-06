@@ -161,6 +161,7 @@ class TestAccount:
             )
 
     class TestAutoUpgradeContracts:
+        @pytest.mark.skip(reason="alpha_release_disabled")
         async def test_should_upgrade_outdated_contract_transaction_target(
             self,
             starknet: FullNodeClient,
@@ -193,6 +194,7 @@ class TestAccount:
             new_class = await starknet.get_class_hash_at(counter_starknet_address)
             assert new_class == target_class
 
+        @pytest.mark.skip(reason="alpha_release_disabled")
         async def test_should_upgrade_outdated_contract_called_contract(
             self,
             starknet: FullNodeClient,
