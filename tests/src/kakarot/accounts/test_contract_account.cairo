@@ -5,7 +5,15 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256
 
-from kakarot.accounts.library import AccountContract, Internals as AccountInternals
+from kakarot.accounts.library import Internals as AccountInternals
+from kakarot.accounts.account_contract import (
+    initialize,
+    get_evm_address,
+    write_bytecode,
+    bytecode as read_bytecode,
+    write_jumpdests,
+    is_valid_jumpdest,
+)
 
 func test__initialize{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
@@ -23,7 +31,7 @@ func test__initialize{
     %}
 
     // When
-    AccountContract.initialize(kakarot_address, evm_address, implementation_class);
+    initialize(kakarot_address, evm_address, implementation_class);
 
     return ();
 }
@@ -31,7 +39,7 @@ func test__initialize{
 func test__get_evm_address__should_return_stored_address{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() -> felt {
-    let (evm_address) = AccountContract.get_evm_address();
+    let (evm_address) = get_evm_address();
 
     return evm_address;
 }
@@ -49,16 +57,16 @@ func test__write_bytecode{
         segments.write_arg(ids.bytecode, program_input["bytecode"])
     %}
 
-    AccountContract.write_bytecode(bytecode_len, bytecode);
+    write_bytecode(bytecode_len, bytecode);
 
     return ();
 }
 
-func test__read_bytecode{
+func test__bytecode{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() -> (bytecode_len: felt, bytecode: felt*) {
     alloc_locals;
-    let (bytecode_len, bytecode) = AccountContract.bytecode();
+    let (bytecode_len, bytecode) = read_bytecode();
     return (bytecode_len, bytecode);
 }
 
@@ -103,7 +111,7 @@ func test__write_jumpdests{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range
     %}
 
     // When
-    AccountContract.write_jumpdests(jumpdests_len, jumpdests);
+    write_jumpdests(jumpdests_len, jumpdests);
 
     return ();
 }
@@ -113,7 +121,7 @@ func test__is_valid_jumpdest{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ran
     tempvar index: felt;
     %{ ids.index = program_input["index"] %}
 
-    let is_valid = AccountContract.is_valid_jumpdest(index);
+    let (is_valid) = is_valid_jumpdest(index);
 
     return is_valid;
 }

@@ -224,9 +224,9 @@ func bytecode{
 // @dev Compared to bytecode, it does not read the code so it's much cheaper if only len is required.
 // @return len The bytecode_len of the smart contract.
 @view
-func bytecode_len{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() -> (len: felt) {
+func bytecode_len{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    len: felt
+) {
     let (len) = AccountContract.bytecode_len();
     return (len=len);
 }
@@ -272,9 +272,9 @@ func set_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 // @param jumpdests_len The length of the jumpdests array.
 // @param jumpdests The jumpdests array, containing indexes of valid jumpdests.
 @external
-func write_jumpdests{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(jumpdests_len: felt, jumpdests: felt*) {
+func write_jumpdests{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    jumpdests_len: felt, jumpdests: felt*
+) {
     // Access control check.
     Ownable.assert_only_owner();
     AccountContract.write_jumpdests(jumpdests_len, jumpdests);
@@ -285,9 +285,9 @@ func write_jumpdests{
 // @param index The index of the jumpdest.
 // @return is_valid 1 if the jumpdest is valid, 0 otherwise.
 @view
-func is_valid_jumpdest{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(index: felt) -> (is_valid: felt) {
+func is_valid_jumpdest{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    index: felt
+) -> (is_valid: felt) {
     let is_valid = AccountContract.is_valid_jumpdest(index);
     return (is_valid=is_valid);
 }
