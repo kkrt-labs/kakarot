@@ -402,7 +402,7 @@ async def eth_send_transaction(
     prepared_invoke = InvokeV1(
         version=prepared_invoke.version,
         max_fee=prepared_invoke.max_fee,
-        signature=[*int_to_uint256(evm_tx.r), *int_to_uint256(evm_tx.s), evm_tx.v, 0],
+        signature=[*int_to_uint256(evm_tx.r), *int_to_uint256(evm_tx.s), evm_tx.v],
         nonce=prepared_invoke.nonce,
         sender_address=prepared_invoke.sender_address,
         calldata=prepared_invoke.calldata,
