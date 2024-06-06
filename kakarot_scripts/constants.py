@@ -131,21 +131,22 @@ RPC_CLIENT = FullNodeClient(node_url=NETWORK["rpc_url"])
 WEB3 = Web3()
 
 try:
+    response = requests.post(
+        RPC_CLIENT.url,
+        json={
+            "jsonrpc": "2.0",
+            "method": "starknet_chainId",
+            "params": [],
+            "id": 0,
+        },
+    )
+    payload = json.loads(response.text)
+    starknet_chain_id = int(payload["result"], 16)
+
     if WEB3.is_connected():
         chain_id = WEB3.eth.chain_id
     else:
-        response = requests.post(
-            RPC_CLIENT.url,
-            json={
-                "jsonrpc": "2.0",
-                "method": "starknet_chainId",
-                "params": [],
-                "id": 0,
-            },
-        )
-        payload = json.loads(response.text)
-
-        chain_id = int(payload["result"], 16)
+        chain_id = starknet_chain_id
 except (
     requests.exceptions.ConnectionError,
     requests.exceptions.MissingSchema,
@@ -155,10 +156,12 @@ except (
         f"⚠️  Could not get chain Id from {NETWORK['rpc_url']}: {e}, defaulting to KKRT"
     )
     chain_id = int.from_bytes(b"KKRT", "big")
+    starknet_chain_id = int.from_bytes(b"KKRT", "big")
 
 
 class ChainId(IntEnum):
     chain_id = chain_id
+    starknet_chain_id = starknet_chain_id
 
 
 NETWORK["chain_id"] = ChainId.chain_id
