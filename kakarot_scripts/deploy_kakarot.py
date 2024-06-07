@@ -107,6 +107,7 @@ async def main():
         )
         deployments["Counter"] = await deploy("Counter")
         deployments["MockPragmaOracle"] = await deploy("MockPragmaOracle")
+        deployments["CairoMessaging"] = await deploy("CairoMessaging")
 
     dump_deployments(deployments)
 
