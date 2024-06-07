@@ -176,7 +176,6 @@ class Serde:
             "code_address": raw["code_address"],
             "read_only": bool(raw["read_only"]),
             "is_create": bool(raw["is_create"]),
-            "authorized": self.serialize_struct("model.Option", raw["authorized"]),
             "depth": raw["depth"],
             "env": self.serialize_struct("model.Environment", raw["env"]),
         }

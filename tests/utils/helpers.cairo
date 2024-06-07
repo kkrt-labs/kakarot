@@ -39,7 +39,6 @@ namespace TestHelpers {
             bytecode_len=bytecode_len, bytecode=bytecode
         );
         tempvar zero = new Uint256(0, 0);
-        tempvar authorized = new model.Option(is_some=0, value=0);
         local message: model.Message* = new model.Message(
             bytecode=bytecode,
             bytecode_len=bytecode_len,
@@ -54,7 +53,6 @@ namespace TestHelpers {
             code_address=evm_contract_address,
             read_only=FALSE,
             is_create=FALSE,
-            authorized=authorized,
             depth=0,
             env=env,
         );
@@ -71,48 +69,6 @@ namespace TestHelpers {
         bytecode_len: felt, bytecode: felt*
     ) -> model.EVM* {
         return init_evm_at_address(bytecode_len, bytecode, 0, 0);
-    }
-
-    func init_evm_at_address_with_authority_set{
-        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
-    }(
-        bytecode_len: felt,
-        bytecode: felt*,
-        starknet_contract_address: felt,
-        evm_contract_address: felt,
-    ) -> model.EVM* {
-        alloc_locals;
-
-        let (calldata) = alloc();
-        let env = Starknet.get_env(0, 0);
-        tempvar address = new model.Address(
-            starknet=starknet_contract_address, evm=evm_contract_address
-        );
-        let (valid_jumpdests_start, valid_jumpdests) = Helpers.initialize_jumpdests(
-            bytecode_len=bytecode_len, bytecode=bytecode
-        );
-        tempvar zero = new Uint256(0, 0);
-        tempvar authorized = new model.Option(is_some=1, value=evm_contract_address);
-        local message: model.Message* = new model.Message(
-            bytecode=bytecode,
-            bytecode_len=bytecode_len,
-            valid_jumpdests_start=valid_jumpdests_start,
-            valid_jumpdests=valid_jumpdests,
-            calldata=calldata,
-            calldata_len=0,
-            value=zero,
-            caller=env.origin,
-            parent=cast(0, model.Parent*),
-            address=address,
-            code_address=evm_contract_address,
-            read_only=FALSE,
-            is_create=FALSE,
-            authorized=authorized,
-            depth=0,
-            env=env,
-        );
-        let evm: model.EVM* = EVM.init(message, 1000000);
-        return evm;
     }
 
     func init_stack_with_values(stack_len: felt, stack: Uint256*) -> model.Stack* {
