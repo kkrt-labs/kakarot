@@ -134,7 +134,7 @@ class TestContractAccount:
             with patch.object(
                 SyscallHandler, "mock_storage", side_effect=storage
             ) as mock_storage:
-                output_len, output = cairo_run("test__read_bytecode")
+                output_len, output = cairo_run("test__bytecode")
             chunk_counts, remainder = divmod(len(bytecode), 31)
             addresses = list(range(chunk_counts + (remainder > 0)))
             calls = [call(address=address) for address in addresses]
@@ -143,6 +143,12 @@ class TestContractAccount:
 
     class TestJumpdests:
         class TestWriteJumpdests:
+            @SyscallHandler.patch("Ownable_owner", 0xDEAD)
+            def test_should_assert_only_owner(self, cairo_run):
+                with cairo_error():
+                    cairo_run("test__write_jumpdests", bytecode=[])
+
+            @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
             def test__should_store_valid_jumpdests(self, cairo_run):
                 jumpdests = [0x02, 0x10, 0xFF]
                 cairo_run("test__write_jumpdests", jumpdests=jumpdests)
