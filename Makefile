@@ -120,3 +120,9 @@ install-katana:
 
 run-katana:
 	katana --chain-id test --validate-max-steps 6000000 --invoke-max-steps 14000000 --eth-gas-price 0 --strk-gas-price 0 --disable-fee
+
+run-anvil:
+	anvil --block-base-fee-per-gas 10
+
+run-katana-messaging:
+	katana --chain-id test --validate-max-steps 6000000 --invoke-max-steps 14000000 --eth-gas-price 0 --strk-gas-price 0 --disable-fee --messaging .katana/messaging_config.json

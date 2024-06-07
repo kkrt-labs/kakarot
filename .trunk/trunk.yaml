@@ -61,6 +61,7 @@ lint:
         - lib*
         - resources*
         - tests/ef_tests/test_data
+        - .katana/messaging_config.json
 actions:
   disabled:
     - trunk-announce
