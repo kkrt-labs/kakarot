@@ -92,7 +92,7 @@ async def get_starknet_account(
                 calldata=[],
             )
             public_key = (
-                await RPC_CLIENT.call_contract(call=call, block_hash="latest")
+                await RPC_CLIENT.call_contract(call=call, block_hash="pending")
             )[0]
             break
         except Exception as err:
