@@ -166,7 +166,7 @@ async def deploy(
     contract = get_contract(contract_app, contract_name, caller_eoa=caller_eoa)
     max_fee = kwargs.pop("max_fee", None)
     value = kwargs.pop("value", 0)
-    receipt, response, success, gas_used = await eth_send_transaction(
+    receipt, response, success, _ = await eth_send_transaction(
         to=0,
         gas=int(TRANSACTION_GAS_LIMIT),
         data=contract.constructor(*args, **kwargs).data_in_transaction,
@@ -506,11 +506,11 @@ async def store_bytecode(bytecode: Union[str, bytes], **kwargs):
     {RETURN}
     {bytecode.hex()}"""
     )
-    receipt, response, success, gas_used = await eth_send_transaction(
+    _, response, success, _ = await eth_send_transaction(
         to=0, data=deploy_bytecode, **kwargs
     )
     assert success
-    starknet_address, evm_address = response
+    _, evm_address = response
     stored_bytecode = await eth_get_code(evm_address)
     assert stored_bytecode == bytecode
     return evm_address

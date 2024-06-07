@@ -90,9 +90,9 @@ NETWORKS = {
         "name": "kakarot-staging",
         "explorer_url": "",
         "rpc_url": os.getenv("KAKAROT_STAGING_RPC_URL"),
-        "devnet": False,
-        "check_interval": 6,
-        "max_wait": 360,
+        "devnet": True,
+        "check_interval": 1,
+        "max_wait": 30,
     },
 }
 
