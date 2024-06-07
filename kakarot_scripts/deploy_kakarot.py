@@ -58,7 +58,7 @@ async def main():
             await invoke(
                 "kakarot",
                 "set_cairo1_helpers_class_hash",
-                class_hash["uninitialized_account"],
+                class_hash["Cairo1Helpers"],
             )
         else:
             logger.info("✅ Kakarot already up to date.")

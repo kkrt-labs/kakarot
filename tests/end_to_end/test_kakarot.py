@@ -253,7 +253,6 @@ class TestKakarot:
             assert result.gas_used == 21_000
 
     class TestUpgrade:
-
         async def test_should_raise_when_caller_is_not_owner(
             self, starknet, kakarot, invoke, other, class_hashes
         ):
