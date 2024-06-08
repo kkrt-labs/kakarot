@@ -10,7 +10,7 @@ from starkware.cairo.common.math_cmp import is_not_zero
 from starkware.cairo.common.uint256 import Uint256
 from starkware.starknet.common.syscalls import get_caller_address, replace_class, get_tx_info
 from starkware.cairo.common.registers import get_fp_and_pc
-from openzeppelin.access.ownable.library import Ownable
+from openzeppelin.access.ownable.library import Ownable, Ownable_owner
 
 // Local dependencies
 from backend.starknet import Starknet
@@ -52,6 +52,22 @@ func upgrade{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     Ownable.assert_only_owner();
     replace_class(new_class_hash);
     kakarot_upgraded.emit(new_class_hash);
+    return ();
+}
+
+// @notive Returns the owner of the contract
+@external
+func get_owner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (owner: felt) {
+    return Ownable_owner.read();
+}
+
+// @notive Transfer the ownership of the contract
+// @param new_owner The new owner
+@external
+func transfer_ownership{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    new_owner: felt
+) {
+    Ownable.transfer_ownership(new_owner);
     return ();
 }
 
