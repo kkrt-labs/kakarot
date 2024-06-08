@@ -68,7 +68,7 @@ func transfer_ownership{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_ch
     new_owner: felt
 ) {
     Ownable.transfer_ownership(new_owner);
-    return();
+    return ();
 }
 
 // @notice Set the native token used by kakarot
