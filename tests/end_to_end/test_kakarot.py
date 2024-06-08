@@ -16,6 +16,7 @@ from tests.utils.helpers import (
     hex_string_to_bytes_array,
 )
 from tests.utils.reporting import traceit
+from tests.utils.syscall_handler import SyscallHandler
 
 params_execute = [pytest.param(case.pop("params"), **case) for case in test_cases]
 
@@ -392,3 +393,27 @@ class TestKakarot:
             assert prev_class_hash != new_class_hash
             assert new_class_hash == class_hashes["replace_class"]
             await invoke("kakarot", "upgrade", prev_class_hash)
+
+    class TestTransferOwnership:
+        @SyscallHandler.patch("Ownable_owner", 0xDEAD)
+        async def test_should_raise_when_caller_is_not_owner(
+            self, kakarot, invoke, other
+        ):
+            prev_owner = await kakarot.functions["get_owner"].call()
+            try:
+                await invoke("kakarot", "transfer_ownership", account=other)
+            except Exception as e:
+                print(e)
+            new_owner = await kakarot.functions["get_owner"].call()
+            assert prev_owner == new_owner
+
+        @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
+        async def test_should_transfer_ownership(self, kakarot, invoke, other):
+            prev_owner = (await kakarot.functions["get_owner"].call()).owner
+            await invoke("kakarot", "transfer_ownership", other.address)
+            new_owner = (await kakarot.functions["get_owner"].call()).owner
+
+            assert prev_owner != new_owner
+            assert new_owner == other.address
+
+            await invoke("kakarot", "transfer_ownership", prev_owner, account=other)
