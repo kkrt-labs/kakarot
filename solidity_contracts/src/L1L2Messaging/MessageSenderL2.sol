@@ -19,10 +19,10 @@ contract MessageSenderL2  {
     // @notice Sends a message to L1.
     // @dev Uses the Cairo Precompiles mechanism to invoke a Cairo contract that uses the Starknet
     // messaging system.
-    function sendMessageToL1() external {
+    function sendMessageToL1(address to, uint128 value) external {
         uint256[] memory data = new uint256[](2);
-        data[0] = 0x1234;
-        data[1] = 0;
+        data[0] = uint256(uint160(to));
+        data[1] = uint256(value);
         messagingContract.callContract(SEND_MESSAGE_VALUE, data);
     }
 }

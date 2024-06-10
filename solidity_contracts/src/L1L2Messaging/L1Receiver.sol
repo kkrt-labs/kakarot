@@ -12,19 +12,22 @@ error InvalidPayload();
    @title Test contract to receive / send messages to starknet.
    @author Glihm https://github.com/glihm/starknet-messaging-dev
 */
-contract ContractMsg {
+contract L1Receiver {
 
     //
     IStarknetMessaging private _snMessaging;
+    uint256 private _cairoMessaging;
 
     /**
        @notice Constructor.
 
        @param snMessaging The address of Starknet Core contract, responsible
        or messaging.
+       @param cairoMessaging The address, on L2, of the Cairo contract that relays Kakarot messages.
     */
-    constructor(address snMessaging) {
+    constructor(address snMessaging, uint256 cairoMessaging) {
         _snMessaging = IStarknetMessaging(snMessaging);
+        _cairoMessaging = cairoMessaging;
     }
 
     /**
@@ -78,7 +81,6 @@ contract ContractMsg {
     /**
        @notice Manually consumes a message that was received from L2.
 
-       @param fromAddress L2 contract (account) that has sent the message.
        @param payload Payload of the message used to verify the hash.
 
        @dev A message "receive" means that the message hash is registered as consumable.
@@ -86,13 +88,12 @@ contract ContractMsg {
        and validate the message content before being consumed.
     */
     function consumeMessage(
-        uint256 fromAddress,
         uint256[] calldata payload
     )
         external
     {
         // Will revert if the message is not consumable.
-        _snMessaging.consumeMessageFromL2(fromAddress, payload);
+        bytes32 msghash = _snMessaging.consumeMessageFromL2(_cairoMessaging, payload);
 
         // The previous call returns the message hash (bytes32)
         // that can be used if necessary.

@@ -56,4 +56,10 @@ contract StarknetMessagingLocal is StarknetMessaging, IStarknetMessagingLocal {
         emit MessageHashesAddedFromL2(msgHashes);
     }
 
+    function getMsgCountByHash(
+        bytes32 msgHash
+    ) public view returns (uint256){
+        return l2ToL1Messages()[msgHash];
+    }
+
 }
