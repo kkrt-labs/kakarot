@@ -629,9 +629,9 @@ namespace Interpreter {
         jmp end;
         call SystemOperations.exec_create;  // 0xf5
         jmp end;
-        call SystemOperations.exec_auth;  // 0xf6
+        call unknown_opcode;  // 0xf6
         jmp end;
-        call SystemOperations.exec_authcall;  // 0xf7
+        call unknown_opcode;  // 0xf7
         jmp end;
         call unknown_opcode;  // 0xf8
         jmp end;
@@ -851,7 +851,6 @@ namespace Interpreter {
             code_address=code_address,
             read_only=FALSE,
             is_create=is_deploy_tx,
-            authorized=authorized,
             depth=0,
             env=env,
         );

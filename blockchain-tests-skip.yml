@@ -48,9 +48,6 @@ testname:
     - sha3_d3g0v0_Cancun #RunResources error
   stAttackTest:
     - ContractCreationSpam_d0g0v0_Cancun #RunResources error
-  stBadOpcode:
-    - badOpcodes_d111g0v0_Cancun #EIP-3074
-    - badOpcodes_d112g0v0_Cancun #EIP-3074
   stChainId:
     - chainId_d0g0v0_Cancun
   stCreate2:
