@@ -9,6 +9,7 @@ from eth_utils.address import to_checksum_address
 from starknet_py.contract import Contract
 from starknet_py.net.account.account import Account
 
+from kakarot_scripts.constants import NetworkType
 from kakarot_scripts.utils.starknet import wait_for_transaction
 from tests.utils.helpers import generate_random_private_key
 
@@ -28,7 +29,7 @@ def default_fee():
     """
     from kakarot_scripts.constants import NETWORK
 
-    if NETWORK["devnet"]:
+    if NETWORK["type"] is NetworkType.DEV:
         return int(0)
     else:
         return int(1e16)
