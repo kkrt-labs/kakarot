@@ -22,26 +22,33 @@ BLOCK_GAS_LIMIT = 7_000_000
 
 BEACON_ROOT_ADDRESS = "0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02"
 
+
+class NetworkType(Enum):
+    PROD = "prod"
+    DEV = "dev"
+    STAGING = "staging"
+
+
 NETWORKS = {
     "mainnet": {
         "name": "mainnet",
         "explorer_url": "https://starkscan.co",
         "rpc_url": f"https://starknet-mainnet.infura.io/v3/{os.getenv('INFURA_KEY')}",
-        "devnet": False,
+        "type": NetworkType.PROD,
         "chain_id": StarknetChainId.MAINNET,
     },
     "goerli": {
         "name": "starknet-goerli",
         "explorer_url": "https://testnet.starkscan.co",
         "rpc_url": f"https://starknet-goerli.infura.io/v3/{os.getenv('INFURA_KEY')}",
-        "devnet": False,
+        "type": NetworkType.PROD,
         "chain_id": StarknetChainId.GOERLI,
     },
     "sepolia": {
         "name": "starknet-sepolia",
         "explorer_url": "https://sepolia.starkscan.co/",
         "rpc_url": "https://starknet-sepolia.public.blastapi.io/rpc/v0_6",
-        "devnet": False,
+        "type": NetworkType.PROD,
         "chain_id": StarknetChainId.SEPOLIA_TESTNET,
         "check_interval": 5,
         "max_wait": 30,
@@ -50,7 +57,7 @@ NETWORKS = {
         "name": "starknet-devnet",
         "explorer_url": "",
         "rpc_url": "http://127.0.0.1:5050/rpc",
-        "devnet": True,
+        "type": NetworkType.DEV,
         "check_interval": 0.01,
         "max_wait": 1,
     },
@@ -58,7 +65,7 @@ NETWORKS = {
         "name": "katana",
         "explorer_url": "",
         "rpc_url": os.getenv("KATANA_RPC_URL", "http://127.0.0.1:5050"),
-        "devnet": True,
+        "type": NetworkType.DEV,
         "check_interval": 0.01,
         "max_wait": 2,
     },
@@ -66,7 +73,7 @@ NETWORKS = {
         "name": "madara",
         "explorer_url": "",
         "rpc_url": os.getenv("MADARA_RPC_URL", "http://127.0.0.1:9944"),
-        "devnet": False,
+        "type": NetworkType.DEV,
         "check_interval": 6,
         "max_wait": 30,
     },
@@ -74,7 +81,7 @@ NETWORKS = {
         "name": "sharingan",
         "explorer_url": "",
         "rpc_url": os.getenv("SHARINGAN_RPC_URL"),
-        "devnet": False,
+        "type": NetworkType.PROD,
         "check_interval": 6,
         "max_wait": 30,
     },
@@ -82,7 +89,7 @@ NETWORKS = {
         "name": "kakarot-sepolia",
         "explorer_url": "",
         "rpc_url": os.getenv("KAKAROT_SEPOLIA_RPC_URL"),
-        "devnet": False,
+        "type": NetworkType.PROD,
         "check_interval": 6,
         "max_wait": 360,
     },
@@ -90,7 +97,7 @@ NETWORKS = {
         "name": "kakarot-staging",
         "explorer_url": "",
         "rpc_url": os.getenv("KAKAROT_STAGING_RPC_URL"),
-        "devnet": True,
+        "type": NetworkType.STAGING,
         "check_interval": 1,
         "max_wait": 30,
     },
@@ -108,7 +115,7 @@ elif os.getenv("RPC_URL") is not None:
         "name": os.getenv("RPC_NAME", "custom-rpc"),
         "rpc_url": os.getenv("RPC_URL"),
         "explorer_url": "",
-        "devnet": False,
+        "type": NetworkType.PROD,
         "check_interval": float(os.getenv("CHECK_INTERVAL", 0.1)),
         "max_wait": float(os.getenv("MAX_WAIT", 30)),
     }

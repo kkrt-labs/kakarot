@@ -10,6 +10,7 @@ from kakarot_scripts.constants import (
     EVM_ADDRESS,
     NETWORK,
     RPC_CLIENT,
+    NetworkType,
 )
 from kakarot_scripts.utils.starknet import (
     declare,
@@ -20,6 +21,7 @@ from kakarot_scripts.utils.starknet import (
     get_deployments,
     get_starknet_account,
     invoke,
+    upgrade,
 )
 
 logging.basicConfig()
@@ -43,7 +45,7 @@ async def main():
     class_hash = get_declarations()
 
     deployments = get_deployments()
-    if deployments.get("kakarot") and not NETWORK["devnet"]:
+    if deployments.get("kakarot") and NETWORK["type"] is not NetworkType.DEV:
         logger.info("ℹ️  Kakarot already deployed, checking version.")
         deployed_class_hash = await RPC_CLIENT.get_class_hash_at(
             deployments["kakarot"]["address"]
@@ -74,7 +76,25 @@ async def main():
             BLOCK_GAS_LIMIT,
         )
 
-    if NETWORK["devnet"]:
+    if NETWORK["type"] is NetworkType.STAGING:
+        deployments["EVM"] = await upgrade(
+            "EVM",
+            [
+                account.address,  # owner
+                ETH_TOKEN_ADDRESS,  # native_token_address_
+                class_hash["account_contract"],  # account_contract_class_hash_
+                class_hash[
+                    "uninitialized_account"
+                ],  # uninitialized_account_class_hash_
+                class_hash["Cairo1Helpers"],
+                COINBASE,
+                BLOCK_GAS_LIMIT,
+            ],
+        )
+        deployments["Counter"] = await upgrade("Counter")
+        deployments["MockPragmaOracle"] = await upgrade("MockPragmaOracle")
+
+    if NETWORK["type"] is NetworkType.DEV:
         deployments["EVM"] = await deploy(
             "EVM",
             account.address,  # owner
@@ -94,7 +114,7 @@ async def main():
         logger.info(f"ℹ️  Found default EVM address {EVM_ADDRESS}")
         from kakarot_scripts.utils.kakarot import get_eoa
 
-        amount = 0.02 if not NETWORK["devnet"] else 100
+        amount = 0.02 if NETWORK["type"] is not NetworkType.DEV else 100
         await get_eoa(amount=amount)
 
 

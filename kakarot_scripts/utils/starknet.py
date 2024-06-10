@@ -46,6 +46,7 @@ from kakarot_scripts.constants import (
     SOURCE_DIR,
     ArtifactType,
     ChainId,
+    NetworkType,
 )
 
 logging.basicConfig()
@@ -308,9 +309,13 @@ def compile_contract(contract):
             artifact,
             "--cairo_path",
             str(SOURCE_DIR),
-            *(["--no_debug_info"] if not NETWORK["devnet"] else []),
+            *(["--no_debug_info"] if NETWORK["type"] is not NetworkType.DEV else []),
             *(["--account_contract"] if contract["is_account_contract"] else []),
-            *(["--disable_hint_validation"] if NETWORK["devnet"] else []),
+            *(
+                ["--disable_hint_validation"]
+                if NETWORK["type"] is NetworkType.DEV
+                else []
+            ),
         ],
         capture_output=True,
     )
@@ -478,6 +483,24 @@ async def deploy(contract_name, *args):
         "tx": deploy_result.hash,
         "artifact": get_artifact(contract_name)[0],
     }
+
+
+async def upgrade(contract_name, *args):
+    deployments = get_deployments()
+    if not deployments.get(contract_name):
+        return await deploy(contract_name, *args)
+
+    logger.info(f"ℹ️  {contract_name} already deployed, checking version.")
+    class_hash = get_declarations()
+
+    deployed_class_hash = await RPC_CLIENT.get_class_hash_at(
+        deployments[contract_name]["address"]
+    )
+    if deployed_class_hash != class_hash[contract_name]:
+        logger.info(f"ℹ️  redeploying {contract_name}.")
+        return await deploy(contract_name, *args)
+
+    return deployments[contract_name]
 
 
 async def invoke_address(contract_address, function_name, *calldata, account=None):
