@@ -74,24 +74,26 @@ async def main():
             BLOCK_GAS_LIMIT,
         )
 
-    if deployments.get("EVM") and NETWORK["staging"]:
-        logger.info("ℹ️  EVM already deployed, checking version.")
-        deployed_class_hash = await RPC_CLIENT.get_class_hash_at(
-            deployments["EVM"]["address"]
-        )
-        if deployed_class_hash != class_hash["EVM"]:
-            deployments["EVM"] = await deploy(
-                "EVM",
-                account.address,  # owner
-                ETH_TOKEN_ADDRESS,  # native_token_address_
-                class_hash["account_contract"],  # account_contract_class_hash_
-                class_hash[
-                    "uninitialized_account"
-                ],  # uninitialized_account_class_hash_
-                class_hash["Cairo1Helpers"],
-                COINBASE,
-                BLOCK_GAS_LIMIT,
+    if NETWORK["staging"]:
+        args = [
+            account.address,  # owner
+            ETH_TOKEN_ADDRESS,  # native_token_address_
+            class_hash["account_contract"],  # account_contract_class_hash_
+            class_hash["uninitialized_account"],  # uninitialized_account_class_hash_
+            class_hash["Cairo1Helpers"],
+            COINBASE,
+            BLOCK_GAS_LIMIT,
+        ]
+        if not deployments.get("EVM"):
+            deployments["EVM"] = await deploy("EVM", *args)
+        else:
+            logger.info("ℹ️  EVM already deployed, checking version.")
+            deployed_class_hash = await RPC_CLIENT.get_class_hash_at(
+                deployments["EVM"]["address"]
             )
+            if deployed_class_hash != class_hash["EVM"]:
+                logger.info("ℹ️  redeploying EVM.")
+                deployments["EVM"] = await deploy("EVM", *args)
 
     if NETWORK["devnet"]:
         deployments["EVM"] = await deploy(
