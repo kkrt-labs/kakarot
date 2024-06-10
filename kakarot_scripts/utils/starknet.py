@@ -487,7 +487,7 @@ async def deploy(contract_name, *args):
 
 async def upgrade(contract_name, *args):
     deployments = get_deployments()
-    if not deployments[contract_name]:
+    if not deployments.get(contract_name):
         return await deploy(contract_name, *args)
 
     logger.info(f"ℹ️  {contract_name} already deployed, checking version.")
