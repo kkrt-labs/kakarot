@@ -126,7 +126,8 @@ namespace Account {
 
         // Upgrade the target starknet contract's class if it's not the latest one.
         // The contract must be deployed on starknet already.
-        Internals.check_and_upgrade_account_class(address);
+        //TODO! Uncomment when the upgrade is needed
+        // Internals.check_and_upgrade_account_class(address);
 
         let (bytecode_len, bytecode) = IAccount.bytecode(contract_address=starknet_address);
         let (nonce) = IAccount.get_nonce(contract_address=starknet_address);
