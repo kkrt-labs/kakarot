@@ -90,7 +90,7 @@ NETWORKS = {
         "name": "kakarot-staging",
         "explorer_url": "",
         "rpc_url": os.getenv("KAKAROT_STAGING_RPC_URL"),
-        "devnet": True,
+        "devnet": False,
         "check_interval": 1,
         "max_wait": 30,
     },
@@ -165,6 +165,7 @@ class ChainId(IntEnum):
 
 
 NETWORK["chain_id"] = ChainId.chain_id
+NETWORK["staging"] = "staging" in NETWORK["name"]
 
 ETH_TOKEN_ADDRESS = 0x49D36570D4E46F48E99674BD3FCC84644DDD6B96F7C741B1562B82F9E004DC7
 COINBASE = 0xCA40796AFB5472ABAED28907D5ED6FC74C04954A
