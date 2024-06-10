@@ -90,22 +90,9 @@ The easiest way to get started is to use
 - or from VSCode, open the project and use "Dev Containers: Rebuild container"
   (requires Docker on your host machine)
 
-Otherwise, you can proceed with a regular installation on your host:
-
-```bash
-# install poetry if you don't have it already
-# curl -sSL https://install.python-poetry.org | python3 -
-make setup
-```
-
-Note that you may need to symlink `starknet-compile-deprecated` (new name of the
-starknet-compile binary) to `starknet-compile` in order to make the CairoLS
-VSCode extension work:
-
-```bash
-ln -s <YOUR_PATH_TO_YOUR_PYTHON_VENV_BINARIES>/starknet-compile-deprecated <YOUR_PATH_TO_LOCAL_BINARIES>/starknet-compile
-# example: ln -s /Users/eliastazartes/code/kakarot/.venv/bin/starknet-compile-deprecated /usr/local/bin/starknet-compile
-```
+Otherwise, you can proceed with a regular installation on your host. The
+environment setup instructions are available in the
+[contribution guide](./docs/CONTRIBUTING.md).
 
 ## Build
 
