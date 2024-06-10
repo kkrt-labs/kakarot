@@ -19,7 +19,7 @@ However, we ask that you follow these guidelines when contributing:
   immediately. We want to keep the project backlog clean and organized. If you
   are interested in working on an issue, please comment on the issue and we will
   assign it to you. We will remove the assignment if you do not start working on
-  the issue within a 2 days. You can, of course, submit a draft PR if you need
+  the issue within 2 days. You can, of course, submit a draft PR if you need
   more time or have questions regarding the issue.
 - Prefer rebasing over merging when updating your PR. This will keep the commit
   history clean and make it easier to review your changes.
@@ -54,6 +54,8 @@ libraries, e.g. `cairo-lang`.
   asdf install scarb 0.7.0
   asdf install scarb 2.6.4
   ```
+
+- Install [Go](https://go.dev/doc/install) to profile tests using `pprof`
 
 - Install the two VSCode extensions for Cairo:
   - [Cairo Syntax](https://marketplace.visualstudio.com/items?itemName=starkware.cairo)
@@ -123,9 +125,6 @@ Common caveats:
   `poetry show cairo-lang -v` to find the path to your cairo-lang dependency,
   and the binaries should be in the `bin` directory.
 
-- python3.10 is not compatible with the cairo-lang library. Make sure poetry and
-  your pyenv are using the 3.10 version of Python. Your machine may have
-  conflicting versions of python.
 - Mac M1 chips are subject to some quirks/bugs with regards to some
   cryptographic libraries used by `cairo-lang`.
   - you may need to run `brew install gmp`.
