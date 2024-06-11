@@ -51,16 +51,24 @@ jobs:
           fi
           cd -
 
+      - name: Debug Print Environment Variables
+        run: |
+          echo "Current commit: ${{ env.current_commit }}"
+          echo "Latest commit: ${{ env.latest_commit }}"
+          echo "Branch exists: ${{ env.branch_exists }}"
+
       - name: Update Submodule
         if: env.current_commit != env.latest_commit && env.branch_exists == 'false'
         run: |
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
           cd kakarot-rpc/lib/kakarot
+          echo "Current directory: $(pwd)"
           git fetch
           git checkout ${{ env.latest_commit }}
           cd -
           cd kakarot-rpc
+          echo "Current directory: $(pwd)"
           git checkout -b kakarot-${{ env.latest_commit }}
           git add lib/kakarot
           git commit -m "Update kakarot to ${{ env.release_tag }}"
