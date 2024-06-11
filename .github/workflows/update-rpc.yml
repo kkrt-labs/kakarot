@@ -64,7 +64,7 @@ jobs:
           git config --global user.name "GitHub Actions"
           cd kakarot-rpc/lib/kakarot
           echo "Current directory: $(pwd)"
-          git fetch
+          git fetch --all
           git checkout ${{ env.latest_commit }}
           cd -
           cd kakarot-rpc
