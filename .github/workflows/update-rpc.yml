@@ -1,0 +1,86 @@
+name: Update Submodule
+
+# on:
+#   release:
+#     types: [published]
+
+on: [pull_request]
+
+permissions: write-all
+
+jobs:
+  update-submodule:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Kakarot Repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get Release Tag
+        id: get_release_tag
+        # run: echo "release_tag=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
+        run: echo "release_tag=v0.8.2" >> $GITHUB_ENV
+
+      - name: Checkout Kakarot-RPC Repository
+        uses: actions/checkout@v4
+        with:
+          repository: kkrt-labs/kakarot-rpc
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: kakarot-rpc
+
+      - name: Check Current Submodule Commit
+        id: check_submodule_commit
+        run: |
+          cd kakarot-rpc/lib/kakarot
+          current_commit=$(git rev-parse HEAD)
+          latest_commit=$(git ls-remote https://github.com/kkrt-labs/kakarot.git ${{ env.release_tag }} | awk '{print $1}')
+          echo "current_commit=${current_commit}" >> $GITHUB_ENV
+          echo "latest_commit=${latest_commit}" >> $GITHUB_ENV
+          cd -
+
+      - name: Check if Branch Exists
+        id: check_branch_exists
+        run: |
+          cd kakarot-rpc
+          if git ls-remote --exit-code --heads origin update-kakarot-submodule-${{ env.latest_commit }}; then
+            echo "branch_exists=true" >> $GITHUB_ENV
+          else
+            echo "branch_exists=false" >> $GITHUB_ENV
+          fi
+          cd -
+
+      - name: Update Submodule
+        if: env.current_commit != env.latest_commit && env.branch_exists == 'false'
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+          cd kakarot-rpc/lib/kakarot
+          git fetch --all --tags
+          git checkout tags/${{ env.release_tag }}
+          cd -
+          cd kakarot-rpc
+          git checkout -b kakarot-${{ env.latest_commit }}
+          git add lib/kakarot
+          git commit -m "Update kakarot to ${{ env.release_tag }}"
+          git push --set-upstream origin kakarot-${{ env.latest_commit }}
+          cd -
+
+      - name: Check if Pull Request Exists
+        id: check_pr_exists
+        run: |
+          pr_exists=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                        -H "Accept: application/vnd.github+json" \
+                        "https://api.github.com/repos/kkrt-labs/kakarot-rpc/pulls?state=open" \
+                        | jq '[.[] | select(.head.ref == "kakarot-${{ env.latest_commit }}")] | length > 0')
+          echo "pr_exists=${pr_exists}" >> $GITHUB_ENV
+
+      - name: Create Pull Request
+        if: env.current_commit != env.latest_commit && env.pr_exists == 'false'
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/kkrt-labs/kakarot-rpc/pulls \
+            -d '{"title":"Update kakarot submodule to ${{ env.release_tag }}","head":"kakarot-${{ env.latest_commit }}","base":"main","body":"This PR updates the kakarot submodule to the latest release ${{ env.release_tag }}."}'
