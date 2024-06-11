@@ -33,7 +33,7 @@ jobs:
       - name: Check Current Submodule Commit
         id: check_submodule_commit
         run: |
-          cd kakarot-rpc/lib/kakarot
+          cd lib/kakarot
           current_commit=$(git rev-parse HEAD)
           latest_commit=$(git ls-remote https://github.com/kkrt-labs/kakarot.git ${{ env.release_tag }} | awk '{print $1}')
           echo "current_commit=${current_commit}" >> $GITHUB_ENV
@@ -43,8 +43,7 @@ jobs:
       - name: Check if Branch Exists
         id: check_branch_exists
         run: |
-          cd kakarot-rpc
-          if git ls-remote --exit-code --heads origin update-kakarot-submodule-${{ env.latest_commit }}; then
+          if git ls-remote --exit-code --heads origin kakarot-${{ env.latest_commit }}; then
             echo "branch_exists=true" >> $GITHUB_ENV
           else
             echo "branch_exists=false" >> $GITHUB_ENV
@@ -56,16 +55,14 @@ jobs:
         run: |
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
-          cd kakarot-rpc/lib/kakarot
+          cd lib/kakarot
           git fetch --all --tags
           git checkout tags/${{ env.release_tag }}
           cd -
-          cd kakarot-rpc
           git checkout -b kakarot-${{ env.latest_commit }}
           git add lib/kakarot
           git commit -m "Update kakarot to ${{ env.release_tag }}"
           git push --set-upstream origin kakarot-${{ env.latest_commit }}
-          cd -
 
       - name: Check if Pull Request Exists
         id: check_pr_exists
