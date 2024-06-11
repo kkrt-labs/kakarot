@@ -1,3 +1,4 @@
+import json
 import logging
 from types import MethodType
 from typing import Optional, Union, cast
@@ -10,7 +11,7 @@ from web3 import Web3
 from web3.contract import Contract as Web3Contract
 from web3.exceptions import NoABIFunctionsFound
 
-from kakarot_scripts.constants import EVM_ADDRESS, EVM_PRIVATE_KEY
+from kakarot_scripts.constants import EVM_ADDRESS, EVM_PRIVATE_KEY, L1_ADDRESSES_DIR
 from kakarot_scripts.utils.kakarot import (
     EvmTransactionError,
     _parse_events,
@@ -31,6 +32,43 @@ if anvil_provider.is_connected():
     logger.info("ℹ️  Connected to Anvil for local development")
 else:
     print("Failed to connect to Anvil")
+
+
+def dump_l1_addresses(deployments):
+    json.dump(
+        {
+            name: {
+                **deployment,
+                "address": deployment["address"],
+            }
+            for name, deployment in deployments.items()
+        },
+        open(L1_ADDRESSES_DIR / "l1-addresses.json", "w"),
+        indent=2,
+    )
+
+
+def get_l1_addresses():
+    try:
+        return {
+            name: {**deployment, "address": deployment["address"]}
+            for name, deployment in json.load(
+                open(L1_ADDRESSES_DIR / "l1-addresses.json", "r")
+            ).items()
+        }
+    except FileNotFoundError:
+        return {}
+
+
+def l1_contract_exists(address: HexBytes) -> bool:
+    try:
+        code = anvil_provider.eth.get_code(address)
+        if len(code) != 0:
+            logger.info(f"ℹ️  Contract at address {address} already exists")
+            return True
+        return False
+    except Exception:
+        return False
 
 
 async def deploy_on_l1(
