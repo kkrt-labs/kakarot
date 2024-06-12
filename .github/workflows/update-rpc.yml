@@ -4,36 +4,43 @@ name: Update Submodule
 #   release:
 #     types: [published]
 
-on: [pull_request]
+on:
+  push:
+    branches:
+      - cw/release-to-rpc
 
-permissions:
-  contents: read
-  pull-requests: write
+permissions: read-all
 
 jobs:
   update-submodule:
+    # GH_TOKEN is a secret defined in the github repository settings and not the default GITHUB_TOKEN
     runs-on: ubuntu-latest
-
+    permissions: write-all
     steps:
       - name: Checkout Kakarot-RPC Repository
         uses: actions/checkout@v4
         with:
           repository: kkrt-labs/kakarot-rpc
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GH_TOKEN }}
           path: kakarot-rpc
 
       - name: Update Submodule
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
+          cd kakarot-rpc
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
-          cd kakarot-rpc/lib/kakarot
-          echo "Current directory: $(pwd)"
+          git submodule update --recursive --init
+          cd lib/kakarot
           git fetch --tags
           export release_tag=$(git tag --sort=-creatordate | head -n 1)
           git checkout $release_tag
           cd ../..
           git checkout -b kakarot-$release_tag
           git add lib/kakarot
+          git status
           git commit -m "Update kakarot to $release_tag"
-          gh pr create -B main -H kakarot-$release_tag --title 'Update Kakarot to $release_tag'
-          cd -
+          git push --set-upstream origin kakarot-$release_tag --force
+          git log --oneline -n 5
+          gh pr create --title "Update Kakarot to ${release_tag}" --body "Update Kakarot to ${release_tag}"
