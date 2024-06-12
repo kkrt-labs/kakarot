@@ -80,10 +80,7 @@ jobs:
           echo "pr_exists=${pr_exists}" >> $GITHUB_ENV
 
       - name: Create Pull Request
-        if: env.current_commit != env.latest_commit && env.pr_exists == 'false'
-        run: |
-          curl -X POST \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Accept: application/vnd.github+json" \
-            https://api.github.com/repos/kkrt-labs/kakarot-rpc/pulls \
-            -d '{"title":"Update kakarot submodule to ${{ env.release_tag }}","head":"kakarot-${{ env.latest_commit }}","base":"main","body":"This PR updates the kakarot submodule to the latest release ${{ env.release_tag }}."}'
+          if: env.current_commit != env.latest_commit && env.pr_exists == 'false'
+          run: gh pr create -B main -H kakarot-${{ env.latest_commit }} --title 'Update kakarot submodule to ${{ env.release_tag }}' --body 'This PR updates the kakarot submodule to the latest release ${{ env.release_tag }}.'
+          env:
+              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
