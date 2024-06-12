@@ -13,11 +13,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Kakarot Repository
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Get Release Tag
         id: get_release_tag
         # run: echo "release_tag=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
