@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import "starknet/IStarknetMessaging.sol";
+import "../starknet/IStarknetMessaging.sol";
 
 // Define some custom error as an example.
 // It saves a lot's of space to use those custom error instead of strings.

@@ -3,7 +3,6 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.starknet.common.syscalls import call_contract, library_call
 from starkware.starknet.common.messages import send_message_to_l1
 
@@ -91,7 +90,7 @@ namespace KakarotPrecompiles {
         }
 
         let (revert_reason_len, revert_reason) = Errors.invalidCairoSelector();
-        return (revert_reason_len, revert_reason, CAIRO_PRECOMPILE_GAS, 1);
+        return (revert_reason_len, revert_reason, CAIRO_PRECOMPILE_GAS, Errors.EXCEPTIONAL_HALT);
     }
 
     func cairo_message{
@@ -108,7 +107,7 @@ namespace KakarotPrecompiles {
         let is_input_invalid = is_le(input_len, 95);
         if (is_input_invalid != 0) {
             let (revert_reason_len, revert_reason) = Errors.outOfBoundsRead();
-            return (revert_reason_len, revert_reason, CAIRO_MESSAGE_GAS, TRUE);
+            return (revert_reason_len, revert_reason, CAIRO_MESSAGE_GAS, Errors.EXCEPTIONAL_HALT);
         }
 
         // Input is formatted as:
@@ -130,6 +129,6 @@ namespace KakarotPrecompiles {
 
         send_message_to_l1(target_address, data_words_len, data);
         let (output) = alloc();
-        return (0, output, CAIRO_PRECOMPILE_GAS, FALSE);
+        return (0, output, CAIRO_PRECOMPILE_GAS, Errors.EXCEPTIONAL_HALT);
     }
 }
