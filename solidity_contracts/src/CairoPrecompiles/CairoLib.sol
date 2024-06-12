@@ -4,6 +4,7 @@ pragma solidity >=0.7.0 <0.9.0;
 library CairoLib {
     /// @dev The Cairo precompile contract's address.
     address constant CAIRO_PRECOMPILE_ADDRESS = 0x0000000000000000000000000000000000075001;
+    address constant CAIRO_MESSAGING_ADDRESS = 0x0000000000000000000000000000000000075002;
 
     /// @notice Performs a low-level call to a Cairo contract deployed on the Starknet appchain.
     /// @dev Used with intent to modify the state of the Cairo contract.
@@ -154,6 +155,22 @@ library CairoLib {
         uint256[] memory data = new uint256[](0);
         uint256 functionSelector = uint256(keccak256(bytes(functionName))) % 2**250;
         return libraryCall(classHash, functionSelector, data);
+    }
+
+    /// @notice Performs a low-level call to send a message from the Kakarot to the Ethereum network.
+    /// @param toAddress The address of the Ethereum contract to send the message to.
+    /// @param data The data to send to the Ethereum contract.
+    function sendMessageToL1(
+        address toAddress,
+        uint248[] memory data
+    ) internal {
+        bytes memory callData = abi.encode(
+            toAddress,
+            data
+        );
+
+        (bool success, ) = CAIRO_MESSAGING_ADDRESS.call(callData);
+        require(success, "CairoLib: send_message_to_l1 failed");
     }
 
 }

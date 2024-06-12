@@ -165,6 +165,26 @@ class TestPrecompiles:
 
                 return
 
+        class TestKakarotMessaging:
+            def test__cairo_message(self, cairo_run):
+                input_data = bytes.fromhex(
+                    f"{0xc0de:064x}"
+                    + f"{0x40:064x}"  # data_offset
+                    + f"{0x01:064x}"  # data_len: 1 word
+                    + f"{0x2a:064x}"  # data: uint256(42)
+                )
+
+                address = 0x75002
+                return_data, reverted, gas_used = cairo_run(
+                    "test__precompiles_run",
+                    address=address,
+                    input=input_data,
+                    caller_address=0,
+                )
+                SyscallHandler.mock_send_message_to_l1.assert_any_call(
+                    to_address=0xC0DE, payload=[0x2A]
+                )
+
     class TestIsPrecompile:
         @pytest.mark.parametrize(
             "address", range(0, LAST_ETHEREUM_PRECOMPILE_ADDRESS + 2)

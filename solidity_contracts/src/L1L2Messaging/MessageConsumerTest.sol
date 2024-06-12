@@ -16,18 +16,18 @@ contract MessageConsumerTest {
 
     //
     IStarknetMessaging private _starknetMessaging;
-    uint256 private _cairoMessaging;
+    uint256 private _kakarotAddress;
 
     /**
        @notice Constructor.
 
-       @param snMessaging The address of Starknet Core contract, responsible
+       @param starknetMessaging The address of Starknet Core contract, responsible
        for messaging.
-       @param cairoMessaging The address, on L2, of the Cairo contract that relays Kakarot messages.
+       @param kakarotAddress The Starknet address, on L2, of the Kakarot contract.
     */
-    constructor(address snMessaging, uint256 cairoMessaging) {
-        _starknetMessaging = IStarknetMessaging(snMessaging);
-        _cairoMessaging = cairoMessaging;
+    constructor(address starknetMessaging, uint256 kakarotAddress) {
+        _starknetMessaging = IStarknetMessaging(starknetMessaging);
+        _kakarotAddress = kakarotAddress;
     }
 
     /**
@@ -93,7 +93,7 @@ contract MessageConsumerTest {
         external
     {
         // Will revert if the message is not consumable.
-        bytes32 msghash = _starknetMessaging.consumeMessageFromL2(_cairoMessaging, payload);
+        bytes32 msghash = _starknetMessaging.consumeMessageFromL2(_kakarotAddress, payload);
 
         // The previous call returns the message hash (bytes32)
         // that can be used if necessary.

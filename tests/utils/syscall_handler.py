@@ -164,6 +164,7 @@ class SyscallHandler:
     mock_storage = mock.MagicMock()
     mock_event = mock.MagicMock()
     mock_replace_class = mock.MagicMock()
+    mock_send_message_to_l1 = mock.MagicMock()
 
     # Patch the keccak library call to return the keccak of the input data.
     # We need to reconstruct the raw bytes from the Cairo-style keccak calldata.
@@ -468,6 +469,24 @@ class SyscallHandler:
         retdata_segment = segments.add()
         segments.write_arg(retdata_segment, retdata)
         segments.write_arg(syscall_ptr + 5, [len(retdata), retdata_segment])
+
+    def send_message_to_l1(self, segments, syscall_ptr):
+        """
+        Record the send_message call in the internal mock object.
+
+        Syscall structure is:
+        struct SendMessageToL1SysCall {
+            selector: felt,
+            to_address: felt,
+            payload_size: felt,
+            payload_ptr: felt*,
+        }
+        """
+        to_address = segments.memory[syscall_ptr + 1]
+        payload_size = segments.memory[syscall_ptr + 2]
+        payload_ptr = segments.memory[syscall_ptr + 3]
+        payload = [segments.memory[payload_ptr + i] for i in range(payload_size)]
+        self.mock_send_message_to_l1(to_address=to_address, payload=payload)
 
     @classmethod
     @contextmanager

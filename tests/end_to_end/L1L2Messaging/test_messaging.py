@@ -8,7 +8,7 @@ from kakarot_scripts.utils.l1 import (
     get_l1_contract,
     l1_contract_exists,
 )
-from kakarot_scripts.utils.starknet import get_deployments, invoke
+from kakarot_scripts.utils.starknet import get_deployments
 
 
 @pytest.fixture(scope="session")
@@ -40,23 +40,23 @@ async def message_sender_l2(deploy_contract, owner):
         caller_eoa=owner.starknet_contract,
     )
 
-    await invoke(
-        "kakarot",
-        "set_authorized_cairo_precompile_caller",
-        int(message_sender.address, 16),
-        True,
-    )
+    # await invoke(
+    #     "kakarot",
+    #     "set_authorized_cairo_precompile_caller",
+    #     int(message_sender.address, 16),
+    #     True,
+    # )
     return message_sender
 
 
 @pytest.fixture(scope="session")
 async def message_consumer_test(deploy_l1_contract, sn_messaging_local):
-    cairo_messaging_address = get_deployments()["CairoMessaging"]["address"]
+    kakarot_address = get_deployments()["kakarot"]["address"]
     return await deploy_l1_contract(
         "L1L2Messaging",
         "MessageConsumerTest",
         sn_messaging_local.address,
-        cairo_messaging_address,
+        kakarot_address,
     )
 
 
