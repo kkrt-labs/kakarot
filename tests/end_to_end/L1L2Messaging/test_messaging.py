@@ -32,20 +32,11 @@ async def sn_messaging_local(deploy_l1_contract, owner):
 
 @pytest.fixture(scope="session")
 async def message_sender_l2(deploy_contract, owner):
-    cairo_messaging_address = get_deployments()["CairoMessaging"]["address"]
     message_sender = await deploy_contract(
         "L1L2Messaging",
         "MessageSenderL2",
-        cairo_messaging_address,
         caller_eoa=owner.starknet_contract,
     )
-
-    # await invoke(
-    #     "kakarot",
-    #     "set_authorized_cairo_precompile_caller",
-    #     int(message_sender.address, 16),
-    #     True,
-    # )
     return message_sender
 
 
