@@ -1,0 +1,42 @@
+name: Update Submodule
+
+# on:
+#   release:
+#     types: [published]
+
+on: [pull_request]
+
+permissions: write-all
+
+jobs:
+  update-submodule:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get Release Tag
+        id: get_release_tag
+        # run: echo "release_tag=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
+        run: |
+          git fetch --tags
+          echo "release_tag=$(git tag --sort=-creatordate | head -n 1)" >> $GITHUB_ENV
+
+      - name: Checkout Kakarot-RPC Repository
+        uses: actions/checkout@v4
+        with:
+          repository: kkrt-labs/kakarot-rpc
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update Submodule
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+          cd lib/kakarot
+          echo "Current directory: $(pwd)"
+          git fetch --tags
+          git checkout $(git tag --sort=-creatordate | head -n 1)
+          cd ../..
+          git checkout -b kakarot-${{ env.release_tag }}
+          git add lib/kakarot
+          git commit -m "Update kakarot to ${{ env.release_tag }}"
+          gh pr create -B main -H kakarot-${{ env.release_tag }} --title 'Update Kakarot to ${{ env.release_tag }}'
+          cd -
