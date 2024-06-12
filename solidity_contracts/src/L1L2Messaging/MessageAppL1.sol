@@ -12,7 +12,7 @@ error InvalidPayload();
    @title Test contract to receive / send messages to starknet.
    @author Glihm https://github.com/glihm/starknet-messaging-dev
 */
-contract MessageConsumerTest {
+contract MessageAppL1 {
 
     //
     IStarknetMessaging private _starknetMessaging;

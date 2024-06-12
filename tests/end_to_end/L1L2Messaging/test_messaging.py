@@ -19,10 +19,10 @@ async def sn_messaging_local(deploy_l1_contract, owner):
     if l1_addresses.get("StarknetMessagingLocal"):
         address = l1_addresses["StarknetMessagingLocal"]["address"]
         if l1_contract_exists(address):
-            return get_l1_contract("L1L2Messaging", "StarknetMessagingLocal", address)
+            return get_l1_contract("starknet", "StarknetMessagingLocal", address)
 
     contract = await deploy_l1_contract(
-        "L1L2Messaging",
+        "starknet",
         "StarknetMessagingLocal",
     )
     l1_addresses.update({"StarknetMessagingLocal": {"address": contract.address}})
@@ -34,7 +34,7 @@ async def sn_messaging_local(deploy_l1_contract, owner):
 async def message_sender_l2(deploy_contract, owner):
     message_sender = await deploy_contract(
         "L1L2Messaging",
-        "MessageSenderL2",
+        "MessageAppL2",
         caller_eoa=owner.starknet_contract,
     )
     return message_sender
@@ -45,7 +45,7 @@ async def message_consumer_test(deploy_l1_contract, sn_messaging_local):
     kakarot_address = get_deployments()["kakarot"]["address"]
     return await deploy_l1_contract(
         "L1L2Messaging",
-        "MessageConsumerTest",
+        "MessageAppL1",
         sn_messaging_local.address,
         kakarot_address,
     )

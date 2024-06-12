@@ -13,8 +13,8 @@ from utils.utils import Helpers
 const CALL_CONTRACT_SOLIDITY_SELECTOR = 0xb3eb2c1b;
 const LIBRARY_CALL_SOLIDITY_SELECTOR = 0x5a9af197;
 
+// TODO: compute acceptable EVM gas values for Cairo execution
 const CAIRO_PRECOMPILE_GAS = 10000;
-
 const CAIRO_MESSAGE_GAS = 5000;
 
 namespace KakarotPrecompiles {
@@ -117,18 +117,24 @@ namespace KakarotPrecompiles {
         let target_address = Helpers.bytes32_to_felt(input);
 
         let data_offset_ptr = input + 32;
-        let data_offset = Helpers.bytes32_to_felt(data_offset_ptr);
-        let data_len_ptr = input + data_offset;
+        let data_len_offset = Helpers.bytes32_to_felt(data_offset_ptr);
+        let data_len_ptr = input + data_len_offset;
 
         // Load input data by packing all
         // If the input data is larger than the size of a felt, it will wrap around the felt size.
         let data_words_len = Helpers.bytes32_to_felt(data_len_ptr);
         let data_bytes_len = data_words_len * 32;
-        let data_ptr = data_len_ptr + 32;
+        let data_offset = data_len_offset + 32;
+        let data_fits_in_input = is_le(data_bytes_len, input_len - data_offset);
+        if (data_fits_in_input == 0) {
+            let (revert_reason_len, revert_reason) = Errors.outOfBoundsRead();
+            return (revert_reason_len, revert_reason, CAIRO_MESSAGE_GAS, Errors.EXCEPTIONAL_HALT);
+        }
+        let data_ptr = input + data_offset;
         let (data_len, data) = Helpers.load_256_bits_array(data_bytes_len, data_ptr);
 
         send_message_to_l1(target_address, data_words_len, data);
         let (output) = alloc();
-        return (0, output, CAIRO_PRECOMPILE_GAS, Errors.EXCEPTIONAL_HALT);
+        return (0, output, CAIRO_MESSAGE_GAS, 0);
     }
 }

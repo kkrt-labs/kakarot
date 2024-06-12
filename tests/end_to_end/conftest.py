@@ -260,7 +260,7 @@ def eth_balance_of(eth: Contract, compute_starknet_address):
 @pytest.fixture(scope="session")
 def deploy_contract(default_fee: int):
     """
-    Fixture to attach a modified web3.contract instance to an already deployed contract_account in kakarot.
+    Fixture to deploy and attach a modified web3.contract instance to a contract in kakarot.
     """
 
     from kakarot_scripts.utils.kakarot import deploy

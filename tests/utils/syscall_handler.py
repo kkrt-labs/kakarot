@@ -475,12 +475,12 @@ class SyscallHandler:
         Record the send_message call in the internal mock object.
 
         Syscall structure is:
-        struct SendMessageToL1SysCall {
-            selector: felt,
-            to_address: felt,
-            payload_size: felt,
-            payload_ptr: felt*,
-        }
+            struct SendMessageToL1SysCall {
+                selector: felt,
+                to_address: felt,
+                payload_size: felt,
+                payload_ptr: felt*,
+            }
         """
         to_address = segments.memory[syscall_ptr + 1]
         payload_size = segments.memory[syscall_ptr + 2]
