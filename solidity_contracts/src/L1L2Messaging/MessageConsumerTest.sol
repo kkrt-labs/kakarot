@@ -12,21 +12,21 @@ error InvalidPayload();
    @title Test contract to receive / send messages to starknet.
    @author Glihm https://github.com/glihm/starknet-messaging-dev
 */
-contract L1Receiver {
+contract MessageConsumerTest {
 
     //
-    IStarknetMessaging private _snMessaging;
+    IStarknetMessaging private _starknetMessaging;
     uint256 private _cairoMessaging;
 
     /**
        @notice Constructor.
 
        @param snMessaging The address of Starknet Core contract, responsible
-       or messaging.
+       for messaging.
        @param cairoMessaging The address, on L2, of the Cairo contract that relays Kakarot messages.
     */
     constructor(address snMessaging, uint256 cairoMessaging) {
-        _snMessaging = IStarknetMessaging(snMessaging);
+        _starknetMessaging = IStarknetMessaging(snMessaging);
         _cairoMessaging = cairoMessaging;
     }
 
@@ -49,7 +49,7 @@ contract L1Receiver {
         external
         payable
     {
-        _snMessaging.sendMessageToL2{value: msg.value}(
+        _starknetMessaging.sendMessageToL2{value: msg.value}(
             contractAddress,
             selector,
             payload
@@ -71,7 +71,7 @@ contract L1Receiver {
         uint256[] memory payload = new uint256[](1);
         payload[0] = value;
 
-        _snMessaging.sendMessageToL2{value: msg.value}(
+        _starknetMessaging.sendMessageToL2{value: msg.value}(
             contractAddress,
             selector,
             payload
@@ -93,7 +93,7 @@ contract L1Receiver {
         external
     {
         // Will revert if the message is not consumable.
-        bytes32 msghash = _snMessaging.consumeMessageFromL2(_cairoMessaging, payload);
+        bytes32 msghash = _starknetMessaging.consumeMessageFromL2(_cairoMessaging, payload);
 
         // The previous call returns the message hash (bytes32)
         // that can be used if necessary.
@@ -113,7 +113,7 @@ contract L1Receiver {
     )
         external
     {
-        _snMessaging.consumeMessageFromL2(fromAddress, payload);
+        _starknetMessaging.consumeMessageFromL2(fromAddress, payload);
 
         // We expect the payload to contain only a felt252 value (which is a uint256 in solidity).
         if (payload.length != 1) {
@@ -133,7 +133,7 @@ contract L1Receiver {
     )
         external
     {
-        _snMessaging.consumeMessageFromL2(fromAddress, payload);
+        _starknetMessaging.consumeMessageFromL2(fromAddress, payload);
 
         // We expect the payload to contain field `a` and `b` from `MyData`.
         if (payload.length != 2) {

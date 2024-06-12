@@ -13,9 +13,8 @@ from kakarot_scripts.utils.starknet import get_deployments, invoke
 
 @pytest.fixture(scope="session")
 async def sn_messaging_local(deploy_l1_contract, owner):
-    # If the contract is already deployed on the anvil instance, we can get the address from the deployments file
+    # If the contract is already deployed on the l1, we can get the address from the deployments file
     # Otherwise, we deploy it
-
     l1_addresses = get_l1_addresses()
     if l1_addresses.get("StarknetMessagingLocal"):
         address = l1_addresses["StarknetMessagingLocal"]["address"]
@@ -51,11 +50,11 @@ async def message_sender_l2(deploy_contract, owner):
 
 
 @pytest.fixture(scope="session")
-async def l1_receiver(deploy_l1_contract, sn_messaging_local):
+async def message_consumer_test(deploy_l1_contract, sn_messaging_local):
     cairo_messaging_address = get_deployments()["CairoMessaging"]["address"]
     return await deploy_l1_contract(
         "L1L2Messaging",
-        "L1Receiver",
+        "MessageConsumerTest",
         sn_messaging_local.address,
         cairo_messaging_address,
     )
@@ -73,8 +72,8 @@ async def wait_for_message(sn_messaging_local):
 
 
 async def test_should_send_message_to_l1(
-    sn_messaging_local, l1_receiver, message_sender_l2
+    sn_messaging_local, message_consumer_test, message_sender_l2
 ):
-    await message_sender_l2.sendMessageToL1(l1_receiver.address, 42)
+    await message_sender_l2.sendMessageToL1(message_consumer_test.address, 42)
     await wait_for_message(sn_messaging_local)
-    await l1_receiver.consumeMessage([42])
+    await message_consumer_test.consumeMessage([42])

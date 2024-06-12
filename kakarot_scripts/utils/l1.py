@@ -11,7 +11,12 @@ from web3 import Web3
 from web3.contract import Contract as Web3Contract
 from web3.exceptions import NoABIFunctionsFound
 
-from kakarot_scripts.constants import EVM_ADDRESS, EVM_PRIVATE_KEY, L1_ADDRESSES_DIR
+from kakarot_scripts.constants import (
+    EVM_ADDRESS,
+    EVM_PRIVATE_KEY,
+    L1_ADDRESSES_DIR,
+    L1_RPC_PROVIDER,
+)
 from kakarot_scripts.utils.kakarot import (
     EvmTransactionError,
     _parse_events,
@@ -25,13 +30,10 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-anvil_url = "http://127.0.0.1:8545"
-anvil_provider = Web3(Web3.HTTPProvider(anvil_url))
-
-if anvil_provider.is_connected():
-    logger.info("ℹ️  Connected to Anvil for local development")
+if L1_RPC_PROVIDER.is_connected():
+    logger.info("ℹ️  Connected to L1 RPC")
 else:
-    print("Failed to connect to Anvil")
+    print("Failed to connect to L1 RPC")
 
 
 def dump_l1_addresses(deployments):
@@ -62,7 +64,7 @@ def get_l1_addresses():
 
 def l1_contract_exists(address: HexBytes) -> bool:
     try:
-        code = anvil_provider.eth.get_code(address)
+        code = L1_RPC_PROVIDER.eth.get_code(address)
         if len(code) != 0:
             logger.info(f"ℹ️  Contract at address {address} already exists")
             return True
@@ -109,7 +111,7 @@ def get_l1_contract(
 
     contract = cast(
         Web3Contract,
-        anvil_provider.eth.contract(
+        L1_RPC_PROVIDER.eth.contract(
             address=to_checksum_address(address) if address is not None else address,
             abi=artifacts["abi"],
             bytecode=artifacts["bytecode"],
@@ -135,10 +137,10 @@ async def send_l1_transaction(
 ):
     """Execute the data at the EVM contract on an L1 node."""
     evm_account = caller_eoa or EvmAccount.from_key(EVM_PRIVATE_KEY)
-    nonce = anvil_provider.eth.get_transaction_count(evm_account.address)
+    nonce = L1_RPC_PROVIDER.eth.get_transaction_count(evm_account.address)
     payload = {
         "type": 0x2,
-        "chainId": anvil_provider.eth.chain_id,
+        "chainId": L1_RPC_PROVIDER.eth.chain_id,
         "nonce": nonce,
         "gas": gas,
         "maxPriorityFeePerGas": 1,
@@ -155,11 +157,11 @@ async def send_l1_transaction(
         evm_account.key,
     )
 
-    tx_hash = anvil_provider.eth.send_raw_transaction(evm_tx.rawTransaction)
-    receipt = anvil_provider.eth.wait_for_transaction_receipt(tx_hash)
+    tx_hash = L1_RPC_PROVIDER.eth.send_raw_transaction(evm_tx.rawTransaction)
+    receipt = L1_RPC_PROVIDER.eth.wait_for_transaction_receipt(tx_hash)
     response = []
     if not receipt.status:
-        trace = anvil_provider.manager.request_blocking(
+        trace = L1_RPC_PROVIDER.manager.request_blocking(
             "debug_traceTransaction", [tx_hash, {"tracer": "callTracer"}]
         )
         response = bytes(HexBytes(trace["returnValue"]))
@@ -185,7 +187,7 @@ def _wrap_web3(fun: str, caller_eoa_: Optional[EvmAccount] = None):
                 if caller_eoa_
                 else int(EVM_ADDRESS, 16)
             )
-            nonce = anvil_provider.eth.get_transaction_count(
+            nonce = L1_RPC_PROVIDER.eth.get_transaction_count(
                 Web3.to_checksum_address(f"{origin:040x}")
             )
             payload = {
@@ -198,7 +200,7 @@ def _wrap_web3(fun: str, caller_eoa_: Optional[EvmAccount] = None):
                 "data": HexBytes(calldata),
                 "access_list": [],
             }
-            result = anvil_provider.eth.call(payload)
+            result = L1_RPC_PROVIDER.eth.call(payload)
             return result
 
         logger.info(f"⏳ Executing {fun} at address {self.address}")

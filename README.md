@@ -161,8 +161,8 @@ make test
 # Run only unit tests
 make test-unit
 
-# Run only integration tests
-make test-integration
+# Run only e2e tests
+make test-end-to-end
 
 # Run a specific test file
 pytest <PATH_TO_FILE>
