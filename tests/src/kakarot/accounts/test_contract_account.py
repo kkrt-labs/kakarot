@@ -143,9 +143,9 @@ class TestContractAccount:
 
     class TestNonce:
         @SyscallHandler.patch("Ownable_owner", 0xDEAD)
-        def test_should_assert_unique_owner(self, cairo_run):
+        def test_should_assert_only_owner(self, cairo_run):
             with cairo_error():
-                cairo_run("test__set_nonce", new_nonce=0)
+                cairo_run("test__set_nonce", new_nonce=[])
 
         @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
         def test_should_set_nonce(self, cairo_run):
@@ -153,6 +153,19 @@ class TestContractAccount:
             SyscallHandler.mock_storage.assert_any_call(
                 address=get_storage_var_address("Account_nonce"),
                 value=1,
+            )
+
+    class TestImplementation:
+        @SyscallHandler.patch("Ownable_owner", 0xDEAD)
+        def test_should_assert_only_owner(self, cairo_run):
+            with cairo_error():
+                cairo_run("test__set_implementation", new_implementation=[])
+
+        @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
+        def test_should_set_implementation(self, cairo_run):
+            cairo_run("test__set_implementation", new_implementation=0x1234)
+            SyscallHandler.mock_storage.assert_any_call(
+                address=get_storage_var_address("Account_implementation"), value=0x1234
             )
 
     class TestJumpdests:

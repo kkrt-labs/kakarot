@@ -13,7 +13,8 @@ from kakarot.accounts.account_contract import (
     bytecode as read_bytecode,
     write_jumpdests,
     is_valid_jumpdest,
-    set_nonce
+    set_nonce,
+    set_implementation,
 )
 
 func test__initialize{
@@ -78,6 +79,16 @@ func test__set_nonce{
     local new_nonce: felt;
     %{ ids.new_nonce = program_input["new_nonce"] %}
     set_nonce(new_nonce);
+    return ();
+}
+
+func test__set_implementation{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    alloc_locals;
+    local new_implementation: felt;
+    %{ ids.new_implementation = program_input["new_implementation"] %}
+    set_implementation(new_implementation);
     return ();
 }
 
