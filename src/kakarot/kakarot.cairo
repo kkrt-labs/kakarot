@@ -17,6 +17,7 @@ from backend.starknet import Starknet
 from kakarot.account import Account
 from kakarot.events import kakarot_upgraded
 from kakarot.library import Kakarot
+from kakarot.storages import Kakarot_authorized_message_senders
 from kakarot.model import model
 from utils.utils import Helpers
 
@@ -280,6 +281,14 @@ func write_account_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_c
     return Kakarot.write_account_nonce(evm_address, nonce);
 }
 
+@external
+func set_authorized_message_sender{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    sender, authorized: felt
+) {
+    Ownable.assert_only_owner();
+    return Kakarot.set_authorized_message_sender(sender, authorized);
+}
+
 // @notice The eth_call function as described in the spec,
 //         see https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_call
 //         This is a view only function, meaning that it doesn't make any state change.
@@ -437,4 +446,23 @@ func eth_send_transaction{
     }
 
     return result;
+}
+
+@l1_handler
+func handle_l1_message{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(from_address: felt, l1_sender: felt, to_address: felt, value: felt, data_len: felt, data: felt*) {
+    alloc_locals;
+    let (is_authorized) = Kakarot_authorized_message_senders.read(from_address);
+    if (is_authorized == 0) {
+        return ();
+    }
+
+    let (_, state, _, _) = Kakarot.handle_l1_message(
+        from_address, l1_sender, to_address, value, data_len, data
+    );
+
+    // Reverted or not - commit the state change. If reverted, the state was cleared to only contain gas-related changes.
+    Starknet.commit(state);
+    return ();
 }

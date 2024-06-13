@@ -2,7 +2,8 @@
 
 pragma solidity ^0.8.0;
 
-import "../starknet/IStarknetMessaging.sol";
+import "./L1KakarotMessaging.sol";
+import "./MessageAppL2.sol";
 
 // Define some custom error as an example.
 // It saves a lot's of space to use those custom error instead of strings.
@@ -15,133 +16,68 @@ error InvalidPayload();
 contract MessageAppL1 {
 
     //
-    IStarknetMessaging private _starknetMessaging;
+    IL1KakarotMessaging private _l1KakarotMessaging;
     uint256 private _kakarotAddress;
+    uint256 public receivedMessagesCounter;
 
     /**
        @notice Constructor.
 
-       @param starknetMessaging The address of Starknet Core contract, responsible
-       for messaging.
+       @param l1KakarotMessaging The address of the L1KakarotMessaging contract.
        @param kakarotAddress The Starknet address, on L2, of the Kakarot contract.
     */
-    constructor(address starknetMessaging, uint256 kakarotAddress) {
-        _starknetMessaging = IStarknetMessaging(starknetMessaging);
+    constructor(address l1KakarotMessaging, uint256 kakarotAddress) {
+        _l1KakarotMessaging = IL1KakarotMessaging(l1KakarotMessaging);
         _kakarotAddress = kakarotAddress;
     }
 
-    /**
-       @notice Sends a message to Starknet contract.
-
-       @param contractAddress The contract's address on starknet.
-       @param selector The l1_handler function of the contract to call.
-       @param payload The serialized data to be sent.
-
-       @dev Consider that Cairo only understands felts252.
-       So the serialization on solidity must be adjusted. For instance, a uint256
-       must be split in two uint256 with low and high part to be understood by Cairo.
-    */
-    function sendMessage(
-        uint256 contractAddress,
-        uint256 selector,
-        uint256[] memory payload
+    /// @notice Increases the counter inside the MessageAppL2 contract deployed on Kakarot.
+    /// @dev Must be called with a value sufficient to pay for the L1 message fee.
+    /// @param l2AppAddress The address of the L2 contract to trigger.
+    function increaseL2AppCounter(
+        address l2AppAddress
     )
         external
         payable
     {
-        _starknetMessaging.sendMessageToL2{value: msg.value}(
-            contractAddress,
-            selector,
-            payload
+        _l1KakarotMessaging.sendMessageToL2{value: msg.value}(
+            l2AppAddress,
+            0,
+            abi.encodeCall(
+                MessageAppL2.increaseMessagesCounter,
+                (
+                    1
+                )
+            )
         );
     }
 
-
-    /**
-       @notice A simple function that sends a message with a pre-determined payload.
-    */
-    function sendMessageValue(
-        uint256 contractAddress,
-        uint256 selector,
-        uint256 value
-    )
-        external
-        payable
-    {
-        uint256[] memory payload = new uint256[](1);
-        payload[0] = value;
-
-        _starknetMessaging.sendMessageToL2{value: msg.value}(
-            contractAddress,
-            selector,
-            payload
-        );
-    }
 
     /**
        @notice Manually consumes a message that was received from L2.
-
        @param payload Payload of the message used to verify the hash.
-
-       @dev A message "receive" means that the message hash is registered as consumable.
+       @dev A message "received" means that the message hash is registered as consumable.
        One must provide the message content, to let Starknet Core contract verify the hash
        and validate the message content before being consumed.
+       The L1KakarotMessaging contract must be called with a delegatecall to ensure that
+       the Starknet Core contract considers this contract as the consumer.
     */
-    function consumeMessage(
+    function consumeCounterIncrease(
         uint256[] calldata payload
     )
         external
     {
         // Will revert if the message is not consumable.
-        bytes32 msghash = _starknetMessaging.consumeMessageFromL2(_kakarotAddress, payload);
+        (bool success, bytes memory msghash) = address(_l1KakarotMessaging).delegatecall(abi.encodeWithSignature("consumeMessageFromL2(uint256[])", payload));
 
         // The previous call returns the message hash (bytes32)
         // that can be used if necessary.
 
+        uint256 value = payload[0];
+        receivedMessagesCounter += value;
         // You can use the payload to do stuff here as you now know that the message is
         // valid and safe to process.
         // Remember that the payload contains cairo serialized data. So you must
         // deserialize the payload depending on the data it contains.
-    }
-
-    /**
-       @notice Example of consuming a value received from L2.
-    */
-    function consumeMessageValue(
-        uint256 fromAddress,
-        uint256[] calldata payload
-    )
-        external
-    {
-        _starknetMessaging.consumeMessageFromL2(fromAddress, payload);
-
-        // We expect the payload to contain only a felt252 value (which is a uint256 in solidity).
-        if (payload.length != 1) {
-            revert InvalidPayload();
-        }
-
-        uint256 value = payload[0];
-        require(value > 0, "Invalid value");
-    }
-
-    /**
-       @notice Example of consuming a serialized struct from L2.
-    */
-    function consumeMessageStruct(
-        uint256 fromAddress,
-        uint256[] calldata payload
-    )
-        external
-    {
-        _starknetMessaging.consumeMessageFromL2(fromAddress, payload);
-
-        // We expect the payload to contain field `a` and `b` from `MyData`.
-        if (payload.length != 2) {
-            revert InvalidPayload();
-        }
-
-        uint256 a = payload[0];
-        uint256 b = payload[1];
-        require(a > 0 && b > 0, "Invalid value");
     }
 }

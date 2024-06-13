@@ -12,9 +12,9 @@ from web3.contract import Contract as Web3Contract
 from web3.exceptions import NoABIFunctionsFound
 
 from kakarot_scripts.constants import (
+    DEPLOYMENTS_DIR,
     EVM_ADDRESS,
     EVM_PRIVATE_KEY,
-    L1_ADDRESSES_DIR,
     L1_RPC_PROVIDER,
 )
 from kakarot_scripts.utils.kakarot import (
@@ -45,7 +45,7 @@ def dump_l1_addresses(deployments):
             }
             for name, deployment in deployments.items()
         },
-        open(L1_ADDRESSES_DIR / "l1-addresses.json", "w"),
+        open(DEPLOYMENTS_DIR / "l1-addresses.json", "w"),
         indent=2,
     )
 
@@ -55,7 +55,7 @@ def get_l1_addresses():
         return {
             name: {**deployment, "address": deployment["address"]}
             for name, deployment in json.load(
-                open(L1_ADDRESSES_DIR / "l1-addresses.json", "r")
+                open(DEPLOYMENTS_DIR / "l1-addresses.json", "r")
             ).items()
         }
     except FileNotFoundError:

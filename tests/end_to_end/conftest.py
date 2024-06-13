@@ -390,7 +390,7 @@ def call():
     return call
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def invoke():
     """
     Send a Starknet transaction.

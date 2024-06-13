@@ -205,9 +205,6 @@ class ArtifactType(Enum):
 DEPLOYMENTS_DIR = Path("deployments") / NETWORK["name"]
 DEPLOYMENTS_DIR.mkdir(exist_ok=True, parents=True)
 
-L1_ADDRESSES_DIR = Path("deployments") / NETWORK["name"] / "l1-addresses"
-L1_ADDRESSES_DIR.mkdir(exist_ok=True, parents=True)
-
 COMPILED_CONTRACTS = [
     {"contract_name": "kakarot", "is_account_contract": False},
     {"contract_name": "account_contract", "is_account_contract": True},
