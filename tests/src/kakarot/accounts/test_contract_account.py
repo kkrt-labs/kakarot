@@ -141,6 +141,20 @@ class TestContractAccount:
             mock_storage.assert_has_calls(calls)
             assert output[:output_len] == list(bytecode)
 
+    class TestNonce:
+        @SyscallHandler.patch("Ownable_owner", 0xDEAD)
+        def test_should_assert_unique_owner(self, cairo_run):
+            with cairo_error():
+                cairo_run("test__set_nonce", new_nonce=0)
+
+        @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
+        def test_should_set_nonce(self, cairo_run):
+            cairo_run("test__set_nonce", new_nonce=1)
+            SyscallHandler.mock_storage.assert_any_call(
+                address=get_storage_var_address("Account_nonce"),
+                value=1,
+            )
+
     class TestJumpdests:
         class TestWriteJumpdests:
             @SyscallHandler.patch("Ownable_owner", 0xDEAD)
