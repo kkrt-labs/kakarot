@@ -11,8 +11,7 @@ contract MessageAppL2  {
     // @notice Sends a message to L1.
     // @dev Uses the Cairo Precompiles mechanism to invoke a the send_message_to_l1 syscall
     function increaseL1AppCounter(address to, uint128 value) external {
-        uint248[] memory data = new uint248[](1);
-        data[0] = uint248(value);
+        bytes memory data = abi.encode(value);
         CairoLib.sendMessageToL1(to, data);
     }
 

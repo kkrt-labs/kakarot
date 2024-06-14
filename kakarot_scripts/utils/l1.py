@@ -38,13 +38,7 @@ else:
 
 def dump_l1_addresses(deployments):
     json.dump(
-        {
-            name: {
-                **deployment,
-                "address": deployment["address"],
-            }
-            for name, deployment in deployments.items()
-        },
+        deployments,
         open(DEPLOYMENTS_DIR / "l1-addresses.json", "w"),
         indent=2,
     )
@@ -52,12 +46,7 @@ def dump_l1_addresses(deployments):
 
 def get_l1_addresses():
     try:
-        return {
-            name: {**deployment, "address": deployment["address"]}
-            for name, deployment in json.load(
-                open(DEPLOYMENTS_DIR / "l1-addresses.json", "r")
-            ).items()
-        }
+        return json.load(open(DEPLOYMENTS_DIR / "l1-addresses.json", "r"))
     except FileNotFoundError:
         return {}
 

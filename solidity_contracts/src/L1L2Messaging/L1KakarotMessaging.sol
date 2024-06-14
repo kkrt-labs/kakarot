@@ -16,7 +16,6 @@ contract L1KakarotMessaging  {
     constructor(address starknetMessaging, uint256 kakarotAddress) {
         _starknetMessaging = IStarknetMessaging(starknetMessaging);
         _kakarotAddress = kakarotAddress;
-
     }
 
     /// @notice Sends a message to a contract on L2.
@@ -43,12 +42,18 @@ contract L1KakarotMessaging  {
         );
     }
 
-    /// @notice Consumes a message sent from L2.
-    /// @dev Must be called with a delegatecall so that the `msg.sender` in the StarknetMessaging contract
-    ///     is the caller of this function.
-    /// @param payload The payload of the message to consume.
-    function consumeMessageFromL2(uint256[] calldata payload) external returns (bytes32 msgHash){
-        // Will revert if the message is not consumable.
-        return _starknetMessaging.consumeMessageFromL2(_kakarotAddress, payload);
-    }
+    //TODO: investigate why delegate-calling into this function fails consuming the message.
+    // /// @notice Consumes a message sent from L2.
+    // /// @dev Must be called with a delegatecall so that the `msg.sender` in the StarknetMessaging contract
+    // ///     is the caller of this function.
+    // /// @param payload The payload of the message to consume.
+    // function consumeMessageFromL2(bytes calldata payload) external returns (bytes32 msgHash){
+    //     // Will revert if the message is not consumable.
+    //     // Consider each byte of calldata as a uint256.
+    //     uint256[] memory convertedPayload = new uint256[](payload.length);
+    //     for (uint256 i = 0; i < payload.length; i++) {
+    //         convertedPayload[i] = uint256(uint8(payload[i]));
+    //     }
+    //     return _starknetMessaging.consumeMessageFromL2(_kakarotAddress, convertedPayload);
+    // }
 }

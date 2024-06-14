@@ -453,7 +453,7 @@ func handle_l1_message{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(from_address: felt, l1_sender: felt, to_address: felt, value: felt, data_len: felt, data: felt*) {
     alloc_locals;
-    let (is_authorized) = Kakarot_authorized_message_senders.read(from_address);
+    let is_authorized = Kakarot.get_authorized_message_sender(from_address);
     if (is_authorized == 0) {
         return ();
     }

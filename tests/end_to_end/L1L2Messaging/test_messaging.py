@@ -4,6 +4,7 @@ import time
 import pytest
 
 from kakarot_scripts.utils.l1 import (
+    deploy_on_l1,
     dump_l1_addresses,
     get_l1_addresses,
     get_l1_contract,
@@ -13,7 +14,7 @@ from kakarot_scripts.utils.starknet import get_deployments
 
 
 @pytest.fixture(scope="session")
-async def sn_messaging_local(deploy_l1_contract):
+async def sn_messaging_local():
     # If the contract is already deployed on the l1, we can get the address from the deployments file
     # Otherwise, we deploy it
     l1_addresses = get_l1_addresses()
@@ -22,7 +23,7 @@ async def sn_messaging_local(deploy_l1_contract):
         if l1_contract_exists(address):
             return get_l1_contract("starknet", "StarknetMessagingLocal", address)
 
-    contract = await deploy_l1_contract(
+    contract = await deploy_on_l1(
         "starknet",
         "StarknetMessagingLocal",
     )
@@ -32,7 +33,7 @@ async def sn_messaging_local(deploy_l1_contract):
 
 
 @pytest.fixture(scope="session")
-async def l1_kakarot_messaging(sn_messaging_local, deploy_l1_contract, invoke):
+async def l1_kakarot_messaging(sn_messaging_local, invoke):
     # If the contract is already deployed on the l1, we can get the address from the deployments file
     # Otherwise, we deploy it
     l1_addresses = get_l1_addresses()
@@ -42,11 +43,11 @@ async def l1_kakarot_messaging(sn_messaging_local, deploy_l1_contract, invoke):
             return get_l1_contract("L1L2Messaging", "L1KakarotMessaging", address)
 
     kakarot_address = get_deployments()["kakarot"]["address"]
-    contract = await deploy_l1_contract(
+    contract = await deploy_on_l1(
         "L1L2Messaging",
         "L1KakarotMessaging",
-        sn_messaging_local.address,
-        kakarot_address,
+        starknetMessaging=sn_messaging_local.address,
+        kakarotAddress=kakarot_address,
     )
     l1_addresses.update({"L1KakarotMessaging": {"address": contract.address}})
     dump_l1_addresses(l1_addresses)
@@ -71,31 +72,37 @@ async def message_app_l2(deploy_contract, owner):
 
 
 @pytest.fixture(scope="session")
-async def message_app_l1(deploy_l1_contract, l1_kakarot_messaging):
+async def message_app_l1(sn_messaging_local, l1_kakarot_messaging):
     kakarot_address = get_deployments()["kakarot"]["address"]
-    return await deploy_l1_contract(
+    return await deploy_on_l1(
         "L1L2Messaging",
         "MessageAppL1",
-        l1_kakarot_messaging.address,
-        kakarot_address,
+        starknetMessaging=sn_messaging_local.address,
+        l1KakarotMessaging=l1_kakarot_messaging.address,
+        kakarotAddress=kakarot_address,
     )
 
 
-async def wait_for_message(sn_messaging_local):
-    event_filter = sn_messaging_local.events.MessageHashesAddedFromL2.create_filter(
-        fromBlock="latest"
-    )
-    while True:
-        messages = event_filter.get_new_entries()
-        if messages:
-            return messages
-        await asyncio.sleep(3)
+@pytest.fixture(scope="function")
+def wait_for_message(sn_messaging_local):
+
+    async def _factory():
+        event_filter = sn_messaging_local.events.MessageHashesAddedFromL2.create_filter(
+            fromBlock="latest"
+        )
+        while True:
+            messages = event_filter.get_new_entries()
+            if messages:
+                return messages
+            await asyncio.sleep(1)
+
+    return _factory
 
 
 @pytest.mark.asyncio(scope="module")
-class TestL1ToL2Messages:
+class TestL2ToL1Messages:
     async def test_should_increment_counter_on_l1(
-        self, sn_messaging_local, message_app_l1, message_app_l2
+        self, sn_messaging_local, message_app_l1, message_app_l2, wait_for_message
     ):
         msg_counter_before = int(
             (await message_app_l1.receivedMessagesCounter()).hex(), 16
@@ -104,8 +111,9 @@ class TestL1ToL2Messages:
         await message_app_l2.increaseL1AppCounter(
             message_app_l1.address, increment_value
         )
-        await wait_for_message(sn_messaging_local)
-        await message_app_l1.consumeCounterIncrease([increment_value])
+        await wait_for_message()
+        message_payload = increment_value.to_bytes(32, "big")
+        await message_app_l1.consumeCounterIncrease(message_payload)
         msg_counter_after = int(
             (await message_app_l1.receivedMessagesCounter()).hex(), 16
         )
@@ -113,7 +121,7 @@ class TestL1ToL2Messages:
 
 
 @pytest.mark.asyncio(scope="module")
-class TestL2ToL1Messages:
+class TestL1ToL2Messages:
     async def test_should_increment_counter_on_l2(
         self, l1_kakarot_messaging, message_app_l1, message_app_l2
     ):

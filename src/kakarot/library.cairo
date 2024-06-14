@@ -371,6 +371,13 @@ namespace Kakarot {
         return ();
     }
 
+    func get_authorized_message_sender{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    }(sender: felt) -> felt {
+        let (authorized) = Kakarot_authorized_message_senders.read(sender);
+        return authorized;
+    }
+
     func handle_l1_message{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,

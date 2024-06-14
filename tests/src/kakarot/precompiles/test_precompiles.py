@@ -1,4 +1,5 @@
 import pytest
+from eth_abi import encode
 from starkware.starknet.public.abi import get_selector_from_name
 
 from tests.utils.constants import (
@@ -171,14 +172,16 @@ class TestPrecompiles:
             [
                 (
                     0x75002,
-                    bytes.fromhex(
-                        f"{0xc0de:064x}"
-                        + f"{0x40:064x}"
-                        + f"{0x01:064x}"
-                        + f"{0x2a:064x}"
-                    ),
+                    encode(["uint160", "bytes"], [0xC0DE, encode(["uint128"], [0x2A])]),
                     0xC0DE,
-                    [0x2A],
+                    list(bytes.fromhex(f"{0x2a:064x}")),
+                    False,
+                ),
+                (
+                    0x75002,
+                    encode(["uint160", "bytes"], [0xC0DE, 0x2A.to_bytes(1, "big")]),
+                    0xC0DE,
+                    list(0x2A.to_bytes(1, "big")),
                     False,
                 ),
                 # case with data_len not matching the actual data length
@@ -187,7 +190,7 @@ class TestPrecompiles:
                     bytes.fromhex(
                         f"{0xc0de:064x}"
                         + f"{0x40:064x}"
-                        + f"{0x01:064x}"
+                        + f"{0x20:064x}"
                         + f"{0x2a:032x}"
                     ),
                     0xC0DE,
@@ -203,7 +206,12 @@ class TestPrecompiles:
                     True,
                 ),
             ],
-            ids=["ok", "ko_data_len_not_matching_actual_length", "ko_input_too_short"],
+            ids=[
+                "ok_32_bytes_data",
+                "ok_1_bytes_data",
+                "ko_data_len_not_matching_actual_length",
+                "ko_input_too_short",
+            ],
         )
         class TestKakarotMessaging:
             def test__cairo_message(

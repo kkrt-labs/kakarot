@@ -111,7 +111,7 @@ namespace KakarotPrecompiles {
         }
 
         // Input is formatted as:
-        // [to_address: address][data_offset: uint256][data_len: uint256][data: uint248[]]
+        // [to_address: address][data_offset: uint256][data_len: uint256][data: bytes[]]
 
         // Load target EVM address
         let target_address = Helpers.bytes32_to_felt(input);
@@ -120,10 +120,7 @@ namespace KakarotPrecompiles {
         let data_len_offset = Helpers.bytes32_to_felt(data_offset_ptr);
         let data_len_ptr = input + data_len_offset;
 
-        // Load input data by packing all
-        // If the input data is larger than the size of a felt, it will wrap around the felt size.
-        let data_words_len = Helpers.bytes32_to_felt(data_len_ptr);
-        let data_bytes_len = data_words_len * 32;
+        let data_bytes_len = Helpers.bytes32_to_felt(data_len_ptr);
         let data_offset = data_len_offset + 32;
         let data_fits_in_input = is_le(data_bytes_len, input_len - data_offset);
         if (data_fits_in_input == 0) {
@@ -131,9 +128,11 @@ namespace KakarotPrecompiles {
             return (revert_reason_len, revert_reason, CAIRO_MESSAGE_GAS, Errors.EXCEPTIONAL_HALT);
         }
         let data_ptr = input + data_offset;
-        let (data_len, data) = Helpers.load_256_bits_array(data_bytes_len, data_ptr);
 
-        send_message_to_l1(target_address, data_words_len, data);
+        // TODO: implement packing mechanism that doesn't truncate 32-byte values
+        // let (data_len, data) = Helpers.load_256_bits_array(data_bytes_len, data_ptr);
+
+        send_message_to_l1(target_address, data_bytes_len, data_ptr);
         let (output) = alloc();
         return (0, output, CAIRO_MESSAGE_GAS, 0);
     }
