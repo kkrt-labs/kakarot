@@ -320,6 +320,67 @@ class TestKakarot:
                 assert receipt.execution_status.name == "REVERTED"
                 assert "Ownable: caller is not the owner" in receipt.revert_reason
 
+    class TestUpgradeAccount:
+        @pytest.fixture(autouse=True)
+        async def cleanup(self, invoke, new_account, class_hashes):
+            yield
+
+            await invoke(
+                "kakarot",
+                "set_account_contract_class_hash",
+                class_hashes["account_contract"],
+            )
+            await invoke("kakarot", "upgrade_account", int(new_account.address, 16))
+
+        async def test_should_upgrade_account_class(
+            self, starknet: FullNodeClient, invoke, new_account, class_hashes, other
+        ):
+            prev_class = await starknet.get_class_hash_at(
+                new_account.starknet_contract.address
+            )
+            target_class = class_hashes["account_contract_fixture"]
+            assert prev_class != target_class
+            assert prev_class == class_hashes["account_contract"]
+
+            await invoke(
+                "kakarot",
+                "set_account_contract_class_hash",
+                target_class,
+            )
+
+            await invoke("kakarot", "upgrade_account", int(new_account.address, 16))
+
+            new_class = await starknet.get_class_hash_at(
+                new_account.starknet_contract.address
+            )
+            assert new_class == target_class
+
+        async def test_should_fail_not_owner(
+            self, starknet: FullNodeClient, invoke, new_account, class_hashes, other
+        ):
+            prev_class = await starknet.get_class_hash_at(
+                new_account.starknet_contract.address
+            )
+            target_class = class_hashes["account_contract_fixture"]
+            assert prev_class != target_class
+            assert prev_class == class_hashes["account_contract"]
+
+            await invoke(
+                "kakarot",
+                "set_account_contract_class_hash",
+                target_class,
+            )
+
+            tx_hash = await invoke(
+                "kakarot",
+                "upgrade_account",
+                int(new_account.address, 16),
+                account=other,
+            )
+            receipt = await starknet.get_transaction_receipt(tx_hash)
+            assert receipt.execution_status.name == "REVERTED"
+            assert "Ownable: caller is not the owner" in receipt.revert_reason
+
     class TestEthCallNativeCoinTransfer:
         async def test_eth_call_should_succeed(
             self,
