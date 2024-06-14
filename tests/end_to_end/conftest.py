@@ -400,7 +400,7 @@ def invoke():
     return invoke
 
 
-@pytest_asyncio.fixture(scope="function")
+@pytest_asyncio.fixture(scope="module")
 async def new_account(max_fee):
     """
     Return a random funded new account.
