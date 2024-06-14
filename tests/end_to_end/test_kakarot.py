@@ -335,6 +335,7 @@ class TestKakarot:
         async def test_should_upgrade_account_class(
             self, starknet: FullNodeClient, invoke, new_account, class_hashes, other
         ):
+            await invoke("kakarot", "upgrade_account", int(new_account.address, 16))
             prev_class = await starknet.get_class_hash_at(
                 new_account.starknet_contract.address
             )
@@ -358,6 +359,7 @@ class TestKakarot:
         async def test_should_fail_not_owner(
             self, starknet: FullNodeClient, invoke, new_account, class_hashes, other
         ):
+            await invoke("kakarot", "upgrade_account", int(new_account.address, 16))
             prev_class = await starknet.get_class_hash_at(
                 new_account.starknet_contract.address
             )
