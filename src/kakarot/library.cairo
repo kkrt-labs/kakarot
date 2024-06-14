@@ -319,6 +319,18 @@ namespace Kakarot {
         return ();
     }
 
+    // @notice Upgrades an account to a new contract implementation.
+    // @param evm_address The evm address of the account.
+    func upgrade_account{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        evm_address: felt
+    ) {
+        alloc_locals;
+        let starknet_address = Account.compute_starknet_address(evm_address);
+        let (account_contract_class_hash) = Kakarot_account_contract_class_hash.read();
+        IAccount.set_implementation(starknet_address, account_contract_class_hash);
+        return ();
+    }
+
     // @notice Get the EVM address from the transaction
     // @dev When to=None, it's a deploy tx so we first compute the target address
     // @param to The transaction to parameter
