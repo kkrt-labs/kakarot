@@ -5,13 +5,18 @@
     "artifact": "build/kakarot.json"
   },
   "EVM": {
-    "address": "0x4a64f9b67916a4496dd3ca2321dd1f5739d0dff33c0930684da1c695691c88f",
-    "tx": "0x7a805d7b596283b7d56afaded869f0384379cd99faf28ba6ca1e1aa098497d2",
+    "address": "0x685d79c2693fc41217ef827597eb6f0f846b8b1bf41e4658febe5535cd151d9",
+    "tx": "0x3b5decc491ac7cbeed16928826423cf6bd7c6788afd8a7e8b52013f82302c4a",
     "artifact": "build/fixtures/EVM.json"
   },
   "Counter": {
     "address": "0x3735b9c1dfd45b40149c0227b9981b6dbd14168d5f0f9a1c7a7b3faad9cd630",
     "tx": "0x4b135a5df36ac6446be7a8b6bed8ba991377db19c9b375c19434ff6c25ef1f1",
     "artifact": "build/fixtures/Counter.json"
+  },
+  "MockPragmaOracle": {
+    "address": "0xd5acd9ad298fd564cf71d1c7c9a4b1ca37b45a5a8bd4b3d88ba6d1ebf87618",
+    "tx": "0x27f878dbcff30f3d0a031bd5af2af6feb269f5e41df545b92f2ef875bcd385f",
+    "artifact": "build/ssj/contracts_MockPragmaOracle"
   }
 }

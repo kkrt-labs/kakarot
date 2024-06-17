@@ -110,7 +110,11 @@ async def main():
         logger.info(f"ℹ️  Found default EVM address {EVM_ADDRESS}")
         from kakarot_scripts.utils.kakarot import get_eoa
 
-        amount = 0.02 if NETWORK["type"] is not NetworkType.DEV else 100
+        amount = (
+            0.02
+            if NETWORK["type"] is not (NetworkType.DEV or NetworkType.STAGING)
+            else 100
+        )
         await get_eoa(amount=amount)
 
 

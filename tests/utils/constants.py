@@ -30,7 +30,7 @@ TRANSACTION_INTRINSIC_GAS_COST = 21_000
 
 # TRANSACTION
 # TODO: handle tx gas limit properly and remove this constant
-# Temporarily set tx gas limit to 20M gas (= block gas limit)
+# Temporarily set tx gas limit to 7M gas (= block gas limit)
 TRANSACTION_GAS_LIMIT = BLOCK_GAS_LIMIT
 
 # PRECOMPILES

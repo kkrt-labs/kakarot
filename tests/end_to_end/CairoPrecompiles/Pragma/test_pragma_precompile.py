@@ -3,8 +3,8 @@ from typing import OrderedDict, Tuple
 import pytest
 import pytest_asyncio
 
-from kakarot_scripts.utils.kakarot import EvmTransactionError
 from kakarot_scripts.utils.starknet import get_deployments, wait_for_transaction
+from tests.utils.errors import evm_error
 
 ENTRY_TYPE_INDEX = {"SpotEntry": 0, "FutureEntry": 1, "GenericEntry": 2}
 
@@ -162,7 +162,7 @@ class TestPragmaPrecompile:
         ],
     )
     async def test_should_fail_unauthorized_caller(
-        self, get_contract, pragma_caller, invoke, data_type, max_fee, mocked_values
+        self, get_contract, pragma_caller, invoke, data_type
     ):
         await invoke(
             "kakarot",
@@ -171,9 +171,8 @@ class TestPragmaPrecompile:
             False,
         )
         cairo_pragma = get_contract("MockPragmaOracle")
-        (cairo_res,) = await cairo_pragma.functions["get_data_median"].call(data_type)
+        await cairo_pragma.functions["get_data_median"].call(data_type)
         solidity_input = serialize_data_type(data_type)
 
-        with pytest.raises(EvmTransactionError) as e:
+        with evm_error("CairoLib: call_contract failed"):
             await pragma_caller.getDataMedianSpot(solidity_input)
-        assert "CairoLib: call_contract failed" in str(e.value)
