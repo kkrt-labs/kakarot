@@ -2,6 +2,7 @@ import pytest
 import pytest_asyncio
 
 from kakarot_scripts.utils.starknet import get_deployments, wait_for_transaction
+from tests.utils.errors import evm_error
 
 
 @pytest.fixture(autouse=True)
@@ -36,11 +37,11 @@ async def cairo_counter_caller(deploy_contract, invoke, owner):
 class TestCairoPrecompiles:
     class TestCounterPrecompiles:
         async def test_should_get_cairo_counter(
-            self, get_contract, cairo_counter_caller, max_fee
+            self, get_contract, cairo_counter_caller, invoke
         ):
             cairo_counter = get_contract("Counter")
             cairo_count = (await cairo_counter.functions["get"].call()).count
-            await cairo_counter.functions["inc"].invoke_v1(max_fee=max_fee)
+            await invoke("Counter", "inc")
             evm_count = await cairo_counter_caller.getCairoCounter()
             assert evm_count == cairo_count + 1
 
@@ -70,6 +71,5 @@ class TestCairoPrecompiles:
             cairo_counter_caller = await deploy_contract(
                 "CairoPrecompiles", "CairoCounterCaller", cairo_counter.address
             )
-            with pytest.raises(Exception) as e:
+            with evm_error("CairoLib: call_contract failed"):
                 await cairo_counter_caller.incrementCairoCounter(max_fee=max_fee)
-            assert "CairoLib: call_contract failed" in str(e.value)

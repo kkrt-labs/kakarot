@@ -79,17 +79,13 @@ async def main():
     if NETWORK["type"] is NetworkType.STAGING:
         deployments["EVM"] = await upgrade(
             "EVM",
-            [
-                account.address,  # owner
-                ETH_TOKEN_ADDRESS,  # native_token_address_
-                class_hash["account_contract"],  # account_contract_class_hash_
-                class_hash[
-                    "uninitialized_account"
-                ],  # uninitialized_account_class_hash_
-                class_hash["Cairo1Helpers"],
-                COINBASE,
-                BLOCK_GAS_LIMIT,
-            ],
+            account.address,  # owner
+            ETH_TOKEN_ADDRESS,  # native_token_address_
+            class_hash["account_contract"],  # account_contract_class_hash_
+            class_hash["uninitialized_account"],  # uninitialized_account_class_hash_
+            class_hash["Cairo1Helpers"],
+            COINBASE,
+            BLOCK_GAS_LIMIT,
         )
         deployments["Counter"] = await upgrade("Counter")
         deployments["MockPragmaOracle"] = await upgrade("MockPragmaOracle")
@@ -114,7 +110,11 @@ async def main():
         logger.info(f"ℹ️  Found default EVM address {EVM_ADDRESS}")
         from kakarot_scripts.utils.kakarot import get_eoa
 
-        amount = 0.02 if NETWORK["type"] is not NetworkType.DEV else 100
+        amount = (
+            0.02
+            if NETWORK["type"] is not (NetworkType.DEV or NetworkType.STAGING)
+            else 100
+        )
         await get_eoa(amount=amount)
 
 

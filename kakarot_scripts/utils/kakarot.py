@@ -381,7 +381,9 @@ async def eth_send_transaction(
 
     if WEB3.is_connected():
         tx_hash = WEB3.eth.send_raw_transaction(evm_tx.rawTransaction)
-        receipt = WEB3.eth.wait_for_transaction_receipt(tx_hash)
+        receipt = WEB3.eth.wait_for_transaction_receipt(
+            tx_hash, timeout=NETWORK["max_wait"], poll_latency=NETWORK["check_interval"]
+        )
         return receipt, [], receipt.status, receipt.gasUsed
 
     encoded_unsigned_tx = rlp_encode_signed_data(typed_transaction.as_dict())
