@@ -59,7 +59,7 @@ RUN --mount=type=cache,target=/root/.cache \
 # split install in two steps to leverage docker cache
 COPY . .
 RUN --mount=type=cache,target=/root/.cache \
-    make fetch-ssj-artifacts && make build
+    make fetch-ssj-artifacts && make build && make build-cairo1
 
 ############################################
 # Kakarot deployer
