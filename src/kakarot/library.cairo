@@ -383,14 +383,9 @@ namespace Kakarot {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(
-        from_address: felt,
-        l1_sender: felt,
-        to_address: felt,
-        value: felt,
-        data_len: felt,
-        data: felt*,
-    ) -> (model.EVM*, model.State*, felt, felt) {
+    }(l1_sender: felt, to_address: felt, value: felt, data_len: felt, data: felt*) -> (
+        model.EVM*, model.State*, felt, felt
+    ) {
         // TODO: ensure fair gas limits and prices
         let (val_high, val_low) = split_felt(value);
         tempvar value_u256 = new Uint256(low=val_low, high=val_high);

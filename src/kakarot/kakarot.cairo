@@ -17,7 +17,6 @@ from backend.starknet import Starknet
 from kakarot.account import Account
 from kakarot.events import kakarot_upgraded
 from kakarot.library import Kakarot
-from kakarot.storages import Kakarot_authorized_message_senders
 from kakarot.model import model
 from utils.utils import Helpers
 
@@ -458,9 +457,7 @@ func handle_l1_message{
         return ();
     }
 
-    let (_, state, _, _) = Kakarot.handle_l1_message(
-        from_address, l1_sender, to_address, value, data_len, data
-    );
+    let (_, state, _, _) = Kakarot.handle_l1_message(l1_sender, to_address, value, data_len, data);
 
     // Reverted or not - commit the state change. If reverted, the state was cleared to only contain gas-related changes.
     Starknet.commit(state);

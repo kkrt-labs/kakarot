@@ -3,11 +3,14 @@ import logging
 from types import MethodType
 from typing import Optional, Union, cast
 
+from eth_abi import decode
 from eth_account import Account as EvmAccount
 from eth_account._utils.typed_transactions import TypedTransaction
 from eth_utils.address import to_checksum_address
 from hexbytes import HexBytes
 from web3 import Web3
+from web3._utils.abi import get_abi_output_types, map_abi_data
+from web3._utils.normalizers import BASE_RETURN_NORMALIZERS
 from web3.contract import Contract as Web3Contract
 from web3.exceptions import NoABIFunctionsFound
 
@@ -190,7 +193,10 @@ def _wrap_web3(fun: str, caller_eoa_: Optional[EvmAccount] = None):
                 "access_list": [],
             }
             result = L1_RPC_PROVIDER.eth.call(payload)
-            return result
+            types = get_abi_output_types(abi)
+            decoded = decode(types, bytes(result))
+            normalized = map_abi_data(BASE_RETURN_NORMALIZERS, types, decoded)
+            return normalized[0] if len(normalized) == 1 else normalized
 
         logger.info(f"⏳ Executing {fun} at address {self.address}")
         receipt, response, success, gas_used = await send_l1_transaction(

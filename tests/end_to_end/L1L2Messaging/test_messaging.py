@@ -104,9 +104,7 @@ class TestL2ToL1Messages:
     async def test_should_increment_counter_on_l1(
         self, sn_messaging_local, message_app_l1, message_app_l2, wait_for_message
     ):
-        msg_counter_before = int(
-            (await message_app_l1.receivedMessagesCounter()).hex(), 16
-        )
+        msg_counter_before = await message_app_l1.receivedMessagesCounter()
         increment_value = 8
         await message_app_l2.increaseL1AppCounter(
             message_app_l1.address, increment_value
@@ -114,9 +112,7 @@ class TestL2ToL1Messages:
         await wait_for_message()
         message_payload = increment_value.to_bytes(32, "big")
         await message_app_l1.consumeCounterIncrease(message_payload)
-        msg_counter_after = int(
-            (await message_app_l1.receivedMessagesCounter()).hex(), 16
-        )
+        msg_counter_after = await message_app_l1.receivedMessagesCounter()
         assert msg_counter_after == msg_counter_before + increment_value
 
 

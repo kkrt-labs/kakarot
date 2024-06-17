@@ -116,18 +116,13 @@ namespace KakarotPrecompiles {
         // Load target EVM address
         let target_address = Helpers.bytes32_to_felt(input);
 
-        let data_offset_ptr = input + 32;
-        let data_len_offset = Helpers.bytes32_to_felt(data_offset_ptr);
-        let data_len_ptr = input + data_len_offset;
-
-        let data_bytes_len = Helpers.bytes32_to_felt(data_len_ptr);
-        let data_offset = data_len_offset + 32;
-        let data_fits_in_input = is_le(data_bytes_len, input_len - data_offset);
+        let data_bytes_len = Helpers.bytes32_to_felt(input + 2 * 32);
+        let data_fits_in_input = is_le(data_bytes_len, input_len);
         if (data_fits_in_input == 0) {
             let (revert_reason_len, revert_reason) = Errors.outOfBoundsRead();
             return (revert_reason_len, revert_reason, CAIRO_MESSAGE_GAS, Errors.EXCEPTIONAL_HALT);
         }
-        let data_ptr = input + data_offset;
+        let data_ptr = input + 3 * 32;
 
         // TODO: implement packing mechanism that doesn't truncate 32-byte values
         // let (data_len, data) = Helpers.load_256_bits_array(data_bytes_len, data_ptr);
