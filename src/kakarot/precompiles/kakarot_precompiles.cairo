@@ -117,7 +117,7 @@ namespace KakarotPrecompiles {
         let target_address = Helpers.bytes32_to_felt(input);
 
         let data_bytes_len = Helpers.bytes32_to_felt(input + 2 * 32);
-        let data_fits_in_input = is_le(data_bytes_len, input_len);
+        let data_fits_in_input = is_le(data_bytes_len, input_len - 3 * 32);
         if (data_fits_in_input == 0) {
             let (revert_reason_len, revert_reason) = Errors.outOfBoundsRead();
             return (revert_reason_len, revert_reason, CAIRO_MESSAGE_GAS, Errors.EXCEPTIONAL_HALT);
