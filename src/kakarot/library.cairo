@@ -7,7 +7,9 @@ from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.starknet.common.syscalls import get_caller_address
 from starkware.cairo.common.math_cmp import is_not_zero
+from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.math import split_felt
 
 from backend.starknet import Starknet
 from kakarot.account import Account
@@ -22,6 +24,7 @@ from kakarot.storages import (
     Kakarot_block_gas_limit,
     Kakarot_evm_to_starknet_address,
     Kakarot_authorized_cairo_precompiles_callers,
+    Kakarot_authorized_message_senders,
 )
 from kakarot.events import evm_contract_deployed
 from kakarot.interpreter import Interpreter
@@ -371,5 +374,38 @@ namespace Kakarot {
         }
 
         return (evm_address=evm_address);
+    }
+
+    func set_authorized_message_sender{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    }(sender: felt, authorized: felt) {
+        Kakarot_authorized_message_senders.write(sender, authorized);
+        return ();
+    }
+
+    func get_authorized_message_sender{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    }(sender: felt) -> felt {
+        let (authorized) = Kakarot_authorized_message_senders.read(sender);
+        return authorized;
+    }
+
+    func handle_l1_message{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(l1_sender: felt, to_address: felt, value: felt, data_len: felt, data: felt*) -> (
+        model.EVM*, model.State*, felt, felt
+    ) {
+        // TODO: ensure fair gas limits and prices
+        let (val_high, val_low) = split_felt(value);
+        tempvar value_u256 = new Uint256(low=val_low, high=val_high);
+        let to = model.Option(is_some=1, value=to_address);
+        let (access_list) = alloc();
+
+        return eth_call(
+            0, l1_sender, to, 2100000000, 1, value_u256, data_len, data, 0, access_list
+        );
     }
 }

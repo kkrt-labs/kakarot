@@ -10,7 +10,7 @@ endif
 KKRT_SSJ_RELEASE_ID = 154615699
 # Kakarot SSJ artifacts for precompiles.
 KKRT_SSJ_BUILD_ARTIFACT_URL = $(shell curl -L https://api.github.com/repos/kkrt-labs/kakarot-ssj/releases/${KKRT_SSJ_RELEASE_ID} | jq -r '.assets[0].browser_download_url')
-KATANA_VERSION = v0.7.0-alpha.0
+KATANA_VERSION = v0.7.0-alpha.5
 ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
 
@@ -120,3 +120,11 @@ install-katana:
 
 run-katana:
 	katana --chain-id test --validate-max-steps 6000000 --invoke-max-steps 14000000 --eth-gas-price 0 --strk-gas-price 0 --disable-fee
+
+run-anvil:
+	anvil --block-base-fee-per-gas 10
+
+run-nodes:
+	@echo "Starting Anvil and Katana in messaging mode"
+	@anvil --block-base-fee-per-gas 10 &
+	@katana --chain-id test --validate-max-steps 6000000 --invoke-max-steps 14000000 --eth-gas-price 0 --strk-gas-price 0 --disable-fee --messaging .katana/messaging_config.json

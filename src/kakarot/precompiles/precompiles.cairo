@@ -24,7 +24,7 @@ const FIRST_ROLLUP_PRECOMPILE_ADDRESS = 0x100;
 const LAST_ROLLUP_PRECOMPILE_ADDRESS = 0x100;
 const EXEC_PRECOMPILE_SELECTOR = 0x01e3e7ac032066525c37d0791c3c0f5fbb1c17f1cb6fe00afc206faa3fbd18e1;
 const FIRST_KAKAROT_PRECOMPILE_ADDRESS = 0x75001;
-const LAST_KAKAROT_PRECOMPILE_ADDRESS = 0x75001;
+const LAST_KAKAROT_PRECOMPILE_ADDRESS = 0x75002;
 
 // @title Precompile related functions.
 namespace Precompiles {
@@ -85,20 +85,11 @@ namespace Precompiles {
         jmp rollup_precompile if is_rollup_precompile_ != 0;
 
         let is_kakarot_precompile_ = is_kakarot_precompile(evm_address);
-        let is_whitelisted = KakarotPrecompiles.is_caller_whitelisted(caller_address);
-        tempvar is_kakarot_and_whitelisted = is_kakarot_precompile_ * is_whitelisted;
         tempvar syscall_ptr = syscall_ptr;
         tempvar pedersen_ptr = pedersen_ptr;
         tempvar range_check_ptr = range_check_ptr;
-        jmp kakarot_precompile if is_kakarot_and_whitelisted != 0;
-
-        // Prepare arguments if none of the above conditions are met
-        [ap] = syscall_ptr, ap++;
-        [ap] = pedersen_ptr, ap++;
-        [ap] = range_check_ptr, ap++;
-        [ap] = bitwise_ptr, ap++;
-        call unauthorized_precompile;
-        ret;
+        jmp pre_kakarot_precompile if is_kakarot_precompile_ != 0;
+        jmp unauthorized_call;
 
         eth_precompile:
         tempvar index = evm_address;
@@ -110,6 +101,19 @@ namespace Precompiles {
         );
         jmp call_precompile;
 
+        pre_kakarot_precompile:
+        let is_cairo_contract_call = Helpers.is_zero(
+            FIRST_KAKAROT_PRECOMPILE_ADDRESS - evm_address
+        );
+        let is_whitelisted = KakarotPrecompiles.is_caller_whitelisted(caller_address);
+        tempvar is_authorized = is_cairo_contract_call * is_whitelisted;
+        tempvar syscall_ptr = syscall_ptr;
+        tempvar pedersen_ptr = pedersen_ptr;
+        tempvar range_check_ptr = range_check_ptr;
+        jmp kakarot_precompile if is_authorized != 0;
+        jmp unauthorized_call if is_cairo_contract_call != 0;
+        jmp kakarot_precompile;
+
         kakarot_precompile:
         let rollup_precompiles_count = LAST_ROLLUP_PRECOMPILE_ADDRESS -
             FIRST_ROLLUP_PRECOMPILE_ADDRESS + 1;
@@ -117,6 +121,15 @@ namespace Precompiles {
             evm_address - FIRST_KAKAROT_PRECOMPILE_ADDRESS
         );
         jmp call_precompile;
+
+        unauthorized_call:
+        // Prepare arguments if none of the above conditions are met
+        [ap] = syscall_ptr, ap++;
+        [ap] = pedersen_ptr, ap++;
+        [ap] = range_check_ptr, ap++;
+        [ap] = bitwise_ptr, ap++;
+        call unauthorized_precompile;
+        ret;
 
         call_precompile:
         // Compute the corresponding offset in the jump table:
@@ -164,6 +177,8 @@ namespace Precompiles {
         // based on the address of the precompile, the last ethereum precompile, and
         // the amount of rollup precompiles.
         call KakarotPrecompiles.cairo_precompile;  // offset 0x0c: precompile 0x75001
+        ret;
+        call KakarotPrecompiles.cairo_message;  // offset 0x0d: precompile 0x75002
         ret;
     }
 

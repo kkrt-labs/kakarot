@@ -1,7 +1,9 @@
 import pytest
+from eth_abi import encode
 from starkware.starknet.public.abi import get_selector_from_name
 
 from tests.utils.constants import (
+    CAIRO_MESSAGE_GAS,
     CAIRO_PRECOMPILE_GAS,
     FIRST_KAKAROT_PRECOMPILE_ADDRESS,
     FIRST_ROLLUP_PRECOMPILE_ADDRESS,
@@ -164,6 +166,77 @@ class TestPrecompiles:
                 )
 
                 return
+
+        @pytest.mark.parametrize(
+            "address, input_data, to_address, payload, expected_reverted",
+            [
+                (
+                    0x75002,
+                    encode(["uint160", "bytes"], [0xC0DE, encode(["uint128"], [0x2A])]),
+                    0xC0DE,
+                    list(bytes.fromhex(f"{0x2a:064x}")),
+                    False,
+                ),
+                (
+                    0x75002,
+                    encode(["uint160", "bytes"], [0xC0DE, 0x2A.to_bytes(1, "big")]),
+                    0xC0DE,
+                    list(0x2A.to_bytes(1, "big")),
+                    False,
+                ),
+                # case with data_len not matching the actual data length
+                (
+                    0x75002,
+                    bytes.fromhex(
+                        f"{0xc0de:064x}"
+                        + f"{0x40:064x}"
+                        + f"{0x20:064x}"
+                        + f"{0x2a:032x}"
+                    ),
+                    0xC0DE,
+                    [],
+                    True,
+                ),
+                # case with input data too short
+                (
+                    0x75002,
+                    bytes.fromhex(f"{0xc0de:064x}" + f"{0x40:064x}"),
+                    0xC0DE,
+                    [],
+                    True,
+                ),
+            ],
+            ids=[
+                "ok_32_bytes_data",
+                "ok_1_bytes_data",
+                "ko_data_len_not_matching_actual_length",
+                "ko_input_too_short",
+            ],
+        )
+        class TestKakarotMessaging:
+            def test__cairo_message(
+                self,
+                cairo_run,
+                address,
+                input_data,
+                to_address,
+                payload,
+                expected_reverted,
+            ):
+                address = 0x75002
+                return_data, reverted, gas_used = cairo_run(
+                    "test__precompiles_run",
+                    address=address,
+                    input=input_data,
+                )
+                if expected_reverted:
+                    assert reverted
+                    return
+
+                SyscallHandler.mock_send_message_to_l1.assert_any_call(
+                    to_address=to_address, payload=payload
+                )
+                assert gas_used == CAIRO_MESSAGE_GAS
 
     class TestIsPrecompile:
         @pytest.mark.parametrize(

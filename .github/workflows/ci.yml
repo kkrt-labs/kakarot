@@ -150,10 +150,8 @@ jobs:
         uses: foundry-rs/foundry-toolchain@v1
         with:
           version: nightly
-      - name: Install Scarb
-        uses: software-mansion/setup-scarb@v1
-        with:
-          tool-versions: ./cairo1_contracts/mock_pragma/.tool-versions #TODO: support multiple tool-versions files
+      - name: Install asdf & tools # For multiple versions of scarb - reads from .tool-versions and installs them
+        uses: asdf-vm/actions/install@v3
       - name: Load cached katana
         id: cached-katana
         uses: actions/cache@v4
@@ -167,7 +165,7 @@ jobs:
         run: |
           make fetch-ssj-artifacts
           cp .env.example .env
-          make run-katana & make test-end-to-end
+          make run-nodes & make test-end-to-end
 
   ef-tests:
     runs-on: ubuntu-latest-32-cores
