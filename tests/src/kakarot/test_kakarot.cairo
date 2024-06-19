@@ -5,6 +5,18 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.uint256 import Uint256
 
 from kakarot.library import Kakarot
+from kakarot.kakarot import (
+    register_account,
+    set_native_token,
+    set_base_fee,
+    set_coinbase,
+    set_prev_randao,
+    set_block_gas_limit,
+    set_account_contract_class_hash,
+    set_authorized_cairo_precompile_caller,
+    set_cairo1_helpers_class_hash,
+    transfer_ownership,
+)
 from kakarot.model import model
 from kakarot.account import Account
 
@@ -73,7 +85,100 @@ func test__register_account{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, rang
 
     %{ ids.evm_address = program_input["evm_address"] %}
 
-    Kakarot.register_account(evm_address=evm_address);
+    register_account(evm_address=evm_address);
 
+    return ();
+}
+
+func test__transfer_ownership{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+    tempvar new_owner;
+
+    %{ ids.new_owner = program_input["new_owner"] %}
+
+    transfer_ownership(new_owner);
+
+    return ();
+}
+
+func test__set_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+    tempvar address;
+
+    %{ ids.address = program_input["address"] %}
+
+    set_native_token(address);
+    return ();
+}
+
+func test__set_coinbase{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+    tempvar coinbase;
+
+    %{ ids.coinbase = program_input["coinbase"] %}
+
+    set_coinbase(coinbase);
+    return ();
+}
+
+func test__set_base_fee{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+    tempvar base_fee;
+
+    %{ ids.base_fee = program_input["base_fee"] %}
+
+    set_base_fee(base_fee);
+    return ();
+}
+
+func test__set_prev_randao{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+    tempvar prev_randao;
+
+    %{ ids.prev_randao = program_input["prev_randao"] %}
+
+    set_prev_randao(Uint256(prev_randao, 0));
+    return ();
+}
+
+func test__set_block_gas_limit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+    tempvar block_gas_limit;
+
+    %{ ids.block_gas_limit = program_input["block_gas_limit"] %}
+
+    set_block_gas_limit(block_gas_limit);
+    return ();
+}
+
+func test__set_account_contract_class_hash{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+}() {
+    tempvar value;
+
+    %{ ids.value = program_input["class_hash"] %}
+
+    set_account_contract_class_hash(value);
+    return ();
+}
+
+func test__set_authorized_cairo_precompile_caller{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+}() {
+    tempvar caller_address;
+    tempvar authorized;
+
+    %{
+        ids.caller_address = program_input["caller_address"]
+        ids.authorized = program_input["authorized"]
+    %}
+
+    set_authorized_cairo_precompile_caller(caller_address, authorized);
+
+    return ();
+}
+
+func test__set_cairo1_helpers_class_hash{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+}() {
+    tempvar value;
+
+    %{ ids.value = program_input["class_hash"] %}
+
+    set_cairo1_helpers_class_hash(value);
     return ();
 }
