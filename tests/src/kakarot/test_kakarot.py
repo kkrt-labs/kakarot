@@ -71,6 +71,141 @@ def get_contract(cairo_run):
 
 class TestKakarot:
 
+    class TestNativeToken:
+        @SyscallHandler.patch("Ownable_owner", 0xDEAD)
+        def test_should_assert_only_owner(self, cairo_run):
+            with cairo_error():
+                cairo_run("test__set_native_token", address=0xABC)
+
+        @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
+        def test_should_set_native_token(self, cairo_run):
+            token_address = 0xABCDE12345
+            cairo_run("test__set_native_token", address=token_address)
+            SyscallHandler.mock_storage.assert_any_call(
+                address=get_storage_var_address("Kakarot_native_token_address"),
+                value=token_address,
+            )
+
+    class TestTransferOwnership:
+        @SyscallHandler.patch("Ownable_owner", 0xDEAD)
+        def test_should_assert_only_owner(self, cairo_run):
+            with cairo_error():
+                cairo_run("test__transfer_ownership", new_owner=0xABC)
+
+        @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
+        def test_should_transfer_ownership(self, cairo_run):
+            new_owner = 0xABCDE12345
+            cairo_run("test__transfer_ownership", new_owner=new_owner)
+            SyscallHandler.mock_storage.assert_any_call(
+                address=get_storage_var_address("Ownable_owner"), value=new_owner
+            )
+
+    class TestBaseFee:
+        @SyscallHandler.patch("Ownable_owner", 0xDEAD)
+        def test_should_assert_only_owner(self, cairo_run):
+            with cairo_error():
+                cairo_run("test__set_base_fee", base_fee=0xABC)
+
+        @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
+        def test_should_set_base_fee(self, cairo_run):
+            base_fee = 0x100
+            cairo_run("test__set_base_fee", base_fee=base_fee)
+            SyscallHandler.mock_storage.assert_any_call(
+                address=get_storage_var_address("Kakarot_base_fee"), value=base_fee
+            )
+
+    class TestCoinbase:
+        @SyscallHandler.patch("Ownable_owner", 0xDEAD)
+        def test_should_assert_only_owner(self, cairo_run):
+            with cairo_error():
+                cairo_run("test__set_coinbase", coinbase=0xABC)
+
+        @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
+        def test_should_set_coinbase(self, cairo_run):
+            coinbase = 0xC0DE
+            cairo_run("test__set_coinbase", coinbase=coinbase)
+            SyscallHandler.mock_storage.assert_any_call(
+                address=get_storage_var_address("Kakarot_coinbase"), value=coinbase
+            )
+
+    class TestPrevRandao:
+        @SyscallHandler.patch("Ownable_owner", 0xDEAD)
+        def test_should_assert_only_owner(self, cairo_run):
+            with cairo_error():
+                cairo_run("test__set_prev_randao", prev_randao=0xABC)
+
+        @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
+        def test_should_set_prev_randao(self, cairo_run):
+            prev_randao = 0x123
+            cairo_run("test__set_prev_randao", prev_randao=prev_randao)
+            SyscallHandler.mock_storage.assert_any_call(
+                address=get_storage_var_address("Kakarot_prev_randao"),
+                value=prev_randao,
+            )
+
+    class TestBlockGasLimit:
+        @SyscallHandler.patch("Ownable_owner", 0xDEAD)
+        def test_should_assert_only_owner(self, cairo_run):
+            with cairo_error():
+                cairo_run("test__set_block_gas_limit", block_gas_limit=0xABC)
+
+        @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
+        def test_should_set_block_gas_limit(self, cairo_run):
+            block_gas_limit = 0x1000
+            cairo_run("test__set_block_gas_limit", block_gas_limit=block_gas_limit)
+            SyscallHandler.mock_storage.assert_any_call(
+                address=get_storage_var_address("Kakarot_block_gas_limit"),
+                value=block_gas_limit,
+            )
+
+    class TestAccountContractClassHash:
+        @SyscallHandler.patch("Ownable_owner", 0xDEAD)
+        def test_should_assert_only_owner(self, cairo_run):
+            with cairo_error():
+                cairo_run("test__set_account_contract_class_hash", class_hash=0xABC)
+
+        @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
+        def test_should_set_account_contract_class_hash(self, cairo_run):
+            class_hash = 0x123
+            cairo_run("test__set_account_contract_class_hash", class_hash=class_hash)
+            SyscallHandler.mock_storage.assert_any_call(
+                address=get_storage_var_address("Kakarot_account_contract_class_hash"),
+                value=class_hash,
+            )
+
+    class TestAuthorizedCairoPrecompileCaller:
+        @SyscallHandler.patch("Ownable_owner", 0xDEAD)
+        def test_should_assert_only_owner(self, cairo_run):
+            with cairo_error():
+                cairo_run(
+                    "test__set_authorized_cairo_precompile_caller",
+                    caller_address=0xABC,
+                    authorized=0xBCD,
+                )
+
+        @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
+        def test_should_set_authorized_cairo_precompile_caller(self, cairo_run):
+            caller = 0x123
+            authorized = 0x456
+            cairo_run(
+                "test__set_authorized_cairo_precompile_caller",
+                caller_address=caller,
+                authorized=authorized,
+            )
+            SyscallHandler.mock_storage.assert_any_call(
+                address=get_storage_var_address(
+                    "Kakarot_authorized_cairo_precompiles_callers",
+                    caller,
+                ),
+                value=authorized,
+            )
+
+    class Cairo1HelpersClass:
+        @SyscallHandler.patch("Ownable_owner", 0xDEAD)
+        def test_should_assert_only_owner(self, cairo_run):
+            with cairo_error():
+                cairo_run("test__set_cairo1_helpers_class_hash", class_hash=0xABC)
+
     class TestRegisterAccount:
         @SyscallHandler.patch("Kakarot_evm_to_starknet_address", EVM_ADDRESS, 0)
         @patch(
