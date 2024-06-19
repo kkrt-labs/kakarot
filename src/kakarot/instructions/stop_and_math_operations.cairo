@@ -26,6 +26,7 @@ from kakarot.evm import EVM
 from kakarot.stack import Stack
 from kakarot.gas import Gas
 from kakarot.state import State
+from kakarot.errors import Errors
 from utils.uint256 import (
     uint256_fast_exp,
     uint256_signextend,
@@ -346,6 +347,21 @@ namespace StopAndMathOperations {
         jmp end;
 
         INVALID:
+        let range_check_ptr = [ap - 2];
+        // Rebind args with fp
+        // Function args are in [fp - n - 2: fp - 2]
+        // locals are retrieved from [fp] in the order they are defined
+        let syscall_ptr = cast([fp - 10], felt*);
+        let pedersen_ptr = cast([fp - 9], HashBuiltin*);
+        let bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
+        let memory = cast([fp - 5], model.Memory*);
+        let state = cast([fp - 4], model.State*);
+        let evm = cast([fp - 3], model.EVM*);
+        let stack = cast([fp + 1], model.Stack*);
+
+        let (revert_reason_len, revert_reason) = Errors.unknownOpcode();
+        let evm = EVM.stop(evm, revert_reason_len, revert_reason, Errors.EXCEPTIONAL_HALT);
+        return evm;
 
         LT:
         let range_check_ptr = [ap - 2];

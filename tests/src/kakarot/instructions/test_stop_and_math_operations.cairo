@@ -10,6 +10,7 @@ from starkware.cairo.common.uint256 import Uint256
 from kakarot.stack import Stack
 from kakarot.state import State
 from kakarot.memory import Memory
+from kakarot.model import model
 from kakarot.instructions.stop_and_math_operations import StopAndMathOperations
 from tests.utils.helpers import TestHelpers
 
@@ -35,7 +36,7 @@ func test__exec_stop{
 
 func test__exec_math_operation{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(output_ptr: felt*) {
+}() -> (evm: model.EVM*, result: Uint256*) {
     // Given
     alloc_locals;
 
@@ -64,7 +65,5 @@ func test__exec_math_operation{
     }
 
     // Then
-    assert [output_ptr] = result.low;
-    assert [output_ptr + 1] = result.high;
-    return ();
+    return (evm, result);
 }

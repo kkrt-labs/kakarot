@@ -106,11 +106,20 @@ class TestStopMathOperations:
                 (Opcodes.SAR, [2, 4], 1),
             ],
         )
-        async def test__exec_math_operation(
-            self, cairo_run, opcode, stack, expected_result
-        ):
+        def test__exec_math_operation(self, cairo_run, opcode, stack, expected_result):
             stack = [
                 u256_member for value in stack for u256_member in int_to_uint256(value)
             ]
-            output = cairo_run("test__exec_math_operation", opcode=opcode, stack=stack)
-            assert output == list(int_to_uint256(expected_result))
+            (evm, result) = cairo_run(
+                "test__exec_math_operation", opcode=opcode, stack=stack
+            )
+            assert int(result, 16) == expected_result
+
+        @pytest.mark.parametrize(
+            "opcode, stack", [(0x0C, []), (0x0D, []), (0x0E, []), (0x0F, [])]
+        )
+        def test__invalid_opcode_should_revert(self, cairo_run, opcode, stack):
+            (evm, result) = cairo_run(
+                "test__exec_math_operation", opcode=opcode, stack=stack
+            )
+            assert evm["reverted"] == 2
