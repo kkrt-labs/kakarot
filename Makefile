@@ -68,16 +68,6 @@ check-resources:
 build-sol:
 	git submodule update --init --recursive
 	forge build --names --force
-	$(MAKE) build-sol-experimental
-
-build-sol-experimental:
-	docker run --rm \
-		-v $$(pwd):/app/foundry \
-		-u $$(id -u):$$(id -g) \
-		ghcr.io/paradigmxyz/foundry-alphanet@sha256:64ac81c19b910e766ce750499a2c9de064dce4fa9c4fc1e42368fdd73fc48dde \
-		--foundry-directory /app/foundry/experimental_contracts \
-		--foundry-command build
-
 
 # Builds Cairo 1.0 contracts by iterating over subdirectories,
 # compiling contracts, and copying the resulting .sierra.json (old versions) or .contract_class.json

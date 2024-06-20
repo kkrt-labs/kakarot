@@ -477,57 +477,6 @@ files = [
 ]
 
 [[package]]
-name = "cbor2"
-version = "5.6.3"
-description = "CBOR (de)serializer with extensive tag support"
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "cbor2-5.6.3-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:0201d5e8d9ad1557aeb50d35b907c0f170de0ae9ebb484b2894bcee3b2e13b80"},
-    {file = "cbor2-5.6.3-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:eda6965cca276d4c2cebdbee14572dec65b991c5359fc32a793f03f052e35985"},
-    {file = "cbor2-5.6.3-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:14561038b8eaab3fd5e867f09bc43f7525a1405e41ade14066925ea3d42513a8"},
-    {file = "cbor2-5.6.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:9a3cf6b339a005031e4b8c79b9541856e3b0077ea4c33d7bb6a019885136f53a"},
-    {file = "cbor2-5.6.3-cp310-cp310-musllinux_1_1_aarch64.whl", hash = "sha256:4b7636d39de203ee30ac13575ed3e9a0510e993fa1671022b84b9e35e369825f"},
-    {file = "cbor2-5.6.3-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:23847075ce1bcda871c7698e5db0635685995ae470098a5e4c9a26c00f65f21a"},
-    {file = "cbor2-5.6.3-cp310-cp310-win_amd64.whl", hash = "sha256:ca15be7142e861fb9f918e0248620b4d4153b9ff14ef6034f7204db5db2924a1"},
-    {file = "cbor2-5.6.3-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:b07ee755ae5b0dfad608dab37364b35895cab5d1222653da1fea32a10330c4b0"},
-    {file = "cbor2-5.6.3-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:9fc063843c14e9e95181faf8d807a53c958d77bb9d360eb4f2344d075ecfed36"},
-    {file = "cbor2-5.6.3-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c66d4c227c2ed6c63ec5c2d50eb8ec0e1c41c07b452a867544e48ca41d4f0b64"},
-    {file = "cbor2-5.6.3-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:3af60ac82a733bfdfb2b1079c850fefea2621bdb8c8f87f4c5d12802d48a8c55"},
-    {file = "cbor2-5.6.3-cp311-cp311-musllinux_1_1_aarch64.whl", hash = "sha256:acb93292843aa72768f089a135bfeec4c9b745132e8dc22f1b149490fc77cb0a"},
-    {file = "cbor2-5.6.3-cp311-cp311-musllinux_1_1_x86_64.whl", hash = "sha256:193d1abdffd52893710d39389daa5c03e1569421cdf53585a28033689aef7aec"},
-    {file = "cbor2-5.6.3-cp311-cp311-win_amd64.whl", hash = "sha256:d0c915db92b441f505f8a14a521c9461439ac8e5d959454845eb92f93db0bb3b"},
-    {file = "cbor2-5.6.3-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:9eaec8c04618124a6b597fe4471035cb7cb0d5114f43aaf2062821ad480ef57c"},
-    {file = "cbor2-5.6.3-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:d1e5181d4f858237ab4e1a28e21bdcaf31dab2657ab60a8d4a0701a078fe5926"},
-    {file = "cbor2-5.6.3-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:277997127402710a3abdf4372ac75e8f8bb2e75a303cd789312e515c8ef657dd"},
-    {file = "cbor2-5.6.3-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:add01e4b4663199940d10f8c8e1d926e70823d1b2f3f981cc097a4764125f110"},
-    {file = "cbor2-5.6.3-cp312-cp312-musllinux_1_1_aarch64.whl", hash = "sha256:adc87485ffd7a4dad481e08e6819eebfcfbafc0918fffcca47aee4cdf8c6de04"},
-    {file = "cbor2-5.6.3-cp312-cp312-musllinux_1_1_x86_64.whl", hash = "sha256:ea4a0412426155c3b78763449db56cf5c72c48788a37d7e60bd66c844b9c8634"},
-    {file = "cbor2-5.6.3-cp312-cp312-win_amd64.whl", hash = "sha256:18b3dee4eddde9761c60298ce21c0cd4e770237978034c5ee1d4242e255683ec"},
-    {file = "cbor2-5.6.3-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:ff6fd1c54b97ee322c0b7180092305ca3b012ff78fddadad97b33490f5f8881f"},
-    {file = "cbor2-5.6.3-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:ac6f10b9d25f2d61c036f86238bf23e3ea0253f98faa8ab00f67228bf3c0ce2a"},
-    {file = "cbor2-5.6.3-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:7be74f2cbda547fdd57c83ee5b3470804f02c660db28efcf9d4016f001b66f40"},
-    {file = "cbor2-5.6.3-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:64ea120206f82492a4385bbc5e2639f9b67c8bc7bdc57bffcbe9a8fee8cd6342"},
-    {file = "cbor2-5.6.3-cp38-cp38-musllinux_1_1_aarch64.whl", hash = "sha256:c3d2902e1aed155d56cdcae99cd4a9dae843e3fff6978148d2d5d5f9a0b986cd"},
-    {file = "cbor2-5.6.3-cp38-cp38-musllinux_1_1_x86_64.whl", hash = "sha256:2d4f95a567e26d8d9d62db234cd089525c52f19e7fdd59152629d9f03bd94b4f"},
-    {file = "cbor2-5.6.3-cp38-cp38-win_amd64.whl", hash = "sha256:33efbe7103bac090430d291fca2fe1c444b0ec55c4716e8051b72a81377e8b79"},
-    {file = "cbor2-5.6.3-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:81e619a2a59ae966cedb5fd3ea8a9487a3d4430824bbeacdcf5f74ad6112cc57"},
-    {file = "cbor2-5.6.3-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:2b7755b93d32638f4d79a0fa0744b423787f6faa3c96ccccac68b6dbf1848368"},
-    {file = "cbor2-5.6.3-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:0f0e95011ae8460265ef348fe380664fa22c51015fd52344ebd781579fa9552a"},
-    {file = "cbor2-5.6.3-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:7693e53c3ba0b2ad4e46b610f8d69159ffdbcb6ebe75ea1c1f5f40c3283639ca"},
-    {file = "cbor2-5.6.3-cp39-cp39-musllinux_1_1_aarch64.whl", hash = "sha256:e3ec251db32516d383fc587874b15f4b5fb4e9049d9436b8696f5767b11c149b"},
-    {file = "cbor2-5.6.3-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:6081c1ab9791d5973a40b95ecb8b04b0fbf9fc04be170d89a3ad77d5964f52d5"},
-    {file = "cbor2-5.6.3-cp39-cp39-win_amd64.whl", hash = "sha256:2aba8b75e36c9f84a42a7026271da8fd759035a871c1b799028439059527276b"},
-    {file = "cbor2-5.6.3-py3-none-any.whl", hash = "sha256:8a4b7404af6da719092a4ee5953d1930d095b93b684bf99e1ab74512be1910a4"},
-    {file = "cbor2-5.6.3.tar.gz", hash = "sha256:e6f0ae2751c2d333a960e0807c0611494eb1245631a167965acbc100509455d3"},
-]
-
-[package.extras]
-benchmarks = ["pytest-benchmark (==4.0.0)"]
-doc = ["Sphinx (>=7)", "packaging", "sphinx-autodoc-typehints (>=1.2.0)", "sphinx-rtd-theme (>=1.3.0)", "typing-extensions"]
-test = ["coverage (>=7)", "hypothesis", "pytest"]
-
-[[package]]
 name = "certifi"
 version = "2024.2.2"
 description = "Python package for providing Mozilla's CA Bundle."
@@ -3405,7 +3354,6 @@ files = [
     {file = "PyYAML-6.0.1-cp311-cp311-win_amd64.whl", hash = "sha256:bf07ee2fef7014951eeb99f56f39c9bb4af143d8aa3c21b1677805985307da34"},
     {file = "PyYAML-6.0.1-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:855fb52b0dc35af121542a76b9a84f8d1cd886ea97c84703eaa6d88e37a2ad28"},
     {file = "PyYAML-6.0.1-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:40df9b996c2b73138957fe23a16a4f0ba614f4c0efce1e9406a184b6d07fa3a9"},
-    {file = "PyYAML-6.0.1-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:a08c6f0fe150303c1c6b71ebcd7213c2858041a7e01975da3a99aed1e7a378ef"},
     {file = "PyYAML-6.0.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:6c22bec3fbe2524cde73d7ada88f6566758a8f7227bfbf93a408a9d86bcc12a0"},
     {file = "PyYAML-6.0.1-cp312-cp312-musllinux_1_1_x86_64.whl", hash = "sha256:8d4e9c88387b0f5c7d5f281e55304de64cf7f9c0021a3525bd3b1c542da3b0e4"},
     {file = "PyYAML-6.0.1-cp312-cp312-win32.whl", hash = "sha256:d483d2cdf104e7c9fa60c544d92981f12ad66a457afae824d146093b8c294c54"},
@@ -4167,34 +4115,6 @@ socks = ["pysocks (>=1.5.6,!=1.5.7,<2.0)"]
 zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
-name = "vyper"
-version = "0.4.0rc3"
-description = "Vyper: the Pythonic Programming Language for the EVM"
-optional = false
-python-versions = ">=3.10,<4"
-files = []
-develop = false
-
-[package.dependencies]
-asttokens = ">=2.0.5,<3"
-cbor2 = ">=5.4.6,<6"
-importlib-metadata = "*"
-packaging = ">=23.1,<24"
-pycryptodome = ">=3.5.1,<4"
-wheel = "*"
-
-[package.extras]
-dev = ["black (==23.12.0)", "eth-abi (>=4.0.0,<5.0.0)", "eth-stdlib (==0.2.7)", "eth-tester[py-evm] (>=0.10.0b4,<0.11)", "flake8 (==6.1.0)", "flake8-bugbear (==23.12.2)", "flake8-use-fstring (==1.4)", "hexbytes (>=1.2)", "hypothesis[lark] (>=6.0,<7.0)", "ipython", "isort (==5.13.2)", "lark (==1.1.9)", "mypy (==1.5)", "pre-commit", "py-evm (>=0.10.0b4,<0.11)", "pyinstaller", "pytest (>=8.0,<9.0)", "pytest-cov (>=4.1,<5.0)", "pytest-instafail (>=0.4,<1.0)", "pytest-split (>=0.7.0,<1.0)", "pytest-xdist (>=3.0,<3.4)", "setuptools", "twine", "web3 (==6.0.0)"]
-lint = ["black (==23.12.0)", "flake8 (==6.1.0)", "flake8-bugbear (==23.12.2)", "flake8-use-fstring (==1.4)", "isort (==5.13.2)", "mypy (==1.5)"]
-test = ["eth-abi (>=4.0.0,<5.0.0)", "eth-stdlib (==0.2.7)", "eth-tester[py-evm] (>=0.10.0b4,<0.11)", "hexbytes (>=1.2)", "hypothesis[lark] (>=6.0,<7.0)", "lark (==1.1.9)", "py-evm (>=0.10.0b4,<0.11)", "pytest (>=8.0,<9.0)", "pytest-cov (>=4.1,<5.0)", "pytest-instafail (>=0.4,<1.0)", "pytest-split (>=0.7.0,<1.0)", "pytest-xdist (>=3.0,<3.4)", "setuptools", "web3 (==6.0.0)"]
-
-[package.source]
-type = "git"
-url = "https://github.com/charles-cooper/vyper"
-reference = "feat/eip-3074"
-resolved_reference = "e61a34b35af4c2114d6eb889533aeacfb8e15cfd"
-
-[[package]]
 name = "wcwidth"
 version = "0.2.13"
 description = "Measures the displayed width of unicode strings in a terminal"
@@ -4321,20 +4241,6 @@ files = [
 ]
 
 [[package]]
-name = "wheel"
-version = "0.43.0"
-description = "A built-package format for Python"
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "wheel-0.43.0-py3-none-any.whl", hash = "sha256:55c570405f142630c6b9f72fe09d9b67cf1477fcf543ae5b8dcb1f5b7377da81"},
-    {file = "wheel-0.43.0.tar.gz", hash = "sha256:465ef92c69fa5c5da2d1cf8ac40559a8c940886afcef87dcf14b9470862f1d85"},
-]
-
-[package.extras]
-test = ["pytest (>=6.0.0)", "setuptools (>=65)"]
-
-[[package]]
 name = "yarl"
 version = "1.9.4"
 description = "Yet another URL library"
@@ -4455,4 +4361,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.11"
-content-hash = "0ecdd2ee46499cc89a8ffd58daec3816ac142a22a7f0311b4abec5f13c407bc8"
+content-hash = "9d592c4242cfff03aed10da07f7c31d8516b65e9ffe03edfdb1e77f71e46a4d6"

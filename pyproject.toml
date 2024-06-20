@@ -49,7 +49,6 @@ eth-bloom = "^3.0.0"
 trie = "^3.0.0"
 cached-property = "^1.5.2"
 py-ecc = "^7.0.0"
-vyper = { git = "https://github.com/charles-cooper/vyper", rev = "feat/eip-3074" }
 
 [tool.pytest.ini_options]
 norecursedirs = "tests/ef_tests/test_data"
@@ -151,7 +150,6 @@ markers = [
   "SolmateERC721",
   "UniswapV2ERC20",
   "UniswapV2Factory",
-  "EIP3074",
   "RIP7212",
   "CairoPrecompiles",
   "UniswapV2Router",
