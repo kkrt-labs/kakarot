@@ -58,6 +58,7 @@ RUN --mount=type=cache,target=/root/.cache \
 
 # split install in two steps to leverage docker cache
 COPY . .
+RUN curl --proto '=https' --tlsv1.2 -sSf https://docs.swmansion.com/scarb/install.sh | sh -s -- -v 0.7.0
 RUN --mount=type=cache,target=/root/.cache \
     make fetch-ssj-artifacts && make build && make build-cairo1
 
