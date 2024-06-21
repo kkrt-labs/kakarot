@@ -380,7 +380,7 @@ async def eth_send_transaction(
     )
 
     if WEB3.is_connected():
-        tx_hash = WEB3.eth.send_raw_transaction(evm_tx.rawTransaction)
+        tx_hash = WEB3.eth.send_raw_transaction(evm_tx.raw_transaction)
         receipt = WEB3.eth.wait_for_transaction_receipt(
             tx_hash, timeout=NETWORK["max_wait"], poll_latency=NETWORK["check_interval"]
         )

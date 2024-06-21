@@ -149,7 +149,7 @@ async def send_l1_transaction(
         evm_account.key,
     )
 
-    tx_hash = L1_RPC_PROVIDER.eth.send_raw_transaction(evm_tx.rawTransaction)
+    tx_hash = L1_RPC_PROVIDER.eth.send_raw_transaction(evm_tx.raw_transaction)
     receipt = L1_RPC_PROVIDER.eth.wait_for_transaction_receipt(tx_hash)
     response = []
     if not receipt.status:
