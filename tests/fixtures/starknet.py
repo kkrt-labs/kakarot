@@ -1,6 +1,7 @@
 import json
 import logging
 import math
+import shutil
 from pathlib import Path
 from time import perf_counter
 
@@ -10,7 +11,6 @@ from starkware.cairo.lang.cairo_constants import DEFAULT_PRIME
 from starkware.cairo.lang.compiler.cairo_compile import compile_cairo, get_module_reader
 from starkware.cairo.lang.compiler.scoped_name import ScopedName
 from starkware.cairo.lang.tracer.tracer_data import TracerData
-from starkware.cairo.lang.vm import cairo_runner
 from starkware.cairo.lang.vm.cairo_run import (
     write_air_public_input,
     write_binary_memory,
@@ -22,13 +22,11 @@ from starkware.cairo.lang.vm.memory_segments import FIRST_MEMORY_ADDR as PROGRAM
 from starkware.cairo.lang.vm.utils import RunResources
 from starkware.starknet.compiler.starknet_pass_manager import starknet_pass_manager
 
-from tests.utils.coverage import VmWithCoverage
+from tests.utils.coverage import VmWithCoverage, report_runs
 from tests.utils.hints import debug_info
-from tests.utils.reporting import profile_from_tracer_data
+from tests.utils.reporting import dump_coverage, profile_from_tracer_data
 from tests.utils.serde import Serde
 from tests.utils.syscall_handler import SyscallHandler
-
-cairo_runner.VirtualMachine = VmWithCoverage
 
 pd.set_option("display.max_rows", 500)
 pd.set_option("display.max_columns", 500)
@@ -36,6 +34,30 @@ pd.set_option("display.width", 1000)
 
 logging.getLogger("asyncio").setLevel(logging.ERROR)
 logger = logging.getLogger()
+
+
+@pytest.fixture(scope="session", autouse=True)
+async def coverage(worker_id, request):
+
+    output_dir = Path("coverage")
+    shutil.rmtree(output_dir, ignore_errors=True)
+
+    yield
+
+    output_dir.mkdir(exist_ok=True, parents=True)
+    files = report_runs(excluded_file={"site-packages", "tests"})
+    total_covered = []
+    for file in files:
+        if file.pct_covered < 80:
+            logger.warning(f"{file.name} only {file.pct_covered:.2f}% covered")
+        total_covered.append(file.pct_covered)
+    if files and (val := not sum(total_covered) / len(files)) >= 80:
+        logger.warning(f"Project is not covered enough {val:.2f})")
+
+    if worker_id == "master":
+        dump_coverage(output_dir, files)
+    else:
+        dump_coverage(output_dir / worker_id, files)
 
 
 def cairo_compile(path):
@@ -161,6 +183,7 @@ def cairo_run(request) -> list:
                 "syscall_handler": SyscallHandler(),
             },
             static_locals={"debug_info": debug_info(program)},
+            vm_class=VmWithCoverage,
         )
         run_resources = RunResources(n_steps=4_000_000)
         runner.run_until_pc(end, run_resources)
