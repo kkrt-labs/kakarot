@@ -5,7 +5,7 @@ from typing import Optional, Union, cast
 
 from eth_abi import decode
 from eth_account import Account as EvmAccount
-from eth_account._utils.typed_transactions import TypedTransaction
+from eth_account.typed_transactions import TypedTransaction
 from eth_utils.address import to_checksum_address
 from hexbytes import HexBytes
 from web3 import Web3
