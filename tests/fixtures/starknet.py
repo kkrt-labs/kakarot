@@ -1,41 +1,30 @@
 import json
 import logging
-import os
-import shutil
+import math
 from pathlib import Path
 from time import perf_counter
-from typing import AsyncGenerator
 
 import pandas as pd
 import pytest
-import pytest_asyncio
 from starkware.cairo.lang.cairo_constants import DEFAULT_PRIME
 from starkware.cairo.lang.compiler.cairo_compile import compile_cairo, get_module_reader
 from starkware.cairo.lang.compiler.scoped_name import ScopedName
 from starkware.cairo.lang.tracer.tracer_data import TracerData
 from starkware.cairo.lang.vm import cairo_runner
+from starkware.cairo.lang.vm.cairo_run import (
+    write_air_public_input,
+    write_binary_memory,
+    write_binary_trace,
+)
 from starkware.cairo.lang.vm.cairo_runner import CairoRunner
 from starkware.cairo.lang.vm.memory_dict import MemoryDict
 from starkware.cairo.lang.vm.memory_segments import FIRST_MEMORY_ADDR as PROGRAM_BASE
 from starkware.cairo.lang.vm.utils import RunResources
-from starkware.starknet.business_logic.execution.execute_entry_point import (
-    ExecuteEntryPoint,
-)
-from starkware.starknet.business_logic.state.state_api_objects import BlockInfo
 from starkware.starknet.compiler.starknet_pass_manager import starknet_pass_manager
-from starkware.starknet.definitions.general_config import StarknetGeneralConfig
-from starkware.starknet.testing.starknet import Starknet
 
-from tests.utils.constants import BLOCK_NUMBER, BLOCK_TIMESTAMP
-from tests.utils.coverage import VmWithCoverage, report_runs
+from tests.utils.coverage import VmWithCoverage
 from tests.utils.hints import debug_info
-from tests.utils.reporting import (
-    dump_coverage,
-    dump_reports,
-    profile_from_tracer_data,
-    timeit,
-    traceit,
-)
+from tests.utils.reporting import profile_from_tracer_data
 from tests.utils.serde import Serde
 from tests.utils.syscall_handler import SyscallHandler
 
@@ -47,64 +36,6 @@ pd.set_option("display.width", 1000)
 
 logging.getLogger("asyncio").setLevel(logging.ERROR)
 logger = logging.getLogger()
-
-
-@pytest_asyncio.fixture(scope="session")
-async def starknet(worker_id, request) -> AsyncGenerator[Starknet, None]:
-    config = StarknetGeneralConfig(
-        invoke_tx_max_n_steps=2**24, validate_max_n_steps=2**24  # type: ignore
-    )
-    starknet = await Starknet.empty(config)
-    starknet.state.state.update_block_info(
-        BlockInfo.create_for_testing(
-            block_number=BLOCK_NUMBER, block_timestamp=BLOCK_TIMESTAMP
-        )
-    )
-    starknet.deploy = traceit.trace_all(timeit(starknet.deploy))
-    starknet.deprecated_declare = timeit(starknet.deprecated_declare)
-    if request.config.getoption("profile_cairo"):
-        ExecuteEntryPoint._run = traceit.trace_run(ExecuteEntryPoint._run)
-        logger.info("profile-cairo option enabled")
-    else:
-        logger.info("profile-cairo option disabled")
-    output_dir = Path("coverage")
-    shutil.rmtree(output_dir, ignore_errors=True)
-
-    yield starknet
-
-    output_dir.mkdir(exist_ok=True, parents=True)
-    files = report_runs(excluded_file={"site-packages", "tests"})
-    total_covered = []
-    for file in files:
-        if file.pct_covered < 80:
-            logger.warning(f"{file.name} only {file.pct_covered:.2f}% covered")
-        total_covered.append(file.pct_covered)
-    if files and (val := not sum(total_covered) / len(files)) >= 80:
-        logger.warning(f"Project is not covered enough {val:.2f})")
-
-    if worker_id == "master":
-        dump_reports(output_dir)
-        dump_coverage(output_dir, files)
-    else:
-        dump_reports(output_dir / worker_id)
-        dump_coverage(output_dir / worker_id, files)
-        if len(os.listdir(output_dir)) == int(os.environ["PYTEST_XDIST_WORKER_COUNT"]):
-            # This is the last teardown of the test suite, merge the files
-            resources = pd.concat(
-                [pd.read_csv(f) for f in output_dir.glob("**/resources.csv")],
-            )
-            if not resources.empty:
-                resources.sort_values(["n_steps"], ascending=False).to_csv(
-                    output_dir / "resources.csv", index=False
-                )
-            times = pd.concat(
-                [pd.read_csv(f) for f in output_dir.glob("**/times.csv")],
-                ignore_index=True,
-            )
-            if not times.empty:
-                times.sort_values(["duration"], ascending=False).to_csv(
-                    output_dir / "times.csv", index=False
-                )
 
 
 def cairo_compile(path):
@@ -143,9 +74,19 @@ def cairo_run(request) -> list:
     logger.info(f"{cairo_file} compiled in {stop - start:.2f}s")
 
     def _factory(entrypoint, **kwargs) -> list:
-        implicit_args = program.identifiers.get_by_full_name(
-            ScopedName(path=["__main__", entrypoint, "ImplicitArgs"])
-        ).members.keys()
+        implicit_args = list(
+            program.identifiers.get_by_full_name(
+                ScopedName(path=["__main__", entrypoint, "ImplicitArgs"])
+            ).members.keys()
+        )
+        args = list(
+            program.identifiers.get_by_full_name(
+                ScopedName(path=["__main__", entrypoint, "Args"])
+            ).members.keys()
+        )
+        return_data = program.identifiers.get_by_full_name(
+            ScopedName(path=["__main__", entrypoint, "Return"])
+        )
         # Fix builtins runner based on the implicit args since the compiler doesn't find them
         program.builtins = [
             builtin
@@ -168,12 +109,17 @@ def cairo_run(request) -> list:
         memory = MemoryDict()
         runner = CairoRunner(
             program=program,
-            layout="starknet_with_keccak",
+            layout=request.config.getoption("layout"),
             memory=memory,
-            proof_mode=False,
+            proof_mode=request.config.getoption("proof_mode"),
             allow_missing_builtins=False,
         )
-        runner.initialize_segments()
+        serde = Serde(runner)
+
+        runner.program_base = runner.segments.add()
+        runner.execution_base = runner.segments.add()
+        for builtin_runner in runner.builtin_runners.values():
+            builtin_runner.initialize_segments(runner)
 
         stack = []
         for arg in implicit_args:
@@ -186,19 +132,20 @@ def cairo_run(request) -> list:
                 stack.append(syscall)
                 continue
 
-        add_output = (
-            "output_ptr"
-            in program.identifiers.get_by_full_name(
-                ScopedName(path=["__main__", entrypoint, "Args"])
-            ).members.keys()
-        )
+        add_output = "output_ptr" in args
         if add_output:
             output_ptr = runner.segments.add()
             stack.append(output_ptr)
 
-        return_fp = runner.segments.add()
+        return_fp = runner.execution_base + 2
         end = runner.segments.add()
-        stack += [return_fp, end]
+        # Add a jmp rel 0 instruction to be able to loop in proof mode
+        runner.memory[end] = 0x10780017FFF7FFF
+        runner.memory[end + 1] = 0
+        # Proof mode expects the program to start with __start__ and call main
+        # Adding [return_fp, end] before and after the stack makes this work both in proof mode and normal mode
+        stack = [return_fp, end] + stack + [return_fp, end]
+        runner.execution_public_memory = list(range(len(stack)))
 
         runner.initialize_state(
             entrypoint=program.identifiers.get_by_full_name(
@@ -207,7 +154,6 @@ def cairo_run(request) -> list:
             stack=stack,
         )
         runner.initial_fp = runner.initial_ap = runner.execution_base + len(stack)
-        runner.final_pc = end
 
         runner.initialize_vm(
             hint_locals={
@@ -217,11 +163,42 @@ def cairo_run(request) -> list:
             static_locals={"debug_info": debug_info(program)},
         )
         run_resources = RunResources(n_steps=4_000_000)
-        runner.run_until_pc(stack[-1], run_resources)
+        runner.run_until_pc(end, run_resources)
         runner.original_steps = runner.vm.current_step
         runner.end_run(disable_trace_padding=False)
+        if request.config.getoption("proof_mode"):
+            return_data_offset = serde.get_offset(return_data.cairo_type)
+            pointer = runner.vm.run_context.ap - return_data_offset
+            for arg in implicit_args[::-1]:
+                builtin_runner = runner.builtin_runners.get(
+                    arg.replace("_ptr", "_builtin")
+                )
+                if builtin_runner is not None:
+                    builtin_runner.final_stack(runner, pointer)
+                pointer -= 1
+
+            runner.execution_public_memory += list(
+                range(
+                    pointer.offset,
+                    runner.vm.run_context.ap.offset - return_data_offset,
+                )
+            )
+            runner.finalize_segments()
+
         runner.relocate()
 
+        displayed_args = ""
+        if kwargs:
+            try:
+                displayed_args = json.dumps(kwargs)
+            except TypeError as e:
+                logger.info(f"Failed to serialize kwargs: {e}")
+        output_stem = Path(
+            str(
+                request.node.path.parent
+                / f"{request.node.path.stem}_{entrypoint}_{displayed_args}"
+            )[:180]
+        )
         if request.config.getoption("profile_cairo"):
             tracer_data = TracerData(
                 program=program,
@@ -232,30 +209,51 @@ def cairo_run(request) -> list:
             )
             data = profile_from_tracer_data(tracer_data)
 
-            displayed_args = ""
-            if kwargs:
-                try:
-                    displayed_args = json.dumps(kwargs)
-                except TypeError as e:
-                    logger.info(f"Failed to serialize kwargs: {e}")
-            output_path = (
-                str(
-                    request.node.path.parent
-                    / f"{request.node.path.stem}.{entrypoint}_{displayed_args}"
-                )[:180]
-                + ".pb.gz"
-            )
-            with open(output_path, "wb") as fp:
+            with open(output_stem.with_suffix(".pb.gz"), "wb") as fp:
                 fp.write(data)
 
-        serde = Serde(runner)
-        returned_data = program.identifiers.get_by_full_name(
-            ScopedName(path=["__main__", entrypoint, "Return"])
-        )
+        if request.config.getoption("proof_mode"):
+            with open(output_stem.with_suffix(".trace"), "wb") as fp:
+                write_binary_trace(fp, runner.relocated_trace)
+
+            with open(output_stem.with_suffix(".memory"), "wb") as fp:
+                write_binary_memory(
+                    fp,
+                    runner.relocated_memory,
+                    math.ceil(program.prime.bit_length() / 8),
+                )
+
+            rc_min, rc_max = runner.get_perm_range_check_limits()
+            with open(output_stem.with_suffix(".air_public_input.json"), "w") as fp:
+                write_air_public_input(
+                    layout=request.config.getoption("layout"),
+                    public_input_file=fp,
+                    memory=runner.relocated_memory,
+                    public_memory_addresses=runner.segments.get_public_memory_addresses(
+                        segment_offsets=runner.get_segment_offsets()
+                    ),
+                    memory_segment_addresses=runner.get_memory_segment_addresses(),
+                    trace=runner.relocated_trace,
+                    rc_min=rc_min,
+                    rc_max=rc_max,
+                )
+            with open(output_stem.with_suffix(".air_private_input.json"), "w") as fp:
+                json.dump(
+                    {
+                        "trace_path": str(output_stem.with_suffix(".trace").absolute()),
+                        "memory_path": str(
+                            output_stem.with_suffix(".memory").absolute()
+                        ),
+                        **runner.get_air_private_input(),
+                    },
+                    fp,
+                    indent=4,
+                )
+
         final_output = None
         if add_output:
             final_output = serde.serialize_list(output_ptr)
-        function_output = serde.serialize(returned_data.cairo_type)
+        function_output = serde.serialize(return_data.cairo_type)
         if final_output is not None:
             function_output = (
                 function_output
