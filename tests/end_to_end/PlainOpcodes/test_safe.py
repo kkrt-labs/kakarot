@@ -1,7 +1,7 @@
 import pytest
 import pytest_asyncio
 
-from tests.utils.constants import ACCOUNT_BALANCE
+from tests.utils.constants import ACCOUNT_BALANCE, DEFAULT_GAS_PRICE
 
 
 @pytest_asyncio.fixture(scope="package")
@@ -38,7 +38,12 @@ class TestSafe:
 
             owner_balance_after = await eth_balance_of(owner.address)
             assert await safe.balance() == 0
-            assert owner_balance_after - owner_balance_before + gas_used == safe_balance
+            assert (
+                owner_balance_after
+                - owner_balance_before
+                + gas_used * DEFAULT_GAS_PRICE
+                == safe_balance
+            )
 
     class TestWithdrawCall:
         async def test_should_withdraw_call_eth(self, safe, owner, eth_balance_of):
@@ -55,7 +60,12 @@ class TestSafe:
 
             owner_balance_after = await eth_balance_of(owner.address)
             assert await safe.balance() == 0
-            assert owner_balance_after - owner_balance_before + gas_used == safe_balance
+            assert (
+                owner_balance_after
+                - owner_balance_before
+                + gas_used * DEFAULT_GAS_PRICE
+                == safe_balance
+            )
 
     class TestDeploySafeWithValue:
         async def test_deploy_safe_with_value(self, safe, deploy_contract, owner):

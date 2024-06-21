@@ -23,6 +23,7 @@ from kakarot_scripts.utils.starknet import (
     invoke,
     upgrade,
 )
+from tests.utils.constants import DEFAULT_GAS_PRICE
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -121,7 +122,7 @@ async def main():
 
     # Set the base fee if freshly deployed
     if freshly_deployed:
-        await invoke("kakarot", "set_base_fee", int(1e9))
+        await invoke("kakarot", "set_base_fee", DEFAULT_GAS_PRICE)
 
 
 # %% Run

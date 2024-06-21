@@ -26,7 +26,7 @@ from kakarot_scripts.utils.kakarot import (
     get_solidity_artifacts,
     get_vyper_artifacts,
 )
-from tests.utils.constants import TRANSACTION_GAS_LIMIT
+from tests.utils.constants import DEFAULT_GAS_PRICE, TRANSACTION_GAS_LIMIT
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -136,7 +136,7 @@ async def send_l1_transaction(
         "nonce": nonce,
         "gas": gas,
         "maxPriorityFeePerGas": 1,
-        "maxFeePerGas": int(1e9),
+        "maxFeePerGas": DEFAULT_GAS_PRICE,
         "to": to_checksum_address(to) if to else None,
         "value": value,
         "data": data,
@@ -166,7 +166,7 @@ def _wrap_web3(fun: str, caller_eoa_: Optional[EvmAccount] = None):
 
     async def _wrapper(self, *args, **kwargs):
         abi = self.get_function_by_name(fun).abi
-        gas_price = kwargs.pop("gas_price", 1_000)
+        gas_price = kwargs.pop("gas_price", DEFAULT_GAS_PRICE)
         gas_limit = kwargs.pop("gas_limit", TRANSACTION_GAS_LIMIT)
         value = kwargs.pop("value", 0)
         calldata = self.get_function_by_name(fun)(

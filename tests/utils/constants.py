@@ -32,6 +32,7 @@ TRANSACTION_INTRINSIC_GAS_COST = 21_000
 # TODO: handle tx gas limit properly and remove this constant
 # Temporarily set tx gas limit to 7M gas (= block gas limit)
 TRANSACTION_GAS_LIMIT = BLOCK_GAS_LIMIT
+DEFAULT_GAS_PRICE = int(1e9)
 
 # PRECOMPILES
 LAST_ETHEREUM_PRECOMPILE_ADDRESS = 0x0A
