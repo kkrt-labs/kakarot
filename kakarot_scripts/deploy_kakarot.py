@@ -6,6 +6,7 @@ from kakarot_scripts.constants import (
     BLOCK_GAS_LIMIT,
     COINBASE,
     DECLARED_CONTRACTS,
+    DEFAULT_GAS_PRICE,
     ETH_TOKEN_ADDRESS,
     EVM_ADDRESS,
     NETWORK,
@@ -23,7 +24,6 @@ from kakarot_scripts.utils.starknet import (
     invoke,
     upgrade,
 )
-from tests.utils.constants import DEFAULT_GAS_PRICE
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)

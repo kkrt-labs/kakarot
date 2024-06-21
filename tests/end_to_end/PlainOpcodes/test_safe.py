@@ -1,7 +1,8 @@
 import pytest
 import pytest_asyncio
 
-from tests.utils.constants import ACCOUNT_BALANCE, DEFAULT_GAS_PRICE
+from kakarot_scripts.constants import DEFAULT_GAS_PRICE
+from tests.utils.constants import ACCOUNT_BALANCE
 
 
 @pytest_asyncio.fixture(scope="package")

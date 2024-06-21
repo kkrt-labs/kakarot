@@ -28,6 +28,7 @@ from web3.exceptions import LogTopicError, MismatchedABI, NoABIFunctionsFound
 from web3.types import LogReceipt
 
 from kakarot_scripts.constants import (
+    DEFAULT_GAS_PRICE,
     EVM_ADDRESS,
     EVM_PRIVATE_KEY,
     NETWORK,
@@ -41,7 +42,7 @@ from kakarot_scripts.utils.starknet import get_contract as _get_starknet_contrac
 from kakarot_scripts.utils.starknet import get_deployments
 from kakarot_scripts.utils.starknet import invoke as _invoke_starknet
 from kakarot_scripts.utils.starknet import wait_for_transaction
-from tests.utils.constants import DEFAULT_GAS_PRICE, TRANSACTION_GAS_LIMIT
+from tests.utils.constants import TRANSACTION_GAS_LIMIT
 from tests.utils.helpers import pack_calldata, rlp_encode_signed_data
 from tests.utils.uint256 import int_to_uint256
 

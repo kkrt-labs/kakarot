@@ -19,7 +19,7 @@ load_dotenv()
 
 # Hardcode block gas limit to 7M
 BLOCK_GAS_LIMIT = 7_000_000
-
+DEFAULT_GAS_PRICE = int(1e9)
 BEACON_ROOT_ADDRESS = "0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02"
 
 

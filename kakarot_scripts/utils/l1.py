@@ -15,6 +15,7 @@ from web3.contract import Contract as Web3Contract
 from web3.exceptions import NoABIFunctionsFound
 
 from kakarot_scripts.constants import (
+    DEFAULT_GAS_PRICE,
     DEPLOYMENTS_DIR,
     EVM_ADDRESS,
     EVM_PRIVATE_KEY,
@@ -26,7 +27,7 @@ from kakarot_scripts.utils.kakarot import (
     get_solidity_artifacts,
     get_vyper_artifacts,
 )
-from tests.utils.constants import DEFAULT_GAS_PRICE, TRANSACTION_GAS_LIMIT
+from tests.utils.constants import TRANSACTION_GAS_LIMIT
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
