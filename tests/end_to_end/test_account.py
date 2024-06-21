@@ -140,7 +140,6 @@ class TestAccount:
                 == target_class
             )
 
-    @pytest.mark.xfail(reason="Disabled")
     class TestAutoUpgradeContracts:
         async def test_should_upgrade_outdated_contract_transaction_target(
             self,
