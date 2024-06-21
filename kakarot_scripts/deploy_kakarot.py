@@ -43,8 +43,9 @@ async def main():
 
     # %% Deployments
     class_hash = get_declarations()
-
     deployments = get_deployments()
+    freshly_deployed = False
+
     if deployments.get("kakarot") and NETWORK["type"] is not NetworkType.DEV:
         logger.info("ℹ️  Kakarot already deployed, checking version.")
         deployed_class_hash = await RPC_CLIENT.get_class_hash_at(
@@ -75,6 +76,7 @@ async def main():
             COINBASE,
             BLOCK_GAS_LIMIT,
         )
+        freshly_deployed = True
 
     if NETWORK["type"] is NetworkType.STAGING:
         deployments["EVM"] = await upgrade(
@@ -116,6 +118,10 @@ async def main():
             else 100
         )
         await get_eoa(amount=amount)
+
+    # Set the base fee if freshly deployed
+    if freshly_deployed:
+        await invoke("kakarot", "set_base_fee", int(1e9))
 
 
 # %% Run
