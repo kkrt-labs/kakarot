@@ -48,7 +48,7 @@ test-unit: build-sol
 test-end-to-end: build-sol build-cairo1 deploy
 	poetry run pytest tests/end_to_end
 
-deploy: build
+deploy: build build-sol
 	poetry run python ./kakarot_scripts/deploy_kakarot.py
 
 format:
