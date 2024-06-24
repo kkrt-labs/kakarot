@@ -15,6 +15,7 @@ from web3.contract import Contract as Web3Contract
 from web3.exceptions import NoABIFunctionsFound
 
 from kakarot_scripts.constants import (
+    DEFAULT_GAS_PRICE,
     DEPLOYMENTS_DIR,
     EVM_ADDRESS,
     EVM_PRIVATE_KEY,
@@ -136,7 +137,7 @@ async def send_l1_transaction(
         "nonce": nonce,
         "gas": gas,
         "maxPriorityFeePerGas": 1,
-        "maxFeePerGas": int(1e9),
+        "maxFeePerGas": DEFAULT_GAS_PRICE,
         "to": to_checksum_address(to) if to else None,
         "value": value,
         "data": data,
@@ -166,7 +167,7 @@ def _wrap_web3(fun: str, caller_eoa_: Optional[EvmAccount] = None):
 
     async def _wrapper(self, *args, **kwargs):
         abi = self.get_function_by_name(fun).abi
-        gas_price = kwargs.pop("gas_price", 1_000)
+        gas_price = kwargs.pop("gas_price", DEFAULT_GAS_PRICE)
         gas_limit = kwargs.pop("gas_limit", TRANSACTION_GAS_LIMIT)
         value = kwargs.pop("value", 0)
         calldata = self.get_function_by_name(fun)(

@@ -28,6 +28,7 @@ from web3.exceptions import LogTopicError, MismatchedABI, NoABIFunctionsFound
 from web3.types import LogReceipt
 
 from kakarot_scripts.constants import (
+    DEFAULT_GAS_PRICE,
     EVM_ADDRESS,
     EVM_PRIVATE_KEY,
     NETWORK,
@@ -252,7 +253,7 @@ def _wrap_kakarot(fun: str, caller_eoa: Optional[Account] = None):
 
     async def _wrapper(self, *args, **kwargs):
         abi = self.get_function_by_name(fun).abi
-        gas_price = kwargs.pop("gas_price", 1_000)
+        gas_price = kwargs.pop("gas_price", DEFAULT_GAS_PRICE)
         gas_limit = kwargs.pop("gas_limit", TRANSACTION_GAS_LIMIT)
         value = kwargs.pop("value", 0)
         caller_eoa_ = kwargs.pop("caller_eoa", caller_eoa)
@@ -366,7 +367,7 @@ async def eth_send_transaction(
         "nonce": nonce,
         "gas": gas,
         "maxPriorityFeePerGas": 1,
-        "maxFeePerGas": 100,
+        "maxFeePerGas": DEFAULT_GAS_PRICE,
         "to": to_checksum_address(to) if to else None,
         "value": value,
         "data": data,
