@@ -8,7 +8,7 @@ from typing import List, Optional, Union, cast
 from eth_abi import decode
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_account import Account as EvmAccount
-from eth_account._utils.typed_transactions import TypedTransaction
+from eth_account.typed_transactions import TypedTransaction
 from eth_keys import keys
 from eth_utils.address import to_checksum_address
 from hexbytes import HexBytes
@@ -380,7 +380,7 @@ async def eth_send_transaction(
     )
 
     if WEB3.is_connected():
-        tx_hash = WEB3.eth.send_raw_transaction(evm_tx.rawTransaction)
+        tx_hash = WEB3.eth.send_raw_transaction(evm_tx.raw_transaction)
         receipt = WEB3.eth.wait_for_transaction_receipt(
             tx_hash, timeout=NETWORK["max_wait"], poll_latency=NETWORK["check_interval"]
         )

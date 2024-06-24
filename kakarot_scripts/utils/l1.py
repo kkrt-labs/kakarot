@@ -5,7 +5,7 @@ from typing import Optional, Union, cast
 
 from eth_abi import decode
 from eth_account import Account as EvmAccount
-from eth_account._utils.typed_transactions import TypedTransaction
+from eth_account.typed_transactions import TypedTransaction
 from eth_utils.address import to_checksum_address
 from hexbytes import HexBytes
 from web3 import Web3
@@ -149,7 +149,7 @@ async def send_l1_transaction(
         evm_account.key,
     )
 
-    tx_hash = L1_RPC_PROVIDER.eth.send_raw_transaction(evm_tx.rawTransaction)
+    tx_hash = L1_RPC_PROVIDER.eth.send_raw_transaction(evm_tx.raw_transaction)
     receipt = L1_RPC_PROVIDER.eth.wait_for_transaction_receipt(tx_hash)
     response = []
     if not receipt.status:

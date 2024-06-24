@@ -213,6 +213,30 @@ TRANSACTIONS = [
     },
 ]
 
+INVALID_TRANSACTIONS = [
+    {  # invalid tx type (blob)
+        "type": 3,
+        "gas": 100_000,
+        "maxFeePerGas": 2_000_000_000,
+        "maxPriorityFeePerGas": 2_000_000_000,
+        "data": "0x616263646566",
+        "nonce": 34,
+        "to": "",
+        "value": 0x00,
+        "accessList": (
+            {
+                "address": "0x0000000000000000000000000000000000000001",
+                "storageKeys": (
+                    "0x0100000000000000000000000000000000000000000000000000000000000000",
+                ),
+            },
+        ),
+        "chainId": CHAIN_ID,
+        "blobVersionedHashes": [f"{12345:064x}"],
+        "maxFeePerBlobGas": int(1e9),
+    },
+]
+
 
 class Opcodes(IntEnum):
     STOP = 0x00

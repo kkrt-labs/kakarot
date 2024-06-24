@@ -187,6 +187,10 @@ namespace EthTransaction {
         tx_data_len: felt, tx_data: felt*
     ) -> model.EthTransaction* {
         let tx_type = get_tx_type(tx_data);
+        let is_supported = is_le(tx_type, 2);
+        with_attr error_message("Kakarot: transaction type not supported") {
+            assert is_supported = TRUE;
+        }
         tempvar offset = 1 + 3 * tx_type;
 
         [ap] = bitwise_ptr, ap++;

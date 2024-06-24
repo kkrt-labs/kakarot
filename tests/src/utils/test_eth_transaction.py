@@ -2,7 +2,8 @@ import pytest
 from eth_account._utils.transaction_utils import transaction_rpc_to_rlp_structure
 from rlp import encode
 
-from tests.utils.constants import TRANSACTIONS
+from tests.utils.constants import INVALID_TRANSACTIONS, TRANSACTIONS
+from tests.utils.errors import cairo_error
 from tests.utils.helpers import flatten_tx_access_list, rlp_encode_signed_data
 
 
@@ -41,6 +42,17 @@ class TestEthTransaction:
             assert transaction.get("chainId", 0) == decoded_tx["chain_id"]
             assert expected_data == decoded_tx["payload"]
             assert expected_access_list == decoded_tx["access_list"]
+
+        @pytest.mark.parametrize("transaction", INVALID_TRANSACTIONS)
+        async def test_should_panic_on_unsupported_tx_types(
+            self, cairo_run, transaction
+        ):
+            encoded_unsigned_tx = rlp_encode_signed_data(transaction)
+            with cairo_error():
+                cairo_run(
+                    "test__decode",
+                    data=list(encoded_unsigned_tx),
+                )
 
     class TestParseAccessList:
         @pytest.mark.parametrize("transaction", TRANSACTIONS)

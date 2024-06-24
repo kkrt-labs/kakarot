@@ -6,7 +6,7 @@ from typing import List, Tuple, Union
 import rlp
 from eth_abi import encode
 from eth_account._utils.transaction_utils import transaction_rpc_to_rlp_structure
-from eth_account._utils.typed_transactions import TypedTransaction
+from eth_account.typed_transactions import TypedTransaction
 from eth_keys import keys
 from eth_utils import decode_hex, keccak, to_checksum_address
 from starkware.starknet.public.abi import get_storage_var_address
