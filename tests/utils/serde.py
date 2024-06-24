@@ -254,15 +254,18 @@ class Serde:
             return self.serialize_scope(cairo_type.scope, ptr)
         raise ValueError(f"Unknown type {cairo_type}")
 
-    def serialize(self, cairo_type):
+    def get_offset(self, cairo_type):
         if hasattr(cairo_type, "members"):
-            shift = len(cairo_type.members)
+            return len(cairo_type.members)
         else:
             try:
                 identifier = self.get_identifier(
                     str(cairo_type.scope), StructDefinition
                 )
-                shift = len(identifier.members)
+                return len(identifier.members)
             except (ValueError, AttributeError):
-                shift = 1
+                return 1
+
+    def serialize(self, cairo_type):
+        shift = self.get_offset(cairo_type)
         return self._serialize(cairo_type, self.runner.vm.run_context.ap - shift, shift)

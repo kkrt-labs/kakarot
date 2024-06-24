@@ -15,7 +15,6 @@ from tests.utils.helpers import (
     generate_random_evm_address,
     hex_string_to_bytes_array,
 )
-from tests.utils.reporting import traceit
 from tests.utils.syscall_handler import SyscallHandler
 
 params_execute = [pytest.param(case.pop("params"), **case) for case in test_cases]
@@ -105,14 +104,13 @@ class TestKakarot:
             max_fee,
             origin,
         ):
-            with traceit.context(request.node.callspec.id):
-                result = await evm.functions["evm_call"].call(
-                    origin=origin,
-                    value=int(params["value"]),
-                    bytecode=hex_string_to_bytes_array(params["code"]),
-                    calldata=hex_string_to_bytes_array(params["calldata"]),
-                    access_list=[],
-                )
+            result = await evm.functions["evm_call"].call(
+                origin=origin,
+                value=int(params["value"]),
+                bytecode=hex_string_to_bytes_array(params["code"]),
+                calldata=hex_string_to_bytes_array(params["calldata"]),
+                access_list=[],
+            )
             assert result.success == params["success"]
             assert result.stack_values[: result.stack_size] == (
                 [
