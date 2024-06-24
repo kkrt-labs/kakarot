@@ -19,22 +19,18 @@ from kakarot_scripts.constants import (
     RPC_CLIENT,
     NetworkType,
 )
-from kakarot_scripts.utils.kakarot import (
-    compute_starknet_address,
-    deploy_and_fund_evm_address,
-)
-from kakarot_scripts.utils.kakarot import deploy_details as _deploy_kakarot
-from kakarot_scripts.utils.kakarot import dump_deployments as _dump_evm_deployments
-from kakarot_scripts.utils.kakarot import get_deployments as _get_evm_deployments
-from kakarot_scripts.utils.kakarot import send_pre_eip155_transaction
+from kakarot_scripts.utils.kakarot import deploy as deploy_evm
+from kakarot_scripts.utils.kakarot import deploy_presigned_tx
+from kakarot_scripts.utils.kakarot import dump_deployments as dump_evm_deployments
+from kakarot_scripts.utils.kakarot import get_deployments as get_evm_deployments
 from kakarot_scripts.utils.starknet import declare
-from kakarot_scripts.utils.starknet import deploy as _deploy_starknet
+from kakarot_scripts.utils.starknet import deploy as deploy_starknet
 from kakarot_scripts.utils.starknet import (
     dump_declarations,
     dump_deployments,
     get_declarations,
 )
-from kakarot_scripts.utils.starknet import get_deployments as _get_starknet_deployments
+from kakarot_scripts.utils.starknet import get_deployments as get_starknet_deployments
 from kakarot_scripts.utils.starknet import get_starknet_account, invoke, upgrade
 
 logging.basicConfig()
@@ -56,8 +52,8 @@ async def main():
 
     # %% Deployments
     class_hash = get_declarations()
-    starknet_deployments = _get_starknet_deployments()
-    evm_deployments = _get_evm_deployments()
+    starknet_deployments = get_starknet_deployments()
+    evm_deployments = get_evm_deployments()
     freshly_deployed = False
 
     if starknet_deployments.get("kakarot") and NETWORK["type"] is not NetworkType.DEV:
@@ -80,7 +76,7 @@ async def main():
         else:
             logger.info("✅ Kakarot already up to date.")
     else:
-        starknet_deployments["kakarot"] = await _deploy_starknet(
+        starknet_deployments["kakarot"] = await deploy_starknet(
             "kakarot",
             account.address,  # owner
             ETH_TOKEN_ADDRESS,  # native_token_address_
@@ -107,7 +103,7 @@ async def main():
         starknet_deployments["MockPragmaOracle"] = await upgrade("MockPragmaOracle")
 
     if NETWORK["type"] is NetworkType.DEV:
-        starknet_deployments["EVM"] = await _deploy_starknet(
+        starknet_deployments["EVM"] = await deploy_starknet(
             "EVM",
             account.address,  # owner
             ETH_TOKEN_ADDRESS,  # native_token_address_
@@ -117,8 +113,8 @@ async def main():
             COINBASE,
             BLOCK_GAS_LIMIT,
         )
-        starknet_deployments["Counter"] = await _deploy_starknet("Counter")
-        starknet_deployments["MockPragmaOracle"] = await _deploy_starknet(
+        starknet_deployments["Counter"] = await deploy_starknet("Counter")
+        starknet_deployments["MockPragmaOracle"] = await deploy_starknet(
             "MockPragmaOracle"
         )
 
@@ -140,7 +136,11 @@ async def main():
         await invoke("kakarot", "set_base_fee", DEFAULT_GAS_PRICE)
 
     # Deploy the solidity contracts
-    evm_deployments["WETH"] = await _deploy_kakarot("WETH", "WETH9")
+    weth = await deploy_evm("WETH", "WETH9")
+    evm_deployments["WETH"] = {
+        "address": int(weth.address, 16),
+        "starknet_address": weth.starknet_address,
+    }
 
     # Pre-EIP155 deployments
     evm_deployments["Multicall3"] = await deploy_presigned_tx(
@@ -152,18 +152,7 @@ async def main():
     evm_deployments["CreateX"] = await deploy_presigned_tx(
         CREATEX_DEPLOYER, CREATEX_SIGNED_TX, amount=0.3, name="CreateX"
     )
-    _dump_evm_deployments(evm_deployments)
-
-
-async def deploy_presigned_tx(deployer: int, signed_tx: bytes, amount=0.1, name=""):
-    deployer_starknet_address = await deploy_and_fund_evm_address(deployer, amount)
-    receipt, response, success, gas_used = await send_pre_eip155_transaction(
-        deployer_starknet_address, signed_tx
-    )
-    deployed_address = response[1]
-    logger.info(f"✅ {name} Deployed at 0x{deployed_address:x}")
-    deployed_starknet_address = await compute_starknet_address(deployed_address)
-    return {"address": deployed_address, "starknet_address": deployed_starknet_address}
+    dump_evm_deployments(evm_deployments)
 
 
 # %% Run

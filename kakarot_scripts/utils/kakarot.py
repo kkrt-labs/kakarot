@@ -620,3 +620,14 @@ async def eth_get_code(address: Union[int, str]):
             )
         ).bytecode
     )
+
+
+async def deploy_presigned_tx(deployer: int, signed_tx: bytes, amount=0.1, name=""):
+    deployer_starknet_address = await deploy_and_fund_evm_address(deployer, amount)
+    receipt, response, success, gas_used = await send_pre_eip155_transaction(
+        deployer_starknet_address, signed_tx
+    )
+    deployed_address = response[1]
+    logger.info(f"✅ {name} Deployed at 0x{deployed_address:040x}")
+    deployed_starknet_address = await compute_starknet_address(deployed_address)
+    return {"address": deployed_address, "starknet_address": deployed_starknet_address}
