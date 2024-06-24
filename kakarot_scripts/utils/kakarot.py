@@ -211,10 +211,6 @@ async def deploy_details(
     }
 
 
-async def deploy_presigned_tx(tx_hash: str):
-    pass
-
-
 def dump_deployments(deployments):
     json.dump(
         {
@@ -405,11 +401,9 @@ async def send_pre_eip155_transaction(starknet_address, signed_tx: bytes):
         key_pair=KeyPair(int(0x10), 0x20),
     )
     rlp_decoded = rlp.decode(signed_tx)
-    v = rlp_decoded[-3]
-    r = _r = rlp_decoded[-2]
-    s = _s = rlp_decoded[-1]
-    rlp_decoded = rlp_decoded[:-3]
-    unsigned_encoded_tx = rlp.encode(rlp_decoded)
+    v, r, s = rlp_decoded[-3:]
+    unsigned_tx_data = rlp_decoded[:-3]
+    unsigned_encoded_tx = rlp.encode(unsigned_tx_data)
     return await send_starknet_transaction(
         evm_account=account,
         signature_r=int.from_bytes(r, "big"),
