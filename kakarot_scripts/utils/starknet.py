@@ -172,7 +172,7 @@ async def fund_address(
     else:
         account = funding_account or await get_starknet_account()
         eth_contract = token_contract or await get_eth_contract()
-        balance = (await eth_contract.functions["balanceOf"].call(account.address)).balance  # type: ignore
+        balance = await get_balance(account.address, eth_contract)
         if balance < amount:
             raise ValueError(
                 f"Cannot send {amount / 1e18} ETH from default account with current balance {balance / 1e18} ETH"
@@ -188,6 +188,15 @@ async def fund_address(
         )
         balance = (await eth_contract.functions["balanceOf"].call(address)).balance  # type: ignore
         logger.info(f"💰 Balance of {hex(address)}: {balance / 1e18}")
+
+
+async def get_balance(address: Union[int, str], token_contract=None):
+    """
+    Get the ETH balance of a starknet address.
+    """
+    address = int(address, 16) if isinstance(address, str) else address
+    eth_contract = token_contract or await get_eth_contract()
+    return (await eth_contract.functions["balanceOf"].call(address)).balance  # type: ignore
 
 
 def dump_declarations(declarations):

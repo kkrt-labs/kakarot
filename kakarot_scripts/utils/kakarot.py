@@ -38,6 +38,7 @@ from kakarot_scripts.constants import (
 )
 from kakarot_scripts.utils.starknet import call as _call_starknet
 from kakarot_scripts.utils.starknet import fund_address as _fund_starknet_address
+from kakarot_scripts.utils.starknet import get_balance
 from kakarot_scripts.utils.starknet import get_contract as _get_starknet_contract
 from kakarot_scripts.utils.starknet import get_deployments
 from kakarot_scripts.utils.starknet import invoke as _invoke_starknet
@@ -454,8 +455,9 @@ async def deploy_and_fund_evm_address(evm_address: str, amount: float):
         )
     ).contract_address
 
+    account_balance = await get_balance(evm_address)
+    await fund_address(evm_address, amount - account_balance)
     if not await _contract_exists(starknet_address):
-        await fund_address(evm_address, amount)
         await _invoke_starknet(
             "kakarot", "deploy_externally_owned_account", int(evm_address, 16)
         )
