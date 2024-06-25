@@ -145,7 +145,7 @@ class TestContractAccount:
         @SyscallHandler.patch("Ownable_owner", 0xDEAD)
         def test_should_assert_only_owner(self, cairo_run):
             with cairo_error(message="Ownable: caller is not the owner"):
-                cairo_run("test__set_nonce", new_nonce=[])
+                cairo_run("test__set_nonce", new_nonce=0x00)
 
         @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
         def test_should_set_nonce(self, cairo_run):
@@ -159,7 +159,7 @@ class TestContractAccount:
         @SyscallHandler.patch("Ownable_owner", 0xDEAD)
         def test_should_assert_only_owner(self, cairo_run):
             with cairo_error(message="Ownable: caller is not the owner"):
-                cairo_run("test__set_implementation", new_implementation=[])
+                cairo_run("test__set_implementation", new_implementation=0x00)
 
         @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
         def test_should_set_implementation(self, cairo_run):
@@ -173,7 +173,7 @@ class TestContractAccount:
             @SyscallHandler.patch("Ownable_owner", 0xDEAD)
             def test_should_assert_only_owner(self, cairo_run):
                 with cairo_error(message="Ownable: caller is not the owner"):
-                    cairo_run("test__write_jumpdests", bytecode=[])
+                    cairo_run("test__write_jumpdests", jumpdests=[])
 
             @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
             def test__should_store_valid_jumpdests(self, cairo_run):
@@ -289,7 +289,7 @@ class TestContractAccount:
             """
             random.seed(seed)
             private_key = generate_random_private_key()
-            address = private_key.public_key.to_checksum_address()
+            address = int(private_key.public_key.to_checksum_address(), 16)
             signed = Account.sign_transaction(transaction, private_key)
 
             unsigned_transaction = serializable_unsigned_transaction_from_dict(
@@ -302,9 +302,9 @@ class TestContractAccount:
 
             cairo_run(
                 "test__validate",
-                address=int(address, 16),
+                address=address,
                 nonce=transaction["nonce"],
-                chain_id=CHAIN_ID,
+                chain_id=transaction.get("chainId") or CHAIN_ID,
                 r=int_to_uint256(signed.r),
                 s=int_to_uint256(signed.s),
                 v=signed["v"],
@@ -316,8 +316,7 @@ class TestContractAccount:
             self, cairo_run, transaction
         ):
             private_key = generate_random_private_key()
-            address = private_key.public_key.to_checksum_address()
-            transaction["chainId"] += 1
+            address = int(private_key.public_key.to_checksum_address(), 16)
             signed = Account.sign_transaction(transaction, private_key)
 
             encoded_unsigned_tx = rlp_encode_signed_data(transaction)
@@ -325,9 +324,9 @@ class TestContractAccount:
             with cairo_error(message="Invalid chain id"):
                 cairo_run(
                     "test__validate",
-                    address=int(address, 16),
+                    address=address,
                     nonce=transaction["nonce"],
-                    chain_id=CHAIN_ID,
+                    chain_id=transaction["chainId"] + 1,
                     r=int_to_uint256(signed.r),
                     s=int_to_uint256(signed.s),
                     v=signed["v"],
@@ -348,7 +347,7 @@ class TestContractAccount:
                     "test__validate",
                     address=address,
                     nonce=transaction["nonce"],
-                    chain_id=CHAIN_ID,
+                    chain_id=transaction.get("chainId") or CHAIN_ID,
                     r=int_to_uint256(signed.r),
                     s=int_to_uint256(signed.s),
                     v=signed["v"],
@@ -358,7 +357,7 @@ class TestContractAccount:
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
         async def test_should_raise_with_wrong_nonce(self, cairo_run, transaction):
             private_key = generate_random_private_key()
-            address = private_key.public_key.to_checksum_address()
+            address = int(private_key.public_key.to_checksum_address(), 16)
             signed = Account.sign_transaction(transaction, private_key)
 
             encoded_unsigned_tx = rlp_encode_signed_data(transaction)
@@ -366,9 +365,9 @@ class TestContractAccount:
             with cairo_error(message="Invalid nonce"):
                 cairo_run(
                     "test__validate",
-                    address=int(address, 16),
+                    address=address,
                     nonce=transaction["nonce"] + 1,
-                    chain_id=CHAIN_ID,
+                    chain_id=transaction.get("chainId") or CHAIN_ID,
                     r=int_to_uint256(signed.r),
                     s=int_to_uint256(signed.s),
                     v=signed["v"],
