@@ -3,15 +3,18 @@ from textwrap import wrap
 from unittest.mock import call, patch
 
 import pytest
+import rlp
 from eth_account._utils.legacy_transactions import (
     serializable_unsigned_transaction_from_dict,
 )
 from eth_account.account import Account
+from eth_utils import keccak
 from starkware.starknet.public.abi import (
     get_selector_from_name,
     get_storage_var_address,
 )
 
+from kakarot_scripts.constants import ARACHNID_PROXY_DEPLOYER, ARACHNID_PROXY_SIGNED_TX
 from tests.utils.constants import CAIRO1_HELPERS_CLASS_HASH, CHAIN_ID, TRANSACTIONS
 from tests.utils.errors import cairo_error
 from tests.utils.helpers import (
@@ -372,4 +375,48 @@ class TestContractAccount:
                     s=int_to_uint256(signed.s),
                     v=signed["v"],
                     tx_data=list(encoded_unsigned_tx),
+                )
+
+        async def test_should_fail_unauthorized_pre_eip155_tx(self, cairo_run):
+            rlp_decoded = rlp.decode(ARACHNID_PROXY_SIGNED_TX)
+            v, r, s = rlp_decoded[-3:]
+            unsigned_tx_data = rlp_decoded[:-3]
+            unsigned_encoded_tx = rlp.encode(unsigned_tx_data)
+
+            with cairo_error(message="Unauthorized pre-eip155 transaction"):
+                cairo_run(
+                    "test__validate",
+                    address=int(ARACHNID_PROXY_DEPLOYER, 16),
+                    nonce=0,
+                    chain_id=CHAIN_ID,
+                    r=int_to_uint256(int.from_bytes(r, "big")),
+                    s=int_to_uint256(int.from_bytes(s, "big")),
+                    v=int.from_bytes(v, "big"),
+                    tx_data=list(unsigned_encoded_tx),
+                )
+
+        async def test_should_validate_authorized_pre_eip155_tx(self, cairo_run):
+            rlp_decoded = rlp.decode(ARACHNID_PROXY_SIGNED_TX)
+            v, r, s = rlp_decoded[-3:]
+            unsigned_tx_data = rlp_decoded[:-3]
+            unsigned_encoded_tx = rlp.encode(unsigned_tx_data)
+            message_hash_low, message_hash_high = int_to_uint256(
+                int.from_bytes(keccak(unsigned_encoded_tx), "big")
+            )
+
+            with SyscallHandler.patch(
+                "Account_authorized_message_hashes",
+                message_hash_low,
+                message_hash_high,
+                0x1,
+            ):
+                cairo_run(
+                    "test__validate",
+                    address=int(ARACHNID_PROXY_DEPLOYER, 16),
+                    nonce=0,
+                    chain_id=CHAIN_ID,
+                    r=int_to_uint256(int.from_bytes(r, "big")),
+                    s=int_to_uint256(int.from_bytes(s, "big")),
+                    v=int.from_bytes(v, "big"),
+                    tx_data=list(unsigned_encoded_tx),
                 )

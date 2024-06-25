@@ -73,6 +73,10 @@ func Account_valid_jumpdests() -> (is_valid: felt) {
 func Account_jumpdests_initialized() -> (initialized: felt) {
 }
 
+@storage_var
+func Account_authorized_message_hashes(hash: Uint256) -> (res: felt) {
+}
+
 @event
 func transaction_executed(response_len: felt, response: felt*, success: felt, gas_used: felt) {
 }
@@ -764,8 +768,10 @@ namespace Internals {
         // Technically, the transaction type can determine the signature scheme.
         let tx_type = EthTransaction.get_tx_type(tx_data);
         local y_parity: felt;
+        local pre_eip155_tx;
         if (tx_type == 0) {
             let is_eip155_tx = is_le(v, 28);
+            assert pre_eip155_tx = is_eip155_tx;
             if (is_eip155_tx != FALSE) {
                 assert y_parity = v - 27;
             } else {
@@ -776,6 +782,7 @@ namespace Internals {
             }
             tempvar range_check_ptr = range_check_ptr;
         } else {
+            assert pre_eip155_tx = FALSE;
             assert y_parity = v;
             with_attr error_message("Invalid chain id") {
                 assert tx.chain_id = chain_id;
@@ -796,6 +803,20 @@ namespace Internals {
             last_input_word=last_word,
             last_input_num_bytes=last_word_num_bytes,
         );
+
+        if (pre_eip155_tx != FALSE) {
+            let (is_authorized) = Account_authorized_message_hashes.read(msg_hash);
+            with_attr error_message("Unauthorized pre-eip155 transaction") {
+                assert is_authorized = 1;
+            }
+            tempvar pedersen_ptr = pedersen_ptr;
+            tempvar range_check_ptr = range_check_ptr;
+        } else {
+            tempvar pedersen_ptr = pedersen_ptr;
+            tempvar range_check_ptr = range_check_ptr;
+        }
+        let pedersen_ptr = cast([ap - 2], HashBuiltin*);
+        let range_check_ptr = [ap - 1];
 
         Signature.verify_eth_signature_uint256(
             msg_hash=msg_hash,
