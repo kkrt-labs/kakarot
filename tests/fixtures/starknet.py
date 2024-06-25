@@ -182,7 +182,7 @@ def cairo_run(request) -> list:
         try:
             runner.run_until_pc(end, run_resources)
         except Exception as e:
-            raise Exception(e.__str__()) from e
+            raise Exception(str(e)) from e
 
         runner.original_steps = runner.vm.current_step
         runner.end_run(disable_trace_padding=False)

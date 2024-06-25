@@ -346,7 +346,7 @@ class TestContractAccount:
             with cairo_error("Invalid signature."):
                 cairo_run(
                     "test__validate",
-                    address=int(address, 16),
+                    address=address,
                     nonce=transaction["nonce"],
                     chain_id=CHAIN_ID,
                     r=int_to_uint256(signed.r),
