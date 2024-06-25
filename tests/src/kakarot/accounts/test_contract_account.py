@@ -358,17 +358,16 @@ class TestContractAccount:
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
         async def test_should_raise_with_wrong_nonce(self, cairo_run, transaction):
             private_key = generate_random_private_key()
-            address = int(generate_random_evm_address(), 16)
+            address = private_key.public_key.to_checksum_address()
             signed = Account.sign_transaction(transaction, private_key)
 
             encoded_unsigned_tx = rlp_encode_signed_data(transaction)
 
-            assert address != int(private_key.public_key.to_address(), 16)
-            with cairo_error("Invalid nonce"):
+            with cairo_error(message="Invalid nonce"):
                 cairo_run(
                     "test__validate",
                     address=int(address, 16),
-                    nonce=transaction["nonce"],
+                    nonce=transaction["nonce"] + 1,
                     chain_id=CHAIN_ID,
                     r=int_to_uint256(signed.r),
                     s=int_to_uint256(signed.s),
