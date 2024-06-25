@@ -298,6 +298,14 @@ func set_authorized_message_sender{syscall_ptr: felt*, pedersen_ptr: HashBuiltin
     return Kakarot.set_authorized_message_sender(sender, authorized);
 }
 
+@external
+func set_authorized_pre_eip155_tx{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    sender_address: felt, msg_hash: Uint256
+) {
+    Ownable.assert_only_owner();
+    IAccount.set_authorized_pre_eip155_tx(sender_address, msg_hash);
+}
+
 // @notice The eth_call function as described in the spec,
 //         see https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_call
 //         This is a view only function, meaning that it doesn't make any state change.

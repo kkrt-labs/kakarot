@@ -15,6 +15,7 @@ from kakarot.accounts.account_contract import (
     is_valid_jumpdest,
     set_nonce,
     set_implementation,
+    set_authorized_pre_eip155_tx,
 )
 
 func test__initialize{
@@ -89,6 +90,20 @@ func test__set_implementation{
     local new_implementation: felt;
     %{ ids.new_implementation = program_input["new_implementation"] %}
     set_implementation(new_implementation);
+    return ();
+}
+
+func test__set_authorized_pre_eip155_tx{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+}() {
+    alloc_locals;
+    local tx_hash: Uint256;
+    %{
+        ids.tx_hash.low = program_input["tx_hash"][0]
+        ids.tx_hash.high = program_input["tx_hash"][1]
+    %}
+
+    set_authorized_pre_eip155_tx(tx_hash);
     return ();
 }
 

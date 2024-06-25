@@ -278,6 +278,29 @@ class TestContractAccount:
                     SyscallHandler.mock_storage.assert_has_calls(expected_read_calls)
                     SyscallHandler.mock_storage.assert_has_calls(expected_write_calls)
 
+    class SetAuthorizedPreEIP155Transactions:
+        async def test_should_assert_only_owner(self, cairo_run):
+            with cairo_error(message="Ownable: caller is not the owner"):
+                cairo_run(
+                    "test__set_authorized_pre_eip155_tx",
+                    transaction_hash_low=0x00,
+                    transaction_hash_high=0x00,
+                )
+
+        async def test_should_set_authorized_pre_eip155_tx(self, cairo_run):
+            tx_hash = int.from_bytes(keccak(b"test"), "big")
+            cairo_run(
+                "test__set_authorized_pre_eip155_tx",
+                transaction_hash=int_to_uint256(tx_hash),
+            )
+            tx_hash_low, tx_hash_high = int_to_uint256(tx_hash)
+            SyscallHandler.mock_storage.assert_any_call(
+                address=get_storage_var_address(
+                    "Account_authorized_message_hashes", tx_hash_low, tx_hash_high
+                ),
+                value=1,
+            )
+
     class TestValidate:
         @pytest.mark.parametrize("seed", (41, 42))
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
@@ -314,7 +337,7 @@ class TestContractAccount:
                 tx_data=tx_data,
             )
 
-        @pytest.mark.parametrize("transaction", TRANSACTIONS[1:])
+        @pytest.mark.parametrize("transaction", TRANSACTIONS)
         async def test_should_raise_with_wrong_signed_chain_id(
             self, cairo_run, transaction
         ):
@@ -400,14 +423,14 @@ class TestContractAccount:
             v, r, s = rlp_decoded[-3:]
             unsigned_tx_data = rlp_decoded[:-3]
             unsigned_encoded_tx = rlp.encode(unsigned_tx_data)
-            message_hash_low, message_hash_high = int_to_uint256(
+            tx_hash_low, tx_hash_high = int_to_uint256(
                 int.from_bytes(keccak(unsigned_encoded_tx), "big")
             )
 
             with SyscallHandler.patch(
                 "Account_authorized_message_hashes",
-                message_hash_low,
-                message_hash_high,
+                tx_hash_low,
+                tx_hash_high,
                 0x1,
             ):
                 cairo_run(
@@ -420,3 +443,9 @@ class TestContractAccount:
                     v=int.from_bytes(v, "big"),
                     tx_data=list(unsigned_encoded_tx),
                 )
+
+            SyscallHandler.mock_storage.assert_any_call(
+                address=get_storage_var_address(
+                    "Account_authorized_message_hashes", tx_hash_low, tx_hash_high
+                )
+            )

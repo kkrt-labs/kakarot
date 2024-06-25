@@ -296,10 +296,11 @@ func is_valid_jumpdest{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_che
 // @notice Authorizes a pre-eip155 transaction by message hash.
 // @param message_hash The hash of the message.
 @external
-func authorize_pre_eip155_tx{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+func set_authorized_pre_eip155_tx{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     message_hash: Uint256
 ) {
     // Access control check.
     Ownable.assert_only_owner();
-    Account_authorized_message_hashes.write(message_hash);
+    Account_authorized_message_hashes.write(message_hash, 1);
+    return ();
 }
