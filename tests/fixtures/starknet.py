@@ -46,13 +46,6 @@ async def coverage(worker_id, request):
 
     output_dir.mkdir(exist_ok=True, parents=True)
     files = report_runs(excluded_file={"site-packages", "tests"})
-    total_covered = []
-    for file in files:
-        if file.pct_covered < 80:
-            logger.warning(f"{file.name} only {file.pct_covered:.2f}% covered")
-        total_covered.append(file.pct_covered)
-    if files and (val := not sum(total_covered) / len(files)) >= 80:
-        logger.warning(f"Project is not covered enough {val:.2f})")
 
     if worker_id == "master":
         dump_coverage(output_dir, files)
