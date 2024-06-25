@@ -83,7 +83,7 @@ class TestContractAccount:
         @SyscallHandler.patch("IKakarot.register_account", lambda addr, data: [])
         @SyscallHandler.patch("Account_is_initialized", 1)
         def test_should_run_only_once(self, cairo_run):
-            with cairo_error():
+            with cairo_error(message="Account already initialized"):
                 cairo_run(
                     "test__initialize",
                     kakarot_address=0x1234,
@@ -100,7 +100,7 @@ class TestContractAccount:
     class TestWriteBytecode:
         @SyscallHandler.patch("Ownable_owner", 0xDEAD)
         def test_should_assert_only_owner(self, cairo_run):
-            with cairo_error():
+            with cairo_error(message="Ownable: caller is not the owner"):
                 cairo_run("test__write_bytecode", bytecode=[])
 
         @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
@@ -144,7 +144,7 @@ class TestContractAccount:
     class TestNonce:
         @SyscallHandler.patch("Ownable_owner", 0xDEAD)
         def test_should_assert_only_owner(self, cairo_run):
-            with cairo_error():
+            with cairo_error(message="Ownable: caller is not the owner"):
                 cairo_run("test__set_nonce", new_nonce=[])
 
         @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
@@ -158,7 +158,7 @@ class TestContractAccount:
     class TestImplementation:
         @SyscallHandler.patch("Ownable_owner", 0xDEAD)
         def test_should_assert_only_owner(self, cairo_run):
-            with cairo_error():
+            with cairo_error(message="Ownable: caller is not the owner"):
                 cairo_run("test__set_implementation", new_implementation=[])
 
         @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
@@ -172,7 +172,7 @@ class TestContractAccount:
         class TestWriteJumpdests:
             @SyscallHandler.patch("Ownable_owner", 0xDEAD)
             def test_should_assert_only_owner(self, cairo_run):
-                with cairo_error():
+                with cairo_error(message="Ownable: caller is not the owner"):
                     cairo_run("test__write_jumpdests", bytecode=[])
 
             @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
@@ -322,7 +322,7 @@ class TestContractAccount:
 
             encoded_unsigned_tx = rlp_encode_signed_data(transaction)
 
-            with cairo_error():
+            with cairo_error(message="Invalid chain id"):
                 cairo_run(
                     "test__validate",
                     address=int(address, 16),
@@ -343,7 +343,7 @@ class TestContractAccount:
             encoded_unsigned_tx = rlp_encode_signed_data(transaction)
 
             assert address != int(private_key.public_key.to_address(), 16)
-            with cairo_error():
+            with cairo_error("Invalid signature."):
                 cairo_run(
                     "test__validate",
                     address=int(address, 16),
@@ -364,7 +364,7 @@ class TestContractAccount:
             encoded_unsigned_tx = rlp_encode_signed_data(transaction)
 
             assert address != int(private_key.public_key.to_address(), 16)
-            with cairo_error():
+            with cairo_error("Invalid nonce"):
                 cairo_run(
                     "test__validate",
                     address=int(address, 16),

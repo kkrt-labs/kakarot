@@ -97,7 +97,9 @@ namespace AccountContract {
     }(kakarot_address, evm_address, implementation_class) {
         alloc_locals;
         let (is_initialized) = Account_is_initialized.read();
-        assert is_initialized = 0;
+        with_attr error_message("Account already initialized") {
+            assert is_initialized = 0;
+        }
         Account_is_initialized.write(1);
         Ownable.initializer(kakarot_address);
         Account_evm_address.write(evm_address);
@@ -754,7 +756,9 @@ namespace Internals {
     ) {
         alloc_locals;
         let tx = EthTransaction.decode(tx_data_len, tx_data);
-        assert tx.signer_nonce = account_nonce;
+        with_attr error_message("Invalid nonce") {
+            assert tx.signer_nonce = account_nonce;
+        }
 
         // Note: here, the validate process assumes an ECDSA signature, and r, s, v field
         // Technically, the transaction type can determine the signature scheme.
@@ -766,12 +770,16 @@ namespace Internals {
                 assert y_parity = v - 27;
             } else {
                 assert y_parity = (v - 2 * chain_id - 35);
-                assert tx.chain_id = chain_id;
+                with_attr error_message("Invalid chain id") {
+                    assert tx.chain_id = chain_id;
+                }
             }
             tempvar range_check_ptr = range_check_ptr;
         } else {
             assert y_parity = v;
-            assert tx.chain_id = chain_id;
+            with_attr error_message("Invalid chain id") {
+                assert tx.chain_id = chain_id;
+            }
             tempvar range_check_ptr = range_check_ptr;
         }
 
