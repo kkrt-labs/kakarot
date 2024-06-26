@@ -97,13 +97,13 @@ func test__set_authorized_pre_eip155_tx{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 }() {
     alloc_locals;
-    local tx_hash: Uint256;
+    local msg_hash: Uint256;
     %{
-        ids.tx_hash.low = program_input["tx_hash"][0]
-        ids.tx_hash.high = program_input["tx_hash"][1]
+        ids.msg_hash.low = program_input["msg_hash"][0]
+        ids.msg_hash.high = program_input["msg_hash"][1]
     %}
 
-    set_authorized_pre_eip155_tx(tx_hash);
+    set_authorized_pre_eip155_tx(msg_hash);
     return ();
 }
 

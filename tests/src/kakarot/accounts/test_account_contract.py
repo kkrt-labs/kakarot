@@ -278,25 +278,21 @@ class TestContractAccount:
                     SyscallHandler.mock_storage.assert_has_calls(expected_read_calls)
                     SyscallHandler.mock_storage.assert_has_calls(expected_write_calls)
 
-    class SetAuthorizedPreEIP155Transactions:
-        async def test_should_assert_only_owner(self, cairo_run):
+    class TestSetAuthorizedPreEIP155Transactions:
+        def test_should_assert_only_owner(self, cairo_run):
             with cairo_error(message="Ownable: caller is not the owner"):
-                cairo_run(
-                    "test__set_authorized_pre_eip155_tx",
-                    transaction_hash_low=0x00,
-                    transaction_hash_high=0x00,
-                )
+                cairo_run("test__set_authorized_pre_eip155_tx", msg_hash=[0, 0])
 
-        async def test_should_set_authorized_pre_eip155_tx(self, cairo_run):
+        @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
+        def test_should_set_authorized_pre_eip155_tx(self, cairo_run):
             msg_hash = int.from_bytes(keccak(b"test"), "big")
             cairo_run(
                 "test__set_authorized_pre_eip155_tx",
-                transaction_hash=int_to_uint256(msg_hash),
+                msg_hash=int_to_uint256(msg_hash),
             )
-            tx_hash_low, tx_hash_high = int_to_uint256(msg_hash)
             SyscallHandler.mock_storage.assert_any_call(
                 address=get_storage_var_address(
-                    "Account_authorized_message_hashes", tx_hash_low, tx_hash_high
+                    "Account_authorized_message_hashes", *int_to_uint256(msg_hash)
                 ),
                 value=1,
             )
