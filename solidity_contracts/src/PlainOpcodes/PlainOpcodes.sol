@@ -22,6 +22,11 @@ contract PlainOpcodes {
                             METADATA STORAGE
     //////////////////////////////////////////////////////////////*/
     ICounter counter;
+    mapping(address => uint256) public nonces;
+
+    /*//////////////////////////////////////////////////////////////
+                                EVENTS
+    //////////////////////////////////////////////////////////////*/
 
     event CreateAddress(address _address) anonymous;
     event Create2Address(address _address) anonymous;
@@ -31,11 +36,8 @@ contract PlainOpcodes {
     event Log2(address indexed owner, uint256 value);
     event Log3(address indexed owner, address indexed spender, uint256 value);
     event Log4(address indexed owner, address indexed spender, uint256 indexed value);
-
     event SentSome(address to, uint256 amount, bool success);
     event NonceIncreased(uint256 nonce);
-
-    mapping(address => uint256) public nonces;
 
     /*//////////////////////////////////////////////////////////////
                                CONSTRUCTOR
