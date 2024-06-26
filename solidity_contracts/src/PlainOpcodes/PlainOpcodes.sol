@@ -196,7 +196,7 @@ contract PlainOpcodes {
         return mulmod(type(uint256).max, type(uint256).max, type(uint256).max);
     }
 
-    function addmodMax() public pure returns (uint) {
+    function addmodMax() public pure returns (uint256) {
         return addmod(type(uint256).max, type(uint256).max, type(uint256).max);
     }
 
