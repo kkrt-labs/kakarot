@@ -10,12 +10,12 @@ interface IL1KakarotMessaging {
 contract L1KakarotMessaging  {
 
     IStarknetMessaging private _starknetMessaging;
-    uint256 private _kakarotAddress;
+    uint256 public kakarotAddress;
     uint256 constant HANDLE_L1_MESSAGE_SELECTOR = uint256(keccak256("handle_l1_message")) % 2**250;
 
-    constructor(address starknetMessaging, uint256 kakarotAddress) {
-        _starknetMessaging = IStarknetMessaging(starknetMessaging);
-        _kakarotAddress = kakarotAddress;
+    constructor(address starknetMessaging_, uint256 kakarotAddress_) {
+        _starknetMessaging = IStarknetMessaging(starknetMessaging_);
+        kakarotAddress = kakarotAddress_;
     }
 
     /// @notice Sends a message to a contract on L2.
@@ -36,7 +36,7 @@ contract L1KakarotMessaging  {
 
         // Send the converted data to L2
         _starknetMessaging.sendMessageToL2{value: msg.value}(
-            _kakarotAddress,
+            kakarotAddress,
             HANDLE_L1_MESSAGE_SELECTOR,
             convertedData
         );
