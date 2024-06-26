@@ -51,9 +51,10 @@ func test__is_valid_jumpdest{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ran
     ap += 1;
     let valid_jumpdests = cast([ap - 1], DictAccess*);
     let state = State.init();
+    tempvar address_zero = new model.Address(starknet=0, evm=0);
 
     with valid_jumpdests, state {
-        let result = Internals.is_valid_jumpdest(0, index);
+        let result = Internals.is_valid_jumpdest(address_zero, index);
     }
 
     return result;

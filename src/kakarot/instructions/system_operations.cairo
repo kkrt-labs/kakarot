@@ -159,6 +159,7 @@ namespace SystemOperations {
         let (valid_jumpdests_start, valid_jumpdests) = Helpers.initialize_jumpdests(
             bytecode_len=size.low, bytecode=bytecode
         );
+        tempvar address_zero = new model.Address(starknet=0, evm=0);
         tempvar message = new model.Message(
             bytecode=bytecode,
             bytecode_len=size.low,
@@ -170,7 +171,7 @@ namespace SystemOperations {
             caller=evm.message.address.evm,
             parent=parent,
             address=target_account.address,
-            code_address=0,
+            code_address=address_zero,
             read_only=FALSE,
             is_create=TRUE,
             depth=evm.message.depth + 1,
@@ -894,7 +895,7 @@ namespace CallHelper {
             caller=caller,
             parent=parent,
             address=to_address,
-            code_address=code_address,
+            code_address=code_account.address,
             read_only=read_only,
             is_create=FALSE,
             depth=evm.message.depth + 1,
@@ -939,7 +940,7 @@ namespace CallHelper {
         let state = cast([ap - 1], model.State*);
 
         // Write the valid jumpdests cached during the call in the state
-        let code_account = State.get_account(evm.message.code_address);
+        let code_account = State.get_account(evm.message.code_address.evm);
         let code_account = Account.set_valid_jumpdests(
             code_account, evm.message.valid_jumpdests_start, evm.message.valid_jumpdests
         );
