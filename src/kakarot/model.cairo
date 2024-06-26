@@ -132,7 +132,7 @@ namespace model {
         caller: felt,
         parent: Parent*,
         address: Address*,
-        code_address: felt,
+        code_address: Address*,
         read_only: felt,
         is_create: felt,
         depth: felt,

@@ -50,7 +50,7 @@ namespace TestHelpers {
             caller=env.origin,
             parent=cast(0, model.Parent*),
             address=address,
-            code_address=evm_contract_address,
+            code_address=address,
             read_only=FALSE,
             is_create=FALSE,
             depth=0,

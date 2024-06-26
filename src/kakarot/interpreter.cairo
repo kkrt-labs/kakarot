@@ -64,13 +64,13 @@ namespace Interpreter {
         let pc = evm.program_counter;
         let is_pc_ge_code_len = is_le(evm.message.bytecode_len, pc);
         if (is_pc_ge_code_len != FALSE) {
-            let is_precompile = Precompiles.is_precompile(evm.message.code_address);
+            let is_precompile = Precompiles.is_precompile(evm.message.code_address.evm);
             let caller_address = evm.message.caller;
             if (is_precompile != FALSE) {
                 let (
                     output_len, output, gas_used, precompile_reverted
                 ) = Precompiles.exec_precompile(
-                    evm.message.code_address,
+                    evm.message.code_address.evm,
                     evm.message.calldata_len,
                     evm.message.calldata,
                     caller_address,
@@ -806,7 +806,7 @@ namespace Interpreter {
         local bytecode: felt*;
         local calldata: felt*;
         local intrinsic_gas: felt;
-        local code_address: felt;
+        local code_address: model.Address*;
         if (is_deploy_tx != FALSE) {
             let (empty: felt*) = alloc();
             let (init_code_words, _) = unsigned_div_rem(bytecode_len + 31, 32);
@@ -814,7 +814,7 @@ namespace Interpreter {
             assert bytecode = tmp_calldata;
             assert calldata = empty;
             assert intrinsic_gas = tmp_intrinsic_gas + Gas.CREATE + init_code_gas;
-            assert code_address = 0;
+            assert code_address = new model.Address(starknet=0, evm=0);
             let (valid_jumpdests_start, valid_jumpdests) = Helpers.initialize_jumpdests(
                 bytecode_len=bytecode_len, bytecode=bytecode
             );
@@ -825,7 +825,7 @@ namespace Interpreter {
             assert bytecode = tmp_bytecode;
             assert calldata = tmp_calldata;
             assert intrinsic_gas = tmp_intrinsic_gas;
-            assert code_address = address.evm;
+            assert code_address = address;
 
             let (new_dict) = default_dict_new(0);
             tempvar range_check_ptr = range_check_ptr;
