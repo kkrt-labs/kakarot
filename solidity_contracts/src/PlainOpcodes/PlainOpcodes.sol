@@ -38,6 +38,7 @@ contract PlainOpcodes {
     event Log4(address indexed owner, address indexed spender, uint256 indexed value);
     event SentSome(address to, uint256 amount, bool success);
     event NonceIncreased(uint256 nonce);
+    event HashComputed(address indexed sender, bytes32 hash);
 
     /*//////////////////////////////////////////////////////////////
                                CONSTRUCTOR
@@ -198,6 +199,12 @@ contract PlainOpcodes {
 
     function addmodMax() public pure returns (uint256) {
         return addmod(type(uint256).max, type(uint256).max, type(uint256).max);
+    }
+
+    function computeHash(bytes memory input) public returns (bytes32) {
+        bytes32 hash = keccak256(input);
+        emit HashComputed(msg.sender, hash);
+        return hash;
     }
 
     receive() external payable {}
