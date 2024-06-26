@@ -44,7 +44,6 @@ from kakarot_scripts.utils.starknet import fund_address as _fund_starknet_addres
 from kakarot_scripts.utils.starknet import get_balance
 from kakarot_scripts.utils.starknet import get_contract as _get_starknet_contract
 from kakarot_scripts.utils.starknet import get_deployments as _get_starknet_deployments
-from kakarot_scripts.utils.starknet import get_starknet_account
 from kakarot_scripts.utils.starknet import invoke as _invoke_starknet
 from kakarot_scripts.utils.starknet import wait_for_transaction
 from tests.utils.constants import TRANSACTION_GAS_LIMIT
@@ -392,16 +391,15 @@ async def send_pre_eip155_transaction(
     evm_address: str,
     starknet_address: Union[int, str],
     signed_tx: bytes,
-    kakarot_owner: Account,
 ):
     rlp_decoded = rlp.decode(signed_tx)
     v, r, s = rlp_decoded[-3:]
     unsigned_tx_data = rlp_decoded[:-3]
     unsigned_encoded_tx = rlp.encode(unsigned_tx_data)
-    tx_hash = int.from_bytes(keccak(unsigned_encoded_tx), "big")
+    msg_hash = int.from_bytes(keccak(unsigned_encoded_tx), "big")
 
     await _invoke_starknet(
-        "kakarot", "set_authorized_pre_eip155_tx", int(evm_address, 16), tx_hash
+        "kakarot", "set_authorized_pre_eip155_tx", int(evm_address, 16), msg_hash
     )
 
     if WEB3.is_connected():
@@ -637,15 +635,14 @@ async def eth_get_code(address: Union[int, str]):
     )
 
 
-async def deploy_presigned_tx(
+async def deploy_with_presigned_tx(
     deployer_evm_address: str, signed_tx: bytes, amount=0.1, name=""
 ):
-    kakarot_owner = await get_starknet_account()
     deployer_starknet_address = await deploy_and_fund_evm_address(
         deployer_evm_address, amount
     )
     receipt, response, success, gas_used = await send_pre_eip155_transaction(
-        deployer_evm_address, deployer_starknet_address, signed_tx, kakarot_owner
+        deployer_evm_address, deployer_starknet_address, signed_tx
     )
     deployed_address = response[1]
     logger.info(f"✅ {name} Deployed at 0x{deployed_address:040x}")

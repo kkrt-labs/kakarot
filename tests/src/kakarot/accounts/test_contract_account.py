@@ -288,12 +288,12 @@ class TestContractAccount:
                 )
 
         async def test_should_set_authorized_pre_eip155_tx(self, cairo_run):
-            tx_hash = int.from_bytes(keccak(b"test"), "big")
+            msg_hash = int.from_bytes(keccak(b"test"), "big")
             cairo_run(
                 "test__set_authorized_pre_eip155_tx",
-                transaction_hash=int_to_uint256(tx_hash),
+                transaction_hash=int_to_uint256(msg_hash),
             )
-            tx_hash_low, tx_hash_high = int_to_uint256(tx_hash)
+            tx_hash_low, tx_hash_high = int_to_uint256(msg_hash)
             SyscallHandler.mock_storage.assert_any_call(
                 address=get_storage_var_address(
                     "Account_authorized_message_hashes", tx_hash_low, tx_hash_high

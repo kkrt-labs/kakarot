@@ -20,7 +20,7 @@ from kakarot_scripts.constants import (
     NetworkType,
 )
 from kakarot_scripts.utils.kakarot import deploy as deploy_evm
-from kakarot_scripts.utils.kakarot import deploy_presigned_tx
+from kakarot_scripts.utils.kakarot import deploy_with_presigned_tx
 from kakarot_scripts.utils.kakarot import dump_deployments as dump_evm_deployments
 from kakarot_scripts.utils.kakarot import get_deployments as get_evm_deployments
 from kakarot_scripts.utils.starknet import declare
@@ -143,13 +143,13 @@ async def main():
     }
 
     # Pre-EIP155 deployments
-    evm_deployments["Multicall3"] = await deploy_presigned_tx(
+    evm_deployments["Multicall3"] = await deploy_with_presigned_tx(
         MULTICALL3_DEPLOYER, MULTICALL3_SIGNED_TX, name="Multicall3"
     )
-    evm_deployments["Arachnid_Proxy"] = await deploy_presigned_tx(
+    evm_deployments["Arachnid_Proxy"] = await deploy_with_presigned_tx(
         ARACHNID_PROXY_DEPLOYER, ARACHNID_PROXY_SIGNED_TX, name="Arachnid Proxy"
     )
-    evm_deployments["CreateX"] = await deploy_presigned_tx(
+    evm_deployments["CreateX"] = await deploy_with_presigned_tx(
         CREATEX_DEPLOYER, CREATEX_SIGNED_TX, amount=0.3, name="CreateX"
     )
     dump_evm_deployments(evm_deployments)
