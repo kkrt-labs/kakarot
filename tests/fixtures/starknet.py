@@ -2,6 +2,7 @@ import json
 import logging
 import math
 import shutil
+from hashlib import md5
 from pathlib import Path
 from time import perf_counter
 
@@ -32,7 +33,7 @@ pd.set_option("display.max_rows", 500)
 pd.set_option("display.max_columns", 500)
 pd.set_option("display.width", 1000)
 
-logging.getLogger("asyncio").setLevel(logging.ERROR)
+logging.getLogger("asyncio").setLevel(logging.INFO)
 logger = logging.getLogger()
 
 
@@ -213,11 +214,15 @@ def cairo_run(request) -> list:
                 displayed_args = json.dumps(kwargs)
             except TypeError as e:
                 logger.info(f"Failed to serialize kwargs: {e}")
+        output_stem = str(
+            request.node.path.parent
+            / f"{request.node.path.stem}_{entrypoint}_{displayed_args}"
+        )
         output_stem = Path(
-            str(
-                request.node.path.parent
-                / f"{request.node.path.stem}_{entrypoint}_{displayed_args}"
-            )[:180]
+            f"{output_stem[:160]}_{md5(output_stem.encode()).digest().hex()[:8]}"
+        )
+        logger.info(
+            f"Test {request.node.path.stem}_{entrypoint}_{displayed_args} artifacts saved at: {output_stem}"
         )
         if request.config.getoption("profile_cairo"):
             tracer_data = TracerData(
