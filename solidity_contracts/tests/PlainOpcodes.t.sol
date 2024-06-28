@@ -137,6 +137,7 @@ contract PlainOpcodesTest is Test {
     }
 
     function testNewContractConstructorRevert() public {
+        vm.expectRevert(abi.encodePacked("FAIL"));
         plainOpcodes.newContractConstructorRevert();
     }
 
