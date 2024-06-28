@@ -303,6 +303,62 @@ class TestAccountContract:
                 value=1,
             )
 
+    class TestAssertNotKakarot:
+        @SyscallHandler.patch("Ownable_owner", 0xABC)
+        def test_should_fail_if_kakarot(self, cairo_run):
+            with cairo_error(message="Kakarot: cannot re-enter kakarot contract"):
+                cairo_run("test__assert_not_kakarot", address=0xABC)
+
+        @SyscallHandler.patch("Ownable_owner", 0xABC)
+        def test_should_pass_if_not_kakarot(self, cairo_run):
+            cairo_run("test__assert_not_kakarot", address=0xDEF)
+
+    class TestExecuteStarknetCall:
+        def test_should_assert_only_owner(self, cairo_run):
+            with cairo_error(message="Ownable: caller is not the owner"):
+                cairo_run(
+                    "test__execute_starknet_call",
+                    called_address=0xABC,
+                    function_selector=0xBCD,
+                    calldata=[],
+                )
+
+        @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
+        def test_should_fail_if_calling_kakarot(self, cairo_run):
+            function_selector = 0xBCD
+            with cairo_error(
+                message="Kakarot: cannot re-enter kakarot contract"
+            ), SyscallHandler.patch(function_selector, lambda addr, data: []):
+                cairo_run(
+                    "test__execute_starknet_call",
+                    called_address=SyscallHandler.caller_address,
+                    function_selector=function_selector,
+                    calldata=[],
+                )
+
+        @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
+        def test_should_execute_starknet_call(self, cairo_run):
+            called_address = 0xABCDEF1234567890
+            function_selector = 0x0987654321FEDCBA
+            calldata = [random.randint(0, 255) for _ in range(32)]
+            expected_return_data = [random.randint(0, 255) for _ in range(32)]
+            with SyscallHandler.patch(
+                function_selector, lambda addr, data: expected_return_data
+            ):
+                return_data = cairo_run(
+                    "test__execute_starknet_call",
+                    called_address=called_address,
+                    function_selector=function_selector,
+                    calldata=calldata,
+                )
+
+            assert return_data == expected_return_data
+            SyscallHandler.mock_call.assert_any_call(
+                contract_address=called_address,
+                function_selector=function_selector,
+                calldata=calldata,
+            )
+
     class TestValidate:
         @pytest.mark.parametrize("seed", (41, 42))
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
