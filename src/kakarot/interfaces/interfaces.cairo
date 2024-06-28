@@ -87,6 +87,9 @@ namespace IAccount {
 
     func write_jumpdests(jumpdests_len: felt, jumpdests: felt*) {
     }
+
+    func set_authorized_pre_eip155_tx(msg_hash: Uint256) {
+    }
 }
 
 @contract_interface

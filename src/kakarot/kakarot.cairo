@@ -17,6 +17,7 @@ from backend.starknet import Starknet
 from kakarot.account import Account
 from kakarot.events import kakarot_upgraded
 from kakarot.library import Kakarot
+from kakarot.interfaces.interfaces import IAccount
 from kakarot.model import model
 from utils.utils import Helpers
 
@@ -296,6 +297,16 @@ func set_authorized_message_sender{syscall_ptr: felt*, pedersen_ptr: HashBuiltin
 ) {
     Ownable.assert_only_owner();
     return Kakarot.set_authorized_message_sender(sender, authorized);
+}
+
+@external
+func set_authorized_pre_eip155_tx{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    sender_address: felt, msg_hash: Uint256
+) {
+    Ownable.assert_only_owner();
+    let sender_starknet_address = Account.compute_starknet_address(sender_address);
+    IAccount.set_authorized_pre_eip155_tx(sender_starknet_address, msg_hash);
+    return ();
 }
 
 // @notice The eth_call function as described in the spec,

@@ -11,6 +11,7 @@ from eth_abi.exceptions import InsufficientDataBytes
 from eth_account import Account as EvmAccount
 from eth_account.typed_transactions import TypedTransaction
 from eth_keys import keys
+from eth_utils import keccak
 from eth_utils.address import to_checksum_address
 from hexbytes import HexBytes
 from starknet_py.net.account.account import Account
@@ -386,7 +387,21 @@ async def get_eoa(private_key=None, amount=10) -> Account:
     )
 
 
-async def send_pre_eip155_transaction(starknet_address, signed_tx: bytes):
+async def send_pre_eip155_transaction(
+    evm_address: str,
+    starknet_address: Union[int, str],
+    signed_tx: bytes,
+):
+    rlp_decoded = rlp.decode(signed_tx)
+    v, r, s = rlp_decoded[-3:]
+    unsigned_tx_data = rlp_decoded[:-3]
+    unsigned_encoded_tx = rlp.encode(unsigned_tx_data)
+    msg_hash = int.from_bytes(keccak(unsigned_encoded_tx), "big")
+
+    await _invoke_starknet(
+        "kakarot", "set_authorized_pre_eip155_tx", int(evm_address, 16), msg_hash
+    )
+
     if WEB3.is_connected():
         tx_hash = WEB3.eth.send_raw_transaction(signed_tx)
         receipt = WEB3.eth.wait_for_transaction_receipt(
@@ -394,19 +409,15 @@ async def send_pre_eip155_transaction(starknet_address, signed_tx: bytes):
         )
         return receipt, [], receipt.status, receipt.gasUsed
 
-    account = Account(
+    sender_account = Account(
         address=starknet_address,
         client=RPC_CLIENT,
         chain=ChainId.starknet_chain_id,
         # Keypair not required for already signed txs
         key_pair=KeyPair(int(0x10), 0x20),
     )
-    rlp_decoded = rlp.decode(signed_tx)
-    v, r, s = rlp_decoded[-3:]
-    unsigned_tx_data = rlp_decoded[:-3]
-    unsigned_encoded_tx = rlp.encode(unsigned_tx_data)
     return await send_starknet_transaction(
-        evm_account=account,
+        evm_account=sender_account,
         signature_r=int.from_bytes(r, "big"),
         signature_s=int.from_bytes(s, "big"),
         signature_v=int.from_bytes(v, "big"),
@@ -624,10 +635,14 @@ async def eth_get_code(address: Union[int, str]):
     )
 
 
-async def deploy_presigned_tx(deployer: int, signed_tx: bytes, amount=0.1, name=""):
-    deployer_starknet_address = await deploy_and_fund_evm_address(deployer, amount)
+async def deploy_with_presigned_tx(
+    deployer_evm_address: str, signed_tx: bytes, amount=0.1, name=""
+):
+    deployer_starknet_address = await deploy_and_fund_evm_address(
+        deployer_evm_address, amount
+    )
     receipt, response, success, gas_used = await send_pre_eip155_transaction(
-        deployer_starknet_address, signed_tx
+        deployer_evm_address, deployer_starknet_address, signed_tx
     )
     deployed_address = response[1]
     logger.info(f"✅ {name} Deployed at 0x{deployed_address:040x}")
