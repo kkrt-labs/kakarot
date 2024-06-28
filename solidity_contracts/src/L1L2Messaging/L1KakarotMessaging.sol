@@ -13,9 +13,13 @@ contract L1KakarotMessaging {
     IStarknetMessaging private immutable _starknetMessaging;
     uint256 public immutable kakarotAddress;
 
+    /// @dev Address of this contract
+    address private immutable _self;
+
     constructor(address starknetMessaging_, uint256 kakarotAddress_) {
         _starknetMessaging = IStarknetMessaging(starknetMessaging_);
         kakarotAddress = kakarotAddress_;
+        _self = address(this);
     }
 
     /// @notice Sends a message to a contract on L2.
@@ -43,6 +47,7 @@ contract L1KakarotMessaging {
     ///     is the caller of this function.
     /// @param payload The payload of the message to consume.
     function consumeMessageFromL2(bytes calldata payload) external returns (bytes32 msgHash) {
+        require(address(this) != _self, "NOT_DELEGATECALL");
         // Will revert if the message is not consumable.
         // Consider each byte of calldata as a uint256.
         uint256[] memory convertedPayload = new uint256[](payload.length);
