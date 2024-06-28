@@ -63,7 +63,17 @@ class TestBytes:
 
     class TestBytesToBytes8LittleEndian:
 
-        @pytest.mark.parametrize("bytes_len", [0, 10, 100, 1000, 10_000, 100_000])
+        @pytest.mark.parametrize(
+            "bytes_len",
+            [
+                0,
+                10,
+                100,
+                1000,
+                pytest.param(10_000, marks=pytest.mark.slow),
+                pytest.param(100_000, marks=pytest.mark.slow),
+            ],
+        )
         def test_should_return_bytes8(self, cairo_run, bytes_len):
             random.seed(bytes_len)
             bytes_array = list(os.urandom(bytes_len))

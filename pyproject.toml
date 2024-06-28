@@ -160,6 +160,7 @@ markers = [
   "SSTORE",
   "SLOAD",
   "NoCI",
+  "slow",
 ]
 env = [
   "PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION = python",

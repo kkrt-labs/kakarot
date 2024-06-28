@@ -73,6 +73,7 @@ def get_contract(cairo_run):
 class TestKakarot:
 
     class TestNativeToken:
+        @pytest.mark.slow
         @SyscallHandler.patch("Ownable_owner", 0xDEAD)
         def test_should_assert_only_owner(self, cairo_run):
             with cairo_error(message="Ownable: caller is not the owner"):
@@ -116,6 +117,7 @@ class TestKakarot:
             )
 
     class TestCoinbase:
+        @pytest.mark.slow
         @SyscallHandler.patch("Ownable_owner", 0xDEAD)
         def test_should_assert_only_owner(self, cairo_run):
             with cairo_error(message="Ownable: caller is not the owner"):
@@ -160,6 +162,7 @@ class TestKakarot:
             )
 
     class TestAccountContractClassHash:
+        @pytest.mark.slow
         @SyscallHandler.patch("Ownable_owner", 0xDEAD)
         def test_should_assert_only_owner(self, cairo_run):
             with cairo_error(message="Ownable: caller is not the owner"):
@@ -230,6 +233,7 @@ class TestKakarot:
                 value=starknet_address,
             )
 
+        @pytest.mark.slow
         @SyscallHandler.patch("Kakarot_evm_to_starknet_address", 0x42069, 1)
         @patch(
             "tests.utils.syscall_handler.SyscallHandler.caller_address",
@@ -265,6 +269,7 @@ class TestKakarot:
                 cairo_run("test__register_account", evm_address=EVM_ADDRESS)
 
     class TestEthCall:
+        @pytest.mark.slow
         @pytest.mark.SolmateERC20
         @SyscallHandler.patch(
             "IAccount.is_valid_jumpdest",
@@ -288,6 +293,7 @@ class TestKakarot:
                 evm, *_ = erc20.transfer(OTHER, amount, origin=int(OWNER, 16))
             assert not evm["reverted"]
 
+        @pytest.mark.slow
         @pytest.mark.SolmateERC721
         @SyscallHandler.patch(
             "IAccount.is_valid_jumpdest",

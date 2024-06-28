@@ -1,4 +1,3 @@
-import os
 import random
 from textwrap import wrap
 from unittest.mock import call, patch
@@ -28,7 +27,16 @@ V_OFFSET = 27
 
 
 class TestAccountContract:
-    @pytest.fixture(params=[0, 10, 100, 1000, 10000])
+    @pytest.fixture(
+        params=[
+            0,
+            10,
+            100,
+            pytest.param(1_000, marks=pytest.mark.slow),
+            pytest.param(10_000, marks=pytest.mark.slow),
+            pytest.param(100_000, marks=pytest.mark.slow),
+        ]
+    )
     def bytecode(self, request):
         random.seed(0)
         return random.randbytes(request.param)
@@ -326,12 +334,10 @@ class TestAccountContract:
                 tx_data=tx_data,
             )
 
-        @pytest.mark.parametrize("data_len", [0, 10, 100, 1000, 10_000, 100_000])
         @SyscallHandler.patch(
             "Account_cairo1_helpers_class_hash", CAIRO1_HELPERS_CLASS_HASH
         )
-        def test_should_pass_all_data_len(self, cairo_run, data_len):
-            random.seed(data_len)
+        def test_should_pass_all_data_len(self, cairo_run, bytecode):
             transaction = {
                 "to": "0xF0109fC8DF283027b6285cc889F5aA624EaC1F55",
                 "value": 0,
@@ -339,7 +345,7 @@ class TestAccountContract:
                 "gasPrice": 234567897654321,
                 "nonce": 0,
                 "chainId": CHAIN_ID,
-                "data": os.urandom(data_len),
+                "data": bytecode,
             }
             encoded_unsigned_tx = rlp_encode_signed_data(transaction)
             tx_data = list(encoded_unsigned_tx)

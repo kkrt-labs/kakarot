@@ -6,6 +6,7 @@ import pytest
 
 @pytest.mark.MOD_EXP
 class TestModExp:
+    @pytest.mark.slow
     def test_modexp(self, cairo_run):
         random.seed(0)
         b = 3
