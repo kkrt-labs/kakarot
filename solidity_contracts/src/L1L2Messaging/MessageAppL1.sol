@@ -64,18 +64,10 @@ contract MessageAppL1 {
     */
     function consumeCounterIncrease(bytes calldata payload) external {
         // Will revert if the message is not consumable.
-        //TODO: debug why using the delegatecall doesn't consume the message properly.
         // Delegatecall to _l1KakarotMessaging
-        // (bool success, ) = address(_l1KakarotMessaging).delegatecall(
-        //     abi.encodeWithSignature("consumeMessageFromL2(bytes)", payload)
-        // );
-        // require(success, "message consumption failed");
-
-        uint256[] memory convertedPayload = new uint256[](payload.length);
-        for (uint256 i = 0; i < payload.length; i++) {
-            convertedPayload[i] = uint256(uint8(payload[i]));
-        }
-        _starknetMessaging.consumeMessageFromL2(_kakarotAddress, convertedPayload);
+        (bool success,) =
+            address(_l1KakarotMessaging).delegatecall(abi.encodeWithSignature("consumeMessageFromL2(bytes)", payload));
+        require(success, "message consumption failed");
 
         // Decode the uint256 value from the payload
         uint256 value = abi.decode(payload, (uint256));
