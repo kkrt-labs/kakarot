@@ -1,3 +1,4 @@
+import os
 import random
 from textwrap import wrap
 from unittest.mock import call, patch
@@ -29,7 +30,7 @@ CHAIN_ID_OFFSET = 35
 V_OFFSET = 27
 
 
-class TestContractAccount:
+class TestAccountContract:
     @pytest.fixture(params=[0, 10, 100, 1000, 10000])
     def bytecode(self, request):
         random.seed(0)
@@ -314,13 +315,40 @@ class TestContractAccount:
             address = int(private_key.public_key.to_checksum_address(), 16)
             signed = Account.sign_transaction(transaction, private_key)
 
-            unsigned_transaction = serializable_unsigned_transaction_from_dict(
-                transaction
-            )
-            unsigned_transaction.hash()
-
             encoded_unsigned_tx = rlp_encode_signed_data(transaction)
             tx_data = list(encoded_unsigned_tx)
+
+            cairo_run(
+                "test__validate",
+                address=address,
+                nonce=transaction["nonce"],
+                chain_id=transaction.get("chainId") or CHAIN_ID,
+                r=int_to_uint256(signed.r),
+                s=int_to_uint256(signed.s),
+                v=signed["v"],
+                tx_data=tx_data,
+            )
+
+        @pytest.mark.parametrize("data_len", [0, 10, 100, 1000, 10_000, 100_000])
+        @SyscallHandler.patch(
+            "Account_cairo1_helpers_class_hash", CAIRO1_HELPERS_CLASS_HASH
+        )
+        def test_should_pass_all_data_len(self, cairo_run, data_len):
+            random.seed(data_len)
+            transaction = {
+                "to": "0xF0109fC8DF283027b6285cc889F5aA624EaC1F55",
+                "value": 0,
+                "gas": 2_000_000,
+                "gasPrice": 234567897654321,
+                "nonce": 0,
+                "chainId": CHAIN_ID,
+                "data": os.urandom(data_len),
+            }
+            encoded_unsigned_tx = rlp_encode_signed_data(transaction)
+            tx_data = list(encoded_unsigned_tx)
+            private_key = generate_random_private_key()
+            address = int(private_key.public_key.to_checksum_address(), 16)
+            signed = Account.sign_transaction(transaction, private_key)
 
             cairo_run(
                 "test__validate",
