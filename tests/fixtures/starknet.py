@@ -4,7 +4,7 @@ import math
 import shutil
 from hashlib import md5
 from pathlib import Path
-from time import perf_counter
+from time import perf_counter, time_ns
 
 import pandas as pd
 import pytest
@@ -219,7 +219,7 @@ def cairo_run(request) -> list:
             / f"{request.node.path.stem}_{entrypoint}_{displayed_args}"
         )
         output_stem = Path(
-            f"{output_stem[:160]}_{md5(output_stem.encode()).digest().hex()[:8]}"
+            f"{output_stem[:160]}_{int(time_ns())}_{md5(output_stem.encode()).digest().hex()[:8]}"
         )
         logger.info(
             f"Test {request.node.path.stem}_{entrypoint}_{displayed_args} artifacts saved at: {output_stem}"

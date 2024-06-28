@@ -5,9 +5,6 @@ from unittest.mock import call, patch
 
 import pytest
 import rlp
-from eth_account._utils.legacy_transactions import (
-    serializable_unsigned_transaction_from_dict,
-)
 from eth_account.account import Account
 from eth_utils import keccak
 from starkware.starknet.public.abi import (
