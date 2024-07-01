@@ -2,23 +2,32 @@
 
 %lang starknet
 
-// Starkware dependencies
 from openzeppelin.access.ownable.library import Ownable, Ownable_owner
+from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin, SignatureBuiltin
+from starkware.cairo.common.math import assert_le, unsigned_div_rem
+from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.uint256 import Uint256
+from starkware.starknet.common.syscalls import (
+    get_tx_info,
+    get_caller_address,
+    replace_class,
+    get_block_timestamp,
+)
+from starkware.cairo.common.bool import FALSE
 
-// Local dependencies
 from kakarot.accounts.library import (
     AccountContract,
+    Internals as AccountInternals,
     Account_implementation,
     Account_cairo1_helpers_class_hash,
     Account_authorized_message_hashes,
+    Account_bytecode_len,
+    Account_evm_address,
 )
-from kakarot.accounts.model import CallArray
+from kakarot.accounts.model import CallArray, OutsideExecution
 from kakarot.interfaces.interfaces import IKakarot, IAccount
-from starkware.starknet.common.syscalls import get_tx_info, get_caller_address, replace_class
-from starkware.cairo.common.math import assert_le, unsigned_div_rem
-from starkware.cairo.common.alloc import alloc
+from utils.utils import Helpers
 
 // @title EVM smart contract account representation.
 @constructor
@@ -87,6 +96,81 @@ func is_initialized{
 }
 
 // EOA specific entrypoints
+
+@external
+func execute_from_outside{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, bitwise_ptr: BitwiseBuiltin*, range_check_ptr
+}(
+    outside_execution: OutsideExecution,
+    call_array_len: felt,
+    call_array: CallArray*,
+    calldata_len: felt,
+    calldata: felt*,
+    signature_len: felt,
+    signature: felt*,
+) -> (response_len: felt, response: felt*) {
+    alloc_locals;
+    let (caller) = get_caller_address();
+
+    if (outside_execution.caller != 'ANY_CALLER') {
+        assert caller = outside_execution.caller;
+    }
+
+    let (block_timestamp) = get_block_timestamp();
+    let too_early = is_le(block_timestamp, outside_execution.execute_after);
+    with_attr error_message("Execute from outside: too early") {
+        assert too_early = FALSE;
+    }
+    let too_late = is_le(outside_execution.execute_before, block_timestamp);
+    with_attr error_message("Execute from outside: too late") {
+        assert too_late = FALSE;
+    }
+
+    let (bytecode_len) = Account_bytecode_len.read();
+    with_attr error_message("EOAs cannot have code") {
+        assert bytecode_len = 0;
+    }
+    with_attr error_message("Execute from outside: multicall not supported") {
+        assert call_array_len = 1;
+    }
+
+    assert signature_len = 5;
+    let r = Uint256(signature[0], signature[1]);
+    let s = Uint256(signature[2], signature[3]);
+    let v = signature[4];
+
+    let (tx_info) = get_tx_info();
+    let (_, chain_id) = unsigned_div_rem(tx_info.chain_id, 2 ** 32);
+
+    // Unpack the tx data
+    let packed_tx_data_len = [call_array].data_len;
+    let packed_tx_data = calldata + [call_array].data_offset;
+
+    let tx_data_len = [packed_tx_data];
+    let (tx_data) = Helpers.load_packed_bytes(
+        packed_tx_data_len - 1, packed_tx_data + 1, tx_data_len
+    );
+
+    let (address) = Account_evm_address.read();
+    AccountInternals.validate(
+        address, outside_execution.nonce, chain_id, r, s, v, tx_data_len, tx_data
+    );
+
+    let version = tx_info.version;
+    with_attr error_message("Execute from outside: deprecated tx version: {version}") {
+        assert_le(1, version);
+    }
+
+    let (local response: felt*) = alloc();
+    let (response_len) = AccountContract.execute(
+        call_array_len=call_array_len,
+        call_array=call_array,
+        calldata_len=calldata_len,
+        calldata=calldata,
+        response=response,
+    );
+    return (response_len, response);
+}
 
 // @notice Validate a transaction
 // @dev The transaction is considered as valid if it is signed with the correct address and is a valid kakarot transaction
