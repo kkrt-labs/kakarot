@@ -178,6 +178,9 @@ class SyscallHandler:
             ACCOUNT_CLASS_IMPLEMENTATION
         ],
         get_selector_from_name("set_implementation"): lambda addr, data: [],
+        get_selector_from_name(
+            "execute_starknet_call"
+        ): lambda addr, data: [],  # Registers the call in the patches object, but will return the data of the internal call.
     }
 
     def get_contract_address(self, segments, syscall_ptr):
@@ -407,6 +410,24 @@ class SyscallHandler:
                 response: CallContractResponse,
             }
         """
+
+        def _handle_execute_starknet_call(
+            contract_address, function_selector, calldata
+        ):
+
+            if function_selector not in self.patches:
+                raise ValueError(
+                    f"Function selector 0x{function_selector:x} not found in patches."
+                )
+            self.mock_call(
+                contract_address=contract_address,
+                function_selector=function_selector,
+                calldata=calldata,
+            )
+
+            retdata = self.patches[function_selector](contract_address, calldata)
+            return [len(retdata), *retdata]
+
         function_selector = segments.memory[syscall_ptr + 2]
         if function_selector not in self.patches:
             raise ValueError(
@@ -424,7 +445,15 @@ class SyscallHandler:
             function_selector=function_selector,
             calldata=calldata,
         )
-        retdata = self.patches.get(function_selector)(contract_address, calldata)
+
+        # "execute_starknet_call" is forwarding the actual call to an account contract.
+        if function_selector == get_selector_from_name("execute_starknet_call"):
+            retdata = _handle_execute_starknet_call(
+                calldata[0], calldata[1], calldata[2:]
+            )
+        else:
+            retdata = self.patches.get(function_selector)(contract_address, calldata)
+
         retdata_segment = segments.add()
         segments.write_arg(retdata_segment, retdata)
         segments.write_arg(syscall_ptr + 5, [len(retdata), retdata_segment])

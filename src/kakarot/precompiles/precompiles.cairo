@@ -101,27 +101,6 @@ namespace Precompiles {
         );
         jmp call_precompile;
 
-        pre_kakarot_precompile:
-        let is_cairo_contract_call = Helpers.is_zero(
-            FIRST_KAKAROT_PRECOMPILE_ADDRESS - evm_address
-        );
-        let is_whitelisted = KakarotPrecompiles.is_caller_whitelisted(caller_address);
-        tempvar is_authorized = is_cairo_contract_call * is_whitelisted;
-        tempvar syscall_ptr = syscall_ptr;
-        tempvar pedersen_ptr = pedersen_ptr;
-        tempvar range_check_ptr = range_check_ptr;
-        jmp kakarot_precompile if is_authorized != 0;
-        jmp unauthorized_call if is_cairo_contract_call != 0;
-        jmp kakarot_precompile;
-
-        kakarot_precompile:
-        let rollup_precompiles_count = LAST_ROLLUP_PRECOMPILE_ADDRESS -
-            FIRST_ROLLUP_PRECOMPILE_ADDRESS + 1;
-        tempvar index = (LAST_ETHEREUM_PRECOMPILE_ADDRESS + 1) + rollup_precompiles_count + (
-            evm_address - FIRST_KAKAROT_PRECOMPILE_ADDRESS
-        );
-        jmp call_precompile;
-
         unauthorized_call:
         // Prepare arguments if none of the above conditions are met
         [ap] = syscall_ptr, ap++;
@@ -173,9 +152,37 @@ namespace Precompiles {
         // based on the address of the precompile and the last ethereum precompile
         call PrecompileP256Verify.run;  // offset 0x0b: precompile 0x100
         ret;
+
+        pre_kakarot_precompile:
+        let is_cairo_contract_call = Helpers.is_zero(
+            FIRST_KAKAROT_PRECOMPILE_ADDRESS - evm_address
+        );
+        let is_whitelisted = KakarotPrecompiles.is_caller_whitelisted(caller_address);
+        tempvar is_authorized = is_cairo_contract_call * is_whitelisted;
+        tempvar syscall_ptr = syscall_ptr;
+        tempvar pedersen_ptr = pedersen_ptr;
+        tempvar range_check_ptr = range_check_ptr;
+        jmp call_kakarot_precompiles if is_authorized != 0;
+        jmp unauthorized_call if is_cairo_contract_call != 0;
+        jmp call_kakarot_precompiles;
+
+        call_kakarot_precompiles:
+        tempvar index = evm_address - FIRST_KAKAROT_PRECOMPILE_ADDRESS;
+        tempvar offset = 1 + 3 * index;
+
+        // Prepare arguments
+        [ap] = syscall_ptr, ap++;
+        [ap] = pedersen_ptr, ap++;
+        [ap] = range_check_ptr, ap++;
+        [ap] = bitwise_ptr, ap++;
+        [ap] = evm_address, ap++;
+        [ap] = input_len, ap++;
+        [ap] = input, ap++;
+        [ap] = caller_address, ap++;
+
         // Kakarot precompiles. Offset must have been computed appropriately,
-        // based on the address of the precompile, the last ethereum precompile, and
-        // the amount of rollup precompiles.
+        // based on the total number of kakarot precompiles
+        jmp rel offset;
         call KakarotPrecompiles.cairo_precompile;  // offset 0x0c: precompile 0x75001
         ret;
         call KakarotPrecompiles.cairo_message;  // offset 0x0d: precompile 0x75002

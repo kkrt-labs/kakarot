@@ -10,6 +10,7 @@ from starkware.cairo.common.bool import FALSE
 
 from kakarot.errors import Errors
 from kakarot.interfaces.interfaces import IAccount
+from kakarot.account import Account
 from kakarot.storages import Kakarot_authorized_cairo_precompiles_callers
 from utils.utils import Helpers
 
@@ -33,7 +34,7 @@ namespace KakarotPrecompiles {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(evm_address: felt, input_len: felt, input: felt*) -> (
+    }(evm_address: felt, input_len: felt, input: felt*, caller_address: felt) -> (
         output_len: felt, output: felt*, gas_used: felt, reverted: felt
     ) {
         alloc_locals;
@@ -73,22 +74,20 @@ namespace KakarotPrecompiles {
         let (data_len, data) = Helpers.load_256_bits_array(data_bytes_len, data_ptr);
 
         if (selector == CALL_CONTRACT_SOLIDITY_SELECTOR) {
-            // account_address == 0 means we're either in a L1_handler or a starknet_call, not
-            // a starknet_invoke transaction
-            let (account_address) = get_caller_address();
-            let is_call = Helpers.is_zero(account_address);
-            let (output) = alloc();
-            if (is_call != FALSE) {
-                let (retdata_len, retdata) = call_contract(
-                    starknet_address, starknet_selector, data_len, data
+            let caller_starknet_address = Account.get_registered_starknet_address(caller_address);
+            let is_not_deployed = Helpers.is_zero(caller_starknet_address);
+
+            if (is_not_deployed != FALSE) {
+                let (revert_reason_len, revert_reason) = Errors.accountNotDeployed();
+                return (
+                    revert_reason_len, revert_reason, CAIRO_PRECOMPILE_GAS, Errors.EXCEPTIONAL_HALT
                 );
-                let output_len = retdata_len * 32;
-                Helpers.felt_array_to_bytes32_array(retdata_len, retdata, output);
-                return (output_len, output, CAIRO_PRECOMPILE_GAS, 0);
             }
+
             let (retdata_len, retdata) = IAccount.execute_starknet_call(
-                account_address, starknet_address, starknet_selector, data_len, data
+                caller_starknet_address, starknet_address, starknet_selector, data_len, data
             );
+            let (output) = alloc();
             let output_len = retdata_len * 32;
             Helpers.felt_array_to_bytes32_array(retdata_len, retdata, output);
             return (output_len, output, CAIRO_PRECOMPILE_GAS, 0);
@@ -113,7 +112,7 @@ namespace KakarotPrecompiles {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(evm_address: felt, input_len: felt, input: felt*) -> (
+    }(evm_address: felt, input_len: felt, input: felt*, caller_address: felt) -> (
         output_len: felt, output: felt*, gas_used: felt, reverted: felt
     ) {
         alloc_locals;

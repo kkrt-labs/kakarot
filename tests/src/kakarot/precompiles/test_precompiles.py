@@ -156,6 +156,9 @@ class TestPrecompiles:
             @SyscallHandler.patch(
                 "Kakarot_authorized_cairo_precompiles_callers", AUTHORIZED_CALLER, 1
             )
+            @SyscallHandler.patch(
+                "Kakarot_evm_to_starknet_address", AUTHORIZED_CALLER, 0x1234
+            )
             @pytest.mark.parametrize(
                 "address, caller_address, input_data, expected_return_data, expected_reverted",
                 [
@@ -240,12 +243,8 @@ class TestPrecompiles:
                 # Expected output is [0] if no return data is expected,
                 # [len(retdata), retdata] otherwise.
                 with SyscallHandler.patch(
-                    "IAccount.execute_starknet_call",
-                    lambda addr, data: (
-                        [len(cairo_return_data), *cairo_return_data]
-                        if len(cairo_return_data) != 0
-                        else [0]
-                    ),
+                    "IAccount.inc",
+                    lambda addr, data: [],
                 ), SyscallHandler.patch(
                     "ICairo.get",
                     lambda addr, data: cairo_return_data,
@@ -261,6 +260,32 @@ class TestPrecompiles:
                 assert gas_used == (
                     CAIRO_PRECOMPILE_GAS if caller_address == AUTHORIZED_CALLER else 0
                 )
+                return
+
+            @SyscallHandler.patch(
+                "Kakarot_authorized_cairo_precompiles_callers", AUTHORIZED_CALLER, 1
+            )
+            def test__should_fail_if_undeployed_starknet_account(
+                self,
+                cairo_run,
+            ):
+                # The expected returndata is a list of 32-byte words where each word is a felt returned by the precompile.
+                return_data, reverted, gas_used = cairo_run(
+                    "test__precompiles_run",
+                    address=0x75001,
+                    input=bytes.fromhex(
+                        "b3eb2c1b"
+                        + f"{0xc0de:064x}"
+                        + f"{get_selector_from_name('get'):064x}"
+                        + f"{0x60:064x}"  # data_offset
+                        + f"{0x01:064x}"  # data_len
+                        + f"{0x01:064x}"  # data
+                    ),
+                    caller_address=AUTHORIZED_CALLER,
+                )
+                assert bool(reverted)
+                assert bytes(return_data) == b"Kakarot: accountNotDeployed"
+                assert gas_used == CAIRO_PRECOMPILE_GAS
                 return
 
         @pytest.mark.parametrize(
