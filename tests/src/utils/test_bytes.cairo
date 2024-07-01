@@ -86,7 +86,7 @@ func test__uint256_to_bytes32{range_check_ptr}(output_ptr: felt*) {
     return ();
 }
 
-func test__bytes_to_bytes8_little_endian{range_check_ptr}(output_ptr: felt*) {
+func test__bytes_to_bytes8_little_endian{range_check_ptr}() -> (felt*, felt, felt) {
     alloc_locals;
     tempvar bytes_len: felt;
     let (bytes) = alloc();
@@ -95,12 +95,10 @@ func test__bytes_to_bytes8_little_endian{range_check_ptr}(output_ptr: felt*) {
         segments.write_arg(ids.bytes, program_input["bytes"])
     %}
 
-    let (full_words_len, last_word, last_word_num_bytes) = bytes_to_bytes8_little_endian(
-        output_ptr, bytes_len, bytes
+    let (bytes8) = alloc();
+    let (bytes8_len, last_word, last_word_num_bytes) = bytes_to_bytes8_little_endian(
+        bytes8, bytes_len, bytes
     );
 
-    assert output_ptr[full_words_len] = last_word;
-    assert output_ptr[full_words_len + 1] = last_word_num_bytes;
-
-    return ();
+    return (bytes8, last_word, last_word_num_bytes);
 }
