@@ -84,13 +84,6 @@ class TestBytes:
             output, last_word, last_word_len = cairo_run(
                 "test__bytes_to_bytes8_little_endian", bytes=bytes_array
             )
-            last_word = int.to_bytes(
-                last_word, byteorder="little", length=last_word_len
-            )
-            output = (
-                output + [int.from_bytes(last_word, "little")]
-                if len(last_word) > 0
-                else output
-            )
+            output = output + [last_word] if last_word_len > 0 else output
 
             assert bytes8_little_endian == output

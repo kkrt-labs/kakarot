@@ -208,6 +208,7 @@ def cairo_run(request) -> list:
 
         runner.relocate()
 
+        # Create a unique output stem for the given test by using the test file name, the entrypoint and the kwargs
         displayed_args = ""
         if kwargs:
             try:
@@ -218,6 +219,8 @@ def cairo_run(request) -> list:
             request.node.path.parent
             / f"{request.node.path.stem}_{entrypoint}_{displayed_args}"
         )
+        # File names cannot be longer than 255 characters on Unix so we slice the base stem and happen a unique suffix
+        # Timestamp is used to avoid collisions when running the same test multiple times and to allow sorting by time
         output_stem = Path(
             f"{output_stem[:160]}_{int(time_ns())}_{md5(output_stem.encode()).digest().hex()[:8]}"
         )
