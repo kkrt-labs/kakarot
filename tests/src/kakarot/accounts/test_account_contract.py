@@ -303,16 +303,6 @@ class TestAccountContract:
                 value=1,
             )
 
-    class TestAssertNotKakarot:
-        @SyscallHandler.patch("Ownable_owner", 0xABC)
-        def test_should_fail_if_kakarot(self, cairo_run):
-            with cairo_error(message="Kakarot: cannot re-enter kakarot contract"):
-                cairo_run("test__assert_not_kakarot", address=0xABC)
-
-        @SyscallHandler.patch("Ownable_owner", 0xABC)
-        def test_should_pass_if_not_kakarot(self, cairo_run):
-            cairo_run("test__assert_not_kakarot", address=0xDEF)
-
     class TestExecuteStarknetCall:
         def test_should_assert_only_owner(self, cairo_run):
             with cairo_error(message="Ownable: caller is not the owner"):

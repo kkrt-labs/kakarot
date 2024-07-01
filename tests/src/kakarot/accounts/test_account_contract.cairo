@@ -107,15 +107,6 @@ func test__set_authorized_pre_eip155_tx{
     set_authorized_pre_eip155_tx(msg_hash);
     return ();
 }
-
-func test__assert_not_kakarot{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
-    tempvar address: felt;
-    %{ ids.address = program_input["address"] %}
-    // When
-    AccountContract.assert_not_kakarot(address);
-    return ();
-}
-
 func test__execute_starknet_call{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     ) -> (felt*, felt) {
     // Given

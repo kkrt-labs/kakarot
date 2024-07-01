@@ -90,7 +90,7 @@ namespace Precompiles {
         tempvar syscall_ptr = syscall_ptr;
         tempvar pedersen_ptr = pedersen_ptr;
         tempvar range_check_ptr = range_check_ptr;
-        jmp pre_kakarot_precompile if is_kakarot_precompile_ != 0;
+        jmp kakarot_precompile if is_kakarot_precompile_ != 0;
         jmp unauthorized_call;
 
         eth_precompile:
@@ -155,20 +155,15 @@ namespace Precompiles {
         call PrecompileP256Verify.run;  // offset 0x0b: precompile 0x100
         ret;
 
-        pre_kakarot_precompile:
-        let is_cairo_contract_call = Helpers.is_zero(
-            FIRST_KAKAROT_PRECOMPILE_ADDRESS - evm_address
-        );
+        kakarot_precompile:
+        let is_cairo_module = Helpers.is_zero(FIRST_KAKAROT_PRECOMPILE_ADDRESS - evm_address);
         let is_whitelisted = KakarotPrecompiles.is_caller_whitelisted(caller_address);
-        tempvar is_authorized = is_cairo_contract_call * is_whitelisted;
+        tempvar is_not_authorized = is_cairo_module * (1 - is_whitelisted);
         tempvar syscall_ptr = syscall_ptr;
         tempvar pedersen_ptr = pedersen_ptr;
         tempvar range_check_ptr = range_check_ptr;
-        jmp call_kakarot_precompiles if is_authorized != 0;
-        jmp unauthorized_call if is_cairo_contract_call != 0;
-        jmp call_kakarot_precompiles;
+        jmp unauthorized_call if is_not_authorized != 0;
 
-        call_kakarot_precompiles:
         tempvar index = evm_address - FIRST_KAKAROT_PRECOMPILE_ADDRESS;
         tempvar offset = 1 + 3 * index;
 
