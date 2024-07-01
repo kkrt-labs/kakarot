@@ -510,17 +510,6 @@ namespace AccountContract {
         );
         return is_valid_jumpdest(index=index);
     }
-
-    // @notice asserts that the caller is not kakarot
-    func assert_not_kakarot{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        address: felt
-    ) {
-        let (kakarot_address) = Ownable.owner();
-        with_attr error_message("Kakarot: cannot re-enter kakarot contract") {
-            assert_not_zero(kakarot_address - address);
-        }
-        return ();
-    }
 }
 
 namespace Internals {
