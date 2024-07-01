@@ -71,9 +71,9 @@ namespace Precompiles {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(evm_address: felt, input_len: felt, input: felt*, caller_address: felt, sender_context) -> (
-        output_len: felt, output: felt*, gas_used: felt, reverted: felt
-    ) {
+    }(
+        evm_address: felt, input_len: felt, input: felt*, caller_address: felt, sender_context: felt
+    ) -> (output_len: felt, output: felt*, gas_used: felt, reverted: felt) {
         let is_eth_precompile = is_le(evm_address, LAST_ETHEREUM_PRECOMPILE_ADDRESS);
         tempvar syscall_ptr = syscall_ptr;
         tempvar pedersen_ptr = pedersen_ptr;

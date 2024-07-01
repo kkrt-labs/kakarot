@@ -67,8 +67,17 @@ namespace Interpreter {
             let is_precompile = Precompiles.is_precompile(evm.message.code_address.evm);
             let caller_address = evm.message.caller;
             // Caller of the contract that is calling the precompile
-            let sender_context = evm.message.parent.evm.message.caller;
             if (is_precompile != FALSE) {
+                // If the precompile is called straight from an EOA, the sender_context is the EOA
+                // Otherwise, the sender_context is the caller of the contract that is calling the precompile
+                // This is only relevant for the Kakarot Cairo Module precompile.
+                let parent_context = evm.message.parent;
+                let is_parent_zero = Helpers.is_zero(cast(parent_context, felt));
+                if (is_parent_zero != FALSE) {
+                    tempvar sender_context = evm.message.caller;
+                } else {
+                    tempvar sender_context = parent_context.evm.message.caller;
+                }
                 let (
                     output_len, output, gas_used, precompile_reverted
                 ) = Precompiles.exec_precompile(
