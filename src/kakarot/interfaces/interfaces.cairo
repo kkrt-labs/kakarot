@@ -93,7 +93,7 @@ namespace IAccount {
 
     func execute_starknet_call(
         called_address: felt, function_selector: felt, calldata_len: felt, calldata: felt*
-    ) -> (retdata_len: felt, retdata: felt*) {
+    ) -> (retdata_len: felt, retdata: felt*, success: felt) {
     }
 }
 
