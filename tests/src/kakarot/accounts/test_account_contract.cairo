@@ -117,7 +117,7 @@ func test__assert_not_kakarot{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ra
 }
 
 func test__execute_starknet_call{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    ) -> felt* {
+    ) -> (felt*, felt) {
     // Given
     tempvar called_address: felt;
     tempvar function_selector: felt;
@@ -131,11 +131,11 @@ func test__execute_starknet_call{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*,
     %}
 
     // When
-    let (retdata_len, retdata) = execute_starknet_call(
+    let (retdata_len, retdata, success) = execute_starknet_call(
         called_address, function_selector, calldata_len, calldata
     );
 
-    return retdata;
+    return (retdata, success);
 }
 
 func test__validate{

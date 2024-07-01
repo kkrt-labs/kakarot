@@ -326,15 +326,14 @@ class TestAccountContract:
         @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
         def test_should_fail_if_calling_kakarot(self, cairo_run):
             function_selector = 0xBCD
-            with cairo_error(
-                message="Kakarot: cannot re-enter kakarot contract"
-            ), SyscallHandler.patch(function_selector, lambda addr, data: []):
-                cairo_run(
+            with SyscallHandler.patch(function_selector, lambda addr, data: []):
+                return_data, success = cairo_run(
                     "test__execute_starknet_call",
                     called_address=SyscallHandler.caller_address,
                     function_selector=function_selector,
                     calldata=[],
                 )
+                assert success == 0
 
         @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
         def test_should_execute_starknet_call(self, cairo_run):

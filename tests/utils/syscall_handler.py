@@ -451,6 +451,8 @@ class SyscallHandler:
             retdata = _handle_execute_starknet_call(
                 calldata[0], calldata[1], calldata[2:]
             )
+            # append [1] for success
+            retdata.append(1)
         else:
             retdata = self.patches.get(function_selector)(contract_address, calldata)
 
