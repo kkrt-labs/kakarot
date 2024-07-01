@@ -1,5 +1,3 @@
-from unittest.mock import PropertyMock, patch
-
 import pytest
 from eth_abi import encode
 from starkware.starknet.public.abi import get_selector_from_name
@@ -15,8 +13,11 @@ from tests.utils.constants import (
 )
 from tests.utils.syscall_handler import SyscallHandler
 
+CALL_CONTRACT_SOLIDITY_SELECTOR = "b3eb2c1b"
+
 AUTHORIZED_CALLER = 0xA7071ED
 UNAUTHORIZED_CALLER = 0xC0C0C0
+SENDER_CONTEXT = 0x123ABC432
 
 
 class TestPrecompiles:
@@ -74,90 +75,41 @@ class TestPrecompiles:
                 assert gas_used == 3450
 
         class TestKakarotPrecompiles:
-            @pytest.mark.parametrize(
-                "address, eoa_caller_address, input_data, expected_return_data",
-                (
-                    (
-                        0x75001,
-                        AUTHORIZED_CALLER,
-                        bytes.fromhex(
-                            "b3eb2c1b"
-                            + f"{0xc0de:064x}"
-                            + f"{get_selector_from_name('inc'):064x}"
-                            + f"{0x60:064x}"  # data_offset
-                            + f"{0x00:064x}"  # data_len
-                        ),
-                        b"",
-                    ),  # call_contract
-                    (
-                        0x75001,
-                        AUTHORIZED_CALLER,
-                        bytes.fromhex(
-                            "b3eb2c1b"
-                            + f"{0xc0de:064x}"
-                            + f"{get_selector_from_name('get'):064x}"
-                            + f"{0x60:064x}"  # data_offset
-                            + f"{0x01:064x}"  # data_len
-                            + f"{0x01:064x}"  # data
-                        ),
-                        bytes.fromhex(f"{0x01:064x}"),
-                    ),  # call_contract with return data
-                ),
-                ids=[
-                    "call_contract",
-                    "call_contract_w_returndata",
-                ],
-            )
             @SyscallHandler.patch(
                 "Kakarot_authorized_cairo_precompiles_callers", AUTHORIZED_CALLER, 1
             )
-            @patch(
-                "tests.utils.syscall_handler.SyscallHandler.caller_address",
-                new_callable=PropertyMock,
-            )
-            def test_should_pass_when_starknet_origin_zero(
+            @SyscallHandler.patch("Kakarot_evm_to_starknet_address", SENDER_CONTEXT, 0)
+            def test_should_fail_when_sender_starknet_address_zero(
                 self,
-                mock_caller_address,
                 cairo_run,
-                address,
-                input_data,
-                eoa_caller_address,
-                expected_return_data,
             ):
                 """
-                Tests the behavior when the get_caller_address() in Kakarot is zero, meaning that the caller
-                of Kakarot is either a L1 Handler OR it's a view call (eth_call).
+                Tests the behavior when the `msg.sender` in the contract that calls the precompile resolves
+                to a zero starknet address (meaning - it's not deployed yet, and will be at the end of the transaction).
                 """
-                mock_caller_address.return_value = 0
-                cairo_return_data = [
-                    int.from_bytes(expected_return_data[i : i + 32], "big")
-                    for i in range(0, len(expected_return_data), 32)
-                ]
-                with SyscallHandler.patch(
-                    "ICairo.get",
-                    lambda addr, data: cairo_return_data,
-                ), SyscallHandler.patch("ICairo.inc", lambda addr, data: []):
-                    return_data, reverted, gas_used = cairo_run(
-                        "test__precompiles_run",
-                        address=address,
-                        input=input_data,
-                        caller_address=eoa_caller_address,
-                    )
-                assert not bool(reverted)
-                assert bytes(return_data) == expected_return_data
-                assert gas_used == (
-                    CAIRO_PRECOMPILE_GAS
-                    if eoa_caller_address == AUTHORIZED_CALLER
-                    else 0
+                return_data, reverted, gas_used = cairo_run(
+                    "test__precompiles_run",
+                    address=0x75001,
+                    input=bytes.fromhex(
+                        CALL_CONTRACT_SOLIDITY_SELECTOR
+                        + f"{0xc0de:064x}"
+                        + f"{get_selector_from_name('inc'):064x}"
+                        + f"{0x60:064x}"  # data_offset
+                        + f"{0x00:064x}"  # data_len
+                    ),
+                    caller_address=AUTHORIZED_CALLER,
+                    sender_context=SENDER_CONTEXT,
                 )
+                assert bool(reverted)
+                assert bytes(return_data) == b"Kakarot: accountNotDeployed"
+                assert gas_used == CAIRO_PRECOMPILE_GAS
                 return
 
-            @SyscallHandler.patch("ICairo.inc", lambda addr, data: [])
             @SyscallHandler.patch(
                 "Kakarot_authorized_cairo_precompiles_callers", AUTHORIZED_CALLER, 1
             )
             @SyscallHandler.patch(
-                "Kakarot_evm_to_starknet_address", AUTHORIZED_CALLER, 0x1234
+                "Kakarot_evm_to_starknet_address", SENDER_CONTEXT, 0x1234
             )
             @pytest.mark.parametrize(
                 "address, caller_address, input_data, expected_return_data, expected_reverted",
@@ -173,7 +125,7 @@ class TestPrecompiles:
                         0x75001,
                         AUTHORIZED_CALLER,
                         bytes.fromhex(
-                            "b3eb2c1b"
+                            CALL_CONTRACT_SOLIDITY_SELECTOR
                             + f"{0xc0de:064x}"
                             + f"{get_selector_from_name('inc'):064x}"
                             + f"{0x60:064x}"  # data_offset
@@ -186,7 +138,7 @@ class TestPrecompiles:
                         0x75001,
                         AUTHORIZED_CALLER,
                         bytes.fromhex(
-                            "b3eb2c1b"
+                            CALL_CONTRACT_SOLIDITY_SELECTOR
                             + f"{0xc0de:064x}"
                             + f"{get_selector_from_name('get'):064x}"
                             + f"{0x60:064x}"  # data_offset
@@ -240,10 +192,8 @@ class TestPrecompiles:
                     int.from_bytes(expected_return_data[i : i + 32], "big")
                     for i in range(0, len(expected_return_data), 32)
                 ]
-                # Expected output is [0] if no return data is expected,
-                # [len(retdata), retdata] otherwise.
                 with SyscallHandler.patch(
-                    "IAccount.inc",
+                    "ICairo.inc",
                     lambda addr, data: [],
                 ), SyscallHandler.patch(
                     "ICairo.get",
@@ -254,6 +204,7 @@ class TestPrecompiles:
                         address=address,
                         input=input_data,
                         caller_address=caller_address,
+                        sender_context=SENDER_CONTEXT,
                     )
                 assert bool(reverted) == expected_reverted
                 assert bytes(return_data) == expected_return_data
@@ -274,7 +225,7 @@ class TestPrecompiles:
                     "test__precompiles_run",
                     address=0x75001,
                     input=bytes.fromhex(
-                        "b3eb2c1b"
+                        CALL_CONTRACT_SOLIDITY_SELECTOR
                         + f"{0xc0de:064x}"
                         + f"{get_selector_from_name('get'):064x}"
                         + f"{0x60:064x}"  # data_offset

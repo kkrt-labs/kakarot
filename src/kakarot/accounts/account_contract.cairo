@@ -6,6 +6,7 @@
 from openzeppelin.access.ownable.library import Ownable, Ownable_owner
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin, SignatureBuiltin
 from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.bool import FALSE, TRUE
 
 // Local dependencies
 from kakarot.accounts.library import (
@@ -323,5 +324,5 @@ func execute_starknet_call{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range
     let (retdata_len, retdata) = call_contract(
         called_address, function_selector, calldata_len, calldata
     );
-    return (retdata_len, retdata);
+    return (retdata_len, retdata, TRUE);
 }

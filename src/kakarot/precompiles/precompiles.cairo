@@ -60,6 +60,8 @@ namespace Precompiles {
     // @param evm_address The precompile evm_address.
     // @param input_len The length of the input array.
     // @param input The input array.
+    // @param caller_address The address of the contract that calls the precompile.
+    // @param sender_context The address of the sender in the context of the caller contract.
     // @return output_len The output length.
     // @return output The output array.
     // @return gas_used The gas usage of precompile.
@@ -69,7 +71,7 @@ namespace Precompiles {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(evm_address: felt, input_len: felt, input: felt*, caller_address: felt) -> (
+    }(evm_address: felt, input_len: felt, input: felt*, caller_address: felt, sender_context) -> (
         output_len: felt, output: felt*, gas_used: felt, reverted: felt
     ) {
         let is_eth_precompile = is_le(evm_address, LAST_ETHEREUM_PRECOMPILE_ADDRESS);
@@ -175,10 +177,10 @@ namespace Precompiles {
         [ap] = pedersen_ptr, ap++;
         [ap] = range_check_ptr, ap++;
         [ap] = bitwise_ptr, ap++;
-        [ap] = evm_address, ap++;
         [ap] = input_len, ap++;
         [ap] = input, ap++;
         [ap] = caller_address, ap++;
+        [ap] = sender_context, ap++;
 
         // Kakarot precompiles. Offset must have been computed appropriately,
         // based on the total number of kakarot precompiles

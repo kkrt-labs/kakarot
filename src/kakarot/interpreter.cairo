@@ -66,6 +66,8 @@ namespace Interpreter {
         if (is_pc_ge_code_len != FALSE) {
             let is_precompile = Precompiles.is_precompile(evm.message.code_address.evm);
             let caller_address = evm.message.caller;
+            // Caller of the contract that is calling the precompile
+            let sender_context = evm.message.parent.evm.message.caller;
             if (is_precompile != FALSE) {
                 let (
                     output_len, output, gas_used, precompile_reverted
@@ -74,6 +76,7 @@ namespace Interpreter {
                     evm.message.calldata_len,
                     evm.message.calldata,
                     caller_address,
+                    sender_context,
                 );
                 let evm = EVM.charge_gas(evm, gas_used);
                 let evm_reverted = is_not_zero(evm.reverted);
