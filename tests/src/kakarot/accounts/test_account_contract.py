@@ -340,11 +340,13 @@ class TestAccountContract:
             called_address = 0xABCDEF1234567890
             function_selector = 0x0987654321FEDCBA
             calldata = [random.randint(0, 255) for _ in range(32)]
-            expected_return_data = [random.randint(0, 255) for _ in range(32)]
+            expected_return_data = [random.randint(0, 255) for _ in range(32)] + [
+                int(True)
+            ]
             with SyscallHandler.patch(
                 function_selector, lambda addr, data: expected_return_data
             ):
-                return_data = cairo_run(
+                return_data, success = cairo_run(
                     "test__execute_starknet_call",
                     called_address=called_address,
                     function_selector=function_selector,
@@ -352,6 +354,7 @@ class TestAccountContract:
                 )
 
             assert return_data == expected_return_data
+            assert success == 1
             SyscallHandler.mock_call.assert_any_call(
                 contract_address=called_address,
                 function_selector=function_selector,
