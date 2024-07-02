@@ -138,32 +138,23 @@ func execute_from_outside{
         assert call_array_len = 1;
     }
 
-    assert signature_len = 5;
-    let r = Uint256(signature[0], signature[1]);
-    let s = Uint256(signature[2], signature[3]);
-    let v = signature[4];
-
     let (tx_info) = get_tx_info();
     let (_, chain_id) = unsigned_div_rem(tx_info.chain_id, 2 ** 32);
-
-    // Unpack the tx data
-    let packed_tx_data_len = [call_array].data_len;
-    let packed_tx_data = calldata + [call_array].data_offset;
-
-    let tx_data_len = [packed_tx_data];
-    let (tx_data) = Helpers.load_packed_bytes(
-        packed_tx_data_len - 1, packed_tx_data + 1, tx_data_len
-    );
-
-    let (address) = Account_evm_address.read();
-    AccountInternals.validate(
-        address, outside_execution.nonce, chain_id, r, s, v, tx_data_len, tx_data
-    );
-
     let version = tx_info.version;
     with_attr error_message("Execute from outside: deprecated tx version: {version}") {
         assert_le(1, version);
     }
+
+    AccountContract.validate(
+        call_array_len,
+        call_array,
+        calldata_len,
+        calldata,
+        signature_len,
+        signature,
+        tx_info.nonce,
+        tx_info.chain_id,
+    );
 
     let (local response: felt*) = alloc();
     let (response_len) = AccountContract.execute(
@@ -186,12 +177,9 @@ func execute_from_outside{
 func __validate__{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, bitwise_ptr: BitwiseBuiltin*, range_check_ptr
 }(call_array_len: felt, call_array: CallArray*, calldata_len: felt, calldata: felt*) {
-    AccountContract.validate(
-        call_array_len=call_array_len,
-        call_array=call_array,
-        calldata_len=calldata_len,
-        calldata=calldata,
-    );
+    with_attr error_message("EOA: __validate__ not supported") {
+        assert 1 = 0;
+    }
     return ();
 }
 
@@ -227,6 +215,9 @@ func __execute__{
     response_len: felt, response: felt*
 ) {
     alloc_locals;
+    with_attr error_message("EOA: __execute__ not supported") {
+        assert 1 = 0;
+    }
 
     // Upgrade flow
     let (latest_account_class, latest_helpers_class) = AccountContract.get_latest_classes();
