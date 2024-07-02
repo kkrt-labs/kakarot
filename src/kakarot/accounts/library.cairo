@@ -163,7 +163,7 @@ namespace AccountContract {
     // @param calldata The calldata.
     // @param signature_len The length of tx signature
     // @param signature The tx signature.
-    // @param nonce The nonce of the signature
+    // @param nonce The nonce of the tx
     // @param chain_id The chain_id
     func validate{
         syscall_ptr: felt*,
