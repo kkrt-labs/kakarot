@@ -237,7 +237,8 @@ namespace AccountContract {
             words, tx_data_len, tx_data
         );
 
-        let (helpers_class) = IKakarot.get_cairo1_helpers_class_hash();
+        let (kakarot_address) = Ownable_owner.read();
+        let (helpers_class) = IKakarot.get_cairo1_helpers_class_hash(kakarot_address);
         let (msg_hash) = ICairo1Helpers.library_call_keccak(
             class_hash=helpers_class,
             words_len=words_len,
