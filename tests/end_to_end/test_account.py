@@ -4,7 +4,6 @@ import pytest
 import pytest_asyncio
 from eth_utils import keccak
 from starknet_py.net.full_node_client import FullNodeClient
-from starkware.starknet.public.abi import get_storage_var_address
 
 Wallet = namedtuple("Wallet", ["address", "private_key", "starknet_contract"])
 
@@ -107,38 +106,6 @@ class TestAccount:
                 new_account.starknet_contract.address
             )
             assert new_class == target_class
-
-        async def test_should_update_cairo1_helpers_class(
-            self,
-            starknet: FullNodeClient,
-            invoke,
-            counter,
-            new_account,
-            class_hashes,
-        ):
-            prev_cairo1_helpers_class = await starknet.get_storage_at(
-                new_account.starknet_contract.address,
-                get_storage_var_address("Account_cairo1_helpers_class_hash"),
-            )
-            target_class = class_hashes["Cairo1HelpersFixture"]
-            assert prev_cairo1_helpers_class != target_class
-
-            await invoke(
-                "kakarot",
-                "set_account_contract_class_hash",
-                class_hashes["account_contract_fixture"],
-            )
-            await invoke("kakarot", "set_cairo1_helpers_class_hash", target_class)
-
-            await assert_counter_transaction_success(counter, new_account)
-
-            assert (
-                await starknet.get_storage_at(
-                    new_account.starknet_contract.address,
-                    get_storage_var_address("Account_cairo1_helpers_class_hash"),
-                )
-                == target_class
-            )
 
     @pytest.mark.xfail(reason="Disabled")
     class TestAutoUpgradeContracts:

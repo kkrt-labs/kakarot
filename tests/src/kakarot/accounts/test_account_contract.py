@@ -69,10 +69,6 @@ class TestAccountContract:
             SyscallHandler.mock_storage.assert_any_call(
                 address=get_storage_var_address("Account_implementation"), value=0xC1A55
             )
-            SyscallHandler.mock_storage.assert_any_call(
-                address=get_storage_var_address("Account_cairo1_helpers_class_hash"),
-                value=CAIRO1_HELPERS_CLASS_HASH,
-            )
             SyscallHandler.mock_event.assert_any_call(
                 keys=[get_selector_from_name("OwnershipTransferred")], data=[0, 0x1234]
             )
@@ -306,9 +302,6 @@ class TestAccountContract:
     class TestValidate:
         @pytest.mark.parametrize("seed", (41, 42))
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
-        @SyscallHandler.patch(
-            "Account_cairo1_helpers_class_hash", CAIRO1_HELPERS_CLASS_HASH
-        )
         def test_should_pass_all_transactions_types(self, cairo_run, seed, transaction):
             """
             Note: the seeds 41 and 42 have been manually selected after observing that some private keys
@@ -334,9 +327,6 @@ class TestAccountContract:
                 tx_data=tx_data,
             )
 
-        @SyscallHandler.patch(
-            "Account_cairo1_helpers_class_hash", CAIRO1_HELPERS_CLASS_HASH
-        )
         def test_should_pass_all_data_len(self, cairo_run, bytecode):
             transaction = {
                 "to": "0xF0109fC8DF283027b6285cc889F5aA624EaC1F55",
