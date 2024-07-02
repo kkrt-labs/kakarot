@@ -62,7 +62,7 @@ namespace KakarotPrecompiles {
 
         // Load address and cairo selector called
         // Safe to assume that the 32 bytes in input do not overflow a felt (whitelisted precompiles)
-        let starknet_address = Helpers.bytes32_to_felt(args_ptr);
+        let to_starknet_address = Helpers.bytes32_to_felt(args_ptr);
 
         let starknet_selector_ptr = args_ptr + 32;
         let starknet_selector = Helpers.bytes32_to_felt(starknet_selector_ptr);
@@ -90,7 +90,7 @@ namespace KakarotPrecompiles {
             }
 
             let (retdata_len, retdata, success) = IAccount.execute_starknet_call(
-                sender_starknet_address, starknet_address, starknet_selector, data_len, data
+                sender_starknet_address, to_starknet_address, starknet_selector, data_len, data
             );
             let (output) = alloc();
             let output_len = retdata_len * 32;
@@ -100,7 +100,7 @@ namespace KakarotPrecompiles {
 
         if (selector == LIBRARY_CALL_SOLIDITY_SELECTOR) {
             let (retdata_len, retdata) = library_call(
-                starknet_address, starknet_selector, data_len, data
+                to_starknet_address, starknet_selector, data_len, data
             );
             let (output) = alloc();
             let output_len = retdata_len * 32;

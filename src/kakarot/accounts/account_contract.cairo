@@ -313,7 +313,7 @@ func set_authorized_pre_eip155_tx{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*
 
 @external
 func execute_starknet_call{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    called_address: felt, function_selector: felt, calldata_len: felt, calldata: felt*
+    to: felt, function_selector: felt, calldata_len: felt, calldata: felt*
 ) -> (retdata_len: felt, retdata: felt*, success: felt) {
     Ownable.assert_only_owner();
     let (kakarot_address) = Ownable.owner();

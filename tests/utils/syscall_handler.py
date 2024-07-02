@@ -1,7 +1,7 @@
 import time
 from collections import OrderedDict
 from contextlib import contextmanager
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from hashlib import sha256
 from typing import Optional, Union
 from unittest import mock
@@ -131,11 +131,6 @@ def parse_state(state):
         }
         for address, account in state.items()
     }
-
-
-class InstanceMethodPlaceholder:
-    def __init__(self, method_name):
-        self.method_name = method_name
 
 
 @dataclass
@@ -434,7 +429,6 @@ class SyscallHandler:
                 response: CallContractResponse,
             }
         """
-
         function_selector = segments.memory[syscall_ptr + 2]
         if function_selector not in self.patches:
             raise ValueError(
@@ -452,9 +446,7 @@ class SyscallHandler:
             function_selector=function_selector,
             calldata=calldata,
         )
-
         retdata = self.patches.get(function_selector)(contract_address, calldata)
-
         retdata_segment = segments.add()
         segments.write_arg(retdata_segment, retdata)
         segments.write_arg(syscall_ptr + 5, [len(retdata), retdata_segment])
