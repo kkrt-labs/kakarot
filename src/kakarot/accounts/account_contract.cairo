@@ -127,7 +127,7 @@ func execute_from_outside{
     with_attr error_message("Execute from outside: multicall not supported") {
         assert call_array_len = 1;
     }
-    
+
     let (bytecode_len) = Account_bytecode_len.read();
     with_attr error_message("EOAs cannot have code") {
         assert bytecode_len = 0;
@@ -148,7 +148,7 @@ func execute_from_outside{
         signature_len,
         signature,
         tx_info.nonce,
-        tx_info.chain_id,
+        chain_id,
     );
 
     let (local response: felt*) = alloc();
