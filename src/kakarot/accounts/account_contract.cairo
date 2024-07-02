@@ -155,30 +155,6 @@ func execute_from_outside{
         chain_id,
     );
 
-    // Upgrade flow
-    let (latest_account_class, latest_helpers_class) = AccountContract.get_latest_classes();
-    tempvar syscall_ptr = syscall_ptr;
-    tempvar range_check_ptr = range_check_ptr;
-    tempvar pedersen_ptr = pedersen_ptr;
-    let syscall_ptr = cast([ap - 3], felt*);
-    let range_check_ptr = [ap - 2];
-    let pedersen_ptr = cast([ap - 1], HashBuiltin*);
-
-    let (this_class) = Account_implementation.read();
-    if (latest_account_class != this_class) {
-        Account_implementation.write(latest_account_class);
-        // Library call to new class
-        let (response_len, response) = IAccount.library_call___execute__(
-            class_hash=latest_account_class,
-            call_array_len=call_array_len,
-            call_array=call_array,
-            calldata_len=calldata_len,
-            calldata=calldata,
-        );
-        replace_class(latest_account_class);
-        return (response_len, response);
-    }
-
     let (local response: felt*) = alloc();
     let (response_len) = AccountContract.execute(
         call_array_len=call_array_len,
