@@ -357,6 +357,7 @@ namespace Kakarot {
     // @notice returns the EVM address associated to a Starknet account deployed by kakarot.
     //         Prevents cases where some Starknet account has an entrypoint get_evm_address()
     //         but isn't part of Kakarot system
+    // Also mitigates re-entrancy risk with the Cairo Interop module
     // @dev Raise if the declared corresponding evm address (retrieved with get_evm_address)
     //      does not recomputes into to the actual caller address
     func safe_get_evm_address{

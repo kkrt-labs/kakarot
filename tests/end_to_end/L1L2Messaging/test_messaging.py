@@ -96,6 +96,7 @@ def wait_for_message(sn_messaging_local):
 
 @pytest.mark.asyncio(scope="module")
 class TestL2ToL1Messages:
+    @pytest.mark.slow
     async def test_should_increment_counter_on_l1(
         self, sn_messaging_local, message_app_l1, message_app_l2, wait_for_message
     ):
@@ -113,6 +114,7 @@ class TestL2ToL1Messages:
 
 @pytest.mark.asyncio(scope="module")
 class TestL1ToL2Messages:
+    @pytest.mark.slow
     async def test_should_increment_counter_on_l2(
         self, l1_kakarot_messaging, message_app_l1, message_app_l2
     ):
@@ -125,6 +127,7 @@ class TestL1ToL2Messages:
         msg_counter_after = await message_app_l2.receivedMessagesCounter()
         assert msg_counter_after == msg_counter_before + increment_value
 
+    @pytest.mark.slow
     async def test_should_fail_unauthorized_message_sender(
         self, invoke, l1_kakarot_messaging, message_app_l1, message_app_l2
     ):

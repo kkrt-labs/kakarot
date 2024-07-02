@@ -429,6 +429,40 @@ namespace Errors {
         dw 'e';
     }
 
+    func accountNotDeployed() -> (error_len: felt, error: felt*) {
+        let (error) = get_label_location(account_not_deployed_error_message);
+        return (27, error);
+
+        account_not_deployed_error_message:
+        dw 'K';
+        dw 'a';
+        dw 'k';
+        dw 'a';
+        dw 'r';
+        dw 'o';
+        dw 't';
+        dw ':';
+        dw ' ';
+        dw 'a';
+        dw 'c';
+        dw 'c';
+        dw 'o';
+        dw 'u';
+        dw 'n';
+        dw 't';
+        dw 'N';
+        dw 'o';
+        dw 't';
+        dw 'D';
+        dw 'e';
+        dw 'p';
+        dw 'l';
+        dw 'o';
+        dw 'y';
+        dw 'e';
+        dw 'd';
+    }
+
     func notImplementedPrecompile(address: felt) -> (error_len: felt, error: felt*) {
         alloc_locals;
         let (error) = alloc();
