@@ -191,7 +191,6 @@ namespace AccountContract {
         let r = Uint256(signature[0], signature[1]);
         let s = Uint256(signature[2], signature[3]);
         let v = signature[4];
-        let (_, chain_id) = unsigned_div_rem(chain_id, 2 ** 32);
 
         // Unpack the tx data
         let packed_tx_data_len = [call_array].data_len;
