@@ -79,7 +79,7 @@ class TestCairoPrecompiles:
             self, get_contract, cairo_counter_caller
         ):
             eoa = await get_eoa()
-            await cairo_counter_caller.incrementCairoCounter(caller_eoa=eoa)
+            await cairo_counter_caller.incrementCairoCounter()
             last_caller_address = await cairo_counter_caller.getLastCaller(
                 caller_eoa=eoa
             )
