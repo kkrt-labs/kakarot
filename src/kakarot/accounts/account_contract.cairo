@@ -21,7 +21,6 @@ from kakarot.accounts.library import (
     AccountContract,
     Internals as AccountInternals,
     Account_implementation,
-    Account_cairo1_helpers_class_hash,
     Account_authorized_message_hashes,
     Account_bytecode_len,
     Account_evm_address,
@@ -221,17 +220,10 @@ func __execute__{
 
     // Upgrade flow
     let (latest_account_class, latest_helpers_class) = AccountContract.get_latest_classes();
-    let (this_helpers_class) = Account_cairo1_helpers_class_hash.read();
-    if (latest_helpers_class != this_helpers_class) {
-        Account_cairo1_helpers_class_hash.write(latest_helpers_class);
-        tempvar syscall_ptr = syscall_ptr;
-        tempvar range_check_ptr = range_check_ptr;
-        tempvar pedersen_ptr = pedersen_ptr;
-    } else {
-        tempvar syscall_ptr = syscall_ptr;
-        tempvar range_check_ptr = range_check_ptr;
-        tempvar pedersen_ptr = pedersen_ptr;
-    }
+    let (this_helpers_class) = IKakarot.get_cairo1_helpers_class_hash();
+    tempvar syscall_ptr = syscall_ptr;
+    tempvar range_check_ptr = range_check_ptr;
+    tempvar pedersen_ptr = pedersen_ptr;
     let syscall_ptr = cast([ap - 3], felt*);
     let range_check_ptr = [ap - 2];
     let pedersen_ptr = cast([ap - 1], HashBuiltin*);
