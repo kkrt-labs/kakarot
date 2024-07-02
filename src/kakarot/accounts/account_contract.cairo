@@ -124,19 +124,19 @@ func execute_from_outside{
     with_attr error_message("Execute from outside: too late") {
         assert too_late = FALSE;
     }
-
+    with_attr error_message("Execute from outside: multicall not supported") {
+        assert call_array_len = 1;
+    }
+    
     let (bytecode_len) = Account_bytecode_len.read();
     with_attr error_message("EOAs cannot have code") {
         assert bytecode_len = 0;
-    }
-    with_attr error_message("Execute from outside: multicall not supported") {
-        assert call_array_len = 1;
     }
 
     let (tx_info) = get_tx_info();
     let (_, chain_id) = unsigned_div_rem(tx_info.chain_id, 2 ** 32);
     let version = tx_info.version;
-    with_attr error_message("Execute from outside: deprecated tx version: {version}") {
+    with_attr error_message("Deprecated tx version: {version}") {
         assert_le(1, version);
     }
 
