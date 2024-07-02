@@ -16,6 +16,9 @@ lint:
     - name: cairo
       extensions:
         - cairo
+    - name: solidity
+      extensions:
+        - sol
   definitions:
     - name: cairo
       files: [cairo]
@@ -26,10 +29,20 @@ lint:
           run: cairo-format ${target}
           read_output_from: stdout
           run_linter_from: workspace
+    - name: solidity
+      files: [solidity]
+      commands:
+        - output: rewrite
+          success_codes: [0, 1]
+          formatter: true
+          run: forge fmt ${target} --check -r
+          read_output_from: stdout
+          run_linter_from: workspace
   enabled:
     - osv-scanner@1.6.2
     - trivy@0.49.0
     - cairo@SYSTEM
+    - solidity@SYSTEM
     - actionlint@1.6.26
     - black@24.1.1
     - checkov@3.2.5

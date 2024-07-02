@@ -27,5 +27,8 @@ jobs:
           cache: pip
       - run: pip install cairo-lang
 
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+
       - name: Trunk Check
         uses: trunk-io/trunk-action@v1
