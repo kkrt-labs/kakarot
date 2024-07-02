@@ -182,12 +182,6 @@ namespace AccountContract {
     ) -> () {
         alloc_locals;
 
-        // Validates that this account doesn't have code.
-        let (bytecode_len) = Account_bytecode_len.read();
-        with_attr error_message("EOAs cannot have code") {
-            assert bytecode_len = 0;
-        }
-
         with_attr error_message("Incorrect signature length") {
             assert signature_len = 5;
         }
