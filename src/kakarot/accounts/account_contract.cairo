@@ -155,6 +155,31 @@ func execute_from_outside{
         chain_id,
     );
 
+    // Upgrade flow
+    let (latest_account_class, latest_helpers_class) = AccountContract.get_latest_classes();
+    let (this_helpers_class) = IKakarot.get_cairo1_helpers_class_hash();
+    tempvar syscall_ptr = syscall_ptr;
+    tempvar range_check_ptr = range_check_ptr;
+    tempvar pedersen_ptr = pedersen_ptr;
+    let syscall_ptr = cast([ap - 3], felt*);
+    let range_check_ptr = [ap - 2];
+    let pedersen_ptr = cast([ap - 1], HashBuiltin*);
+
+    let (this_class) = Account_implementation.read();
+    if (latest_account_class != this_class) {
+        Account_implementation.write(latest_account_class);
+        // Library call to new class
+        let (response_len, response) = IAccount.library_call___execute__(
+            class_hash=latest_account_class,
+            call_array_len=call_array_len,
+            call_array=call_array,
+            calldata_len=calldata_len,
+            calldata=calldata,
+        );
+        replace_class(latest_account_class);
+        return (response_len, response);
+    }
+
     let (local response: felt*) = alloc();
     let (response_len) = AccountContract.execute(
         call_array_len=call_array_len,
@@ -213,61 +238,11 @@ func __execute__{
 }(call_array_len: felt, call_array: CallArray*, calldata_len: felt, calldata: felt*) -> (
     response_len: felt, response: felt*
 ) {
-    alloc_locals;
     with_attr error_message("EOA: __execute__ not supported") {
         assert 1 = 0;
     }
-
-    // Upgrade flow
-    let (latest_account_class, latest_helpers_class) = AccountContract.get_latest_classes();
-    let (this_helpers_class) = IKakarot.get_cairo1_helpers_class_hash();
-    tempvar syscall_ptr = syscall_ptr;
-    tempvar range_check_ptr = range_check_ptr;
-    tempvar pedersen_ptr = pedersen_ptr;
-    let syscall_ptr = cast([ap - 3], felt*);
-    let range_check_ptr = [ap - 2];
-    let pedersen_ptr = cast([ap - 1], HashBuiltin*);
-
-    let (this_class) = Account_implementation.read();
-    if (latest_account_class != this_class) {
-        Account_implementation.write(latest_account_class);
-        // Library call to new class
-        let (response_len, response) = IAccount.library_call___execute__(
-            class_hash=latest_account_class,
-            call_array_len=call_array_len,
-            call_array=call_array,
-            calldata_len=calldata_len,
-            calldata=calldata,
-        );
-        replace_class(latest_account_class);
-        return (response_len, response);
-    }
-
-    // Execution flow
-    let (tx_info) = get_tx_info();
-    let version = tx_info.version;
-    with_attr error_message("EOA: deprecated tx version: {version}") {
-        assert_le(1, version);
-    }
-
-    let (caller) = get_caller_address();
-    with_attr error_message("EOA: reentrant call") {
-        assert caller = 0;
-    }
-
-    with_attr error_message("EOA: multicall not supported") {
-        assert call_array_len = 1;
-    }
-
     let (local response: felt*) = alloc();
-    let (response_len) = AccountContract.execute(
-        call_array_len=call_array_len,
-        call_array=call_array,
-        calldata_len=calldata_len,
-        calldata=calldata,
-        response=response,
-    );
-    return (response_len, response);
+    return (0, response);
 }
 
 // @notice Store the bytecode of the contract.
