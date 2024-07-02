@@ -160,38 +160,49 @@ namespace AccountContract {
 
     // EOA functions
 
-    // @notice Validate the signature of every call in the call array.
-    // @dev Recursively validates if tx is signed and valid for each call -> see utils/eth_transaction.cairo
+    // @notice Validate the signature of the call in the call array.
+    // @dev Validates if tx is signed and valid for each call -> see utils/eth_transaction.cairo
     // @param call_array_len The length of the call array.
     // @param call_array The call array.
     // @param calldata_len The length of the calldata.
     // @param calldata The calldata.
+    // @param signature_len The length of tx signature
+    // @param signature The tx signature.
+    // @param nonce The nonce of the signature
+    // @param chain_id The chain_id
     func validate{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         bitwise_ptr: BitwiseBuiltin*,
         range_check_ptr,
-    }(call_array_len: felt, call_array: CallArray*, calldata_len: felt, calldata: felt*) -> () {
+    }(
+        call_array_len: felt,
+        call_array: CallArray*,
+        calldata_len: felt,
+        calldata: felt*,
+        signature_len: felt,
+        signature: felt*,
+        nonce: felt,
+        chain_id: felt,
+    ) -> () {
         alloc_locals;
-        if (call_array_len == 0) {
-            // Validates that this account doesn't have code. Check only once at the end of the recursion.
-            let (bytecode_len) = Account_bytecode_len.read();
-            with_attr error_message("EOAs cannot have code") {
-                assert bytecode_len = 0;
-            }
 
-            return ();
+        // Validates that this account doesn't have code.
+        let (bytecode_len) = Account_bytecode_len.read();
+        with_attr error_message("EOAs cannot have code") {
+            assert bytecode_len = 0;
         }
 
+        with_attr error_message("Incorrect signature length") {
+            assert signature_len = 5;
+        }
         let (address) = Account_evm_address.read();
-        let (tx_info) = get_tx_info();
 
         // Assert signature field is of length 5: r_low, r_high, s_low, s_high, v
-        assert tx_info.signature_len = 5;
-        let r = Uint256(tx_info.signature[0], tx_info.signature[1]);
-        let s = Uint256(tx_info.signature[2], tx_info.signature[3]);
-        let v = tx_info.signature[4];
-        let (_, chain_id) = unsigned_div_rem(tx_info.chain_id, 2 ** 32);
+        let r = Uint256(signature[0], signature[1]);
+        let s = Uint256(signature[2], signature[3]);
+        let v = signature[4];
+        let (_, chain_id) = unsigned_div_rem(chain_id, 2 ** 32);
 
         // Unpack the tx data
         let packed_tx_data_len = [call_array].data_len;
@@ -202,14 +213,7 @@ namespace AccountContract {
             packed_tx_data_len - 1, packed_tx_data + 1, tx_data_len
         );
 
-        Internals.validate(address, tx_info.nonce, chain_id, r, s, v, tx_data_len, tx_data);
-
-        validate(
-            call_array_len=call_array_len - 1,
-            call_array=call_array + CallArray.SIZE,
-            calldata_len=calldata_len,
-            calldata=calldata,
-        );
+        Internals.validate(address, nonce, chain_id, r, s, v, tx_data_len, tx_data);
 
         return ();
     }
