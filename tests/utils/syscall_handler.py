@@ -1,7 +1,7 @@
 import time
 from collections import OrderedDict
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from hashlib import sha256
 from typing import Optional, Union
 from unittest import mock
@@ -133,6 +133,11 @@ def parse_state(state):
     }
 
 
+class InstanceMethodPlaceholder:
+    def __init__(self, method_name):
+        self.method_name = method_name
+
+
 @dataclass
 class SyscallHandler:
     """
@@ -178,10 +183,29 @@ class SyscallHandler:
             ACCOUNT_CLASS_IMPLEMENTATION
         ],
         get_selector_from_name("set_implementation"): lambda addr, data: [],
-        get_selector_from_name(
-            "execute_starknet_call"
-        ): lambda addr, data: [],  # Registers the call in the patches object, but will return the data of the internal call.
     }
+
+    def __post_init__(self):
+        self.patches[get_selector_from_name("execute_starknet_call")] = (
+            lambda addr, data: self.execute_starknet_call(addr, data)
+        )
+
+    def execute_starknet_call(self, account_address, calldata):
+        contract_address = calldata[0]
+        function_selector = calldata[1]
+        calldata = calldata[2:]
+
+        if function_selector not in self.patches:
+            raise ValueError(
+                f"Function selector 0x{function_selector:x} not found in patches."
+            )
+        self.mock_call(
+            contract_address=contract_address,
+            function_selector=function_selector,
+            calldata=calldata,
+        )
+        inner_retdata = self.patches.get(function_selector)(contract_address, calldata)
+        return [len(inner_retdata), *inner_retdata, 1]
 
     def get_contract_address(self, segments, syscall_ptr):
         """
@@ -429,27 +453,7 @@ class SyscallHandler:
             calldata=calldata,
         )
 
-        # "execute_starknet_call" is forwarding the actual call to an account contract.
-        if function_selector == get_selector_from_name("execute_starknet_call"):
-            contract_address = calldata[0]
-            function_selector = calldata[1]
-            calldata = calldata[2:]
-
-            if function_selector not in self.patches:
-                raise ValueError(
-                    f"Function selector 0x{function_selector:x} not found in patches."
-                )
-            self.mock_call(
-                contract_address=contract_address,
-                function_selector=function_selector,
-                calldata=calldata,
-            )
-            inner_retdata = self.patches.get(function_selector)(
-                contract_address, calldata
-            )
-            retdata = [len(inner_retdata), *inner_retdata, 1]
-        else:
-            retdata = self.patches.get(function_selector)(contract_address, calldata)
+        retdata = self.patches.get(function_selector)(contract_address, calldata)
 
         retdata_segment = segments.add()
         segments.write_arg(retdata_segment, retdata)
