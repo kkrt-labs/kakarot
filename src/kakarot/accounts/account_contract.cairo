@@ -236,7 +236,7 @@ func __execute__{
     with_attr error_message("EOA: __execute__ not supported") {
         assert 1 = 0;
     }
-    let (local response: felt*) = alloc();
+    let (response) = alloc();
     return (0, response);
 }
 
