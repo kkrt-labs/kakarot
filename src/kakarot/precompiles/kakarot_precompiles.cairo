@@ -79,8 +79,8 @@ namespace KakarotPrecompiles {
         let (data_len, data) = Helpers.load_256_bits_array(data_bytes_len, data_ptr);
 
         if (selector == CALL_CONTRACT_SOLIDITY_SELECTOR) {
-            let caller_starknet_address = Account.get_registered_starknet_address(sender_context);
-            let is_not_deployed = Helpers.is_zero(caller_starknet_address);
+            let sender_starknet_address = Account.get_registered_starknet_address(sender_context);
+            let is_not_deployed = Helpers.is_zero(sender_starknet_address);
 
             if (is_not_deployed != FALSE) {
                 let (revert_reason_len, revert_reason) = Errors.accountNotDeployed();
@@ -90,7 +90,7 @@ namespace KakarotPrecompiles {
             }
 
             let (retdata_len, retdata, success) = IAccount.execute_starknet_call(
-                caller_starknet_address, starknet_address, starknet_selector, data_len, data
+                sender_starknet_address, starknet_address, starknet_selector, data_len, data
             );
             let (output) = alloc();
             let output_len = retdata_len * 32;

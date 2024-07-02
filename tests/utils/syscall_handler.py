@@ -411,23 +411,6 @@ class SyscallHandler:
             }
         """
 
-        def _handle_execute_starknet_call(
-            contract_address, function_selector, calldata
-        ):
-
-            if function_selector not in self.patches:
-                raise ValueError(
-                    f"Function selector 0x{function_selector:x} not found in patches."
-                )
-            self.mock_call(
-                contract_address=contract_address,
-                function_selector=function_selector,
-                calldata=calldata,
-            )
-
-            retdata = self.patches[function_selector](contract_address, calldata)
-            return [len(retdata), *retdata]
-
         function_selector = segments.memory[syscall_ptr + 2]
         if function_selector not in self.patches:
             raise ValueError(
@@ -448,11 +431,23 @@ class SyscallHandler:
 
         # "execute_starknet_call" is forwarding the actual call to an account contract.
         if function_selector == get_selector_from_name("execute_starknet_call"):
-            retdata = _handle_execute_starknet_call(
-                calldata[0], calldata[1], calldata[2:]
+            contract_address = calldata[0]
+            function_selector = calldata[1]
+            calldata = calldata[2:]
+
+            if function_selector not in self.patches:
+                raise ValueError(
+                    f"Function selector 0x{function_selector:x} not found in patches."
+                )
+            self.mock_call(
+                contract_address=contract_address,
+                function_selector=function_selector,
+                calldata=calldata,
             )
-            # append [1] for success
-            retdata.append(1)
+            inner_retdata = self.patches.get(function_selector)(
+                contract_address, calldata
+            )
+            retdata = [len(inner_retdata), *inner_retdata, 1]
         else:
             retdata = self.patches.get(function_selector)(contract_address, calldata)
 
