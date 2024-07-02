@@ -28,6 +28,7 @@ from kakarot.accounts.library import (
 from kakarot.accounts.model import CallArray, OutsideExecution
 from kakarot.interfaces.interfaces import IKakarot, IAccount
 from utils.utils import Helpers
+from utils.eth_transaction import EthTransaction
 
 // @title EVM smart contract account representation.
 @constructor
@@ -141,25 +142,22 @@ func execute_from_outside{
         assert_le(1, version);
     }
 
-    AccountContract.validate(
-        call_array_len,
-        call_array,
-        calldata_len,
-        calldata,
-        signature_len,
-        signature,
-        tx_info.nonce,
-        chain_id,
+    // Unpack the tx data
+    let packed_tx_data_len = [call_array].data_len;
+    let packed_tx_data = calldata + [call_array].data_offset;
+
+    let tx_data_len = [packed_tx_data];
+    let (tx_data) = Helpers.load_packed_bytes(
+        packed_tx_data_len - 1, packed_tx_data + 1, tx_data_len
     );
 
-    let (local response: felt*) = alloc();
-    let (response_len) = AccountContract.execute(
-        call_array_len=call_array_len,
-        call_array=call_array,
-        calldata_len=calldata_len,
-        calldata=calldata,
-        response=response,
+    let tx = EthTransaction.decode(tx_data_len, tx_data);
+
+    // tx_data_len and tx_data are necessary for computing msg_hash for signature verification
+    AccountContract.validate(
+        tx, tx_data_len, tx_data, signature_len, signature, outside_execution.nonce, chain_id
     );
+    let (response_len, response) = AccountContract.execute(tx);
     return (response_len, response);
 }
 
