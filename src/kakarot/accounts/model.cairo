@@ -12,3 +12,10 @@ struct CallArray {
     data_offset: felt,
     data_len: felt,
 }
+
+struct OutsideExecution {
+    caller: felt,
+    nonce: felt,
+    execute_after: felt,
+    execute_before: felt,
+}
