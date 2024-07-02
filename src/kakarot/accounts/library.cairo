@@ -182,12 +182,12 @@ namespace AccountContract {
     ) -> () {
         alloc_locals;
 
-        with_attr error_message("Incorrect signature length") {
-            assert signature_len = 5;
-        }
         let (address) = Account_evm_address.read();
 
         // Assert signature field is of length 5: r_low, r_high, s_low, s_high, v
+        with_attr error_message("Incorrect signature length") {
+            assert signature_len = 5;
+        }
         let r = Uint256(signature[0], signature[1]);
         let s = Uint256(signature[2], signature[3]);
         let v = signature[4];
