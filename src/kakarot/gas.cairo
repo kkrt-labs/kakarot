@@ -182,4 +182,20 @@ namespace Gas {
         }
         return max_allowed.low;
     }
+
+    // @notice Compute the access list cost.
+    // @param access_list_len The length of the access list
+    // @param access_list The access list
+    func compute_access_list_gas(access_list_len: felt, access_list: felt*) -> felt {
+        if (access_list_len == 0) {
+            return 0;
+        }
+        let storage_keys_len = [access_list + 1];
+        tempvar item_len = 2 + storage_keys_len * Uint256.SIZE;
+        let cum_gas_cost = compute_access_list_gas(
+            access_list_len - item_len, access_list + item_len
+        );
+        return cum_gas_cost + Gas.TX_ACCESS_LIST_ADDRESS_COST + storage_keys_len *
+            Gas.TX_ACCESS_LIST_STORAGE_KEY_COST;
+    }
 }
