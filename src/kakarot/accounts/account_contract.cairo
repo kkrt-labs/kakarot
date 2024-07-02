@@ -154,7 +154,6 @@ func execute_from_outside{
 
     // Upgrade flow
     let (latest_account_class, latest_helpers_class) = AccountContract.get_latest_classes();
-    let (this_helpers_class) = IKakarot.get_cairo1_helpers_class_hash();
     tempvar syscall_ptr = syscall_ptr;
     tempvar range_check_ptr = range_check_ptr;
     tempvar pedersen_ptr = pedersen_ptr;
