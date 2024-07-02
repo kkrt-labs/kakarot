@@ -62,10 +62,6 @@ func Account_evm_address() -> (evm_address: felt) {
 }
 
 @storage_var
-func Account_cairo1_helpers_class_hash() -> (res: felt) {
-}
-
-@storage_var
 func Account_valid_jumpdests() -> (is_valid: felt) {
 }
 
@@ -113,10 +109,6 @@ namespace AccountContract {
         let (native_token_address) = IKakarot.get_native_token(kakarot_address);
         let infinite = Uint256(Constants.UINT128_MAX, Constants.UINT128_MAX);
         IERC20.approve(native_token_address, kakarot_address, infinite);
-
-        // Write Cairo1Helpers class to storage
-        let (cairo1_helpers_class_hash) = IKakarot.get_cairo1_helpers_class_hash(kakarot_address);
-        Account_cairo1_helpers_class_hash.write(cairo1_helpers_class_hash);
 
         // Register the account in the Kakarot mapping
         IKakarot.register_account(kakarot_address, evm_address);
@@ -252,7 +244,7 @@ namespace AccountContract {
             words, tx_data_len, tx_data
         );
 
-        let (helpers_class) = Account_cairo1_helpers_class_hash.read();
+        let (helpers_class) = IKakarot.get_cairo1_helpers_class_hash();
         let (msg_hash) = ICairo1Helpers.library_call_keccak(
             class_hash=helpers_class,
             words_len=words_len,
