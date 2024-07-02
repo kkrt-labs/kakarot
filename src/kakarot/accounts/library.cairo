@@ -30,6 +30,7 @@ from kakarot.interfaces.interfaces import IERC20, IKakarot, ICairo1Helpers
 from kakarot.accounts.model import CallArray
 from kakarot.errors import Errors
 from kakarot.constants import Constants
+from kakarot.model import model
 from utils.eth_transaction import EthTransaction
 from utils.uint256 import uint256_add
 from utils.bytes import bytes_to_bytes8_little_endian
@@ -171,13 +172,12 @@ namespace AccountContract {
         bitwise_ptr: BitwiseBuiltin*,
         range_check_ptr,
     }(
-        call_array_len: felt,
-        call_array: CallArray*,
-        calldata_len: felt,
-        calldata: felt*,
+        tx: model.EthTransaction*,
+        tx_data_len: felt,
+        tx_data: felt*,
         signature_len: felt,
         signature: felt*,
-        nonce: felt,
+        outside_nonce: felt,
         chain_id: felt,
     ) -> () {
         alloc_locals;
@@ -192,18 +192,8 @@ namespace AccountContract {
         let s = Uint256(signature[2], signature[3]);
         let v = signature[4];
 
-        // Unpack the tx data
-        let packed_tx_data_len = [call_array].data_len;
-        let packed_tx_data = calldata + [call_array].data_offset;
-
-        let tx_data_len = [packed_tx_data];
-        let (tx_data) = Helpers.load_packed_bytes(
-            packed_tx_data_len - 1, packed_tx_data + 1, tx_data_len
-        );
-
-        let tx = EthTransaction.decode(tx_data_len, tx_data);
         with_attr error_message("Invalid nonce") {
-            assert tx.signer_nonce = nonce;
+            assert tx.signer_nonce = outside_nonce;
         }
 
         // Note: here, the validate process assumes an ECDSA signature, and r, s, v field
@@ -284,29 +274,8 @@ namespace AccountContract {
         pedersen_ptr: HashBuiltin*,
         bitwise_ptr: BitwiseBuiltin*,
         range_check_ptr,
-    }(
-        call_array_len: felt,
-        call_array: CallArray*,
-        calldata_len: felt,
-        calldata: felt*,
-        response: felt*,
-    ) -> (response_len: felt) {
+    }(tx: model.EthTransaction*) -> (response_len: felt, response: felt*) {
         alloc_locals;
-        if (call_array_len == 0) {
-            return (response_len=0);
-        }
-
-        // Unpack the tx data
-        let packed_tx_data_len = [call_array].data_len;
-        let packed_tx_data = calldata + [call_array].data_offset;
-
-        let tx_data_len = [packed_tx_data];
-        let (tx_data) = Helpers.load_packed_bytes(
-            packed_tx_data_len - 1, packed_tx_data + 1, tx_data_len
-        );
-
-        let tx = EthTransaction.decode(tx_data_len, tx_data);
-
         // No matter the status of the execution in EVM terms (success - failure - rejected), the nonce of the
         // transaction sender must be incremented, as the protocol nonce is.  While we use the protocol nonce for the
         // transaction validation, we don't make the distinction between CAs and EOAs in their
@@ -393,6 +362,7 @@ namespace AccountContract {
         let success = [ap - 2];
         let gas_used = [ap - 1];
 
+        let (response) = alloc();
         memcpy(response, return_data, return_data_len);
 
         // See Argent account
@@ -401,15 +371,7 @@ namespace AccountContract {
             response_len=return_data_len, response=return_data, success=success, gas_used=gas_used
         );
 
-        let (response_len) = execute(
-            call_array_len - 1,
-            call_array + CallArray.SIZE,
-            calldata_len,
-            calldata,
-            response + return_data_len,
-        );
-
-        return (response_len=return_data_len + response_len);
+        return (response_len=return_data_len, response=response);
     }
 
     // Contract Account functions
