@@ -317,12 +317,10 @@ func execute_starknet_call{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range
 ) -> (retdata_len: felt, retdata: felt*, success: felt) {
     Ownable.assert_only_owner();
     let (kakarot_address) = Ownable.owner();
-    if (kakarot_address == called_address) {
+    if (kakarot_address == to) {
         let (retdata) = alloc();
         return (0, retdata, FALSE);
     }
-    let (retdata_len, retdata) = call_contract(
-        called_address, function_selector, calldata_len, calldata
-    );
+    let (retdata_len, retdata) = call_contract(to, function_selector, calldata_len, calldata);
     return (retdata_len, retdata, TRUE);
 }

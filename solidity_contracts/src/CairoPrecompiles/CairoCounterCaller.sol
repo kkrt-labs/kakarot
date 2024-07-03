@@ -16,10 +16,9 @@ contract CairoCounterCaller {
     uint256 constant FUNCTION_SELECTOR_SET_COUNTER = uint256(keccak256("set_counter")) % 2 ** 250;
 
     /// @dev The cairo function selector to call - `get`
-    uint256 constant FUNCTION_SELECTOR_GET = uint256(keccak256("get")) % 2**250;
+    uint256 constant FUNCTION_SELECTOR_GET = uint256(keccak256("get")) % 2 ** 250;
 
-    uint256 constant FUNCTION_SELECTOR_GET_LAST_CALLER = uint256(keccak256("get_last_caller")) % 2**250;
-
+    uint256 constant FUNCTION_SELECTOR_GET_LAST_CALLER = uint256(keccak256("get_last_caller")) % 2 ** 250;
 
     constructor(uint256 cairoContractAddress) {
         cairoCounter = cairoContractAddress;
