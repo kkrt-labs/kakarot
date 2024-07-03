@@ -280,6 +280,29 @@ namespace AccountContract {
             assert is_gas_limit_enough = TRUE;
         }
 
+        let (kakarot_address) = Ownable_owner.read();
+        let (block_gas_limit) = IKakarot.get_block_gas_limit(kakarot_address);
+        let tx_gas_fits_in_block = is_le(tx.gas_limit, block_gas_limit);
+
+        let (base_fee) = IKakarot.get_base_fee(kakarot_address);
+        let (native_token_address) = IKakarot.get_native_token(kakarot_address);
+        let (contract_address) = get_contract_address();
+        let (balance) = IERC20.balanceOf(native_token_address, contract_address);
+
+        // ensure that the user was willing to at least pay the base fee
+        let enough_fee = is_le(base_fee, tx.max_fee_per_gas);
+        let max_fee_greater_priority_fee = is_le(tx.max_priority_fee_per_gas, tx.max_fee_per_gas);
+        let max_gas_fee = tx.gas_limit * tx.max_fee_per_gas;
+        let (max_fee_high, max_fee_low) = split_felt(max_gas_fee);
+        let (tx_cost, carry) = uint256_add(tx.amount, Uint256(low=max_fee_low, high=max_fee_high));
+        assert carry = 0;
+        let (is_balance_enough) = uint256_le(tx_cost, balance);
+
+        with_attr error_message("Not enough gas") {
+            assert enough_fee * max_fee_greater_priority_fee * is_balance_enough *
+                tx_gas_fits_in_block = 0;
+        }
+
         return (tx);
     }
 
@@ -317,71 +340,29 @@ namespace AccountContract {
         let (tx_info) = get_tx_info();
         Account_nonce.write(tx_info.nonce + 1);
 
+        // priority fee is capped because the base fee is filled first
         let (kakarot_address) = Ownable_owner.read();
-        let (block_gas_limit) = IKakarot.get_block_gas_limit(kakarot_address);
-        let tx_gas_fits_in_block = is_le(tx.gas_limit, block_gas_limit);
-
         let (base_fee) = IKakarot.get_base_fee(kakarot_address);
-        let (native_token_address) = IKakarot.get_native_token(kakarot_address);
-        let (contract_address) = get_contract_address();
-        let (balance) = IERC20.balanceOf(native_token_address, contract_address);
+        let possible_priority_fee = tx.max_fee_per_gas - base_fee;
+        let priority_fee_is_max_priority_fee = is_le(
+            tx.max_priority_fee_per_gas, possible_priority_fee
+        );
+        let priority_fee_per_gas = priority_fee_is_max_priority_fee * tx.max_priority_fee_per_gas +
+            (1 - priority_fee_is_max_priority_fee) * possible_priority_fee;
+        // signer pays both the priority fee and the base fee
+        let effective_gas_price = priority_fee_per_gas + base_fee;
 
-        // ensure that the user was willing to at least pay the base fee
-        let enough_fee = is_le(base_fee, tx.max_fee_per_gas);
-        let max_fee_greater_priority_fee = is_le(tx.max_priority_fee_per_gas, tx.max_fee_per_gas);
-        let max_gas_fee = tx.gas_limit * tx.max_fee_per_gas;
-        let (max_fee_high, max_fee_low) = split_felt(max_gas_fee);
-        let (tx_cost, carry) = uint256_add(tx.amount, Uint256(low=max_fee_low, high=max_fee_high));
-        assert carry = 0;
-        let (is_balance_enough) = uint256_le(tx_cost, balance);
-
-        if (enough_fee * max_fee_greater_priority_fee * is_balance_enough * tx_gas_fits_in_block == 0) {
-            let (return_data_len, return_data) = Errors.eth_validation_failed();
-            tempvar range_check_ptr = range_check_ptr;
-            tempvar syscall_ptr = syscall_ptr;
-            tempvar pedersen_ptr = pedersen_ptr;
-            tempvar return_data_len = return_data_len;
-            tempvar return_data = return_data;
-            tempvar success = FALSE;
-            tempvar gas_used = 0;
-        } else {
-            // priority fee is capped because the base fee is filled first
-            let possible_priority_fee = tx.max_fee_per_gas - base_fee;
-            let priority_fee_is_max_priority_fee = is_le(
-                tx.max_priority_fee_per_gas, possible_priority_fee
-            );
-            let priority_fee_per_gas = priority_fee_is_max_priority_fee *
-                tx.max_priority_fee_per_gas + (1 - priority_fee_is_max_priority_fee) *
-                possible_priority_fee;
-            // signer pays both the priority fee and the base fee
-            let effective_gas_price = priority_fee_per_gas + base_fee;
-
-            let (return_data_len, return_data, success, gas_used) = IKakarot.eth_send_transaction(
-                contract_address=kakarot_address,
-                to=tx.destination,
-                gas_limit=tx.gas_limit,
-                gas_price=effective_gas_price,
-                value=tx.amount,
-                data_len=tx.payload_len,
-                data=tx.payload,
-                access_list_len=tx.access_list_len,
-                access_list=tx.access_list,
-            );
-            tempvar range_check_ptr = range_check_ptr;
-            tempvar syscall_ptr = syscall_ptr;
-            tempvar pedersen_ptr = pedersen_ptr;
-            tempvar return_data_len = return_data_len;
-            tempvar return_data = return_data;
-            tempvar success = success;
-            tempvar gas_used = gas_used;
-        }
-        let range_check_ptr = [ap - 7];
-        let syscall_ptr = cast([ap - 6], felt*);
-        let pedersen_ptr = cast([ap - 5], HashBuiltin*);
-        let return_data_len = [ap - 4];
-        let return_data = cast([ap - 3], felt*);
-        let success = [ap - 2];
-        let gas_used = [ap - 1];
+        let (return_data_len, return_data, success, gas_used) = IKakarot.eth_send_transaction(
+            contract_address=kakarot_address,
+            to=tx.destination,
+            gas_limit=tx.gas_limit,
+            gas_price=effective_gas_price,
+            value=tx.amount,
+            data_len=tx.payload_len,
+            data=tx.payload,
+            access_list_len=tx.access_list_len,
+            access_list=tx.access_list,
+        );
 
         // See Argent account
         // https://github.com/argentlabs/argent-contracts-starknet/blob/c6d3ee5e05f0f4b8a5c707b4094446c3bc822427/contracts/account/ArgentAccount.cairo#L132
