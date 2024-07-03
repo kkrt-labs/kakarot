@@ -383,16 +383,13 @@ namespace AccountContract {
         let success = [ap - 2];
         let gas_used = [ap - 1];
 
-        let (response) = alloc();
-        memcpy(response, return_data, return_data_len);
-
         // See Argent account
         // https://github.com/argentlabs/argent-contracts-starknet/blob/c6d3ee5e05f0f4b8a5c707b4094446c3bc822427/contracts/account/ArgentAccount.cairo#L132
         transaction_executed.emit(
             response_len=return_data_len, response=return_data, success=success, gas_used=gas_used
         );
 
-        return (response_len=return_data_len, response=response);
+        return (response_len=return_data_len, response=return_data);
     }
 
     // Contract Account functions
