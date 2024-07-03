@@ -57,11 +57,11 @@ namespace Precompiles {
 
     // @notice Executes associated function of precompiled evm_address.
     // @dev This function uses an internal jump table to execute the corresponding precompile impmentation.
-    // @param evm_address The precompile evm_address.
+    // @param precompile_address The precompile evm_address.
     // @param input_len The length of the input array.
     // @param input The input array.
-    // @param caller_address The address of the contract that calls the precompile.
-    // @param sender_context The address of the sender in the context of the caller contract.
+    // @param caller_code_address The address of the code of the contract that calls the precompile.
+    // @param caller_address The address of the caller of the precompile. Delegatecall rules applies.
     // @return output_len The output length.
     // @return output The output array.
     // @return gas_used The gas usage of precompile.
@@ -72,21 +72,25 @@ namespace Precompiles {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(
-        evm_address: felt, input_len: felt, input: felt*, caller_address: felt, sender_context: felt
+        precompile_address: felt,
+        input_len: felt,
+        input: felt*,
+        caller_code_address: felt,
+        caller_address: felt,
     ) -> (output_len: felt, output: felt*, gas_used: felt, reverted: felt) {
-        let is_eth_precompile = is_le(evm_address, LAST_ETHEREUM_PRECOMPILE_ADDRESS);
+        let is_eth_precompile = is_le(precompile_address, LAST_ETHEREUM_PRECOMPILE_ADDRESS);
         tempvar syscall_ptr = syscall_ptr;
         tempvar pedersen_ptr = pedersen_ptr;
         tempvar range_check_ptr = range_check_ptr;
         jmp eth_precompile if is_eth_precompile != 0;
 
-        let is_rollup_precompile_ = is_rollup_precompile(evm_address);
+        let is_rollup_precompile_ = is_rollup_precompile(precompile_address);
         tempvar syscall_ptr = syscall_ptr;
         tempvar pedersen_ptr = pedersen_ptr;
         tempvar range_check_ptr = range_check_ptr;
         jmp rollup_precompile if is_rollup_precompile_ != 0;
 
-        let is_kakarot_precompile_ = is_kakarot_precompile(evm_address);
+        let is_kakarot_precompile_ = is_kakarot_precompile(precompile_address);
         tempvar syscall_ptr = syscall_ptr;
         tempvar pedersen_ptr = pedersen_ptr;
         tempvar range_check_ptr = range_check_ptr;
@@ -94,12 +98,12 @@ namespace Precompiles {
         jmp unauthorized_call;
 
         eth_precompile:
-        tempvar index = evm_address;
+        tempvar index = precompile_address;
         jmp call_precompile;
 
         rollup_precompile:
         tempvar index = (LAST_ETHEREUM_PRECOMPILE_ADDRESS + 1) + (
-            evm_address - FIRST_ROLLUP_PRECOMPILE_ADDRESS
+            precompile_address - FIRST_ROLLUP_PRECOMPILE_ADDRESS
         );
         jmp call_precompile;
 
@@ -122,11 +126,11 @@ namespace Precompiles {
         [ap] = pedersen_ptr, ap++;
         [ap] = range_check_ptr, ap++;
         [ap] = bitwise_ptr, ap++;
-        [ap] = evm_address, ap++;
+        [ap] = precompile_address, ap++;
         [ap] = input_len, ap++;
         [ap] = input, ap++;
 
-        // call precompile evm_address
+        // call precompile precompile_address
         jmp rel offset;
         call unknown_precompile;  // 0x0
         ret;
@@ -156,15 +160,17 @@ namespace Precompiles {
         ret;
 
         kakarot_precompile:
-        let is_cairo_module = Helpers.is_zero(FIRST_KAKAROT_PRECOMPILE_ADDRESS - evm_address);
-        let is_whitelisted = KakarotPrecompiles.is_caller_whitelisted(caller_address);
+        let is_cairo_module = Helpers.is_zero(
+            FIRST_KAKAROT_PRECOMPILE_ADDRESS - precompile_address
+        );
+        let is_whitelisted = KakarotPrecompiles.is_caller_whitelisted(caller_code_address);
         tempvar is_not_authorized = is_cairo_module * (1 - is_whitelisted);
         tempvar syscall_ptr = syscall_ptr;
         tempvar pedersen_ptr = pedersen_ptr;
         tempvar range_check_ptr = range_check_ptr;
         jmp unauthorized_call if is_not_authorized != 0;
 
-        tempvar index = evm_address - FIRST_KAKAROT_PRECOMPILE_ADDRESS;
+        tempvar index = precompile_address - FIRST_KAKAROT_PRECOMPILE_ADDRESS;
         tempvar offset = 1 + 3 * index;
 
         // Prepare arguments
@@ -175,7 +181,6 @@ namespace Precompiles {
         [ap] = input_len, ap++;
         [ap] = input, ap++;
         [ap] = caller_address, ap++;
-        [ap] = sender_context, ap++;
 
         // Kakarot precompiles. Offset must have been computed appropriately,
         // based on the total number of kakarot precompiles

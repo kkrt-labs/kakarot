@@ -65,8 +65,6 @@ namespace Interpreter {
         let is_pc_ge_code_len = is_le(evm.message.bytecode_len, pc);
         if (is_pc_ge_code_len != FALSE) {
             let is_precompile = Precompiles.is_precompile(evm.message.code_address.evm);
-            let caller_address = evm.message.caller;
-            // Caller of the contract that is calling the precompile
             if (is_precompile != FALSE) {
                 // If the precompile is called straight from an EOA, the sender_context is the EOA
                 // Otherwise, the sender_context is the caller of the contract that is calling the precompile
@@ -74,18 +72,21 @@ namespace Interpreter {
                 let parent_context = evm.message.parent;
                 let is_parent_zero = Helpers.is_zero(cast(parent_context, felt));
                 if (is_parent_zero != FALSE) {
-                    tempvar sender_context = evm.message.caller;
+                    // Case A: The precompile is called straight from an EOA
+                    tempvar caller_code_address = evm.message.caller;
                 } else {
-                    tempvar sender_context = parent_context.evm.message.caller;
+                    // Case B: The precompile is called from a contract
+                    tempvar caller_code_address = parent_context.evm.message.code_address.evm;
                 }
+                tempvar caller_address = evm.message.caller;
                 let (
                     output_len, output, gas_used, precompile_reverted
                 ) = Precompiles.exec_precompile(
                     evm.message.code_address.evm,
                     evm.message.calldata_len,
                     evm.message.calldata,
+                    caller_code_address,
                     caller_address,
-                    sender_context,
                 );
                 let evm = EVM.charge_gas(evm, gas_used);
                 let evm_reverted = is_not_zero(evm.reverted);
