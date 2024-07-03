@@ -97,7 +97,6 @@ func is_initialized{
 }
 
 // EOA specific entrypoints
-
 @external
 func execute_from_outside{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, bitwise_ptr: BitwiseBuiltin*, range_check_ptr
@@ -149,10 +148,12 @@ func execute_from_outside{
         packed_tx_data_len - 1, packed_tx_data + 1, tx_data_len
     );
 
+    // Cast Starknet chain id to u32
     let (_, chain_id) = unsigned_div_rem(tx_info.chain_id, 2 ** 32);
-    let tx = AccountContract.validate(tx_data_len, tx_data, signature_len, signature, chain_id);
 
-    let (response_len, response) = AccountContract.execute(tx);
+    let (response_len, response) = AccountContract.execute_from_outside(
+        tx_data_len, tx_data, signature_len, signature, chain_id
+    );
     return (response_len, response);
 }
 

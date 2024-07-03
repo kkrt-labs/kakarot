@@ -909,6 +909,7 @@ namespace Interpreter {
             let max_fee_u256 = Uint256(low=fee_low, high=fee_high);
             let (local new_balance) = uint256_sub([sender.balance], max_fee_u256);
             let sender = Account.set_balance(sender, &new_balance);
+            let sender = Account.set_nonce(sender, sender.nonce + 1);
             State.update_account(sender);
 
             let transfer = model.Transfer(sender.address, address, [value]);
