@@ -184,8 +184,8 @@ namespace Gas {
     }
 
     // @notice Compute the access list cost.
-    // @param access_list_len The length of the access list
-    // @param access_list The access list
+    // @param access_list_len The length of the access list.
+    // @param access_list The access list.
     func compute_access_list_gas(access_list_len: felt, access_list: felt*) -> felt {
         if (access_list_len == 0) {
             return 0;
