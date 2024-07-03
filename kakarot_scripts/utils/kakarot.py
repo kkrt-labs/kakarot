@@ -113,35 +113,6 @@ def get_solidity_artifacts(
     }
 
 
-@functools.lru_cache()
-def get_vyper_artifacts(
-    contract_app: str,
-    contract_name: str,
-) -> Web3Contract:
-    from vyper.cli.vyper_compile import compile_files
-
-    target_contract = (
-        Path("vyper_contracts") / "src" / contract_app / f"{contract_name}.vy"
-    )
-
-    if not target_contract.is_file():
-        raise ValueError("Cannot locate contract in app")
-
-    return compile_files([target_contract], ["bytecode", "bytecode_runtime", "abi"])[
-        target_contract
-    ]
-
-
-def get_artifacts(
-    contract_app: str,
-    contract_name: str,
-) -> Web3Contract:
-    try:
-        return get_solidity_artifacts(contract_app, contract_name)
-    except ValueError:
-        return get_vyper_artifacts(contract_app, contract_name)
-
-
 def get_contract(
     contract_app: str,
     contract_name: str,
@@ -149,7 +120,7 @@ def get_contract(
     caller_eoa: Optional[Account] = None,
 ) -> Web3Contract:
 
-    artifacts = get_artifacts(contract_app, contract_name)
+    artifacts = get_solidity_artifacts(contract_app, contract_name)
 
     contract = cast(
         Web3Contract,

@@ -12,11 +12,11 @@ starknet-py = "^0.20.0"
 cairo-lang = "0.13.1"
 python-dotenv = "^0.21.0"
 async-lru = "^2.0.4"
+toml = "^0.10.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.1.1"
 pytest-asyncio = "~0.21.0"
-toml = "^0.10.2"
 pandas = "^1.5.1"
 matplotlib = "^3.8.2"
 black = "^22.10.0"
