@@ -2,14 +2,13 @@
 
 from openzeppelin.access.ownable.library import Ownable, Ownable_owner
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.bool import FALSE
+from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.dict_access import DictAccess
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.math import unsigned_div_rem, split_int, split_felt
+from starkware.cairo.common.math import unsigned_div_rem, split_int, split_felt, assert_not_zero
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256, uint256_not, uint256_le
-from starkware.cairo.common.math_cmp import is_le
-from starkware.cairo.common.math import assert_not_zero
+from starkware.cairo.common.math_cmp import is_le, is_not_zero
 from starkware.starknet.common.syscalls import (
     StorageRead,
     StorageWrite,
@@ -31,11 +30,13 @@ from kakarot.accounts.model import CallArray
 from kakarot.errors import Errors
 from kakarot.constants import Constants
 from kakarot.model import model
+from kakarot.gas import Gas
 from utils.eth_transaction import EthTransaction
 from utils.uint256 import uint256_add
 from utils.bytes import bytes_to_bytes8_little_endian
 from utils.signature import Signature
 from utils.utils import Helpers
+from utils.array import count_not_zero
 
 // @dev: should always be zero for EOAs
 @storage_var
@@ -194,6 +195,32 @@ namespace AccountContract {
 
         with_attr error_message("Invalid nonce") {
             assert tx.signer_nonce = outside_nonce;
+        }
+
+        // Validate gas
+        let count = count_not_zero(tx.payload_len, tx.payload);
+        let zeroes = tx.payload_len - count;
+        let calldata_gas = zeroes * 4 + count * 16;
+        let intrinsic_gas = Gas.TX_BASE_COST + calldata_gas;
+
+        let is_regular_tx = is_not_zero(tx.destination.is_some);
+        let is_deploy_tx = 1 - is_regular_tx;
+        let tmp_intrinsic_gas = intrinsic_gas;
+        local intrinsic_gas: felt;
+        if (is_deploy_tx != FALSE) {
+            let (init_code_words, _) = unsigned_div_rem(tx.payload_len + 31, 32);
+            let init_code_gas = Gas.INIT_CODE_WORD_COST * init_code_words;
+            assert intrinsic_gas = tmp_intrinsic_gas + Gas.CREATE + init_code_gas;
+            tempvar range_check_ptr = range_check_ptr;
+        } else {
+            tempvar range_check_ptr = range_check_ptr;
+        }
+        local range_check_ptr = range_check_ptr;
+        let access_list_cost = Gas.compute_access_list_gas(tx.access_list_len, tx.access_list);
+        let intrinsic_gas = intrinsic_gas + access_list_cost;
+        let is_gas_limit_enough = is_le(intrinsic_gas, tx.gas_limit);
+        with_attr error_message("Not enough gas") {
+            assert is_gas_limit_enough = TRUE;
         }
 
         // Note: here, the validate process assumes an ECDSA signature, and r, s, v field
