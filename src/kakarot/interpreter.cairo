@@ -66,9 +66,6 @@ namespace Interpreter {
         if (is_pc_ge_code_len != FALSE) {
             let is_precompile = Precompiles.is_precompile(evm.message.code_address.evm);
             if (is_precompile != FALSE) {
-                // If the precompile is called straight from an EOA, the sender_context is the EOA
-                // Otherwise, the sender_context is the caller of the contract that is calling the precompile
-                // This is only relevant for the Kakarot Cairo Module precompile.
                 let parent_context = evm.message.parent;
                 let is_parent_zero = Helpers.is_zero(cast(parent_context, felt));
                 if (is_parent_zero != FALSE) {
