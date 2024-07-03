@@ -178,7 +178,7 @@ namespace AccountContract {
         tx_data: felt*,
         signature_len: felt,
         signature: felt*,
-        outside_nonce: felt,
+        account_nonce: felt,
         chain_id: felt,
     ) -> () {
         alloc_locals;
@@ -194,7 +194,7 @@ namespace AccountContract {
         let v = signature[4];
 
         with_attr error_message("Invalid nonce") {
-            assert tx.signer_nonce = outside_nonce;
+            assert tx.signer_nonce = account_nonce;
         }
 
         // Validate gas

@@ -155,7 +155,7 @@ func execute_from_outside{
 
     // tx_data_len and tx_data are necessary for computing msg_hash for signature verification
     AccountContract.validate(
-        tx, tx_data_len, tx_data, signature_len, signature, outside_execution.nonce, chain_id
+        tx, tx_data_len, tx_data, signature_len, signature, tx_info.nonce, chain_id
     );
     let (response_len, response) = AccountContract.execute(tx);
     return (response_len, response);
