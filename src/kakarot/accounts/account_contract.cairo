@@ -6,6 +6,7 @@
 from openzeppelin.access.ownable.library import Ownable, Ownable_owner
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin, SignatureBuiltin
 from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.bool import FALSE, TRUE
 
 // Local dependencies
 from kakarot.accounts.library import (
@@ -16,7 +17,12 @@ from kakarot.accounts.library import (
 )
 from kakarot.accounts.model import CallArray
 from kakarot.interfaces.interfaces import IKakarot, IAccount
-from starkware.starknet.common.syscalls import get_tx_info, get_caller_address, replace_class
+from starkware.starknet.common.syscalls import (
+    get_tx_info,
+    get_caller_address,
+    replace_class,
+    call_contract,
+)
 from starkware.cairo.common.math import assert_le, unsigned_div_rem
 from starkware.cairo.common.alloc import alloc
 
@@ -303,4 +309,18 @@ func set_authorized_pre_eip155_tx{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*
     Ownable.assert_only_owner();
     Account_authorized_message_hashes.write(message_hash, 1);
     return ();
+}
+
+@external
+func execute_starknet_call{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    to: felt, function_selector: felt, calldata_len: felt, calldata: felt*
+) -> (retdata_len: felt, retdata: felt*, success: felt) {
+    Ownable.assert_only_owner();
+    let (kakarot_address) = Ownable.owner();
+    if (kakarot_address == to) {
+        let (retdata) = alloc();
+        return (0, retdata, FALSE);
+    }
+    let (retdata_len, retdata) = call_contract(to, function_selector, calldata_len, calldata);
+    return (retdata_len, retdata, TRUE);
 }

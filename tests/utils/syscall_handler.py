@@ -180,6 +180,28 @@ class SyscallHandler:
         get_selector_from_name("set_implementation"): lambda addr, data: [],
     }
 
+    def __post_init__(self):
+        self.patches[get_selector_from_name("execute_starknet_call")] = (
+            lambda addr, data: self.execute_starknet_call(addr, data)
+        )
+
+    def execute_starknet_call(self, account_address, calldata):
+        contract_address = calldata[0]
+        function_selector = calldata[1]
+        calldata = calldata[2:]
+
+        if function_selector not in self.patches:
+            raise ValueError(
+                f"Function selector 0x{function_selector:x} not found in patches."
+            )
+        self.mock_call(
+            contract_address=contract_address,
+            function_selector=function_selector,
+            calldata=calldata,
+        )
+        inner_retdata = self.patches.get(function_selector)(contract_address, calldata)
+        return [len(inner_retdata), *inner_retdata, 1]
+
     def get_contract_address(self, segments, syscall_ptr):
         """
         Return a constant value for the get contract address system call.
@@ -490,7 +512,12 @@ class SyscallHandler:
 
     @classmethod
     @contextmanager
-    def patch(cls, target: str, *args, value: Optional[Union[callable, int]] = None):
+    def patch(
+        cls,
+        target: Union[int, str],
+        *args,
+        value: Optional[Union[callable, int]] = None,
+    ):
         """
         Patch the target with the value.
 
@@ -500,15 +527,23 @@ class SyscallHandler:
         :param value: The value to patch with, a callable that will be called with the contract
             address and the calldata, and should return the retdata as a List[int].
         """
-        selector_if_call = get_selector_from_name(
-            target.split(".")[-1].replace("library_call_", "")
-        )
+
+        if isinstance(target, str):
+            selector_if_call = get_selector_from_name(
+                target.split(".")[-1].replace("library_call_", "")
+            )
+        else:
+            selector_if_call = target
+
         if value is None:
             args = list(args)
             value = args.pop()
         cls.patches[selector_if_call] = value
         try:
-            selector_if_storage = get_storage_var_address(target, *args)
+            if isinstance(target, str):
+                selector_if_storage = get_storage_var_address(target, *args)
+            else:
+                selector_if_storage = target
             cls.patches[selector_if_storage] = value
         except AssertionError:
             pass

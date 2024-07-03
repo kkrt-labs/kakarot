@@ -90,6 +90,11 @@ namespace IAccount {
 
     func set_authorized_pre_eip155_tx(msg_hash: Uint256) {
     }
+
+    func execute_starknet_call(
+        to: felt, function_selector: felt, calldata_len: felt, calldata: felt*
+    ) -> (retdata_len: felt, retdata: felt*, success: felt) {
+    }
 }
 
 @contract_interface
