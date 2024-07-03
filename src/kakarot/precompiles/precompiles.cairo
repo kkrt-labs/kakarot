@@ -61,7 +61,7 @@ namespace Precompiles {
     // @param input_len The length of the input array.
     // @param input The input array.
     // @param caller_code_address The address of the code of the contract that calls the precompile.
-    // @param caller_address The address of the caller of the precompile. Delegatecall rules applies.
+    // @param caller_address The address of the caller of the precompile. Delegatecall rules apply.
     // @return output_len The output length.
     // @return output The output array.
     // @return gas_used The gas usage of precompile.

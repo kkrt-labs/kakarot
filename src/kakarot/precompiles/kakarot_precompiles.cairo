@@ -32,7 +32,7 @@ namespace KakarotPrecompiles {
     // @notice Executes a cairo contract/class.
     // @param input_len The length of the input in bytes.
     // @param input The input data.
-    // @param caller_address The address of the caller of the precompile. Delegatecall rules applies.
+    // @param caller_address The address of the caller of the precompile. Delegatecall rules apply.
     func cairo_precompile{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
