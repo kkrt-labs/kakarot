@@ -25,7 +25,6 @@ from kakarot_scripts.utils.kakarot import (
     EvmTransactionError,
     _parse_events,
     get_solidity_artifacts,
-    get_vyper_artifacts,
 )
 from tests.utils.constants import TRANSACTION_GAS_LIMIT
 
@@ -97,10 +96,7 @@ def get_l1_contract(
     caller_eoa: Optional[EvmAccount] = None,
 ) -> Web3Contract:
 
-    try:
-        artifacts = get_solidity_artifacts(contract_app, contract_name)
-    except ValueError:
-        artifacts = get_vyper_artifacts(contract_app, contract_name)
+    artifacts = get_solidity_artifacts(contract_app, contract_name)
 
     contract = cast(
         Web3Contract,

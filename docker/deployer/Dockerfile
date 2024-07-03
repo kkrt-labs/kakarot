@@ -75,6 +75,9 @@ COPY --from=builder /app/kakarot/tests ./tests/
 # To limit the probability of this Dockerfile to break, we copy the entire src and not individual files
 COPY --from=builder /app/kakarot/src ./src/
 
+# Default Solidity contracts are also used in deploy_kakarot.py
+COPY --from=builder /app/kakarot/solidity_contracts ./solidity_contracts/
+
 COPY --from=builder /app/kakarot/Makefile .
 COPY --from=builder /app/kakarot/poetry.lock .
 COPY --from=builder /app/kakarot/pyproject.toml .
