@@ -116,10 +116,10 @@ func execute_from_outside{
     alloc_locals;
     let (caller) = get_caller_address();
 
+    // Starknet validation
     if (outside_execution.caller != 'ANY_CALLER') {
         assert caller = outside_execution.caller;
     }
-
     let (block_timestamp) = get_block_timestamp();
     let too_early = is_le(block_timestamp, outside_execution.execute_after);
     with_attr error_message("Execute from outside: too early") {
@@ -132,34 +132,29 @@ func execute_from_outside{
     with_attr error_message("Execute from outside: multicall not supported") {
         assert call_array_len = 1;
     }
-
-    let (bytecode_len) = Account_bytecode_len.read();
-    with_attr error_message("EOAs cannot have code") {
-        assert bytecode_len = 0;
-    }
-
     let (tx_info) = get_tx_info();
-    let (_, chain_id) = unsigned_div_rem(tx_info.chain_id, 2 ** 32);
     let version = tx_info.version;
     with_attr error_message("Deprecated tx version: {version}") {
         assert_le(1, version);
     }
 
+    // EOA validation
+    let (bytecode_len) = Account_bytecode_len.read();
+    with_attr error_message("EOAs cannot have code") {
+        assert bytecode_len = 0;
+    }
+
     // Unpack the tx data
     let packed_tx_data_len = [call_array].data_len;
     let packed_tx_data = calldata + [call_array].data_offset;
-
     let tx_data_len = [packed_tx_data];
     let (tx_data) = Helpers.load_packed_bytes(
         packed_tx_data_len - 1, packed_tx_data + 1, tx_data_len
     );
 
-    let tx = EthTransaction.decode(tx_data_len, tx_data);
+    let (_, chain_id) = unsigned_div_rem(tx_info.chain_id, 2 ** 32);
+    let tx = AccountContract.validate(tx_data_len, tx_data, signature_len, signature, chain_id);
 
-    // tx_data_len and tx_data are necessary for computing msg_hash for signature verification
-    AccountContract.validate(
-        tx, tx_data_len, tx_data, signature_len, signature, tx_info.nonce, chain_id
-    );
     let (response_len, response) = AccountContract.execute(tx);
     return (response_len, response);
 }

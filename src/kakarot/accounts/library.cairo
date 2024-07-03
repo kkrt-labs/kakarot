@@ -154,36 +154,24 @@ namespace AccountContract {
 
     // EOA functions
 
-    // @notice Validate the signature of the call in the call array.
+    // @notice Validate the signature of Ethereum transaction.
     // @dev This function validates an Ethereum transaction by checking if the transaction
     // is correctly signed by the given address, and if the nonce in the transaction
-    // matches the nonce of the account. It decodes the transaction using the decode function,
-    // and then verifies the Ethereum signature on the transaction hash.
-    // @param call_array_len The length of the call array.
-    // @param call_array The call array.
-    // @param calldata_len The length of the calldata.
-    // @param calldata The calldata.
-    // @param signature_len The length of tx signature
+    // matches the nonce of the account. It also validate the gas and chain_id.
+    // @param tx_data_len The length of tx data
+    // @param tx_data The tx data.
+    // @param signature_len The length of tx signature.
     // @param signature The tx signature.
-    // @param nonce The nonce of the tx
-    // @param chain_id The chain_id
+    // @param chain_id The chain_id of the tx.
     func validate{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         bitwise_ptr: BitwiseBuiltin*,
         range_check_ptr,
     }(
-        tx: model.EthTransaction*,
-        tx_data_len: felt,
-        tx_data: felt*,
-        signature_len: felt,
-        signature: felt*,
-        account_nonce: felt,
-        chain_id: felt,
-    ) -> () {
+        tx_data_len: felt, tx_data: felt*, signature_len: felt, signature: felt*, chain_id: felt
+    ) -> model.EthTransaction* {
         alloc_locals;
-
-        let (address) = Account_evm_address.read();
 
         // Assert signature field is of length 5: r_low, r_high, s_low, s_high, v
         with_attr error_message("Incorrect signature length") {
@@ -193,6 +181,75 @@ namespace AccountContract {
         let s = Uint256(signature[2], signature[3]);
         let v = signature[4];
 
+        // Note: here, the validate process assumes an ECDSA signature, and r, s, v field
+        // Technically, the transaction type can determine the signature scheme.
+        let tx_type = EthTransaction.get_tx_type(tx_data);
+        local y_parity: felt;
+        local pre_eip155_tx;
+        if (tx_type == 0) {
+            let is_eip155_tx = is_le(v, 28);
+            assert pre_eip155_tx = is_eip155_tx;
+            if (is_eip155_tx != FALSE) {
+                assert y_parity = v - 27;
+            } else {
+                assert y_parity = (v - 2 * chain_id - 35);
+            }
+            tempvar range_check_ptr = range_check_ptr;
+        } else {
+            assert pre_eip155_tx = FALSE;
+            assert y_parity = v;
+            tempvar range_check_ptr = range_check_ptr;
+        }
+
+        let (local words: felt*) = alloc();
+        let (words_len, last_word, last_word_num_bytes) = bytes_to_bytes8_little_endian(
+            words, tx_data_len, tx_data
+        );
+        let (kakarot_address) = Ownable_owner.read();
+        let (helpers_class) = IKakarot.get_cairo1_helpers_class_hash(kakarot_address);
+        let (msg_hash) = ICairo1Helpers.library_call_keccak(
+            class_hash=helpers_class,
+            words_len=words_len,
+            words=words,
+            last_input_word=last_word,
+            last_input_num_bytes=last_word_num_bytes,
+        );
+        let (address) = Account_evm_address.read();
+        Signature.verify_eth_signature_uint256(
+            msg_hash=msg_hash,
+            r=r,
+            s=s,
+            v=y_parity,
+            eth_address=address,
+            helpers_class=helpers_class,
+        );
+
+        // Whitelisting pre-eip155
+        if (pre_eip155_tx != FALSE) {
+            let (is_authorized) = Account_authorized_message_hashes.read(msg_hash);
+            with_attr error_message("Unauthorized pre-eip155 transaction") {
+                assert is_authorized = 1;
+            }
+            tempvar syscall_ptr = syscall_ptr;
+            tempvar pedersen_ptr = pedersen_ptr;
+            tempvar range_check_ptr = range_check_ptr;
+        } else {
+            tempvar syscall_ptr = syscall_ptr;
+            tempvar pedersen_ptr = pedersen_ptr;
+            tempvar range_check_ptr = range_check_ptr;
+        }
+        let syscall_ptr = cast([ap - 3], felt*);
+        let pedersen_ptr = cast([ap - 2], HashBuiltin*);
+        let range_check_ptr = [ap - 1];
+
+        // Validate chain_id
+        let tx = EthTransaction.decode(tx_data_len, tx_data);
+        with_attr error_message("Invalid chain id") {
+            assert tx.chain_id = chain_id;
+        }
+
+        // Validate nonce
+        let (account_nonce) = Account_nonce.read();
         with_attr error_message("Invalid nonce") {
             assert tx.signer_nonce = account_nonce;
         }
@@ -215,7 +272,7 @@ namespace AccountContract {
         } else {
             tempvar range_check_ptr = range_check_ptr;
         }
-        local range_check_ptr = range_check_ptr;
+        let range_check_ptr = [ap - 1];
         let access_list_cost = Gas.compute_access_list_gas(tx.access_list_len, tx.access_list);
         let intrinsic_gas = intrinsic_gas + access_list_cost;
         let is_gas_limit_enough = is_le(intrinsic_gas, tx.gas_limit);
@@ -223,70 +280,7 @@ namespace AccountContract {
             assert is_gas_limit_enough = TRUE;
         }
 
-        // Note: here, the validate process assumes an ECDSA signature, and r, s, v field
-        // Technically, the transaction type can determine the signature scheme.
-        let tx_type = EthTransaction.get_tx_type(tx_data);
-        local y_parity: felt;
-        local pre_eip155_tx;
-        if (tx_type == 0) {
-            let is_eip155_tx = is_le(v, 28);
-            assert pre_eip155_tx = is_eip155_tx;
-            if (is_eip155_tx != FALSE) {
-                assert y_parity = v - 27;
-            } else {
-                assert y_parity = (v - 2 * chain_id - 35);
-                with_attr error_message("Invalid chain id") {
-                    assert tx.chain_id = chain_id;
-                }
-            }
-            tempvar range_check_ptr = range_check_ptr;
-        } else {
-            assert pre_eip155_tx = FALSE;
-            assert y_parity = v;
-            with_attr error_message("Invalid chain id") {
-                assert tx.chain_id = chain_id;
-            }
-            tempvar range_check_ptr = range_check_ptr;
-        }
-
-        let (local words: felt*) = alloc();
-        let (words_len, last_word, last_word_num_bytes) = bytes_to_bytes8_little_endian(
-            words, tx_data_len, tx_data
-        );
-
-        let (kakarot_address) = Ownable_owner.read();
-        let (helpers_class) = IKakarot.get_cairo1_helpers_class_hash(kakarot_address);
-        let (msg_hash) = ICairo1Helpers.library_call_keccak(
-            class_hash=helpers_class,
-            words_len=words_len,
-            words=words,
-            last_input_word=last_word,
-            last_input_num_bytes=last_word_num_bytes,
-        );
-
-        if (pre_eip155_tx != FALSE) {
-            let (is_authorized) = Account_authorized_message_hashes.read(msg_hash);
-            with_attr error_message("Unauthorized pre-eip155 transaction") {
-                assert is_authorized = 1;
-            }
-            tempvar pedersen_ptr = pedersen_ptr;
-            tempvar range_check_ptr = range_check_ptr;
-        } else {
-            tempvar pedersen_ptr = pedersen_ptr;
-            tempvar range_check_ptr = range_check_ptr;
-        }
-        let pedersen_ptr = cast([ap - 2], HashBuiltin*);
-        let range_check_ptr = [ap - 1];
-
-        Signature.verify_eth_signature_uint256(
-            msg_hash=msg_hash,
-            r=r,
-            s=s,
-            v=y_parity,
-            eth_address=address,
-            helpers_class=helpers_class,
-        );
-        return ();
+        return (tx);
     }
 
     // @notice Execute the transaction.
