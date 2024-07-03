@@ -32,11 +32,14 @@ contract CairoCounterCaller {
     }
 
     /// @notice Calls the Cairo contract to increment its internal counter
+    /// @dev The delegatecall preserves the caller's context, so the caller's address will
+    /// be the caller of this function.
     function incrementCairoCounter() external {
-        cairoCounter.callContract("inc");
+        cairoCounter.delegatecallContract("inc");
     }
 
     /// @notice Calls the Cairo contract to set its internal counter to an arbitrary value
+    /// @dev Called with a regular call, the caller's address will be this contract's address
     /// @dev The counter value is split into two 128-bit values to match the Cairo contract's expected inputs (u256 is composed of two u128s)
     /// @param newCounter The new counter value to set
     function setCairoCounter(uint256 newCounter) external {

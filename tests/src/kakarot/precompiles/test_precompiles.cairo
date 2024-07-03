@@ -24,24 +24,24 @@ func test__precompiles_run{
     // Given
     local address;
     local input_len;
+    local caller_code_address;
     local caller_address;
-    local sender_context;
     let (local input) = alloc();
     %{
         ids.address = program_input["address"]
         ids.input_len = len(program_input["input"])
-        ids.caller_address = program_input.get("caller_address", 0)
-        ids.sender_context = program_input.get("sender_context", 0)
         segments.write_arg(ids.input, program_input["input"])
+        ids.caller_code_address = program_input.get("caller_code_address", 0)
+        ids.caller_address = program_input.get("caller_address", 0)
     %}
 
     // When
     let result = Precompiles.exec_precompile(
-        evm_address=address,
+        precompile_address=address,
         input_len=input_len,
         input=input,
+        caller_code_address=caller_code_address,
         caller_address=caller_address,
-        sender_context=sender_context,
     );
     let output_len = result.output_len;
     let (output) = alloc();
