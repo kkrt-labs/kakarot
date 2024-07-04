@@ -46,7 +46,7 @@ contract PragmaCaller {
             data[2] = request.expirationTimestamp;
         }
 
-        bytes memory returnData = pragmaOracle.staticcallContract(FUNCTION_SELECTOR_GET_DATA_MEDIAN, data);
+        bytes memory returnData = pragmaOracle.staticcallCairo(FUNCTION_SELECTOR_GET_DATA_MEDIAN, data);
 
         assembly {
             // Load the values from the return data

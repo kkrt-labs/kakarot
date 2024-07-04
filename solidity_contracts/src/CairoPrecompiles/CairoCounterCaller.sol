@@ -7,7 +7,7 @@ using CairoLib for uint256;
 
 contract CairoCounterCaller {
     /// @dev The cairo contract to call
-    uint256 cairoCounter;
+    uint256 immutable cairoCounter;
 
     /// @dev The cairo function selector to call - `inc`
     uint256 constant FUNCTION_SELECTOR_INC = uint256(keccak256("inc")) % 2 ** 250;
@@ -25,18 +25,21 @@ contract CairoCounterCaller {
     }
 
     function getCairoCounter() public view returns (uint256 counterValue) {
-        bytes memory returnData = cairoCounter.staticcallContract(FUNCTION_SELECTOR_GET);
+        bytes memory returnData = cairoCounter.staticcallCairo(FUNCTION_SELECTOR_GET);
 
         // The return data is a 256-bit integer, so we can directly cast it to uint256
         return abi.decode(returnData, (uint256));
     }
 
     /// @notice Calls the Cairo contract to increment its internal counter
+    /// @dev The delegatecall preserves the caller's context, so the caller's address will
+    /// be the caller of this function.
     function incrementCairoCounter() external {
-        cairoCounter.callContract("inc");
+        cairoCounter.delegatecallCairo("inc");
     }
 
     /// @notice Calls the Cairo contract to set its internal counter to an arbitrary value
+    /// @dev Called with a regular call, the caller's address will be this contract's address
     /// @dev The counter value is split into two 128-bit values to match the Cairo contract's expected inputs (u256 is composed of two u128s)
     /// @param newCounter The new counter value to set
     function setCairoCounter(uint256 newCounter) external {
@@ -47,13 +50,13 @@ contract CairoCounterCaller {
         uint256[] memory data = new uint256[](2);
         data[0] = uint256(newCounterLow);
         data[1] = uint256(newCounterHigh);
-        cairoCounter.callContract(FUNCTION_SELECTOR_SET_COUNTER, data);
+        cairoCounter.callCairo(FUNCTION_SELECTOR_SET_COUNTER, data);
     }
 
     /// @notice Calls the Cairo contract to get the (starknet) address of the last caller
     /// @return lastCaller The starknet address of the last caller
     function getLastCaller() external view returns (uint256 lastCaller) {
-        bytes memory returnData = cairoCounter.staticcallContract(FUNCTION_SELECTOR_GET_LAST_CALLER);
+        bytes memory returnData = cairoCounter.staticcallCairo(FUNCTION_SELECTOR_GET_LAST_CALLER);
 
         return abi.decode(returnData, (uint256));
     }

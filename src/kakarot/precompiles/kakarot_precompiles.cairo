@@ -32,14 +32,13 @@ namespace KakarotPrecompiles {
     // @notice Executes a cairo contract/class.
     // @param input_len The length of the input in bytes.
     // @param input The input data.
-    // @param caller_address The address of the contract that calls the precompile
-    // @param sender_context The address of the sender in the context of the caller contract.
+    // @param caller_address The address of the caller of the precompile. Delegatecall rules apply.
     func cairo_precompile{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(input_len: felt, input: felt*, caller_address: felt, sender_context: felt) -> (
+    }(input_len: felt, input: felt*, caller_address: felt) -> (
         output_len: felt, output: felt*, gas_used: felt, reverted: felt
     ) {
         alloc_locals;
@@ -79,8 +78,8 @@ namespace KakarotPrecompiles {
         let (data_len, data) = Helpers.load_256_bits_array(data_bytes_len, data_ptr);
 
         if (selector == CALL_CONTRACT_SOLIDITY_SELECTOR) {
-            let sender_starknet_address = Account.get_registered_starknet_address(sender_context);
-            let is_not_deployed = Helpers.is_zero(sender_starknet_address);
+            let caller_starknet_address = Account.get_registered_starknet_address(caller_address);
+            let is_not_deployed = Helpers.is_zero(caller_starknet_address);
 
             if (is_not_deployed != FALSE) {
                 let (revert_reason_len, revert_reason) = Errors.accountNotDeployed();
@@ -90,7 +89,7 @@ namespace KakarotPrecompiles {
             }
 
             let (retdata_len, retdata, success) = IAccount.execute_starknet_call(
-                sender_starknet_address, to_starknet_address, starknet_selector, data_len, data
+                caller_starknet_address, to_starknet_address, starknet_selector, data_len, data
             );
             let (output) = alloc();
             let output_len = retdata_len * 32;
@@ -115,14 +114,13 @@ namespace KakarotPrecompiles {
     // @notice Sends a message to a message to L1.
     // @param input_len The length of the input in bytes.
     // @param input The input data.
-    // @param caller_address The address of the contract that calls the precompile
-    // @param sender_context unused
+    // @param caller_address unused
     func cairo_message{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(input_len: felt, input: felt*, caller_address: felt, sender_context: felt) -> (
+    }(input_len: felt, input: felt*, caller_address: felt) -> (
         output_len: felt, output: felt*, gas_used: felt, reverted: felt
     ) {
         alloc_locals;
