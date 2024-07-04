@@ -175,7 +175,7 @@ namespace Precompiles {
         bitwise_ptr: BitwiseBuiltin*,
     }() -> (output_len: felt, output: felt*, gas_used: felt, reverted: felt) {
         let (revert_reason_len, revert_reason) = Errors.unauthorizedPrecompile();
-        return (revert_reason_len, revert_reason, 0, Errors.EXCEPTIONAL_HALT);
+        return (revert_reason_len, revert_reason, 0, Errors.REVERT);
     }
 
     // @notice A placeholder for precompile that don't exist.

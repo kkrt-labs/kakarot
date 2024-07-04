@@ -6,7 +6,7 @@ from starkware.cairo.common.math import assert_not_zero
 from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import call_contract, library_call, get_caller_address
 from starkware.starknet.common.messages import send_message_to_l1
-from starkware.cairo.common.bool import FALSE
+from starkware.cairo.common.bool import FALSE, TRUE
 
 from kakarot.errors import Errors
 from kakarot.interfaces.interfaces import IAccount
@@ -100,10 +100,15 @@ namespace KakarotPrecompiles {
             let (retdata_len, retdata, success) = IAccount.execute_starknet_call(
                 caller_starknet_address, to_starknet_address, starknet_selector, data_len, data
             );
+            if (success == FALSE) {
+                // skip formatting to bytes32 array and return revert reason directly
+                return (retdata_len, retdata, CAIRO_PRECOMPILE_GAS, TRUE);
+            }
+
             let (output) = alloc();
             let output_len = retdata_len * 32;
             Helpers.felt_array_to_bytes32_array(retdata_len, retdata, output);
-            return (output_len, output, CAIRO_PRECOMPILE_GAS, 1 - success);
+            return (output_len, output, CAIRO_PRECOMPILE_GAS, FALSE);
         }
 
         if (selector == LIBRARY_CALL_SOLIDITY_SELECTOR) {
