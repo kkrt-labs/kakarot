@@ -222,7 +222,9 @@ namespace AccountContract {
             helpers_class=helpers_class,
         );
 
-        // Whitelisting pre-eip155
+        let tx = EthTransaction.decode(tx_data_len, tx_data);
+
+        // Whitelisting pre-eip155 or validate chain_id for post eip155
         if (pre_eip155_tx != FALSE) {
             let (is_authorized) = Account_authorized_message_hashes.read(msg_hash);
             with_attr error_message("Unauthorized pre-eip155 transaction") {
@@ -232,6 +234,9 @@ namespace AccountContract {
             tempvar pedersen_ptr = pedersen_ptr;
             tempvar range_check_ptr = range_check_ptr;
         } else {
+            with_attr error_message("Invalid chain id") {
+                assert tx.chain_id = chain_id;
+            }
             tempvar syscall_ptr = syscall_ptr;
             tempvar pedersen_ptr = pedersen_ptr;
             tempvar range_check_ptr = range_check_ptr;
@@ -239,13 +244,6 @@ namespace AccountContract {
         let syscall_ptr = cast([ap - 3], felt*);
         let pedersen_ptr = cast([ap - 2], HashBuiltin*);
         let range_check_ptr = [ap - 1];
-
-        let tx = EthTransaction.decode(tx_data_len, tx_data);
-
-        // Validate chain_id
-        with_attr error_message("Invalid chain id") {
-            assert tx.chain_id = chain_id;
-        }
 
         // Validate nonce
         let (account_nonce) = Account_nonce.read();
@@ -276,8 +274,12 @@ namespace AccountContract {
 
         let (block_base_fee) = IKakarot.get_base_fee(kakarot_address);
         let enough_fee = is_le(block_base_fee, tx.max_fee_per_gas);
+        with_attr error_message("Max fee per gas too low") {
+            assert enough_fee = TRUE;
+        }
+
         let max_fee_greater_priority_fee = is_le(tx.max_priority_fee_per_gas, tx.max_fee_per_gas);
-        with_attr error_message("Mzx priority fee greater than max fee per gas") {
+        with_attr error_message("Max priority fee greater than max fee per gas") {
             assert max_fee_greater_priority_fee = TRUE;
         }
 
