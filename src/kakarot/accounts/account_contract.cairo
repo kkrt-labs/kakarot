@@ -11,7 +11,6 @@ from starkware.cairo.common.uint256 import Uint256
 from starkware.starknet.common.syscalls import (
     get_tx_info,
     get_caller_address,
-    replace_class,
     get_block_timestamp,
     call_contract,
 )
@@ -19,17 +18,14 @@ from starkware.cairo.common.bool import FALSE, TRUE
 
 from kakarot.accounts.library import (
     AccountContract,
-    Internals as AccountInternals,
     Account_implementation,
     Account_authorized_message_hashes,
     Account_bytecode_len,
-    Account_evm_address,
 )
 from kakarot.accounts.model import CallArray, OutsideExecution
 from kakarot.interfaces.interfaces import IKakarot, IAccount
 from kakarot.errors import Errors
 from utils.utils import Helpers
-from utils.eth_transaction import EthTransaction
 
 const COMPUTE_STARKNET_ADDRESS_SELECTOR = 0x0ad7772990f7f5a506d84e5723efd1242e989c23f45653870d49d6d107f6e7;
 

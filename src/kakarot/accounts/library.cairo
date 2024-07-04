@@ -5,7 +5,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.dict_access import DictAccess
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.math import unsigned_div_rem, split_int, split_felt, assert_not_zero
+from starkware.cairo.common.math import unsigned_div_rem, split_int, split_felt
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256, uint256_not, uint256_le
 from starkware.cairo.common.math_cmp import is_le, is_not_zero
@@ -29,14 +29,11 @@ from kakarot.interfaces.interfaces import IERC20, IKakarot, ICairo1Helpers
 from kakarot.accounts.model import CallArray
 from kakarot.errors import Errors
 from kakarot.constants import Constants
-from kakarot.model import model
-from kakarot.gas import Gas
 from utils.eth_transaction import EthTransaction
 from utils.uint256 import uint256_add
 from utils.bytes import bytes_to_bytes8_little_endian
 from utils.signature import Signature
 from utils.utils import Helpers
-from utils.array import count_not_zero
 
 // @dev: should always be zero for EOAs
 @storage_var
