@@ -17,44 +17,16 @@ from kakarot.precompiles.ec_recover import PrecompileEcRecover
 from kakarot.precompiles.p256verify import PrecompileP256Verify
 from kakarot.precompiles.ripemd160 import PrecompileRIPEMD160
 from kakarot.precompiles.sha256 import PrecompileSHA256
+from kakarot.precompiles.precompiles_helpers import (
+    PrecompilesHelpers,
+    LAST_ETHEREUM_PRECOMPILE_ADDRESS,
+    FIRST_ROLLUP_PRECOMPILE_ADDRESS,
+    FIRST_KAKAROT_PRECOMPILE_ADDRESS,
+)
 from utils.utils import Helpers
-
-const LAST_ETHEREUM_PRECOMPILE_ADDRESS = 0x0a;
-const FIRST_ROLLUP_PRECOMPILE_ADDRESS = 0x100;
-const LAST_ROLLUP_PRECOMPILE_ADDRESS = 0x100;
-const EXEC_PRECOMPILE_SELECTOR = 0x01e3e7ac032066525c37d0791c3c0f5fbb1c17f1cb6fe00afc206faa3fbd18e1;
-const FIRST_KAKAROT_PRECOMPILE_ADDRESS = 0x75001;
-const LAST_KAKAROT_PRECOMPILE_ADDRESS = 0x75002;
 
 // @title Precompile related functions.
 namespace Precompiles {
-    // @notice Return whether the address is a precompile address.
-    // @dev Ethereum precompiles start at address 0x01.
-    // @dev RIP precompiles start at address FIRST_ROLLUP_PRECOMPILE_ADDRESS.
-    // @dev Kakarot precompiles start at address FIRST_KAKAROT_PRECOMPILE_ADDRESS.
-    func is_precompile{range_check_ptr}(address: felt) -> felt {
-        alloc_locals;
-        let is_rollup_precompile_ = is_rollup_precompile(address);
-        let is_kakarot_precompile_ = is_kakarot_precompile(address);
-        return is_not_zero(address) * (
-            is_le(address, LAST_ETHEREUM_PRECOMPILE_ADDRESS) +
-            is_rollup_precompile_ +
-            is_kakarot_precompile_
-        );
-    }
-
-    func is_rollup_precompile{range_check_ptr}(address: felt) -> felt {
-        return is_in_range(
-            address, FIRST_ROLLUP_PRECOMPILE_ADDRESS, LAST_ROLLUP_PRECOMPILE_ADDRESS + 1
-        );
-    }
-
-    func is_kakarot_precompile{range_check_ptr}(address: felt) -> felt {
-        return is_in_range(
-            address, FIRST_KAKAROT_PRECOMPILE_ADDRESS, LAST_KAKAROT_PRECOMPILE_ADDRESS + 1
-        );
-    }
-
     // @notice Executes associated function of precompiled evm_address.
     // @dev This function uses an internal jump table to execute the corresponding precompile impmentation.
     // @param precompile_address The precompile evm_address.
@@ -84,13 +56,13 @@ namespace Precompiles {
         tempvar range_check_ptr = range_check_ptr;
         jmp eth_precompile if is_eth_precompile != 0;
 
-        let is_rollup_precompile_ = is_rollup_precompile(precompile_address);
+        let is_rollup_precompile_ = PrecompilesHelpers.is_rollup_precompile(precompile_address);
         tempvar syscall_ptr = syscall_ptr;
         tempvar pedersen_ptr = pedersen_ptr;
         tempvar range_check_ptr = range_check_ptr;
         jmp rollup_precompile if is_rollup_precompile_ != 0;
 
-        let is_kakarot_precompile_ = is_kakarot_precompile(precompile_address);
+        let is_kakarot_precompile_ = PrecompilesHelpers.is_kakarot_precompile(precompile_address);
         tempvar syscall_ptr = syscall_ptr;
         tempvar pedersen_ptr = pedersen_ptr;
         tempvar range_check_ptr = range_check_ptr;

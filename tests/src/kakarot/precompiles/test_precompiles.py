@@ -80,14 +80,16 @@ class TestPrecompiles:
                 AUTHORIZED_CALLER_CODE,
                 1,
             )
+            @SyscallHandler.patch_deploy(lambda class_hash, data: [0])
             @SyscallHandler.patch("Kakarot_evm_to_starknet_address", CALLER_ADDRESS, 0)
-            def test_should_fail_when_sender_starknet_address_zero(
+            @SyscallHandler.patch("ICairo.inc", lambda addr, data: [])
+            def test_should_deploy_account_when_sender_starknet_address_zero(
                 self,
                 cairo_run,
             ):
                 """
                 Tests the behavior when the `msg.sender` in the contract that calls the precompile resolves
-                to a zero starknet address (meaning - it's not deployed yet, and will be at the end of the transaction).
+                to a zero starknet address (meaning - it's not deployed yet).
                 """
                 return_data, reverted, gas_used = cairo_run(
                     "test__precompiles_run",
@@ -102,9 +104,11 @@ class TestPrecompiles:
                     caller_code_address=AUTHORIZED_CALLER_CODE,
                     caller_address=CALLER_ADDRESS,
                 )
-                assert bool(reverted)
-                assert bytes(return_data) == b"Kakarot: accountNotDeployed"
+                assert not bool(reverted)
+                assert bytes(return_data) == b""
                 assert gas_used == CAIRO_PRECOMPILE_GAS
+
+                SyscallHandler.mock_deploy.assert_called_once()
                 return
 
             @SyscallHandler.patch(
@@ -217,34 +221,6 @@ class TestPrecompiles:
                     if caller_code_address == AUTHORIZED_CALLER_CODE
                     else 0
                 )
-                return
-
-            @SyscallHandler.patch(
-                "Kakarot_authorized_cairo_precompiles_callers",
-                AUTHORIZED_CALLER_CODE,
-                1,
-            )
-            def test__should_fail_if_undeployed_starknet_account(
-                self,
-                cairo_run,
-            ):
-                # The expected returndata is a list of 32-byte words where each word is a felt returned by the precompile.
-                return_data, reverted, gas_used = cairo_run(
-                    "test__precompiles_run",
-                    address=0x75001,
-                    input=bytes.fromhex(
-                        CALL_CONTRACT_SOLIDITY_SELECTOR
-                        + f"{0xc0de:064x}"
-                        + f"{get_selector_from_name('get'):064x}"
-                        + f"{0x60:064x}"  # data_offset
-                        + f"{0x01:064x}"  # data_len
-                        + f"{0x01:064x}"  # data
-                    ),
-                    caller_code_address=AUTHORIZED_CALLER_CODE,
-                )
-                assert bool(reverted)
-                assert bytes(return_data) == b"Kakarot: accountNotDeployed"
-                assert gas_used == CAIRO_PRECOMPILE_GAS
                 return
 
         @pytest.mark.parametrize(

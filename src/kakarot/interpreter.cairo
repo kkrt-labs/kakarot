@@ -33,6 +33,7 @@ from kakarot.instructions.system_operations import CallHelper, CreateHelper, Sys
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.precompiles.precompiles import Precompiles
+from kakarot.precompiles.precompiles_helpers import PrecompilesHelpers
 from kakarot.stack import Stack
 from kakarot.state import State
 from kakarot.gas import Gas
@@ -64,7 +65,7 @@ namespace Interpreter {
         let pc = evm.program_counter;
         let is_pc_ge_code_len = is_le(evm.message.bytecode_len, pc);
         if (is_pc_ge_code_len != FALSE) {
-            let is_precompile = Precompiles.is_precompile(evm.message.code_address.evm);
+            let is_precompile = PrecompilesHelpers.is_precompile(evm.message.code_address.evm);
             if (is_precompile != FALSE) {
                 let parent_context = evm.message.parent;
                 let is_parent_zero = Helpers.is_zero(cast(parent_context, felt));

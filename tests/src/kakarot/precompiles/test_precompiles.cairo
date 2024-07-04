@@ -5,6 +5,7 @@ from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.alloc import alloc
 
 from kakarot.precompiles.precompiles import Precompiles
+from kakarot.precompiles.precompiles_helpers import PrecompilesHelpers
 
 func test__is_precompile{range_check_ptr}() -> felt {
     alloc_locals;
@@ -13,7 +14,7 @@ func test__is_precompile{range_check_ptr}() -> felt {
     %{ ids.address = program_input["address"] %}
 
     // When
-    let is_precompile = Precompiles.is_precompile(address);
+    let is_precompile = PrecompilesHelpers.is_precompile(address);
     return is_precompile;
 }
 

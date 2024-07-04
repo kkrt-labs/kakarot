@@ -13,6 +13,7 @@ from kakarot.interfaces.interfaces import IAccount
 from kakarot.account import Account
 from kakarot.storages import Kakarot_authorized_cairo_precompiles_callers
 from utils.utils import Helpers
+from backend.starknet import Starknet
 
 const CALL_CONTRACT_SOLIDITY_SELECTOR = 0xb3eb2c1b;
 const LIBRARY_CALL_SOLIDITY_SELECTOR = 0x5a9af197;
@@ -82,11 +83,19 @@ namespace KakarotPrecompiles {
             let is_not_deployed = Helpers.is_zero(caller_starknet_address);
 
             if (is_not_deployed != FALSE) {
-                let (revert_reason_len, revert_reason) = Errors.accountNotDeployed();
-                return (
-                    revert_reason_len, revert_reason, CAIRO_PRECOMPILE_GAS, Errors.EXCEPTIONAL_HALT
-                );
+                // Deploy account -
+                // order of returned values in memory matches the explicit ones in the other branch
+                Starknet.deploy(caller_address);
+            } else {
+                tempvar syscall_ptr = syscall_ptr;
+                tempvar pedersen_ptr = pedersen_ptr;
+                tempvar range_check_ptr = range_check_ptr;
+                tempvar caller_starknet_address = caller_starknet_address;
             }
+            let syscall_ptr = cast([ap - 4], felt*);
+            let pedersen_ptr = cast([ap - 3], HashBuiltin*);
+            let range_check_ptr = [ap - 2];
+            let caller_starknet_address = [ap - 1];
 
             let (retdata_len, retdata, success) = IAccount.execute_starknet_call(
                 caller_starknet_address, to_starknet_address, starknet_selector, data_len, data

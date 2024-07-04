@@ -165,6 +165,7 @@ class SyscallHandler:
     mock_event = mock.MagicMock()
     mock_replace_class = mock.MagicMock()
     mock_send_message_to_l1 = mock.MagicMock()
+    mock_deploy = mock.MagicMock()
 
     # Patch the keccak library call to return the keccak of the input data.
     # We need to reconstruct the raw bytes from the Cairo-style keccak calldata.
@@ -509,6 +510,61 @@ class SyscallHandler:
         payload_ptr = segments.memory[syscall_ptr + 3]
         payload = [segments.memory[payload_ptr + i] for i in range(payload_size)]
         self.mock_send_message_to_l1(to_address=to_address, payload=payload)
+
+    def deploy(self, segments, syscall_ptr):
+        """
+        Record the deploy call in the internal mock object.
+
+        Syscall structure is:
+            struct DeployRequest {
+                selector: felt,
+                class_hash: felt,
+                contract_address_salt: felt,
+                constructor_calldata_size: felt,
+                constructor_calldata: felt*,
+                deploy_from_zero: felt,
+            }
+
+            struct DeployResponse {
+                contract_address: felt,
+                constructor_retdata_size: felt,
+                constructor_retdata: felt*,
+            }
+
+        """
+        class_hash = segments.memory[syscall_ptr + 1]
+        contract_address_salt = segments.memory[syscall_ptr + 2]
+        constructor_calldata_size = segments.memory[syscall_ptr + 3]
+        constructor_calldata_ptr = segments.memory[syscall_ptr + 4]
+        constructor_calldata = [
+            segments.memory[constructor_calldata_ptr + i]
+            for i in range(constructor_calldata_size)
+        ]
+        deploy_from_zero = segments.memory[syscall_ptr + 5]
+        self.mock_deploy(
+            class_hash=class_hash,
+            contract_address_salt=contract_address_salt,
+            constructor_calldata=constructor_calldata,
+            deploy_from_zero=deploy_from_zero,
+        )
+
+        retdata = self.patches.get("deploy")(class_hash, constructor_calldata)
+        retdata_segment = segments.add()
+        segments.write_arg(retdata_segment, retdata)
+        segments.write_arg(syscall_ptr + 6, [len(retdata), retdata_segment])
+
+    @classmethod
+    @contextmanager
+    def patch_deploy(cls, value: callable):
+        """
+        Patch the deploy syscall with the value.
+
+        :param value: The value to patch with, a callable that will be called with the class hash,
+            the contract address salt, the constructor calldata and the deploy from zero flag.
+        """
+        cls.patches["deploy"] = value
+        yield
+        del cls.patches["deploy"]
 
     @classmethod
     @contextmanager
