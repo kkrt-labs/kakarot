@@ -349,10 +349,6 @@ class TestAccountContract:
             )
 
     class TestExecuteFromOutside:
-        @SyscallHandler.patch(
-            "IKakarot.get_cairo1_helpers_class_hash",
-            lambda addr, data: [CAIRO1_HELPERS_CLASS_HASH],
-        )
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
         def test_should_raise_with_incorrect_signature_length(
             self, cairo_run, transaction
@@ -378,10 +374,6 @@ class TestAccountContract:
                     chain_id=transaction.get("chainId") or CHAIN_ID,
                 )
 
-        @SyscallHandler.patch(
-            "IKakarot.get_cairo1_helpers_class_hash",
-            lambda addr, data: [CAIRO1_HELPERS_CLASS_HASH],
-        )
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
         def test_should_raise_with_wrong_signature(self, cairo_run, transaction):
             private_key = generate_random_private_key()
@@ -405,11 +397,7 @@ class TestAccountContract:
                     chain_id=transaction.get("chainId") or CHAIN_ID,
                 )
 
-        @SyscallHandler.patch(
-            "IKakarot.get_cairo1_helpers_class_hash",
-            lambda addr, data: [CAIRO1_HELPERS_CLASS_HASH],
-        )
-        def test_should_raise_unauthorized_pre_eip155_tx(self, cairo_run):
+        async def test_should_raise_unauthorized_pre_eip155_tx(self, cairo_run):
             rlp_decoded = rlp.decode(ARACHNID_PROXY_SIGNED_TX)
             v, r, s = rlp_decoded[-3:]
             signature = [
@@ -433,11 +421,7 @@ class TestAccountContract:
                     chain_id=CHAIN_ID,
                 )
 
-        @SyscallHandler.patch(
-            "IKakarot.get_cairo1_helpers_class_hash",
-            lambda addr, data: [CAIRO1_HELPERS_CLASS_HASH],
-        )
-        def test_should_raise_invalid_signature_for_invalid_chain_id_when_tx_type0_not_pre_eip155(
+        async def test_should_raise_invalid_signature_for_invalid_chain_id_when_tx_type0_not_pre_eip155(
             self, cairo_run
         ):
             transaction = {
@@ -470,11 +454,7 @@ class TestAccountContract:
                     chain_id=CHAIN_ID + 1,
                 )
 
-        @SyscallHandler.patch(
-            "IKakarot.get_cairo1_helpers_class_hash",
-            lambda addr, data: [CAIRO1_HELPERS_CLASS_HASH],
-        )
-        def test_should_raise_invalid_chain_id_tx_type_different_from_0(
+        async def test_should_raise_invalid_chain_id_tx_type_different_from_0(
             self, cairo_run
         ):
             transaction = {
@@ -518,10 +498,6 @@ class TestAccountContract:
                 )
 
         @SyscallHandler.patch(
-            "IKakarot.get_cairo1_helpers_class_hash",
-            lambda addr, data: [CAIRO1_HELPERS_CLASS_HASH],
-        )
-        @SyscallHandler.patch(
             "Account_nonce",
             100,
         )
@@ -548,10 +524,6 @@ class TestAccountContract:
                     chain_id=transaction.get("chainId") or CHAIN_ID,
                 )
 
-        @SyscallHandler.patch(
-            "IKakarot.get_cairo1_helpers_class_hash",
-            lambda addr, data: [CAIRO1_HELPERS_CLASS_HASH],
-        )
         @SyscallHandler.patch("IKakarot.get_native_token", lambda addr, data: [0xDEAD])
         @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0xDEAD, 0])
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
@@ -581,10 +553,6 @@ class TestAccountContract:
                     chain_id=transaction.get("chainId") or CHAIN_ID,
                 )
 
-        @SyscallHandler.patch(
-            "IKakarot.get_cairo1_helpers_class_hash",
-            lambda addr, data: [CAIRO1_HELPERS_CLASS_HASH],
-        )
         @SyscallHandler.patch("IKakarot.get_native_token", lambda addr, data: [0xDEAD])
         @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0xDEAD, 10**20])
         @SyscallHandler.patch("IKakarot.get_block_gas_limit", lambda addr, data: [0])
@@ -615,10 +583,6 @@ class TestAccountContract:
                     chain_id=transaction.get("chainId") or CHAIN_ID,
                 )
 
-        @SyscallHandler.patch(
-            "IKakarot.get_cairo1_helpers_class_hash",
-            lambda addr, data: [CAIRO1_HELPERS_CLASS_HASH],
-        )
         @SyscallHandler.patch("IKakarot.get_native_token", lambda addr, data: [0xDEAD])
         @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0xDEAD, 10**20])
         @SyscallHandler.patch(
@@ -650,10 +614,6 @@ class TestAccountContract:
                     chain_id=transaction.get("chainId") or CHAIN_ID,
                 )
 
-        @SyscallHandler.patch(
-            "IKakarot.get_cairo1_helpers_class_hash",
-            lambda addr, data: [CAIRO1_HELPERS_CLASS_HASH],
-        )
         @SyscallHandler.patch("IKakarot.get_native_token", lambda addr, data: [0xDEAD])
         @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0xDEAD, 10**20])
         @SyscallHandler.patch(
@@ -705,10 +665,6 @@ class TestAccountContract:
                     chain_id=transaction.get("chainId") or CHAIN_ID,
                 )
 
-        @SyscallHandler.patch(
-            "IKakarot.get_cairo1_helpers_class_hash",
-            lambda addr, data: [CAIRO1_HELPERS_CLASS_HASH],
-        )
         @SyscallHandler.patch("IKakarot.get_native_token", lambda addr, data: [0xDEAD])
         @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0xDEAD, 10**20])
         @SyscallHandler.patch(
@@ -754,10 +710,6 @@ class TestAccountContract:
                 data=[1, 0x68656C6C6F, 1, 1],
             )
 
-        @SyscallHandler.patch(
-            "IKakarot.get_cairo1_helpers_class_hash",
-            lambda addr, data: [CAIRO1_HELPERS_CLASS_HASH],
-        )
         @SyscallHandler.patch("IKakarot.get_native_token", lambda addr, data: [0xDEAD])
         @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0xDEAD, 10**20])
         @SyscallHandler.patch(
@@ -803,10 +755,6 @@ class TestAccountContract:
                 data=[1, 0x68656C6C6F, 1, 1],
             )
 
-        @SyscallHandler.patch(
-            "IKakarot.get_cairo1_helpers_class_hash",
-            lambda addr, data: [CAIRO1_HELPERS_CLASS_HASH],
-        )
         @SyscallHandler.patch("IKakarot.get_native_token", lambda addr, data: [0xDEAD])
         @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0xDEAD, 10**20])
         @SyscallHandler.patch(
