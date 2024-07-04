@@ -151,15 +151,14 @@ namespace AccountContract {
 
     // EOA functions
 
-    // @notice Validate the signature of Ethereum transaction.
-    // @dev This function validates an Ethereum transaction by checking if the transaction
-    // is correctly signed by the given address, and if the nonce in the transaction
-    // matches the nonce of the account. It also validate the gas and chain_id.
+    // @notice Validate an Ethereum transaction and execute it.
+    // @dev This function validates the transaction by checking its signature,
+    // chain_id, nonce and gas. It then sends it to Kakarot.
     // @param tx_data_len The length of tx data
     // @param tx_data The tx data.
     // @param signature_len The length of tx signature.
     // @param signature The tx signature.
-    // @param chain_id The chain_id of the tx.
+    // @param chain_id The expected chain id of the tx
     func execute_from_outside{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
