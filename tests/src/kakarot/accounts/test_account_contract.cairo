@@ -129,33 +129,28 @@ func test__execute_starknet_call{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*,
     return (retdata, success);
 }
 
-func test__validate{
+func test__execute_from_outside{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, bitwise_ptr: BitwiseBuiltin*, range_check_ptr
 }() {
     // Given
-    tempvar address: felt;
-    tempvar nonce: felt;
-    tempvar chain_id: felt;
-    tempvar r: Uint256;
-    tempvar s: Uint256;
-    tempvar v: felt;
+    alloc_locals;
+
     tempvar tx_data_len: felt;
-    let (tx_data) = alloc();
+    let (local tx_data: felt*) = alloc();
+    tempvar signature_len: felt;
+    let (signature) = alloc();
+    tempvar chain_id: felt;
+
     %{
-        ids.address = program_input["address"]
-        ids.nonce = program_input["nonce"]
-        ids.chain_id = program_input["chain_id"]
-        ids.r.low = program_input["r"][0]
-        ids.r.high = program_input["r"][1]
-        ids.s.low = program_input["s"][0]
-        ids.s.high = program_input["s"][1]
-        ids.v = program_input["v"]
         ids.tx_data_len = len(program_input["tx_data"])
         segments.write_arg(ids.tx_data, program_input["tx_data"])
+        ids.signature_len = len(program_input["signature"])
+        segments.write_arg(ids.signature, program_input["signature"])
+        ids.chain_id = program_input["chain_id"]
     %}
 
     // When
-    AccountInternals.validate(address, nonce, chain_id, r, s, v, tx_data_len, tx_data);
+    AccountContract.execute_from_outside(tx_data_len, tx_data, signature_len, signature, chain_id);
 
     return ();
 }
