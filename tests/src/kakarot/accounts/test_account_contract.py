@@ -349,52 +349,22 @@ class TestAccountContract:
             )
 
     class TestExecuteFromOutside:
-        @pytest.mark.parametrize("transaction", TRANSACTIONS)
-        def test_should_raise_with_incorrect_signature_length(
-            self, cairo_run, transaction
-        ):
-            private_key = generate_random_private_key()
-            address = int(private_key.public_key.to_checksum_address(), 16)
-            signed = Account.sign_transaction(transaction, private_key)
-            signature = [
-                *int_to_uint256(signed.r),
-                signed.s,
-                signed["v"],
-            ]
-            encoded_unsigned_tx = rlp_encode_signed_data(transaction)
-            tx_data = list(encoded_unsigned_tx)
-
-            with cairo_error(
-                message="Incorrect signature length"
-            ), SyscallHandler.patch("Account_evm_address", address):
+        def test_should_raise_with_incorrect_signature_length(self, cairo_run):
+            with cairo_error(message="Incorrect signature length"):
                 cairo_run(
                     "test__execute_from_outside",
-                    tx_data=tx_data,
-                    signature=signature,
-                    chain_id=transaction.get("chainId") or CHAIN_ID,
+                    tx_data=[],
+                    signature=list(range(4)),
+                    chain_id=CHAIN_ID,
                 )
 
-        @pytest.mark.parametrize("transaction", TRANSACTIONS)
-        def test_should_raise_with_wrong_signature(self, cairo_run, transaction):
-            private_key = generate_random_private_key()
-            address = int(private_key.public_key.to_checksum_address(), 16)
-            signed = Account.sign_transaction(transaction, private_key)
-            signature = [
-                *int_to_uint256(signed.r),
-                *int_to_uint256(signed.s + 1),
-                signed["v"],
-            ]
-            encoded_unsigned_tx = rlp_encode_signed_data(transaction)
-            tx_data = list(encoded_unsigned_tx)
-
-            with cairo_error(message="Invalid signature."), SyscallHandler.patch(
-                "Account_evm_address", address
-            ):
+        def test_should_raise_with_wrong_signature(self, cairo_run):
+            with cairo_error(message="Invalid signature."):
                 cairo_run(
                     "test__execute_from_outside",
-                    tx_data=tx_data,
-                    signature=signature,
-                    chain_id=transaction.get("chainId") or CHAIN_ID,
+                    tx_data=[1],
+                    signature=list(range(5)),
+                    chain_id=CHAIN_ID,
                 )
 
         async def test_should_raise_unauthorized_pre_eip155_tx(self, cairo_run):
