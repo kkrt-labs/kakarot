@@ -83,22 +83,19 @@ namespace KakarotPrecompiles {
             let is_not_deployed = Helpers.is_zero(caller_starknet_address);
 
             if (is_not_deployed != FALSE) {
-                // Deploy account
-                let (deployed_contract) = Starknet.deploy(caller_address);
-                tempvar caller_starknet_address = deployed_contract;
-                tempvar syscall_ptr = syscall_ptr;
-                tempvar pedersen_ptr = pedersen_ptr;
-                tempvar range_check_ptr = range_check_ptr;
+                // Deploy account -
+                // order of returned values in memory matches the explicit ones in the other branch
+                Starknet.deploy(caller_address);
             } else {
-                tempvar caller_starknet_address = caller_starknet_address;
                 tempvar syscall_ptr = syscall_ptr;
                 tempvar pedersen_ptr = pedersen_ptr;
                 tempvar range_check_ptr = range_check_ptr;
+                tempvar caller_starknet_address = caller_starknet_address;
             }
-            let caller_starknet_address = [ap - 4];
-            let syscall_ptr = cast([ap - 3], felt*);
-            let pedersen_ptr = cast([ap - 2], HashBuiltin*);
-            let range_check_ptr = [ap - 1];
+            let syscall_ptr = cast([ap - 4], felt*);
+            let pedersen_ptr = cast([ap - 3], HashBuiltin*);
+            let range_check_ptr = [ap - 2];
+            let caller_starknet_address = [ap - 1];
 
             let (retdata_len, retdata, success) = IAccount.execute_starknet_call(
                 caller_starknet_address, to_starknet_address, starknet_selector, data_len, data
