@@ -178,7 +178,7 @@ namespace AccountContract {
 
         let tx_type = EthTransaction.get_tx_type(tx_data);
         local y_parity: felt;
-        local pre_eip155_tx;
+        local pre_eip155_tx: felt;
         if (tx_type == 0) {
             let is_eip155_tx = is_le(v, 28);
             assert pre_eip155_tx = is_eip155_tx;
