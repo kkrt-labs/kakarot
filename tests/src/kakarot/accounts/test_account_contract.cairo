@@ -133,10 +133,8 @@ func test__execute_from_outside{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, bitwise_ptr: BitwiseBuiltin*, range_check_ptr
 }() {
     // Given
-    alloc_locals;
-
     tempvar tx_data_len: felt;
-    let (local tx_data: felt*) = alloc();
+    let (tx_data) = alloc();
     tempvar signature_len: felt;
     let (signature) = alloc();
     tempvar chain_id: felt;
