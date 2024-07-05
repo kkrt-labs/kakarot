@@ -16,6 +16,8 @@ from kakarot.accounts.library import (
     Account_authorized_message_hashes,
 )
 from kakarot.accounts.model import CallArray
+from utils.utils import Helpers
+from kakarot.errors import Errors
 from kakarot.interfaces.interfaces import IKakarot, IAccount
 from starkware.starknet.common.syscalls import (
     get_tx_info,
@@ -25,6 +27,8 @@ from starkware.starknet.common.syscalls import (
 )
 from starkware.cairo.common.math import assert_le, unsigned_div_rem
 from starkware.cairo.common.alloc import alloc
+
+const COMPUTE_STARKNET_ADDRESS_SELECTOR = 0x0ad7772990f7f5a506d84e5723efd1242e989c23f45653870d49d6d107f6e7;
 
 // @title EVM smart contract account representation.
 @constructor
@@ -317,9 +321,14 @@ func execute_starknet_call{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range
 ) -> (retdata_len: felt, retdata: felt*, success: felt) {
     Ownable.assert_only_owner();
     let (kakarot_address) = Ownable.owner();
-    if (kakarot_address == to) {
-        let (retdata) = alloc();
-        return (0, retdata, FALSE);
+    let is_compute_starknet_address = Helpers.is_zero(
+        COMPUTE_STARKNET_ADDRESS_SELECTOR - function_selector
+    );
+    let is_kakarot = Helpers.is_zero(kakarot_address - to);
+    tempvar is_forbidden = is_kakarot * (1 - is_compute_starknet_address);
+    if (is_forbidden != FALSE) {
+        let (error_len, error) = Errors.kakarotReentrancy();
+        return (error_len, error, FALSE);
     }
     let (retdata_len, retdata) = call_contract(to, function_selector, calldata_len, calldata);
     return (retdata_len, retdata, TRUE);

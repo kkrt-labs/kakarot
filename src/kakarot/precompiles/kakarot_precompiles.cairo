@@ -6,7 +6,7 @@ from starkware.cairo.common.math import assert_not_zero
 from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import call_contract, library_call, get_caller_address
 from starkware.starknet.common.messages import send_message_to_l1
-from starkware.cairo.common.bool import FALSE
+from starkware.cairo.common.bool import FALSE, TRUE
 
 from kakarot.errors import Errors
 from kakarot.interfaces.interfaces import IAccount
@@ -48,9 +48,7 @@ namespace KakarotPrecompiles {
         let is_input_invalid = is_le(input_len, 99);
         if (is_input_invalid != 0) {
             let (revert_reason_len, revert_reason) = Errors.outOfBoundsRead();
-            return (
-                revert_reason_len, revert_reason, CAIRO_PRECOMPILE_GAS, Errors.EXCEPTIONAL_HALT
-            );
+            return (revert_reason_len, revert_reason, CAIRO_PRECOMPILE_GAS, TRUE);
         }
 
         // Input is formatted as:
@@ -100,10 +98,15 @@ namespace KakarotPrecompiles {
             let (retdata_len, retdata, success) = IAccount.execute_starknet_call(
                 caller_starknet_address, to_starknet_address, starknet_selector, data_len, data
             );
+            if (success == FALSE) {
+                // skip formatting to bytes32 array and return revert reason directly
+                return (retdata_len, retdata, CAIRO_PRECOMPILE_GAS, TRUE);
+            }
+
             let (output) = alloc();
             let output_len = retdata_len * 32;
             Helpers.felt_array_to_bytes32_array(retdata_len, retdata, output);
-            return (output_len, output, CAIRO_PRECOMPILE_GAS, 1 - success);
+            return (output_len, output, CAIRO_PRECOMPILE_GAS, FALSE);
         }
 
         if (selector == LIBRARY_CALL_SOLIDITY_SELECTOR) {
@@ -113,11 +116,11 @@ namespace KakarotPrecompiles {
             let (output) = alloc();
             let output_len = retdata_len * 32;
             Helpers.felt_array_to_bytes32_array(retdata_len, retdata, output);
-            return (output_len, output, CAIRO_PRECOMPILE_GAS, 0);
+            return (output_len, output, CAIRO_PRECOMPILE_GAS, FALSE);
         }
 
         let (revert_reason_len, revert_reason) = Errors.invalidCairoSelector();
-        return (revert_reason_len, revert_reason, CAIRO_PRECOMPILE_GAS, Errors.EXCEPTIONAL_HALT);
+        return (revert_reason_len, revert_reason, CAIRO_PRECOMPILE_GAS, TRUE);
     }
 
     // @notice Sends a message to a message to L1.
@@ -138,7 +141,7 @@ namespace KakarotPrecompiles {
         let is_input_invalid = is_le(input_len, 95);
         if (is_input_invalid != 0) {
             let (revert_reason_len, revert_reason) = Errors.outOfBoundsRead();
-            return (revert_reason_len, revert_reason, CAIRO_MESSAGE_GAS, Errors.EXCEPTIONAL_HALT);
+            return (revert_reason_len, revert_reason, CAIRO_MESSAGE_GAS, TRUE);
         }
 
         // Input is formatted as:
@@ -151,7 +154,7 @@ namespace KakarotPrecompiles {
         let data_fits_in_input = is_le(data_bytes_len, input_len - 3 * 32);
         if (data_fits_in_input == 0) {
             let (revert_reason_len, revert_reason) = Errors.outOfBoundsRead();
-            return (revert_reason_len, revert_reason, CAIRO_MESSAGE_GAS, Errors.EXCEPTIONAL_HALT);
+            return (revert_reason_len, revert_reason, CAIRO_MESSAGE_GAS, TRUE);
         }
         let data_ptr = input + 3 * 32;
 
@@ -160,6 +163,6 @@ namespace KakarotPrecompiles {
 
         send_message_to_l1(target_address, data_bytes_len, data_ptr);
         let (output) = alloc();
-        return (0, output, CAIRO_MESSAGE_GAS, 0);
+        return (0, output, CAIRO_MESSAGE_GAS, FALSE);
     }
 }

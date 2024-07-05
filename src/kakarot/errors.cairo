@@ -744,4 +744,30 @@ namespace Errors {
         dw 'o';
         dw 'r';
     }
+
+    func kakarotReentrancy() -> (error_len: felt, error: felt*) {
+        let (error) = get_label_location(kakarot_reentrancy_error_message);
+        return (19, error);
+
+        kakarot_reentrancy_error_message:
+        dw 'K';
+        dw 'a';
+        dw 'k';
+        dw 'a';
+        dw 'r';
+        dw 'o';
+        dw 't';
+        dw ':';
+        dw ' ';
+        dw 'r';
+        dw 'e';
+        dw 'e';
+        dw 'n';
+        dw 't';
+        dw 'r';
+        dw 'a';
+        dw 'n';
+        dw 'c';
+        dw 'y';
+    }
 }
