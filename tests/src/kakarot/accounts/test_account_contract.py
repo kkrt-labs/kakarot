@@ -399,7 +399,7 @@ class TestAccountContract:
             signature = [
                 *int_to_uint256(signed.r),
                 *int_to_uint256(signed.s),
-                signed["v"],
+                signed.v,
             ]
 
             with cairo_error(message="Invalid signature."), SyscallHandler.patch(
@@ -424,14 +424,7 @@ class TestAccountContract:
                 "nonce": 34,
                 "to": "",
                 "value": 0x00,
-                "accessList": (
-                    {
-                        "address": "0x0000000000000000000000000000000000000001",
-                        "storageKeys": (
-                            "0x0100000000000000000000000000000000000000000000000000000000000000",
-                        ),
-                    },
-                ),
+                "accessList": [],
                 "chainId": CHAIN_ID,
             }
             encoded_unsigned_tx = rlp_encode_signed_data(transaction)
@@ -442,7 +435,7 @@ class TestAccountContract:
             signature = [
                 *int_to_uint256(signed.r),
                 *int_to_uint256(signed.s),
-                signed["v"],
+                signed.v,
             ]
 
             with cairo_error(message="Invalid chain id"), SyscallHandler.patch(
@@ -466,7 +459,7 @@ class TestAccountContract:
             signature = [
                 *int_to_uint256(signed.r),
                 *int_to_uint256(signed.s),
-                signed["v"],
+                signed.v,
             ]
             encoded_unsigned_tx = rlp_encode_signed_data(transaction)
             tx_data = list(encoded_unsigned_tx)
@@ -491,7 +484,7 @@ class TestAccountContract:
             signature = [
                 *int_to_uint256(signed.r),
                 *int_to_uint256(signed.s),
-                signed["v"],
+                signed.v,
             ]
             encoded_unsigned_tx = rlp_encode_signed_data(transaction)
             tx_data = list(encoded_unsigned_tx)
@@ -523,7 +516,7 @@ class TestAccountContract:
             signature = [
                 *int_to_uint256(signed.r),
                 *int_to_uint256(signed.s),
-                signed["v"],
+                signed.v,
             ]
             encoded_unsigned_tx = rlp_encode_signed_data(transaction)
             tx_data = list(encoded_unsigned_tx)
@@ -560,7 +553,7 @@ class TestAccountContract:
             signature = [
                 *int_to_uint256(signed.r),
                 *int_to_uint256(signed.s),
-                signed["v"],
+                signed.v,
             ]
             encoded_unsigned_tx = rlp_encode_signed_data(transaction)
             tx_data = list(encoded_unsigned_tx)
@@ -593,14 +586,7 @@ class TestAccountContract:
                 "nonce": 34,
                 "to": "0x09616C3d61b3331fc4109a9E41a8BDB7d9776609",
                 "value": 0x5AF3107A4000,
-                "accessList": (
-                    {
-                        "address": "0x0000000000000000000000000000000000000001",
-                        "storageKeys": (
-                            "0x0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF",
-                        ),
-                    },
-                ),
+                "accessList": [],
                 "chainId": CHAIN_ID,
             }
             encoded_unsigned_tx = rlp_encode_signed_data(transaction)
@@ -611,7 +597,7 @@ class TestAccountContract:
             signature = [
                 *int_to_uint256(signed.r),
                 *int_to_uint256(signed.s),
-                signed["v"],
+                signed.v,
             ]
 
             with cairo_error(
@@ -707,7 +693,7 @@ class TestAccountContract:
             signature = [
                 *int_to_uint256(signed.r),
                 *int_to_uint256(signed.s),
-                signed["v"],
+                signed.v,
             ]
             encoded_unsigned_tx = rlp_encode_signed_data(transaction)
             tx_data = list(encoded_unsigned_tx)
@@ -761,7 +747,7 @@ class TestAccountContract:
             signature = [
                 *int_to_uint256(signed.r),
                 *int_to_uint256(signed.s),
-                signed["v"],
+                signed.v,
             ]
 
             with SyscallHandler.patch(
