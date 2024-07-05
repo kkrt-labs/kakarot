@@ -30,6 +30,12 @@ WORKDIR /app/kakarot
 ############################################
 FROM base as builder
 
+ENV PATH="$PATH:/root/.local/bin:/root/.foundry/bin"
+RUN curl -L https://foundry.paradigm.xyz -o foundry.sh \
+    && chmod +x foundry.sh \
+    && ./foundry.sh \
+    && foundryup
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-transport-https \
     ca-certificates \
@@ -60,7 +66,8 @@ RUN --mount=type=cache,target=/root/.cache \
 COPY . .
 RUN curl --proto '=https' --tlsv1.2 -sSf https://docs.swmansion.com/scarb/install.sh | sh -s -- -v 0.7.0
 RUN --mount=type=cache,target=/root/.cache \
-    make fetch-ssj-artifacts && make build && make build-cairo1
+    make fetch-ssj-artifacts && make build && make build-cairo1 && make build-sol
+
 
 ############################################
 # Kakarot deployer
