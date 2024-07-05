@@ -12,12 +12,7 @@ from starkware.starknet.public.abi import (
 )
 
 from kakarot_scripts.constants import ARACHNID_PROXY_DEPLOYER, ARACHNID_PROXY_SIGNED_TX
-from tests.utils.constants import (
-    CAIRO1_HELPERS_CLASS_HASH,
-    CHAIN_ID,
-    TRANSACTION_GAS_LIMIT,
-    TRANSACTIONS,
-)
+from tests.utils.constants import CHAIN_ID, TRANSACTION_GAS_LIMIT, TRANSACTIONS
 from tests.utils.errors import cairo_error
 from tests.utils.helpers import generate_random_private_key, rlp_encode_signed_data
 from tests.utils.syscall_handler import SyscallHandler
@@ -46,10 +41,6 @@ class TestAccountContract:
         @SyscallHandler.patch("IKakarot.register_account", lambda addr, data: [])
         @SyscallHandler.patch("IKakarot.get_native_token", lambda addr, data: [0xDEAD])
         @SyscallHandler.patch("IERC20.approve", lambda addr, data: [1])
-        @SyscallHandler.patch(
-            "IKakarot.get_cairo1_helpers_class_hash",
-            lambda addr, data: [CAIRO1_HELPERS_CLASS_HASH],
-        )
         def test_should_set_storage_variables(self, cairo_run):
             cairo_run(
                 "test__initialize",
@@ -367,7 +358,8 @@ class TestAccountContract:
                     chain_id=CHAIN_ID,
                 )
 
-        async def test_should_raise_unauthorized_pre_eip155_tx(self, cairo_run):
+        @SyscallHandler.patch("Account_evm_address", int(ARACHNID_PROXY_DEPLOYER, 16))
+        def test_should_raise_unauthorized_pre_eip155_tx(self, cairo_run):
             rlp_decoded = rlp.decode(ARACHNID_PROXY_SIGNED_TX)
             v, r, s = rlp_decoded[-3:]
             signature = [
@@ -379,11 +371,7 @@ class TestAccountContract:
             encoded_unsigned_tx = rlp.encode(unsigned_tx_data)
             tx_data = list(encoded_unsigned_tx)
 
-            with cairo_error(
-                message="Unauthorized pre-eip155 transaction"
-            ), SyscallHandler.patch(
-                "Account_evm_address", int(ARACHNID_PROXY_DEPLOYER, 16)
-            ):
+            with cairo_error(message="Unauthorized pre-eip155 transaction"):
                 cairo_run(
                     "test__execute_from_outside",
                     tx_data=tx_data,
@@ -391,7 +379,7 @@ class TestAccountContract:
                     chain_id=CHAIN_ID,
                 )
 
-        async def test_should_raise_invalid_signature_for_invalid_chain_id_when_tx_type0_not_pre_eip155(
+        def test_should_raise_invalid_signature_for_invalid_chain_id_when_tx_type0_not_pre_eip155(
             self, cairo_run
         ):
             transaction = {
@@ -424,7 +412,7 @@ class TestAccountContract:
                     chain_id=CHAIN_ID + 1,
                 )
 
-        async def test_should_raise_invalid_chain_id_tx_type_different_from_0(
+        def test_should_raise_invalid_chain_id_tx_type_different_from_0(
             self, cairo_run
         ):
             transaction = {
@@ -471,7 +459,7 @@ class TestAccountContract:
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
         def test_should_raise_invalid_nonce(self, cairo_run, transaction):
             # explicitly set the nonce in transaction to be different from the patch
-            transaction["nonce"] = 0
+            transaction = {**transaction, "nonce": 0}
             private_key = generate_random_private_key()
             address = int(private_key.public_key.to_checksum_address(), 16)
             signed = Account.sign_transaction(transaction, private_key)
@@ -494,7 +482,7 @@ class TestAccountContract:
                 )
 
         @SyscallHandler.patch("IKakarot.get_native_token", lambda addr, data: [0xDEAD])
-        @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0xDEAD, 0])
+        @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 0])
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
         def test_raise_not_enough_ETH_balance(self, cairo_run, transaction):
             private_key = generate_random_private_key()
@@ -523,7 +511,9 @@ class TestAccountContract:
                 )
 
         @SyscallHandler.patch("IKakarot.get_native_token", lambda addr, data: [0xDEAD])
-        @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0xDEAD, 10**20])
+        @SyscallHandler.patch(
+            "IERC20.balanceOf", lambda addr, data: int_to_uint256(10**128)
+        )
         @SyscallHandler.patch("IKakarot.get_block_gas_limit", lambda addr, data: [0])
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
         def test_raise_transaction_gas_limit_too_high(self, cairo_run, transaction):
@@ -553,7 +543,9 @@ class TestAccountContract:
                 )
 
         @SyscallHandler.patch("IKakarot.get_native_token", lambda addr, data: [0xDEAD])
-        @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0xDEAD, 10**20])
+        @SyscallHandler.patch(
+            "IERC20.balanceOf", lambda addr, data: int_to_uint256(10**128)
+        )
         @SyscallHandler.patch(
             "IKakarot.get_block_gas_limit", lambda addr, data: [TRANSACTION_GAS_LIMIT]
         )
@@ -584,7 +576,9 @@ class TestAccountContract:
                 )
 
         @SyscallHandler.patch("IKakarot.get_native_token", lambda addr, data: [0xDEAD])
-        @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0xDEAD, 10**20])
+        @SyscallHandler.patch(
+            "IERC20.balanceOf", lambda addr, data: int_to_uint256(10**128)
+        )
         @SyscallHandler.patch(
             "IKakarot.get_block_gas_limit", lambda addr, data: [TRANSACTION_GAS_LIMIT]
         )
@@ -625,17 +619,19 @@ class TestAccountContract:
             ), SyscallHandler.patch(
                 "Account_evm_address", address
             ), SyscallHandler.patch(
-                "Account_nonce", transaction.get("nonce", 0)
+                "Account_nonce", transaction["nonce"]
             ):
                 cairo_run(
                     "test__execute_from_outside",
                     tx_data=tx_data,
                     signature=signature,
-                    chain_id=transaction.get("chainId") or CHAIN_ID,
+                    chain_id=transaction["chainId"],
                 )
 
         @SyscallHandler.patch("IKakarot.get_native_token", lambda addr, data: [0xDEAD])
-        @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0xDEAD, 10**20])
+        @SyscallHandler.patch(
+            "IERC20.balanceOf", lambda addr, data: int_to_uint256(10**128)
+        )
         @SyscallHandler.patch(
             "IKakarot.get_block_gas_limit", lambda addr, data: [TRANSACTION_GAS_LIMIT]
         )
@@ -666,8 +662,10 @@ class TestAccountContract:
                 tx_hash_low,
                 tx_hash_high,
                 0x1,
+            ), SyscallHandler.patch(
+                "Account_nonce", 0
             ):
-                output = cairo_run(
+                output_len, output = cairo_run(
                     "test__execute_from_outside",
                     tx_data=tx_data,
                     signature=signature,
@@ -679,10 +677,13 @@ class TestAccountContract:
                 data=[1, 0x68656C6C6F, 1, 1],
             )
 
+            assert output_len == 1
             assert output[0] == 0x68656C6C6F
 
         @SyscallHandler.patch("IKakarot.get_native_token", lambda addr, data: [0xDEAD])
-        @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0xDEAD, 10**20])
+        @SyscallHandler.patch(
+            "IERC20.balanceOf", lambda addr, data: int_to_uint256(10**128)
+        )
         @SyscallHandler.patch(
             "IKakarot.get_block_gas_limit", lambda addr, data: [TRANSACTION_GAS_LIMIT]
         )
@@ -714,7 +715,7 @@ class TestAccountContract:
             with SyscallHandler.patch(
                 "Account_evm_address", address
             ), SyscallHandler.patch("Account_nonce", transaction.get("nonce", 0)):
-                output = cairo_run(
+                output_len, output = cairo_run(
                     "test__execute_from_outside",
                     tx_data=tx_data,
                     signature=signature,
@@ -726,10 +727,13 @@ class TestAccountContract:
                 data=[1, 0x68656C6C6F, 1, 1],
             )
 
+            assert output_len == 1
             assert output[0] == 0x68656C6C6F
 
         @SyscallHandler.patch("IKakarot.get_native_token", lambda addr, data: [0xDEAD])
-        @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0xDEAD, 10**20])
+        @SyscallHandler.patch(
+            "IERC20.balanceOf", lambda addr, data: int_to_uint256(10**128)
+        )
         @SyscallHandler.patch(
             "IKakarot.get_block_gas_limit", lambda addr, data: [TRANSACTION_GAS_LIMIT]
         )
@@ -763,7 +767,7 @@ class TestAccountContract:
             with SyscallHandler.patch(
                 "Account_evm_address", address
             ), SyscallHandler.patch("Account_nonce", transaction.get("nonce", 0)):
-                output = cairo_run(
+                output_len, output = cairo_run(
                     "test__execute_from_outside",
                     tx_data=tx_data,
                     signature=signature,
@@ -775,4 +779,5 @@ class TestAccountContract:
                 data=[1, 0x68656C6C6F, 1, 1],
             )
 
+            assert output_len == 1
             assert output[0] == 0x68656C6C6F
