@@ -131,7 +131,7 @@ func test__execute_starknet_call{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*,
 
 func test__execute_from_outside{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, bitwise_ptr: BitwiseBuiltin*, range_check_ptr
-}() {
+}() -> felt* {
     // Given
     tempvar tx_data_len: felt;
     let (tx_data) = alloc();
@@ -148,9 +148,11 @@ func test__execute_from_outside{
     %}
 
     // When
-    AccountContract.execute_from_outside(tx_data_len, tx_data, signature_len, signature, chain_id);
+    let (return_data_len, return_data) = AccountContract.execute_from_outside(
+        tx_data_len, tx_data, signature_len, signature, chain_id
+    );
 
-    return ();
+    return return_data;
 }
 
 func test__write_jumpdests{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
