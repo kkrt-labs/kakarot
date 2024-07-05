@@ -668,7 +668,7 @@ class TestAccountContract:
                 tx_hash_high,
                 0x1,
             ):
-                cairo_run(
+                output = cairo_run(
                     "test__execute_from_outside",
                     tx_data=tx_data,
                     signature=signature,
@@ -679,6 +679,8 @@ class TestAccountContract:
                 keys=[get_selector_from_name("transaction_executed")],
                 data=[1, 0x68656C6C6F, 1, 1],
             )
+
+            assert output[0] == 0x68656C6C6F
 
         @SyscallHandler.patch("IKakarot.get_native_token", lambda addr, data: [0xDEAD])
         @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0xDEAD, 10**20])
@@ -713,7 +715,7 @@ class TestAccountContract:
             with SyscallHandler.patch(
                 "Account_evm_address", address
             ), SyscallHandler.patch("Account_nonce", transaction.get("nonce", 0)):
-                cairo_run(
+                output = cairo_run(
                     "test__execute_from_outside",
                     tx_data=tx_data,
                     signature=signature,
@@ -724,6 +726,8 @@ class TestAccountContract:
                 keys=[get_selector_from_name("transaction_executed")],
                 data=[1, 0x68656C6C6F, 1, 1],
             )
+
+            assert output[0] == 0x68656C6C6F
 
         @SyscallHandler.patch("IKakarot.get_native_token", lambda addr, data: [0xDEAD])
         @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0xDEAD, 10**20])
@@ -760,7 +764,7 @@ class TestAccountContract:
             with SyscallHandler.patch(
                 "Account_evm_address", address
             ), SyscallHandler.patch("Account_nonce", transaction.get("nonce", 0)):
-                cairo_run(
+                output = cairo_run(
                     "test__execute_from_outside",
                     tx_data=tx_data,
                     signature=signature,
@@ -771,3 +775,5 @@ class TestAccountContract:
                 keys=[get_selector_from_name("transaction_executed")],
                 data=[1, 0x68656C6C6F, 1, 1],
             )
+
+            assert output[0] == 0x68656C6C6F
