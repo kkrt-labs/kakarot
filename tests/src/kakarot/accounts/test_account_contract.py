@@ -467,12 +467,11 @@ class TestAccountContract:
                     chain_id=CHAIN_ID + 1,
                 )
 
-        @SyscallHandler.patch(
-            "Account_nonce",
-            100,
-        )
+        @SyscallHandler.patch("Account_nonce", 1)
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
         def test_should_raise_invalid_nonce(self, cairo_run, transaction):
+            # explicitly set the nonce in transaction to be different from the patch
+            transaction["nonce"] = 0
             private_key = generate_random_private_key()
             address = int(private_key.public_key.to_checksum_address(), 16)
             signed = Account.sign_transaction(transaction, private_key)
