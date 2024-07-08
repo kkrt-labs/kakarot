@@ -207,6 +207,14 @@ contract PlainOpcodes {
         return hash;
     }
 
+    function loopProfiling(uint256 max) public pure returns (uint256) {
+        uint256 val = 0;
+        for (uint256 i = 0; i < max; i++) {
+            val += i;
+        }
+        return val;
+    }
+
     receive() external payable {}
     fallback() external payable {}
 }

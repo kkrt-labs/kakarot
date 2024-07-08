@@ -385,3 +385,23 @@ class TestKakarot:
                     data="0xADD_DATA",
                 )
             assert not evm["reverted"]
+
+    class TestLoopProfiling:
+        @pytest.mark.slow
+        @SyscallHandler.patch(
+            "IAccount.is_valid_jumpdest",
+            lambda addr, data: [1],
+        )
+        def test_loop_profiling(self, get_contract):
+            plain_opcodes = get_contract("PlainOpcodes", "PlainOpcodes")
+            initial_state = {
+                CONTRACT_ADDRESS: {
+                    "code": list(plain_opcodes.bytecode_runtime),
+                    "storage": {},
+                    "balance": 0,
+                    "nonce": 0,
+                }
+            }
+            with SyscallHandler.patch_state(parse_state(initial_state)):
+                res = plain_opcodes.loopProfiling(10)
+            assert res == 45
