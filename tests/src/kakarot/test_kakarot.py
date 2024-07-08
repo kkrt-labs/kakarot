@@ -388,11 +388,12 @@ class TestKakarot:
 
     class TestLoopProfiling:
         @pytest.mark.slow
+        @pytest.mark.parametrize("max", [10, 50, 100, 200])
         @SyscallHandler.patch(
             "IAccount.is_valid_jumpdest",
             lambda addr, data: [1],
         )
-        def test_loop_profiling(self, get_contract):
+        def test_loop_profiling(self, get_contract, max):
             plain_opcodes = get_contract("PlainOpcodes", "PlainOpcodes")
             initial_state = {
                 CONTRACT_ADDRESS: {
@@ -403,5 +404,5 @@ class TestKakarot:
                 }
             }
             with SyscallHandler.patch_state(parse_state(initial_state)):
-                res = plain_opcodes.loopProfiling(10)
-            assert res == 45
+                res = plain_opcodes.loopProfiling(max)
+            assert res == sum(x for x in range(max))
