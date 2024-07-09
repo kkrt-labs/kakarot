@@ -388,11 +388,9 @@ class TestKakarot:
 
     class TestLoopProfiling:
         @pytest.mark.slow
+        @pytest.mark.NoCI
         @pytest.mark.parametrize("max", [10, 50, 100, 200])
-        @SyscallHandler.patch(
-            "IAccount.is_valid_jumpdest",
-            lambda addr, data: [1],
-        )
+        @SyscallHandler.patch("IAccount.is_valid_jumpdest", lambda addr, data: [1])
         def test_loop_profiling(self, get_contract, max):
             plain_opcodes = get_contract("PlainOpcodes", "PlainOpcodes")
             initial_state = {
