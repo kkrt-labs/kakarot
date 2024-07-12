@@ -61,6 +61,27 @@ def starknet():
     return RPC_CLIENT
 
 
+@pytest.fixture(scope="session")
+def new_eoa(max_fee) -> Wallet:
+    from kakarot_scripts.utils.kakarot import get_eoa
+
+    seed = 0
+
+    async def _factory():
+
+        private_key = generate_random_private_key(seed)
+        return Wallet(
+            address=private_key.public_key.to_checksum_address(),
+            private_key=private_key,
+            # deploying an account with enough ETH to pass ~10 tx
+            starknet_contract=await get_eoa(private_key, amount=100 * max_fee / 1e18),
+        )
+
+    yield _factory
+
+    seed += 1
+
+
 @pytest_asyncio.fixture(scope="session")
 async def addresses(max_fee) -> List[Wallet]:
     """
@@ -97,7 +118,7 @@ async def owner(addresses, eth_balance_of):
     """
     account = addresses[0]
     current_balance = await eth_balance_of(account.address)
-    if current_balance / 1e18 < 10:
+    if current_balance < 10e18:
         from kakarot_scripts.utils.starknet import fund_address
 
         await fund_address(account.starknet_contract.address, 10)

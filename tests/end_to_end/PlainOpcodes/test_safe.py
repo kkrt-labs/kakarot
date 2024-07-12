@@ -6,6 +6,11 @@ from tests.utils.constants import ACCOUNT_BALANCE
 
 
 @pytest_asyncio.fixture(scope="package")
+async def owner(new_eoa):
+    return await new_eoa()
+
+
+@pytest_asyncio.fixture(scope="package")
 async def safe(deploy_contract, owner):
     return await deploy_contract(
         "PlainOpcodes", "Safe", caller_eoa=owner.starknet_contract
