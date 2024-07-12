@@ -69,7 +69,7 @@ class TestUniswapV2Factory:
             await factory.createPair(
                 *TEST_ADDRESSES, caller_eoa=owner.starknet_contract, max_fee=0
             )
-            assert factory.tx.result.gas_used == 2512920
+            assert factory.tx.result.gas_used == 2_512_920
 
     class TestSetFeeTo:
         async def test_should_revert_when_caller_is_not_owner(self, factory, other):
