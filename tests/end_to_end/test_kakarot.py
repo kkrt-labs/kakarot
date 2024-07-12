@@ -6,7 +6,7 @@ import pytest_asyncio
 from starknet_py.contract import Contract
 from starknet_py.net.full_node_client import FullNodeClient
 
-from kakarot_scripts.utils.kakarot import get_solidity_artifacts
+from kakarot_scripts.utils.kakarot import get_eoa, get_solidity_artifacts
 from kakarot_scripts.utils.starknet import wait_for_transaction
 from tests.end_to_end.bytecodes import test_cases
 from tests.utils.constants import PRE_FUND_AMOUNT, TRANSACTION_GAS_LIMIT
@@ -479,3 +479,28 @@ class TestKakarot:
             assert new_owner == other.address
 
             await invoke("kakarot", "transfer_ownership", prev_owner, account=other)
+
+    class TestBlockTransactionViewEntrypoint:
+
+        @pytest.mark.parametrize("view_entrypoint", ["eth_call", "eth_estimate_gas"])
+        async def test_should_raise_when_tx_view_entrypoint(
+            self, starknet, kakarot, invoke, view_entrypoint
+        ):
+
+            evm_account = await get_eoa()
+            calldata = bytes.fromhex("6001")
+            tx_hash = await invoke(
+                "kakarot",
+                view_entrypoint,
+                0,  # nonce
+                int(evm_account.signer.public_key.to_address(), 16),  # origin
+                {"is_some": False, "value": 0},  # to
+                10,  # gas_limit
+                10,  # gas_price
+                10,  # value
+                list(calldata),  # data
+                {},  # access_list
+            )
+            receipt = await starknet.get_transaction_receipt(tx_hash)
+            assert receipt.execution_status.name == "REVERTED"
+            assert "Only view call" in receipt.revert_reason

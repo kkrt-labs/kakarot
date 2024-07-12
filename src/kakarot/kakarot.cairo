@@ -339,6 +339,9 @@ func eth_call{
     access_list: felt*,
 ) -> (return_data_len: felt, return_data: felt*, success: felt, gas_used: felt) {
     alloc_locals;
+
+    Helpers.assert_view_call();
+
     let fp_and_pc = get_fp_and_pc();
     local __fp__: felt* = fp_and_pc.fp_val;
     let (evm, state, gas_used, _) = Kakarot.eth_call(
@@ -388,6 +391,9 @@ func eth_estimate_gas{
     access_list: felt*,
 ) -> (return_data_len: felt, return_data: felt*, success: felt, required_gas: felt) {
     alloc_locals;
+
+    Helpers.assert_view_call();
+
     let fp_and_pc = get_fp_and_pc();
     local __fp__: felt* = fp_and_pc.fp_val;
     let (evm, state, _, gas_required) = Kakarot.eth_call(

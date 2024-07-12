@@ -3,7 +3,7 @@
 // StarkWare dependencies
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.math import assert_le, split_felt, assert_nn_le, unsigned_div_rem
-from starkware.cairo.common.math_cmp import is_le, is_nn
+from starkware.cairo.common.math_cmp import is_le, is_nn, is_not_zero
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.dict_access import DictAccess
 from starkware.cairo.common.bool import TRUE, FALSE
@@ -14,6 +14,7 @@ from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.cairo_secp.bigint import BigInt3, bigint_to_uint256, uint256_to_bigint
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.hash_state import hash_finalize, hash_init, hash_update
+from starkware.starknet.common.syscalls import get_tx_info
 
 from kakarot.model import model
 from utils.bytes import uint256_to_bytes32, felt_to_bytes32
@@ -1211,5 +1212,22 @@ namespace Helpers {
         cond:
         jmp body if count != 0;
         jmp read;
+    }
+
+    // @notice Ensure the tx is a view call
+    // @dev Verify tx field are empty except for chain_id
+    func assert_view_call{syscall_ptr: felt*}() -> () {
+        let (tx_info) = get_tx_info();
+        with_attr error_message("Only view call") {
+            assert tx_info.version = 0;
+            assert tx_info.account_contract_address = 0;
+            assert tx_info.max_fee = 0;
+            assert tx_info.signature_len = 0;
+            assert [tx_info.signature] = 0;
+            assert tx_info.transaction_hash = 0;
+            assert is_not_zero(tx_info.chain_id) = 1;
+            assert tx_info.nonce = 0;
+        }
+        return ();
     }
 }
