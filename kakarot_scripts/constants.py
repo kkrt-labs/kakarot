@@ -38,21 +38,13 @@ NETWORKS = {
         "type": NetworkType.PROD,
         "chain_id": StarknetChainId.MAINNET,
     },
-    "goerli": {
-        "name": "starknet-goerli",
-        "explorer_url": "https://testnet.starkscan.co",
-        "rpc_url": f"https://starknet-goerli.infura.io/v3/{os.getenv('INFURA_KEY')}",
-        "l1_rpc_url": f"https://goerli.infura.io/v3/{os.getenv('INFURA_KEY')}",
-        "type": NetworkType.PROD,
-        "chain_id": StarknetChainId.GOERLI,
-    },
     "sepolia": {
         "name": "starknet-sepolia",
         "explorer_url": "https://sepolia.starkscan.co/",
         "rpc_url": "https://starknet-sepolia.public.blastapi.io/rpc/v0_6",
         "l1_rpc_url": f"https://sepolia.infura.io/v3/{os.getenv('INFURA_KEY')}",
         "type": NetworkType.PROD,
-        "chain_id": StarknetChainId.SEPOLIA_TESTNET,
+        "chain_id": StarknetChainId.SEPOLIA,
         "check_interval": 5,
         "max_wait": 30,
     },
@@ -234,6 +226,7 @@ DECLARED_CONTRACTS = [
     {"contract_name": "replace_class", "cairo_version": ArtifactType.cairo0},
     {"contract_name": "Counter", "cairo_version": ArtifactType.cairo0},
     {"contract_name": "MockPragmaOracle", "cairo_version": ArtifactType.cairo1},
+    {"contract_name": "ERC20", "cairo_version": ArtifactType.cairo0},
 ]
 
 # PRE-EIP155 TX

@@ -133,10 +133,9 @@ async def get_starknet_account(
 async def get_eth_contract(provider=None) -> Contract:
     return Contract(
         ETH_TOKEN_ADDRESS,
-        json.loads((Path("kakarot_scripts") / "utils" / "erc20.json").read_text())[
-            "abi"
-        ],
+        get_abi("ERC20", cairo_version=ArtifactType.cairo0),
         provider or await get_starknet_account(),
+        cairo_version=ArtifactType.cairo0,
     )
 
 
@@ -362,7 +361,6 @@ async def deploy_starknet_account(class_hash=None, private_key=None, amount=1):
         salt=salt,
         key_pair=key_pair,
         client=RPC_CLIENT,
-        chain=ChainId.starknet_chain_id,
         constructor_calldata=constructor_calldata,
         max_fee=_max_fee,
     )
