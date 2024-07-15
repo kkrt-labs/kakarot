@@ -49,6 +49,7 @@ eth-bloom = "^3.0.0"
 trie = "^3.0.0"
 cached-property = "^1.5.2"
 py-ecc = "^7.0.0"
+sympy = "=1.11.1"
 
 [tool.pytest.ini_options]
 norecursedirs = "tests/ef_tests/test_data"
