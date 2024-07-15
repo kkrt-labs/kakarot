@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.7.0 <0.9.0;
 
-import "./CairoLib.sol";
+import {CairoLib} from "kakarot-lib/Cairolib.sol";
 
 using CairoLib for uint256;
 

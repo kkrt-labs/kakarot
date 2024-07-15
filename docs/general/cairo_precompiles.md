@@ -153,7 +153,7 @@ Calling this contract from an EVM contract would look like this:
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.7.0 <0.9.0;
 
-import "./CairoLib.sol";
+import {CairoLib} from "kakarot-lib/Cairolib.sol";
 
 contract CairoCounterCaller  {
     /// @dev The cairo contract to call

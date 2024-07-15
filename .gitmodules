@@ -1,13 +1,7 @@
-[submodule "lib/forge-std"]
-	path = lib/forge-std
-	url = https://github.com/foundry-rs/forge-std
-	branch = v1.3.0
-[submodule "lib/kakarot-lib"]
-	path = lib/kakarot-lib
-	url = https://github.com/kkrt-labs/kakarot-lib
 [submodule "solidity_contracts/lib/forge-std"]
 	path = solidity_contracts/lib/forge-std
 	url = https://github.com/foundry-rs/forge-std
+	branch = v1.3.0
 [submodule "solidity_contracts/lib/kakarot-lib"]
 	path = solidity_contracts/lib/kakarot-lib
 	url = https://github.com/kkrt-labs/kakarot-lib
