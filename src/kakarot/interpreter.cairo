@@ -847,7 +847,6 @@ namespace Interpreter {
         let valid_jumpdests_start = cast([ap - 2], DictAccess*);
         let valid_jumpdests = cast([ap - 1], DictAccess*);
 
-        tempvar authorized = new model.Option(is_some=0, value=0);
         tempvar message = new model.Message(
             bytecode=bytecode,
             bytecode_len=bytecode_len,
@@ -873,7 +872,7 @@ namespace Interpreter {
         with state {
             // Cache the coinbase, precompiles, caller, and target, making them warm
             let coinbase = State.get_account(env.coinbase);
-            local coinbase_address: model.Address* = coinbase.address;
+
             State.cache_precompiles();
             State.get_account(address.evm);
             let access_list_cost = State.cache_access_list(access_list_len, access_list);
@@ -902,13 +901,14 @@ namespace Interpreter {
 
             // Charge the gas fee to the user without setting up a transfer.
             // Transfers with the exact amounts will be performed post-execution.
-            // Note: balance > effective_fee was verified in AccountContract.execute()
+            // Note: balance > effective_fee was verified in AccountContract.execute_from_outside()
             let effective_gas_fee = gas_limit * env.gas_price;
             let (fee_high, fee_low) = split_felt(effective_gas_fee);
             let max_fee_u256 = Uint256(low=fee_low, high=fee_high);
             let (local new_balance) = uint256_sub([sender.balance], max_fee_u256);
             let sender = Account.set_balance(sender, &new_balance);
-            let sender = Account.set_nonce(sender, sender.nonce + 1);
+            local sender_nonce = sender.nonce + 1;
+            let sender = Account.set_nonce(sender, sender_nonce);
             State.update_account(sender);
 
             let transfer = model.Transfer(sender.address, address, [value]);
@@ -953,11 +953,14 @@ namespace Interpreter {
         let total_gas_used = required_gas - gas_refund;
 
         with state {
+            let sender = State.get_account(env.origin);
+            local sender: model.Account* = cast([ap - 1], model.Account*);
             // Reset the state if the execution has failed.
             // Only the gas fee paid will be committed.
             if (evm.reverted != 0) {
                 let state = State.init();
 
+                tempvar sender = sender;
                 tempvar syscall_ptr = syscall_ptr;
                 tempvar pedersen_ptr = pedersen_ptr;
                 tempvar range_check_ptr = range_check_ptr;
@@ -966,10 +969,10 @@ namespace Interpreter {
                 // Because we only "cached" for the local execution the sender's balance minus the maximum
                 // fee paid for the transaction, we need to restore the sender's balance to its original
                 // value to charge the actual fee proportional to the gas used.
-                let sender = State.get_account(env.origin);
                 let (local balance_pre_fee, _) = uint256_add([sender.balance], max_fee_u256);
                 let sender = Account.set_balance(sender, &balance_pre_fee);
                 State.update_account(sender);
+                tempvar sender = sender;
                 tempvar syscall_ptr = syscall_ptr;
                 tempvar pedersen_ptr = pedersen_ptr;
                 tempvar range_check_ptr = range_check_ptr;
@@ -984,7 +987,8 @@ namespace Interpreter {
             let total_fee_charged = total_gas_used * env.gas_price;
             let (fee_high, fee_low) = split_felt(total_fee_charged);
             let fee_u256 = Uint256(low=fee_low, high=fee_high);
-
+            let sender = Account.set_nonce(sender, sender_nonce);
+            State.update_account(sender);
             let transfer = model.Transfer(sender_address, coinbase.address, fee_u256);
             // This should always succeed as we ensured the user has enough balance for value + gas_price * gas_limit
             let success = State.add_transfer(transfer);
