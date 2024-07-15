@@ -361,7 +361,6 @@ async def deploy_starknet_account(class_hash=None, private_key=None, amount=1):
         salt=salt,
         key_pair=key_pair,
         client=RPC_CLIENT,
-        chain=ChainId.starknet_chain_id,
         constructor_calldata=constructor_calldata,
         max_fee=_max_fee,
     )
