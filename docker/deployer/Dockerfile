@@ -64,9 +64,19 @@ RUN --mount=type=cache,target=/root/.cache \
 
 # split install in two steps to leverage docker cache
 COPY . .
-RUN curl --proto '=https' --tlsv1.2 -sSf https://docs.swmansion.com/scarb/install.sh | sh -s -- -v 0.7.0
+
+
+# Install asdf for multiple scarb versions
+RUN git clone --depth 1 https://github.com/asdf-vm/asdf.git "$HOME/.asdf" && \
+    echo ". $HOME/.asdf/asdf.sh" >> "$HOME/.bashrc" && \
+    echo ". $HOME/.asdf/asdf.sh" >> "$HOME/.profile"
+
+SHELL ["/bin/bash", "-c"]
+RUN source "$HOME/.asdf/asdf.sh" && asdf plugin add scarb && asdf install scarb 0.7.0  && asdf install scarb 2.6.5
+
+
 RUN --mount=type=cache,target=/root/.cache \
-    make fetch-ssj-artifacts && make build && make build-cairo1 && make build-sol
+    source "$HOME/.asdf/asdf.sh" && make fetch-ssj-artifacts && make build && make build-cairo1 && make build-sol
 
 
 ############################################

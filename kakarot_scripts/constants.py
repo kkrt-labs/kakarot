@@ -226,6 +226,7 @@ DECLARED_CONTRACTS = [
     {"contract_name": "replace_class", "cairo_version": ArtifactType.cairo0},
     {"contract_name": "Counter", "cairo_version": ArtifactType.cairo0},
     {"contract_name": "MockPragmaOracle", "cairo_version": ArtifactType.cairo1},
+    {"contract_name": "StarknetToken", "cairo_version": ArtifactType.cairo1},
     {"contract_name": "ERC20", "cairo_version": ArtifactType.cairo0},
 ]
 
