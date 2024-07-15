@@ -410,13 +410,13 @@ async def eth_send_transaction(
             evm_account.signer.public_key.to_checksum_address()
         )
     else:
-        (nonce,) = (
+        nonce = (
             await (
                 _get_starknet_contract("account_contract", address=evm_account.address)
                 .functions["get_nonce"]
                 .call()
             )
-        ).as_tuple()
+        ).nonce
 
     payload = {
         "type": 0x2,
