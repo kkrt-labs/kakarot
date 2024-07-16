@@ -345,6 +345,7 @@ class TestKakarot:
                     gas_price=int(tx["gasPrice"], 16),
                     value=int(tx["value"], 16),
                     data=tx["data"],
+                    nonce=int(tx["nonce"], 16),
                 )
 
             parsed_state = {
