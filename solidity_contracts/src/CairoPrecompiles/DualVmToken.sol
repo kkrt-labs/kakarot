@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity >=0.8.0;
 
-import {CairoLib} from "kakarot-lib/Cairolib.sol";
+import {CairoLib} from "kakarot-lib/CairoLib.sol";
 
 using CairoLib for uint256;
 
