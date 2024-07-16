@@ -38,7 +38,7 @@ def get_contract(cairo_run):
                 data = self.get_function_by_name(fun)(
                     *args, **kwargs
                 )._encode_transaction_data()
-                evm, state, gas = cairo_run(
+                evm, state, gas, _ = cairo_run(
                     "eth_call",
                     origin=origin,
                     to=CONTRACT_ADDRESS,
