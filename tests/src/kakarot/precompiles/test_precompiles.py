@@ -13,8 +13,11 @@ from tests.utils.constants import (
 )
 from tests.utils.syscall_handler import SyscallHandler
 
-AUTHORIZED_CALLER = 0xA7071ED
-UNAUTHORIZED_CALLER = 0xC0C0C0
+CALL_CONTRACT_SOLIDITY_SELECTOR = "b3eb2c1b"
+
+AUTHORIZED_CALLER_CODE = 0xA7071ED
+UNAUTHORIZED_CALLER_CODE = 0xC0C0C0
+CALLER_ADDRESS = 0x123ABC432
 
 
 class TestPrecompiles:
@@ -72,25 +75,65 @@ class TestPrecompiles:
                 assert gas_used == 3450
 
         class TestKakarotPrecompiles:
-            @SyscallHandler.patch("ICairo.inc", lambda addr, data: [])
             @SyscallHandler.patch(
-                "Kakarot_authorized_cairo_precompiles_callers", AUTHORIZED_CALLER, 1
+                "Kakarot_authorized_cairo_precompiles_callers",
+                AUTHORIZED_CALLER_CODE,
+                1,
+            )
+            @SyscallHandler.patch_deploy(lambda class_hash, data: [0])
+            @SyscallHandler.patch("Kakarot_evm_to_starknet_address", CALLER_ADDRESS, 0)
+            @SyscallHandler.patch("ICairo.inc", lambda addr, data: [])
+            def test_should_deploy_account_when_sender_starknet_address_zero(
+                self,
+                cairo_run,
+            ):
+                """
+                Tests the behavior when the `msg.sender` in the contract that calls the precompile resolves
+                to a zero starknet address (meaning - it's not deployed yet).
+                """
+                return_data, reverted, gas_used = cairo_run(
+                    "test__precompiles_run",
+                    address=0x75001,
+                    input=bytes.fromhex(
+                        CALL_CONTRACT_SOLIDITY_SELECTOR
+                        + f"{0xc0de:064x}"
+                        + f"{get_selector_from_name('inc'):064x}"
+                        + f"{0x60:064x}"  # data_offset
+                        + f"{0x00:064x}"  # data_len
+                    ),
+                    caller_code_address=AUTHORIZED_CALLER_CODE,
+                    caller_address=CALLER_ADDRESS,
+                )
+                assert not bool(reverted)
+                assert bytes(return_data) == b""
+                assert gas_used == CAIRO_PRECOMPILE_GAS
+
+                SyscallHandler.mock_deploy.assert_called_once()
+                return
+
+            @SyscallHandler.patch(
+                "Kakarot_authorized_cairo_precompiles_callers",
+                AUTHORIZED_CALLER_CODE,
+                1,
+            )
+            @SyscallHandler.patch(
+                "Kakarot_evm_to_starknet_address", CALLER_ADDRESS, 0x1234
             )
             @pytest.mark.parametrize(
-                "address, caller_address, input_data, expected_return_data, expected_reverted",
+                "address, caller_code_address, input_data, expected_return_data, expected_reverted",
                 [
                     (
                         0x75001,
-                        AUTHORIZED_CALLER,
+                        AUTHORIZED_CALLER_CODE,
                         bytes.fromhex("0abcdef0"),
                         b"Kakarot: OutOfBoundsRead",
                         True,
                     ),  # invalid input
                     (
                         0x75001,
-                        AUTHORIZED_CALLER,
+                        AUTHORIZED_CALLER_CODE,
                         bytes.fromhex(
-                            "b3eb2c1b"
+                            CALL_CONTRACT_SOLIDITY_SELECTOR
                             + f"{0xc0de:064x}"
                             + f"{get_selector_from_name('inc'):064x}"
                             + f"{0x60:064x}"  # data_offset
@@ -101,9 +144,9 @@ class TestPrecompiles:
                     ),  # call_contract
                     (
                         0x75001,
-                        AUTHORIZED_CALLER,
+                        AUTHORIZED_CALLER_CODE,
                         bytes.fromhex(
-                            "b3eb2c1b"
+                            CALL_CONTRACT_SOLIDITY_SELECTOR
                             + f"{0xc0de:064x}"
                             + f"{get_selector_from_name('get'):064x}"
                             + f"{0x60:064x}"  # data_offset
@@ -115,7 +158,7 @@ class TestPrecompiles:
                     ),  # call_contract with return data
                     (
                         0x75001,
-                        AUTHORIZED_CALLER,
+                        AUTHORIZED_CALLER_CODE,
                         bytes.fromhex(
                             "5a9af197"
                             + f"{0xc0de:064x}"
@@ -129,18 +172,25 @@ class TestPrecompiles:
                     ),  # library call
                     (
                         0x75001,
-                        UNAUTHORIZED_CALLER,
+                        UNAUTHORIZED_CALLER_CODE,
                         bytes.fromhex("0abcdef0"),
                         b"Kakarot: unauthorizedPrecompile",
                         True,
                     ),  # invalid caller
+                ],
+                ids=[
+                    "invalid_input",
+                    "call_contract",
+                    "call_contract_w_returndata",
+                    "library_call",
+                    "invalid_caller",
                 ],
             )
             def test__cairo_precompiles(
                 self,
                 cairo_run,
                 address,
-                caller_address,
+                caller_code_address,
                 input_data,
                 expected_return_data,
                 expected_reverted,
@@ -151,20 +201,26 @@ class TestPrecompiles:
                     for i in range(0, len(expected_return_data), 32)
                 ]
                 with SyscallHandler.patch(
-                    "ICairo.get", lambda addr, data: cairo_return_data
+                    "ICairo.inc",
+                    lambda addr, data: [],
+                ), SyscallHandler.patch(
+                    "ICairo.get",
+                    lambda addr, data: cairo_return_data,
                 ):
                     return_data, reverted, gas_used = cairo_run(
                         "test__precompiles_run",
                         address=address,
                         input=input_data,
-                        caller_address=caller_address,
+                        caller_code_address=caller_code_address,
+                        caller_address=CALLER_ADDRESS,
                     )
                 assert bool(reverted) == expected_reverted
                 assert bytes(return_data) == expected_return_data
                 assert gas_used == (
-                    CAIRO_PRECOMPILE_GAS if caller_address == AUTHORIZED_CALLER else 0
+                    CAIRO_PRECOMPILE_GAS
+                    if caller_code_address == AUTHORIZED_CALLER_CODE
+                    else 0
                 )
-
                 return
 
         @pytest.mark.parametrize(

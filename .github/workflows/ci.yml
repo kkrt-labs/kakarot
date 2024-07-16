@@ -105,6 +105,7 @@ jobs:
       - name: Upload coverage report to codecov
         uses: codecov/codecov-action@v3
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           directory: ./coverage/
 
   tests-end-to-end:
@@ -200,7 +201,7 @@ jobs:
           name: kakarot-build
           path: ./build/v0
       - name: Move ERC20
-        run: mv build/v0/fixtures/ERC20.json build/common
+        run: mv build/v0/ERC20.json build/common
       - name: Set up Python
         uses: actions/setup-python@v4
         with:

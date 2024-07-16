@@ -1,5 +1,8 @@
+import os
+
 import pytest
 from eth_abi import decode
+from eth_utils import keccak
 from web3 import Web3
 
 from tests.utils.errors import evm_error
@@ -478,3 +481,19 @@ class TestPlainOpcodes:
     class TestAddmod:
         async def test_should_return_0(self, plain_opcodes):
             assert 0 == await plain_opcodes.addmodMax()
+
+    class TestKeccak:
+        @pytest.mark.parametrize(
+            "input_length",
+            [
+                20000,
+                pytest.param(
+                    272000, marks=pytest.mark.xfail(reason="input length too big")
+                ),
+            ],
+        )
+        async def test_should_emit_keccak_hash(self, plain_opcodes, input_length):
+            input = os.urandom(input_length)
+            receipt = (await plain_opcodes.computeHash(input))["receipt"]
+            events = plain_opcodes.events.parse_events(receipt)
+            assert events["HashComputed"][0]["hash"] == keccak(input)

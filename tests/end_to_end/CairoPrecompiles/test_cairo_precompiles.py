@@ -1,6 +1,7 @@
 import pytest
 import pytest_asyncio
 
+from kakarot_scripts.utils.kakarot import get_eoa
 from kakarot_scripts.utils.starknet import get_deployments, wait_for_transaction
 from tests.utils.errors import evm_error
 
@@ -73,3 +74,11 @@ class TestCairoPrecompiles:
             )
             with evm_error("CairoLib: call_contract failed"):
                 await cairo_counter_caller.incrementCairoCounter(max_fee=max_fee)
+
+        async def test_last_caller_address_should_be_eoa(
+            self, get_contract, cairo_counter_caller
+        ):
+            eoa = await get_eoa()
+            await cairo_counter_caller.incrementCairoCounter(caller_eoa=eoa)
+            last_caller_address = await cairo_counter_caller.getLastCaller()
+            assert last_caller_address == eoa.address

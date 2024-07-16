@@ -37,17 +37,12 @@ async def l1_kakarot_messaging(sn_messaging_local, invoke):
     # If the contract is already deployed on the l1, we can get the address from the deployments file
     # Otherwise, we deploy it
     l1_addresses = get_l1_addresses()
-    if l1_addresses.get("L1KakarotMessaging"):
-        address = l1_addresses["L1KakarotMessaging"]["address"]
-        if l1_contract_exists(address):
-            return get_l1_contract("L1L2Messaging", "L1KakarotMessaging", address)
-
     kakarot_address = get_deployments()["kakarot"]["address"]
     contract = await deploy_on_l1(
         "L1L2Messaging",
         "L1KakarotMessaging",
-        starknetMessaging=sn_messaging_local.address,
-        kakarotAddress=kakarot_address,
+        starknetMessaging_=sn_messaging_local.address,
+        kakarotAddress_=kakarot_address,
     )
     l1_addresses.update({"L1KakarotMessaging": {"address": contract.address}})
     dump_l1_addresses(l1_addresses)
@@ -101,6 +96,7 @@ def wait_for_message(sn_messaging_local):
 
 @pytest.mark.asyncio(scope="module")
 class TestL2ToL1Messages:
+    @pytest.mark.slow
     async def test_should_increment_counter_on_l1(
         self, sn_messaging_local, message_app_l1, message_app_l2, wait_for_message
     ):
@@ -118,6 +114,7 @@ class TestL2ToL1Messages:
 
 @pytest.mark.asyncio(scope="module")
 class TestL1ToL2Messages:
+    @pytest.mark.slow
     async def test_should_increment_counter_on_l2(
         self, l1_kakarot_messaging, message_app_l1, message_app_l2
     ):
@@ -130,6 +127,7 @@ class TestL1ToL2Messages:
         msg_counter_after = await message_app_l2.receivedMessagesCounter()
         assert msg_counter_after == msg_counter_before + increment_value
 
+    @pytest.mark.slow
     async def test_should_fail_unauthorized_message_sender(
         self, invoke, l1_kakarot_messaging, message_app_l1, message_app_l2
     ):

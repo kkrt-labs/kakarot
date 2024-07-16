@@ -3,15 +3,15 @@ from textwrap import wrap
 from unittest.mock import call, patch
 
 import pytest
-from eth_account._utils.legacy_transactions import (
-    serializable_unsigned_transaction_from_dict,
-)
+import rlp
 from eth_account.account import Account
+from eth_utils import keccak
 from starkware.starknet.public.abi import (
     get_selector_from_name,
     get_storage_var_address,
 )
 
+from kakarot_scripts.constants import ARACHNID_PROXY_DEPLOYER, ARACHNID_PROXY_SIGNED_TX
 from tests.utils.constants import CAIRO1_HELPERS_CLASS_HASH, CHAIN_ID, TRANSACTIONS
 from tests.utils.errors import cairo_error
 from tests.utils.helpers import (
@@ -26,8 +26,17 @@ CHAIN_ID_OFFSET = 35
 V_OFFSET = 27
 
 
-class TestContractAccount:
-    @pytest.fixture(params=[0, 10, 100, 1000, 10000])
+class TestAccountContract:
+    @pytest.fixture(
+        params=[
+            0,
+            10,
+            100,
+            pytest.param(1_000, marks=pytest.mark.slow),
+            pytest.param(10_000, marks=pytest.mark.slow),
+            pytest.param(100_000, marks=pytest.mark.slow),
+        ]
+    )
     def bytecode(self, request):
         random.seed(0)
         return random.randbytes(request.param)
@@ -83,7 +92,7 @@ class TestContractAccount:
         @SyscallHandler.patch("IKakarot.register_account", lambda addr, data: [])
         @SyscallHandler.patch("Account_is_initialized", 1)
         def test_should_run_only_once(self, cairo_run):
-            with cairo_error():
+            with cairo_error(message="Account already initialized"):
                 cairo_run(
                     "test__initialize",
                     kakarot_address=0x1234,
@@ -100,7 +109,7 @@ class TestContractAccount:
     class TestWriteBytecode:
         @SyscallHandler.patch("Ownable_owner", 0xDEAD)
         def test_should_assert_only_owner(self, cairo_run):
-            with cairo_error():
+            with cairo_error(message="Ownable: caller is not the owner"):
                 cairo_run("test__write_bytecode", bytecode=[])
 
         @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
@@ -144,8 +153,8 @@ class TestContractAccount:
     class TestNonce:
         @SyscallHandler.patch("Ownable_owner", 0xDEAD)
         def test_should_assert_only_owner(self, cairo_run):
-            with cairo_error():
-                cairo_run("test__set_nonce", new_nonce=[])
+            with cairo_error(message="Ownable: caller is not the owner"):
+                cairo_run("test__set_nonce", new_nonce=0x00)
 
         @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
         def test_should_set_nonce(self, cairo_run):
@@ -158,8 +167,8 @@ class TestContractAccount:
     class TestImplementation:
         @SyscallHandler.patch("Ownable_owner", 0xDEAD)
         def test_should_assert_only_owner(self, cairo_run):
-            with cairo_error():
-                cairo_run("test__set_implementation", new_implementation=[])
+            with cairo_error(message="Ownable: caller is not the owner"):
+                cairo_run("test__set_implementation", new_implementation=0x00)
 
         @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
         def test_should_set_implementation(self, cairo_run):
@@ -172,8 +181,8 @@ class TestContractAccount:
         class TestWriteJumpdests:
             @SyscallHandler.patch("Ownable_owner", 0xDEAD)
             def test_should_assert_only_owner(self, cairo_run):
-                with cairo_error():
-                    cairo_run("test__write_jumpdests", bytecode=[])
+                with cairo_error(message="Ownable: caller is not the owner"):
+                    cairo_run("test__write_jumpdests", jumpdests=[])
 
             @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
             def test__should_store_valid_jumpdests(self, cairo_run):
@@ -275,6 +284,73 @@ class TestContractAccount:
                     SyscallHandler.mock_storage.assert_has_calls(expected_read_calls)
                     SyscallHandler.mock_storage.assert_has_calls(expected_write_calls)
 
+    class TestSetAuthorizedPreEIP155Transactions:
+        def test_should_assert_only_owner(self, cairo_run):
+            with cairo_error(message="Ownable: caller is not the owner"):
+                cairo_run("test__set_authorized_pre_eip155_tx", msg_hash=[0, 0])
+
+        @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
+        def test_should_set_authorized_pre_eip155_tx(self, cairo_run):
+            msg_hash = int.from_bytes(keccak(b"test"), "big")
+            cairo_run(
+                "test__set_authorized_pre_eip155_tx",
+                msg_hash=int_to_uint256(msg_hash),
+            )
+            SyscallHandler.mock_storage.assert_any_call(
+                address=get_storage_var_address(
+                    "Account_authorized_message_hashes", *int_to_uint256(msg_hash)
+                ),
+                value=1,
+            )
+
+    class TestExecuteStarknetCall:
+        def test_should_assert_only_owner(self, cairo_run):
+            with cairo_error(message="Ownable: caller is not the owner"):
+                cairo_run(
+                    "test__execute_starknet_call",
+                    called_address=0xABC,
+                    function_selector=0xBCD,
+                    calldata=[],
+                )
+
+        @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
+        def test_should_fail_if_calling_kakarot(self, cairo_run):
+            function_selector = 0xBCD
+            with SyscallHandler.patch(function_selector, lambda addr, data: []):
+                return_data, success = cairo_run(
+                    "test__execute_starknet_call",
+                    called_address=SyscallHandler.caller_address,
+                    function_selector=function_selector,
+                    calldata=[],
+                )
+                assert success == 0
+
+        @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
+        def test_should_execute_starknet_call(self, cairo_run):
+            called_address = 0xABCDEF1234567890
+            function_selector = 0x0987654321FEDCBA
+            calldata = [random.randint(0, 255) for _ in range(32)]
+            expected_return_data = [random.randint(0, 255) for _ in range(32)] + [
+                int(True)
+            ]
+            with SyscallHandler.patch(
+                function_selector, lambda addr, data: expected_return_data
+            ):
+                return_data, success = cairo_run(
+                    "test__execute_starknet_call",
+                    called_address=called_address,
+                    function_selector=function_selector,
+                    calldata=calldata,
+                )
+
+            assert return_data == expected_return_data
+            assert success == 1
+            SyscallHandler.mock_call.assert_any_call(
+                contract_address=called_address,
+                function_selector=function_selector,
+                calldata=calldata,
+            )
+
     class TestValidate:
         @pytest.mark.parametrize("seed", (41, 42))
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
@@ -289,45 +365,69 @@ class TestContractAccount:
             """
             random.seed(seed)
             private_key = generate_random_private_key()
-            address = private_key.public_key.to_checksum_address()
+            address = int(private_key.public_key.to_checksum_address(), 16)
             signed = Account.sign_transaction(transaction, private_key)
-
-            unsigned_transaction = serializable_unsigned_transaction_from_dict(
-                transaction
-            )
-            unsigned_transaction.hash()
 
             encoded_unsigned_tx = rlp_encode_signed_data(transaction)
             tx_data = list(encoded_unsigned_tx)
 
             cairo_run(
                 "test__validate",
-                address=int(address, 16),
+                address=address,
                 nonce=transaction["nonce"],
-                chain_id=CHAIN_ID,
+                chain_id=transaction.get("chainId") or CHAIN_ID,
                 r=int_to_uint256(signed.r),
                 s=int_to_uint256(signed.s),
                 v=signed["v"],
                 tx_data=tx_data,
             )
 
-        @pytest.mark.parametrize("transaction", TRANSACTIONS[1:])
+        @SyscallHandler.patch(
+            "Account_cairo1_helpers_class_hash", CAIRO1_HELPERS_CLASS_HASH
+        )
+        def test_should_pass_all_data_len(self, cairo_run, bytecode):
+            transaction = {
+                "to": "0xF0109fC8DF283027b6285cc889F5aA624EaC1F55",
+                "value": 0,
+                "gas": 2_000_000,
+                "gasPrice": 234567897654321,
+                "nonce": 0,
+                "chainId": CHAIN_ID,
+                "data": bytecode,
+            }
+            encoded_unsigned_tx = rlp_encode_signed_data(transaction)
+            tx_data = list(encoded_unsigned_tx)
+            private_key = generate_random_private_key()
+            address = int(private_key.public_key.to_checksum_address(), 16)
+            signed = Account.sign_transaction(transaction, private_key)
+
+            cairo_run(
+                "test__validate",
+                address=address,
+                nonce=transaction["nonce"],
+                chain_id=transaction.get("chainId") or CHAIN_ID,
+                r=int_to_uint256(signed.r),
+                s=int_to_uint256(signed.s),
+                v=signed["v"],
+                tx_data=tx_data,
+            )
+
+        @pytest.mark.parametrize("transaction", TRANSACTIONS)
         async def test_should_raise_with_wrong_signed_chain_id(
             self, cairo_run, transaction
         ):
             private_key = generate_random_private_key()
-            address = private_key.public_key.to_checksum_address()
-            transaction["chainId"] += 1
+            address = int(private_key.public_key.to_checksum_address(), 16)
             signed = Account.sign_transaction(transaction, private_key)
 
             encoded_unsigned_tx = rlp_encode_signed_data(transaction)
 
-            with cairo_error():
+            with cairo_error(message="Invalid chain id"):
                 cairo_run(
                     "test__validate",
-                    address=int(address, 16),
+                    address=address,
                     nonce=transaction["nonce"],
-                    chain_id=CHAIN_ID,
+                    chain_id=transaction["chainId"] + 1,
                     r=int_to_uint256(signed.r),
                     s=int_to_uint256(signed.s),
                     v=signed["v"],
@@ -343,12 +443,12 @@ class TestContractAccount:
             encoded_unsigned_tx = rlp_encode_signed_data(transaction)
 
             assert address != int(private_key.public_key.to_address(), 16)
-            with cairo_error():
+            with cairo_error("Invalid signature."):
                 cairo_run(
                     "test__validate",
-                    address=int(address, 16),
+                    address=address,
                     nonce=transaction["nonce"],
-                    chain_id=CHAIN_ID,
+                    chain_id=transaction.get("chainId") or CHAIN_ID,
                     r=int_to_uint256(signed.r),
                     s=int_to_uint256(signed.s),
                     v=signed["v"],
@@ -358,20 +458,69 @@ class TestContractAccount:
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
         async def test_should_raise_with_wrong_nonce(self, cairo_run, transaction):
             private_key = generate_random_private_key()
-            address = int(generate_random_evm_address(), 16)
+            address = int(private_key.public_key.to_checksum_address(), 16)
             signed = Account.sign_transaction(transaction, private_key)
 
             encoded_unsigned_tx = rlp_encode_signed_data(transaction)
 
-            assert address != int(private_key.public_key.to_address(), 16)
-            with cairo_error():
+            with cairo_error(message="Invalid nonce"):
                 cairo_run(
                     "test__validate",
-                    address=int(address, 16),
-                    nonce=transaction["nonce"],
-                    chain_id=CHAIN_ID,
+                    address=address,
+                    nonce=transaction["nonce"] + 1,
+                    chain_id=transaction.get("chainId") or CHAIN_ID,
                     r=int_to_uint256(signed.r),
                     s=int_to_uint256(signed.s),
                     v=signed["v"],
                     tx_data=list(encoded_unsigned_tx),
                 )
+
+        async def test_should_fail_unauthorized_pre_eip155_tx(self, cairo_run):
+            rlp_decoded = rlp.decode(ARACHNID_PROXY_SIGNED_TX)
+            v, r, s = rlp_decoded[-3:]
+            unsigned_tx_data = rlp_decoded[:-3]
+            unsigned_encoded_tx = rlp.encode(unsigned_tx_data)
+
+            with cairo_error(message="Unauthorized pre-eip155 transaction"):
+                cairo_run(
+                    "test__validate",
+                    address=int(ARACHNID_PROXY_DEPLOYER, 16),
+                    nonce=0,
+                    chain_id=CHAIN_ID,
+                    r=int_to_uint256(int.from_bytes(r, "big")),
+                    s=int_to_uint256(int.from_bytes(s, "big")),
+                    v=int.from_bytes(v, "big"),
+                    tx_data=list(unsigned_encoded_tx),
+                )
+
+        async def test_should_validate_authorized_pre_eip155_tx(self, cairo_run):
+            rlp_decoded = rlp.decode(ARACHNID_PROXY_SIGNED_TX)
+            v, r, s = rlp_decoded[-3:]
+            unsigned_tx_data = rlp_decoded[:-3]
+            unsigned_encoded_tx = rlp.encode(unsigned_tx_data)
+            tx_hash_low, tx_hash_high = int_to_uint256(
+                int.from_bytes(keccak(unsigned_encoded_tx), "big")
+            )
+
+            with SyscallHandler.patch(
+                "Account_authorized_message_hashes",
+                tx_hash_low,
+                tx_hash_high,
+                0x1,
+            ):
+                cairo_run(
+                    "test__validate",
+                    address=int(ARACHNID_PROXY_DEPLOYER, 16),
+                    nonce=0,
+                    chain_id=CHAIN_ID,
+                    r=int_to_uint256(int.from_bytes(r, "big")),
+                    s=int_to_uint256(int.from_bytes(s, "big")),
+                    v=int.from_bytes(v, "big"),
+                    tx_data=list(unsigned_encoded_tx),
+                )
+
+            SyscallHandler.mock_storage.assert_any_call(
+                address=get_storage_var_address(
+                    "Account_authorized_message_hashes", tx_hash_low, tx_hash_high
+                )
+            )

@@ -27,12 +27,18 @@ kakarot.code-workspace
 coverage/*
 resources/*
 
-.hypothesis
-*.pb.gz
-profile*.png
 logs
 
 tests/ef_tests/test_data
 !tests/ef_tests/test_data/.gitkeep
 
 bin/
+
+# test data
+*.pb.gz
+.hypothesis
+profile*.png
+*.trace
+*.memory
+*.air_private_input.json
+*.air_public_input.json

@@ -7,3 +7,12 @@ libs = ['lib']
 [rpc_endpoints]
 anvil = "http://127.0.0.1:8545"
 kakarot = "http://127.0.0.1:3030"
+
+[fmt]
+ignore = [
+  "./solidity_contracts/src/UniswapV2/**/*.sol",
+  "./solidity_contracts/src/WETH/**/*.sol",
+  "./solidity_contracts/src/UniswapV2Router/**/*.sol",
+  "./solidity_contracts/src/Solmate/**/*.sol",
+  "./solidity_contracts/src/starknet/**/*.sol",
+]

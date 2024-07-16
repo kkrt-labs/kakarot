@@ -1301,25 +1301,24 @@ test = ["pytest (>=7.0.0)", "pytest-xdist (>=2.4.0)"]
 
 [[package]]
 name = "eth-keyfile"
-version = "0.6.1"
-description = "A library for handling the encrypted keyfiles used to store ethereum private keys."
+version = "0.8.1"
+description = "eth-keyfile: A library for handling the encrypted keyfiles used to store ethereum private keys"
 optional = false
-python-versions = "*"
+python-versions = "<4,>=3.8"
 files = [
-    {file = "eth-keyfile-0.6.1.tar.gz", hash = "sha256:471be6e5386fce7b22556b3d4bde5558dbce46d2674f00848027cb0a20abdc8c"},
-    {file = "eth_keyfile-0.6.1-py3-none-any.whl", hash = "sha256:609773a1ad5956944a33348413cad366ec6986c53357a806528c8f61c4961560"},
+    {file = "eth_keyfile-0.8.1-py3-none-any.whl", hash = "sha256:65387378b82fe7e86d7cb9f8d98e6d639142661b2f6f490629da09fddbef6d64"},
+    {file = "eth_keyfile-0.8.1.tar.gz", hash = "sha256:9708bc31f386b52cca0969238ff35b1ac72bd7a7186f2a84b86110d3c973bec1"},
 ]
 
 [package.dependencies]
-eth-keys = ">=0.4.0,<0.5.0"
-eth-utils = ">=2,<3"
+eth-keys = ">=0.4.0"
+eth-utils = ">=2"
 pycryptodome = ">=3.6.6,<4"
 
 [package.extras]
-dev = ["bumpversion (>=0.5.3,<1)", "eth-keys (>=0.4.0,<0.5.0)", "eth-utils (>=2,<3)", "flake8 (==4.0.1)", "idna (==2.7)", "pluggy (>=1.0.0,<2)", "pycryptodome (>=3.6.6,<4)", "pytest (>=6.2.5,<7)", "requests (>=2.20,<3)", "setuptools (>=38.6.0)", "tox (>=2.7.0)", "twine", "wheel"]
-keyfile = ["eth-keys (>=0.4.0,<0.5.0)", "eth-utils (>=2,<3)", "pycryptodome (>=3.6.6,<4)"]
-lint = ["flake8 (==4.0.1)"]
-test = ["pytest (>=6.2.5,<7)"]
+dev = ["build (>=0.9.0)", "bumpversion (>=0.5.3)", "ipython", "pre-commit (>=3.4.0)", "pytest (>=7.0.0)", "pytest-xdist (>=2.4.0)", "towncrier (>=21,<22)", "tox (>=4.0.0)", "twine", "wheel"]
+docs = ["towncrier (>=21,<22)"]
+test = ["pytest (>=7.0.0)", "pytest-xdist (>=2.4.0)"]
 
 [[package]]
 name = "eth-keys"
@@ -2253,22 +2252,21 @@ marshmallow = ">=2.0.0"
 
 [[package]]
 name = "marshmallow-oneofschema"
-version = "3.0.1"
+version = "3.1.1"
 description = "marshmallow multiplexing schema"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.8"
 files = [
-    {file = "marshmallow-oneofschema-3.0.1.tar.gz", hash = "sha256:62cd2099b29188c92493c2940ee79d1bf2f2619a71721664e5a98ec2faa58237"},
-    {file = "marshmallow_oneofschema-3.0.1-py2.py3-none-any.whl", hash = "sha256:bd29410a9f2f7457a2b428286e2a80ef76b8ddc3701527dc1f935a88914b02f2"},
+    {file = "marshmallow_oneofschema-3.1.1-py3-none-any.whl", hash = "sha256:ff4cb2a488785ee8edd521a765682c2c80c78b9dc48894124531bdfa1ec9303b"},
+    {file = "marshmallow_oneofschema-3.1.1.tar.gz", hash = "sha256:68b4a57d0281a04ac25d4eb7a4c5865a57090a0a8fd30fd6362c8e833ac6a6d9"},
 ]
 
 [package.dependencies]
 marshmallow = ">=3.0.0,<4.0.0"
 
 [package.extras]
-dev = ["flake8 (==3.9.2)", "flake8-bugbear (==21.4.3)", "mock", "pre-commit (>=2.7,<3.0)", "pytest", "tox"]
-lint = ["flake8 (==3.9.2)", "flake8-bugbear (==21.4.3)", "pre-commit (>=2.7,<3.0)"]
-tests = ["mock", "pytest"]
+dev = ["marshmallow-oneofschema[tests]", "pre-commit (>=3.5,<4.0)", "tox"]
+tests = ["pytest"]
 
 [[package]]
 name = "matplotlib"
@@ -4036,28 +4034,29 @@ tests = ["cython", "littleutils", "pygments", "pytest", "typeguard"]
 
 [[package]]
 name = "starknet-py"
-version = "0.20.0"
+version = "0.23.0"
 description = "A python SDK for Starknet"
 optional = false
-python-versions = ">=3.8,<3.13"
+python-versions = "<3.13,>=3.8"
 files = [
-    {file = "starknet_py-0.20.0.tar.gz", hash = "sha256:b144775e5ba175f66e404a990bbcec73c4e24ce8c8d6e434a393d20aa7386c0b"},
+    {file = "starknet_py-0.23.0.tar.gz", hash = "sha256:3dbab1a608e4bc67e646f3d096bcf346383da26472cfdb60409b5478c3432e39"},
 ]
 
 [package.dependencies]
 aiohttp = ">=3.8.4,<4.0.0"
 asgiref = ">=3.4.1,<4.0.0"
 crypto-cpp-py = "1.4.4"
+eth-keyfile = ">=0.8.1,<0.9.0"
 lark = ">=1.1.5,<2.0.0"
 marshmallow = ">=3.15.0,<4.0.0"
-marshmallow-dataclass = "<8.7.0"
-marshmallow-oneofschema = "3.0.1"
+marshmallow-dataclass = "<8.8.0"
+marshmallow-oneofschema = "3.1.1"
 poseidon-py = "0.1.4"
 pycryptodome = ">=3.17,<4.0"
 typing-extensions = ">=4.3.0,<5.0.0"
 
 [package.extras]
-docs = ["enum-tools[sphinx] (==0.11.0)", "furo (>=2023.5.20,<2024.0.0)", "sphinx (>=4.3.1,<8.0.0)"]
+docs = ["enum-tools[sphinx] (==0.12.0)", "furo (>=2024.5.6,<2025.0.0)", "sphinx (>=4.3.1,<8.0.0)"]
 
 [[package]]
 name = "sympy"
@@ -4484,4 +4483,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.11"
-content-hash = "4f7525a817a3e0ca7b66b648a990bb2f092eb6e8e8fad5af4a29ed39459e08f9"
+content-hash = "8534e334b0d7a8133906a585aa5516149dc8ee8418ad18f29cdde0267b548e5a"

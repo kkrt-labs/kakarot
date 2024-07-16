@@ -6,18 +6,29 @@
 from openzeppelin.access.ownable.library import Ownable, Ownable_owner
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin, SignatureBuiltin
 from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.bool import FALSE, TRUE
 
 // Local dependencies
 from kakarot.accounts.library import (
     AccountContract,
     Account_implementation,
     Account_cairo1_helpers_class_hash,
+    Account_authorized_message_hashes,
 )
 from kakarot.accounts.model import CallArray
+from utils.utils import Helpers
+from kakarot.errors import Errors
 from kakarot.interfaces.interfaces import IKakarot, IAccount
-from starkware.starknet.common.syscalls import get_tx_info, get_caller_address, replace_class
+from starkware.starknet.common.syscalls import (
+    get_tx_info,
+    get_caller_address,
+    replace_class,
+    call_contract,
+)
 from starkware.cairo.common.math import assert_le, unsigned_div_rem
 from starkware.cairo.common.alloc import alloc
+
+const COMPUTE_STARKNET_ADDRESS_SELECTOR = 0x0ad7772990f7f5a506d84e5723efd1242e989c23f45653870d49d6d107f6e7;
 
 // @title EVM smart contract account representation.
 @constructor
@@ -290,4 +301,35 @@ func is_valid_jumpdest{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_che
 ) -> (is_valid: felt) {
     let is_valid = AccountContract.is_valid_jumpdest(index);
     return (is_valid=is_valid);
+}
+
+// @notice Authorizes a pre-eip155 transaction by message hash.
+// @param message_hash The hash of the message.
+@external
+func set_authorized_pre_eip155_tx{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    message_hash: Uint256
+) {
+    // Access control check.
+    Ownable.assert_only_owner();
+    Account_authorized_message_hashes.write(message_hash, 1);
+    return ();
+}
+
+@external
+func execute_starknet_call{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    to: felt, function_selector: felt, calldata_len: felt, calldata: felt*
+) -> (retdata_len: felt, retdata: felt*, success: felt) {
+    Ownable.assert_only_owner();
+    let (kakarot_address) = Ownable.owner();
+    let is_compute_starknet_address = Helpers.is_zero(
+        COMPUTE_STARKNET_ADDRESS_SELECTOR - function_selector
+    );
+    let is_kakarot = Helpers.is_zero(kakarot_address - to);
+    tempvar is_forbidden = is_kakarot * (1 - is_compute_starknet_address);
+    if (is_forbidden != FALSE) {
+        let (error_len, error) = Errors.kakarotReentrancy();
+        return (error_len, error, FALSE);
+    }
+    let (retdata_len, retdata) = call_contract(to, function_selector, calldata_len, calldata);
+    return (retdata_len, retdata, TRUE);
 }

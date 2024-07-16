@@ -4,7 +4,7 @@ import pytest
 from Crypto.Hash import RIPEMD160
 
 
-@pytest.fixture(scope="module", params=[1])
+@pytest.fixture(scope="module", params=[pytest.param(1, marks=pytest.mark.slow)])
 def msg_bytes(request):
     random.seed(request.param)
     msg_len = random.randint(1, 200)

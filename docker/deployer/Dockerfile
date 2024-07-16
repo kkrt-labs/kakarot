@@ -30,6 +30,12 @@ WORKDIR /app/kakarot
 ############################################
 FROM base as builder
 
+ENV PATH="$PATH:/root/.local/bin:/root/.foundry/bin"
+RUN curl -L https://foundry.paradigm.xyz -o foundry.sh \
+    && chmod +x foundry.sh \
+    && ./foundry.sh \
+    && foundryup
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-transport-https \
     ca-certificates \
@@ -60,7 +66,8 @@ RUN --mount=type=cache,target=/root/.cache \
 COPY . .
 RUN curl --proto '=https' --tlsv1.2 -sSf https://docs.swmansion.com/scarb/install.sh | sh -s -- -v 0.7.0
 RUN --mount=type=cache,target=/root/.cache \
-    make fetch-ssj-artifacts && make build && make build-cairo1
+    make fetch-ssj-artifacts && make build && make build-cairo1 && make build-sol
+
 
 ############################################
 # Kakarot deployer
@@ -74,6 +81,9 @@ COPY --from=builder /app/kakarot/tests ./tests/
 # Cairo Smart contracts are used in deploy_kakarot.py
 # To limit the probability of this Dockerfile to break, we copy the entire src and not individual files
 COPY --from=builder /app/kakarot/src ./src/
+
+# Default Solidity contracts are also used in deploy_kakarot.py
+COPY --from=builder /app/kakarot/solidity_contracts ./solidity_contracts/
 
 COPY --from=builder /app/kakarot/Makefile .
 COPY --from=builder /app/kakarot/poetry.lock .

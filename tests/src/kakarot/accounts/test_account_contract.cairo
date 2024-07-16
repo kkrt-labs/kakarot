@@ -5,7 +5,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256
 
-from kakarot.accounts.library import Internals as AccountInternals
+from kakarot.accounts.library import Internals as AccountInternals, AccountContract
 from kakarot.accounts.account_contract import (
     initialize,
     get_evm_address,
@@ -15,6 +15,8 @@ from kakarot.accounts.account_contract import (
     is_valid_jumpdest,
     set_nonce,
     set_implementation,
+    set_authorized_pre_eip155_tx,
+    execute_starknet_call,
 )
 
 func test__initialize{
@@ -90,6 +92,41 @@ func test__set_implementation{
     %{ ids.new_implementation = program_input["new_implementation"] %}
     set_implementation(new_implementation);
     return ();
+}
+
+func test__set_authorized_pre_eip155_tx{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+}() {
+    alloc_locals;
+    local msg_hash: Uint256;
+    %{
+        ids.msg_hash.low = program_input["msg_hash"][0]
+        ids.msg_hash.high = program_input["msg_hash"][1]
+    %}
+
+    set_authorized_pre_eip155_tx(msg_hash);
+    return ();
+}
+func test__execute_starknet_call{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    ) -> (felt*, felt) {
+    // Given
+    tempvar called_address: felt;
+    tempvar function_selector: felt;
+    tempvar calldata_len: felt;
+    let (calldata) = alloc();
+    %{
+        ids.called_address = program_input["called_address"]
+        ids.function_selector = program_input["function_selector"]
+        ids.calldata_len = len(program_input["calldata"])
+        segments.write_arg(ids.calldata, program_input["calldata"])
+    %}
+
+    // When
+    let (retdata_len, retdata, success) = execute_starknet_call(
+        called_address, function_selector, calldata_len, calldata
+    );
+
+    return (retdata, success);
 }
 
 func test__validate{

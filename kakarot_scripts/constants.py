@@ -38,21 +38,13 @@ NETWORKS = {
         "type": NetworkType.PROD,
         "chain_id": StarknetChainId.MAINNET,
     },
-    "goerli": {
-        "name": "starknet-goerli",
-        "explorer_url": "https://testnet.starkscan.co",
-        "rpc_url": f"https://starknet-goerli.infura.io/v3/{os.getenv('INFURA_KEY')}",
-        "l1_rpc_url": f"https://goerli.infura.io/v3/{os.getenv('INFURA_KEY')}",
-        "type": NetworkType.PROD,
-        "chain_id": StarknetChainId.GOERLI,
-    },
     "sepolia": {
         "name": "starknet-sepolia",
         "explorer_url": "https://sepolia.starkscan.co/",
         "rpc_url": "https://starknet-sepolia.public.blastapi.io/rpc/v0_6",
         "l1_rpc_url": f"https://sepolia.infura.io/v3/{os.getenv('INFURA_KEY')}",
         "type": NetworkType.PROD,
-        "chain_id": StarknetChainId.SEPOLIA_TESTNET,
+        "chain_id": StarknetChainId.SEPOLIA,
         "check_interval": 5,
         "max_wait": 30,
     },
@@ -185,9 +177,8 @@ NETWORK["chain_id"] = ChainId.chain_id
 
 ETH_TOKEN_ADDRESS = 0x49D36570D4E46F48E99674BD3FCC84644DDD6B96F7C741B1562B82F9E004DC7
 COINBASE = int(
-    os.getenv(
-        "KAKAROT_COINBASE_RECIPIENT", "0x20eB005C0b9c906691F885eca5895338E15c36De"
-    ),
+    os.getenv("KAKAROT_COINBASE_RECIPIENT")
+    or "0x20eB005C0b9c906691F885eca5895338E15c36De",
     16,
 )
 SOURCE_DIR = Path("src")
@@ -200,6 +191,8 @@ BUILD_DIR_FIXTURES = BUILD_DIR / "fixtures"
 BUILD_DIR.mkdir(exist_ok=True, parents=True)
 BUILD_DIR_FIXTURES.mkdir(exist_ok=True, parents=True)
 BUILD_DIR_SSJ = BUILD_DIR / "ssj"
+
+DATA_DIR = Path("kakarot_scripts") / "data"
 
 
 class ArtifactType(Enum):
@@ -233,7 +226,22 @@ DECLARED_CONTRACTS = [
     {"contract_name": "replace_class", "cairo_version": ArtifactType.cairo0},
     {"contract_name": "Counter", "cairo_version": ArtifactType.cairo0},
     {"contract_name": "MockPragmaOracle", "cairo_version": ArtifactType.cairo1},
+    {"contract_name": "ERC20", "cairo_version": ArtifactType.cairo0},
 ]
+
+# PRE-EIP155 TX
+MULTICALL3_DEPLOYER = "0x05f32b3cc3888453ff71b01135b34ff8e41263f2"
+MULTICALL3_SIGNED_TX = bytes.fromhex(
+    json.loads((DATA_DIR / "signed_txs.json").read_text())["multicall3"]
+)
+ARACHNID_PROXY_DEPLOYER = "0x3fab184622dc19b6109349b94811493bf2a45362"
+ARACHNID_PROXY_SIGNED_TX = bytes.fromhex(
+    json.loads((DATA_DIR / "signed_txs.json").read_text())["arachnid"]
+)
+CREATEX_DEPLOYER = "0xeD456e05CaAb11d66C4c797dD6c1D6f9A7F352b5"
+CREATEX_SIGNED_TX = bytes.fromhex(
+    json.loads((DATA_DIR / "signed_txs.json").read_text())["createx"]
+)
 
 EVM_PRIVATE_KEY = os.getenv("EVM_PRIVATE_KEY")
 EVM_ADDRESS = (

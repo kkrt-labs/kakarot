@@ -152,6 +152,7 @@ def test_should_unpack_felt_array_to_bytes32_array(cairo_run, data, expected):
 
 
 class TestInitializeJumpdests:
+    @pytest.mark.slow
     def test_should_return_same_as_execution_specs(self, cairo_run):
         bytecode = get_contract("PlainOpcodes", "Counter").bytecode_runtime
         output = cairo_run("test__initialize_jumpdests", bytecode=bytecode)

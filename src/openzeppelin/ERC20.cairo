@@ -1,18 +1,21 @@
 // SPDX-License-Identifier: MIT
-// OpenZeppelin Contracts for Cairo v0.5.0 (token/erc20/presets/ERC20.cairo)
+// OpenZeppelin Contracts for Cairo v0.6.0 (token/erc20/presets/ERC20Mintable.cairo)
 
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.uint256 import Uint256
 
+from openzeppelin.access.ownable.library import Ownable
 from openzeppelin.token.erc20.library import ERC20
 
 @constructor
 func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    name: felt, symbol: felt, decimals: felt
+    name: felt, symbol: felt, decimals: felt, initial_supply: Uint256, recipient: felt, owner: felt
 ) {
     ERC20.initializer(name, symbol, decimals);
+    ERC20._mint(recipient, initial_supply);
+    Ownable.initializer(owner);
     return ();
 }
 
@@ -59,17 +62,14 @@ func allowance{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     return ERC20.allowance(owner, spender);
 }
 
+@view
+func owner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (owner: felt) {
+    return Ownable.owner();
+}
+
 //
 // Externals
 //
-
-// Insecure mint function
-@external
-func mint{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    to: felt, amount: Uint256
-) {
-    return ERC20._mint(to, amount);
-}
 
 @external
 func transfer{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
@@ -104,4 +104,27 @@ func decreaseAllowance{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_che
     spender: felt, subtracted_value: Uint256
 ) -> (success: felt) {
     return ERC20.decrease_allowance(spender, subtracted_value);
+}
+
+@external
+func mint{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    to: felt, amount: Uint256
+) {
+    Ownable.assert_only_owner();
+    ERC20._mint(to, amount);
+    return ();
+}
+
+@external
+func transferOwnership{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    newOwner: felt
+) {
+    Ownable.transfer_ownership(newOwner);
+    return ();
+}
+
+@external
+func renounceOwnership{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+    Ownable.renounce_ownership();
+    return ();
 }

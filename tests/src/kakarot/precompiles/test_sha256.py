@@ -9,6 +9,7 @@ from hypothesis.strategies import integers
 
 @pytest.mark.SHA256
 class TestSHA256:
+    @pytest.mark.slow
     @given(
         data_len=integers(min_value=1, max_value=56),
     )
