@@ -205,8 +205,9 @@ class Serde:
         memory_dict = self.serialize_dict(
             raw["word_dict_start"], dict_size=raw["word_dict"] - raw["word_dict_start"]
         )
-        items_count = len(memory_dict.items())
-        return "".join([f"{memory_dict.get(i, 0):032x}" for i in range(items_count)])
+        return "".join(
+            [f"{memory_dict.get(i, 0):032x}" for i in range(raw["words_len"] * 2)]
+        )
 
     def serialize_scope(self, scope, scope_ptr):
         if scope.path[-1] == "State":
