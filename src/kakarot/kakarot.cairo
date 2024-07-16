@@ -460,10 +460,6 @@ func eth_send_transaction{
     let is_reverted = is_not_zero(evm.reverted);
     let result = (evm.return_data_len, evm.return_data, 1 - is_reverted, gas_used);
 
-    if (evm.reverted != FALSE) {
-        return result;
-    }
-
     return result;
 }
 

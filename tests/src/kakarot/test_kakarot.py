@@ -337,7 +337,7 @@ class TestKakarot:
             block = test_case["blocks"][0]
             tx = block["transactions"][0]
             with SyscallHandler.patch_state(parse_state(test_case["pre"])):
-                evm, state, gas_used = cairo_run(
+                evm, state, gas_used, required_gas = cairo_run(
                     "eth_call",
                     origin=int(tx["sender"], 16),
                     to=int(tx.get("to"), 16) if tx.get("to") else None,

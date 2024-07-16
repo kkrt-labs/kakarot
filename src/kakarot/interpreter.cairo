@@ -958,7 +958,8 @@ namespace Interpreter {
         } else {
             tempvar state = state;
         }
-        let success = 1 - evm.reverted;
+        let is_reverted = is_not_zero(evm.reverted);
+        let success = 1 - is_reverted;
         let paid_fee_u256 = Uint256(max_fee_u256.low * success, max_fee_u256.high * success);
 
         with state {
@@ -966,7 +967,7 @@ namespace Interpreter {
             uint256_add([sender.balance], paid_fee_u256);
             let (ap_val) = get_ap();
             let sender = Account.set_balance(sender, cast(ap_val - 3, Uint256*));
-            let sender = Account.set_nonce(sender, sender.nonce + evm.reverted);
+            let sender = Account.set_nonce(sender, sender.nonce + is_reverted);
             State.update_account(sender);
         }
 
