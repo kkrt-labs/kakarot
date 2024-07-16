@@ -9,7 +9,7 @@ using CairoLib for uint256;
 /// @author Kakarot
 /// @author Modified from Solmate (https://github.com/transmissions11/solmate/blob/main/src/tokens/ERC20.sol)
 /// @dev Do not manually set balances without updating totalSupply, as the sum of all user balances must not exceed it.
-contract DualVMToken {
+contract DualVmToken {
     /*//////////////////////////////////////////////////////////////
                         CAIRO SPECIFIC VARIABLES
     //////////////////////////////////////////////////////////////*/
