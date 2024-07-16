@@ -23,6 +23,7 @@ from starkware.cairo.lang.vm.memory_segments import FIRST_MEMORY_ADDR as PROGRAM
 from starkware.cairo.lang.vm.utils import RunResources
 from starkware.starknet.compiler.starknet_pass_manager import starknet_pass_manager
 
+from tests.utils.constants import Opcodes
 from tests.utils.coverage import VmWithCoverage, report_runs
 from tests.utils.hints import debug_info
 from tests.utils.reporting import dump_coverage, profile_from_tracer_data
@@ -176,7 +177,11 @@ def cairo_run(request) -> list:
                 "program_input": kwargs,
                 "syscall_handler": SyscallHandler(),
             },
-            static_locals={"debug_info": debug_info(program)},
+            static_locals={
+                "debug_info": debug_info(program),
+                "serde": serde,
+                "Opcodes": Opcodes,
+            },
             vm_class=VmWithCoverage,
         )
         run_resources = RunResources(n_steps=10_000_000)
