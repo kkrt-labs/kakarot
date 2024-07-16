@@ -301,6 +301,10 @@ namespace AccountContract {
 
         // See Argent account
         // https://github.com/argentlabs/argent-contracts-starknet/blob/c6d3ee5e05f0f4b8a5c707b4094446c3bc822427/contracts/account/ArgentAccount.cairo#L132
+        // See 300 max data_len for events
+        // https://github.com/starkware-libs/blockifier/blob/9bfb3d4c8bf1b68a0c744d1249b32747c75a4d87/crates/blockifier/resources/versioned_constants.json
+        // The whole data_len should be less than 300, so it's the return_data should be less than 297 (+3 for return_data_len, success, gas_used)
+        tempvar return_data_len = is_le(return_data_len, 297) * (return_data_len - 297) + 297;
         transaction_executed.emit(
             response_len=return_data_len, response=return_data, success=success, gas_used=gas_used
         );
