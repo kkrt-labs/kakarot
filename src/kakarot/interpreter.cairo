@@ -13,7 +13,6 @@ from starkware.cairo.common.dict import DictAccess
 from starkware.cairo.lang.compiler.lib.registers import get_fp_and_pc, get_ap
 from starkware.cairo.common.uint256 import Uint256, uint256_le
 from starkware.cairo.common.math import unsigned_div_rem
-from starkware.starknet.common.syscalls import get_tx_info
 
 // Internal dependencies
 from kakarot.account import Account

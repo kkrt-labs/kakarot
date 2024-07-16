@@ -18,7 +18,6 @@ from starkware.starknet.common.syscalls import (
     storage_write,
     StorageReadRequest,
     CallContract,
-    get_tx_info,
     get_contract_address,
     get_caller_address,
     replace_class,

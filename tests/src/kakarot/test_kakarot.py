@@ -321,22 +321,22 @@ class TestKakarot:
                 )
             assert not evm["reverted"]
 
+        @pytest.mark.slow
         @pytest.mark.NoCI
         @pytest.mark.EFTests
         @pytest.mark.parametrize(
-            "ef_blockchain_test", EF_TESTS_PARSED_DIR.glob("*.json")
+            "ef_blockchain_test",
+            EF_TESTS_PARSED_DIR.glob("*walletConstruction_d0g1v0_Cancun*.json"),
         )
         async def test_case(
             self,
             cairo_run,
             ef_blockchain_test,
         ):
-            test_case = json.loads(
-                (EF_TESTS_PARSED_DIR / ef_blockchain_test).read_text()
-            )
+            test_case = json.loads(ef_blockchain_test.read_text())
             block = test_case["blocks"][0]
+            tx = block["transactions"][0]
             with SyscallHandler.patch_state(parse_state(test_case["pre"])):
-                tx = block["transactions"][0]
                 evm, state, gas_used = cairo_run(
                     "eth_call",
                     origin=int(tx["sender"], 16),

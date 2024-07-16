@@ -42,7 +42,7 @@ func eth_call{
 
         ids.origin = program_input.get("origin", 0)
         ids.to.is_some = int(bool(program_input.get("to") is not None))
-        ids.to.value = program_input.get("to", 0)
+        ids.to.value = program_input.get("to") or 0
         ids.gas_limit = program_input.get("gas_limit", int(2**63 - 1))
         ids.gas_price = program_input.get("gas_price", 0)
         ids.nonce = program_input.get("nonce", 0)
