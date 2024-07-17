@@ -2,7 +2,7 @@
 
 %lang starknet
 
-from openzeppelin.access.ownable.library import Ownable, Ownable_owner
+from openzeppelin.access.ownable.library import Ownable
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin, SignatureBuiltin
 from starkware.cairo.common.math import assert_le, unsigned_div_rem
