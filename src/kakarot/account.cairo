@@ -485,8 +485,7 @@ namespace Account {
             uninitialized_account_class_hash: felt
         ) = Kakarot_uninitialized_account_class_hash.read();
         let (constructor_calldata: felt*) = alloc();
-        assert constructor_calldata[0] = kakarot_address;
-        assert constructor_calldata[1] = evm_address;
+        assert constructor_calldata[0] = evm_address;
         let (hash_state_ptr) = hash_init();
         let (hash_state_ptr) = hash_update_single{hash_ptr=pedersen_ptr}(
             hash_state_ptr=hash_state_ptr, item=Constants.CONTRACT_ADDRESS_PREFIX
@@ -505,7 +504,7 @@ namespace Account {
         );
         // hash constructor arguments
         let (hash_state_ptr) = hash_update_with_hashchain{hash_ptr=pedersen_ptr}(
-            hash_state_ptr=hash_state_ptr, data_ptr=constructor_calldata, data_length=2
+            hash_state_ptr=hash_state_ptr, data_ptr=constructor_calldata, data_length=1
         );
         let (contract_address_before_modulo) = hash_finalize{hash_ptr=pedersen_ptr}(
             hash_state_ptr=hash_state_ptr
