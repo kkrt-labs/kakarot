@@ -22,7 +22,6 @@ from kakarot.stack import Stack
 from kakarot.storages import (
     Kakarot_native_token_address,
     Kakarot_account_contract_class_hash,
-    Kakarot_uninitialized_account_class_hash,
     Kakarot_cairo1_helpers_class_hash,
     Kakarot_coinbase,
     Kakarot_block_gas_limit,
