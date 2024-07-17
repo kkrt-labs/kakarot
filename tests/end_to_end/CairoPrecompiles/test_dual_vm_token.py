@@ -6,12 +6,6 @@ from kakarot_scripts.utils.starknet import get_contract as get_contract_starknet
 from kakarot_scripts.utils.starknet import get_deployments
 
 
-@pytest.fixture(autouse=True)
-async def cleanup(get_contract, max_fee):
-    yield
-    pass
-
-
 @pytest_asyncio.fixture()
 async def starknetToken(invoke, owner):
     address = (

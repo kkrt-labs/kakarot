@@ -6,6 +6,7 @@ import {CairoLib} from "kakarot-lib/CairoLib.sol";
 using CairoLib for uint256;
 
 /// @notice EVM adapter into a Cairo ERC20 token
+/// @dev This implementation is highly experimental
 /// @author Kakarot
 /// @author Modified from Solmate (https://github.com/transmissions11/solmate/blob/main/src/tokens/ERC20.sol)
 /// @dev Do not manually set balances without updating totalSupply, as the sum of all user balances must not exceed it.
