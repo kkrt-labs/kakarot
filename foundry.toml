@@ -2,7 +2,7 @@
 src = 'solidity_contracts/src'
 test = 'solidity_contracts/tests'
 out = 'solidity_contracts/build'
-libs = ['lib']
+libs = ['solidity_contracts/lib']
 
 [rpc_endpoints]
 anvil = "http://127.0.0.1:8545"

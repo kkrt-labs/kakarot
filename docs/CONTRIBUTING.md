@@ -52,7 +52,7 @@ libraries, e.g. `cairo-lang`.
 
   ```sh
   asdf install scarb 0.7.0
-  asdf install scarb 2.6.4
+  asdf install scarb 2.6.5
   ```
 
 - Install [Go](https://go.dev/doc/install) to profile tests using `pprof`
