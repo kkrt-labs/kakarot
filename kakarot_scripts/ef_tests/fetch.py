@@ -8,9 +8,9 @@ from pathlib import Path
 
 import requests
 
-EF_TESTS_TAG = "v13.2"
+EF_TESTS_TAG = "v13.3-kkrt-1"
 EF_TESTS_URL = (
-    f"https://github.com/ethereum/tests/archive/refs/tags/{EF_TESTS_TAG}.tar.gz"
+    f"https://github.com/kkrt-labs/tests/archive/refs/tags/{EF_TESTS_TAG}.tar.gz"
 )
 EF_TESTS_DIR = Path("tests") / "ef_tests" / "test_data" / EF_TESTS_TAG
 EF_TESTS_PARSED_DIR = Path("tests") / "ef_tests" / "test_data" / "parsed"

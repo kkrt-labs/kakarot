@@ -8,7 +8,7 @@ from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math_cmp import is_not_zero
 from starkware.cairo.common.uint256 import Uint256
-from starkware.starknet.common.syscalls import get_caller_address, replace_class, get_tx_info
+from starkware.starknet.common.syscalls import get_caller_address, replace_class
 from starkware.cairo.common.registers import get_fp_and_pc
 from openzeppelin.access.ownable.library import Ownable, Ownable_owner
 
@@ -439,11 +439,10 @@ func eth_send_transaction{
     local __fp__: felt* = fp_and_pc.fp_val;
     let (local starknet_caller_address) = get_caller_address();
     let (local origin) = Kakarot.safe_get_evm_address(starknet_caller_address);
-
-    let (tx_info) = get_tx_info();
+    let (local nonce) = IAccount.get_nonce(starknet_caller_address);
 
     let (evm, state, gas_used, _) = Kakarot.eth_call(
-        tx_info.nonce,
+        nonce,
         origin,
         to,
         gas_limit,
@@ -460,10 +459,6 @@ func eth_send_transaction{
 
     let is_reverted = is_not_zero(evm.reverted);
     let result = (evm.return_data_len, evm.return_data, 1 - is_reverted, gas_used);
-
-    if (evm.reverted != FALSE) {
-        return result;
-    }
 
     return result;
 }

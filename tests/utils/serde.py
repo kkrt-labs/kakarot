@@ -56,8 +56,9 @@ class Serde:
                 break
         return output
 
-    def serialize_dict(self, dict_ptr, value_scope=None):
-        dict_size = self.runner.segments.get_segment_size(dict_ptr.segment_index)
+    def serialize_dict(self, dict_ptr, value_scope=None, dict_size=None):
+        if dict_size is None:
+            dict_size = self.runner.segments.get_segment_size(dict_ptr.segment_index)
         output = {}
         value_scope = (
             self.get_identifier(value_scope, StructDefinition).full_name
@@ -194,14 +195,19 @@ class Serde:
 
     def serialize_stack(self, ptr):
         raw = self.serialize_pointers("model.Stack", ptr)
-        stack_dict = self.serialize_dict(raw["dict_ptr_start"], "Uint256")
+        stack_dict = self.serialize_dict(
+            raw["dict_ptr_start"], "Uint256", raw["dict_ptr"] - raw["dict_ptr_start"]
+        )
         return [stack_dict[i] for i in range(raw["size"])]
 
     def serialize_memory(self, ptr):
         raw = self.serialize_pointers("model.Memory", ptr)
-        memory_dict = self.serialize_dict(raw["word_dict_start"])
-        items_count = len(memory_dict.items())
-        return "".join([f"{memory_dict.get(i, 0):032x}" for i in range(items_count)])
+        memory_dict = self.serialize_dict(
+            raw["word_dict_start"], dict_size=raw["word_dict"] - raw["word_dict_start"]
+        )
+        return "".join(
+            [f"{memory_dict.get(i, 0):032x}" for i in range(raw["words_len"] * 2)]
+        )
 
     def serialize_scope(self, scope, scope_ptr):
         if scope.path[-1] == "State":

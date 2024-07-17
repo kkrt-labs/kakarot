@@ -16,8 +16,6 @@ from eth_utils.address import to_checksum_address
 from hexbytes import HexBytes
 from starknet_py.net.account.account import Account
 from starknet_py.net.client_errors import ClientError
-from starknet_py.net.client_models import Call
-from starknet_py.net.models.transaction import InvokeV1
 from starknet_py.net.signer.stark_curve_signer import KeyPair
 from starkware.starknet.public.abi import starknet_keccak
 from web3 import Web3
@@ -44,6 +42,7 @@ from kakarot_scripts.utils.starknet import fund_address as _fund_starknet_addres
 from kakarot_scripts.utils.starknet import get_balance
 from kakarot_scripts.utils.starknet import get_contract as _get_starknet_contract
 from kakarot_scripts.utils.starknet import get_deployments as _get_starknet_deployments
+from kakarot_scripts.utils.starknet import get_starknet_account
 from kakarot_scripts.utils.starknet import invoke as _invoke_starknet
 from kakarot_scripts.utils.starknet import wait_for_transaction
 from tests.utils.constants import TRANSACTION_GAS_LIMIT
@@ -411,7 +410,13 @@ async def eth_send_transaction(
             evm_account.signer.public_key.to_checksum_address()
         )
     else:
-        nonce = await evm_account.get_nonce()
+        nonce = (
+            await (
+                _get_starknet_contract("account_contract", address=evm_account.address)
+                .functions["get_nonce"]
+                .call()
+            )
+        ).nonce
 
     payload = {
         "type": 0x2,
@@ -447,7 +452,6 @@ async def eth_send_transaction(
         evm_tx.s,
         evm_tx.v,
         packed_encoded_unsigned_tx,
-        evm_account,
         max_fee,
     )
 
@@ -458,38 +462,44 @@ async def send_starknet_transaction(
     signature_s: int,
     signature_v: int,
     packed_encoded_unsigned_tx: List[int],
-    caller_eoa: Optional[Account] = None,
     max_fee: Optional[int] = None,
 ):
-    prepared_invoke = await evm_account._prepare_invoke(
-        calls=[
-            Call(
-                to_addr=0xDEAD,  # unused in current EOA implementation
-                selector=0xDEAD,  # unused in current EOA implementation
-                calldata=packed_encoded_unsigned_tx,
-            )
-        ],
-        max_fee=int(5e17) if max_fee is None else max_fee,
-    )
-    # We need to reconstruct the prepared_invoke with the new signature
-    # And Invoke.signature is Frozen
-    prepared_invoke = InvokeV1(
-        version=prepared_invoke.version,
-        max_fee=prepared_invoke.max_fee,
-        signature=[
-            *int_to_uint256(signature_r),
-            *int_to_uint256(signature_s),
-            signature_v,
-        ],
-        nonce=prepared_invoke.nonce,
-        sender_address=prepared_invoke.sender_address,
-        calldata=prepared_invoke.calldata,
+    relayer = await get_starknet_account()
+    current_timestamp = (await RPC_CLIENT.get_block("latest")).timestamp
+    outside_execution = {
+        "caller": int.from_bytes(b"ANY_CALLER", "big"),
+        "nonce": 0,  # not used in Kakarot
+        "execute_after": current_timestamp - 60 * 60,
+        "execute_before": current_timestamp + 60 * 60,
+    }
+    max_fee = int(5e17) if max_fee in [None, 0] else max_fee
+    response = (
+        await _get_starknet_contract(
+            "account_contract", address=evm_account.address, provider=relayer
+        )
+        .functions["execute_from_outside"]
+        .invoke_v1(
+            outside_execution=outside_execution,
+            call_array=[
+                {
+                    "to": 0xDEAD,
+                    "selector": 0xDEAD,
+                    "data_offset": 0,
+                    "data_len": len(packed_encoded_unsigned_tx),
+                }
+            ],
+            calldata=list(packed_encoded_unsigned_tx),
+            signature=[
+                *int_to_uint256(signature_r),
+                *int_to_uint256(signature_s),
+                signature_v,
+            ],
+            max_fee=max_fee,
+        )
     )
 
-    response = await evm_account.client.send_transaction(prepared_invoke)
-
-    await wait_for_transaction(tx_hash=response.transaction_hash)
-    receipt = await RPC_CLIENT.get_transaction_receipt(response.transaction_hash)
+    await wait_for_transaction(tx_hash=response.hash)
+    receipt = await RPC_CLIENT.get_transaction_receipt(response.hash)
     transaction_events = [
         event
         for event in receipt.events

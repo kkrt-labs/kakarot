@@ -6,14 +6,13 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn
+from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn, is_le_felt
 from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.default_dict import default_dict_new
 from starkware.cairo.common.dict import DictAccess
-from starkware.cairo.lang.compiler.lib.registers import get_fp_and_pc
+from starkware.cairo.lang.compiler.lib.registers import get_fp_and_pc, get_ap
 from starkware.cairo.common.uint256 import Uint256, uint256_le
 from starkware.cairo.common.math import unsigned_div_rem
-from starkware.starknet.common.syscalls import get_tx_info
 
 // Internal dependencies
 from kakarot.account import Account
@@ -847,7 +846,6 @@ namespace Interpreter {
         let valid_jumpdests_start = cast([ap - 2], DictAccess*);
         let valid_jumpdests = cast([ap - 1], DictAccess*);
 
-        tempvar authorized = new model.Option(is_some=0, value=0);
         tempvar message = new model.Message(
             bytecode=bytecode,
             bytecode_len=bytecode_len,
@@ -870,44 +868,45 @@ namespace Interpreter {
         let memory = Memory.init();
         let state = State.init();
 
+        // Cache the coinbase, precompiles, caller, and target, making them warm
         with state {
-            // Cache the coinbase, precompiles, caller, and target, making them warm
             let coinbase = State.get_account(env.coinbase);
-            local coinbase_address: model.Address* = coinbase.address;
             State.cache_precompiles();
             State.get_account(address.evm);
             let access_list_cost = State.cache_access_list(access_list_len, access_list);
+        }
+
+        let intrinsic_gas = intrinsic_gas + access_list_cost;
+        let evm = EVM.init(message, gas_limit - intrinsic_gas);
+
+        let is_gas_limit_enough = is_le_felt(intrinsic_gas, gas_limit);
+        if (is_gas_limit_enough == FALSE) {
+            let evm = EVM.halt_validation_failed(evm);
+            State.finalize{state=state}();
+            return (evm, stack, memory, state, 0, 0);
+        }
+
+        tempvar is_initcode_invalid = is_deploy_tx * is_le(
+            2 * Constants.MAX_CODE_SIZE + 1, bytecode_len
+        );
+        if (is_initcode_invalid != FALSE) {
+            let evm = EVM.halt_validation_failed(evm);
+            State.finalize{state=state}();
+            return (evm, stack, memory, state, 0, 0);
+        }
+
+        // Charge the gas fee to the user without setting up a transfer.
+        // Transfers with the exact amounts will be performed post-execution.
+        // Note: balance > effective_fee was verified in AccountContract.execute_from_outside()
+        let max_fee = gas_limit * env.gas_price;
+        let (fee_high, fee_low) = split_felt(max_fee);
+        let max_fee_u256 = Uint256(low=fee_low, high=fee_high);
+
+        with state {
             let sender = State.get_account(env.origin);
-            local sender_address: model.Address* = sender.address;
-
-            // TODO: missing overflow checks on gas operations and values
-            let intrinsic_gas = intrinsic_gas + access_list_cost;
-            let evm = EVM.init(message, gas_limit - intrinsic_gas);
-
-            let is_gas_limit_enough = is_le(intrinsic_gas, gas_limit);
-            if (is_gas_limit_enough == FALSE) {
-                let evm = EVM.halt_validation_failed(evm);
-                State.finalize();
-                return (evm, stack, memory, state, 0, 0);
-            }
-
-            tempvar is_initcode_invalid = is_deploy_tx * is_le(
-                2 * Constants.MAX_CODE_SIZE + 1, bytecode_len
-            );
-            if (is_initcode_invalid != FALSE) {
-                let evm = EVM.halt_validation_failed(evm);
-                State.finalize();
-                return (evm, stack, memory, state, 0, 0);
-            }
-
-            // Charge the gas fee to the user without setting up a transfer.
-            // Transfers with the exact amounts will be performed post-execution.
-            // Note: balance > effective_fee was verified in AccountContract.execute()
-            let effective_gas_fee = gas_limit * env.gas_price;
-            let (fee_high, fee_low) = split_felt(effective_gas_fee);
-            let max_fee_u256 = Uint256(low=fee_low, high=fee_high);
             let (local new_balance) = uint256_sub([sender.balance], max_fee_u256);
             let sender = Account.set_balance(sender, &new_balance);
+            let sender = Account.set_nonce(sender, sender.nonce + 1);
             State.update_account(sender);
 
             let transfer = model.Transfer(sender.address, address, [value]);
@@ -919,7 +918,7 @@ namespace Interpreter {
             let is_collision = code_or_nonce * is_deploy_tx;
             // Nonce is set to 1 in case of deploy_tx and account is marked as created
             let nonce = account.nonce * (1 - is_deploy_tx) + is_deploy_tx;
-            let account = Account.set_nonce(account, nonce);  // Increase the nonce of the sender of the tx
+            let account = Account.set_nonce(account, nonce);
             let account = Account.set_created(account, is_deploy_tx);
             State.update_account(account);
         }
@@ -951,44 +950,35 @@ namespace Interpreter {
 
         let total_gas_used = required_gas - gas_refund;
 
+        // Reset the state if the execution has failed.
+        // Only the gas fee paid will be committed.
+        State.finalize{state=state}();
+        if (evm.reverted != 0) {
+            tempvar state = State.init();
+        } else {
+            tempvar state = state;
+        }
+        let is_reverted = is_not_zero(evm.reverted);
+        let success = 1 - is_reverted;
+        let paid_fee_u256 = Uint256(max_fee_u256.low * success, max_fee_u256.high * success);
+
         with state {
-            // Reset the state if the execution has failed.
-            // Only the gas fee paid will be committed.
-            if (evm.reverted != 0) {
-                let state = State.init();
+            let sender = State.get_account(env.origin);
+            uint256_add([sender.balance], paid_fee_u256);
+            let (ap_val) = get_ap();
+            let sender = Account.set_balance(sender, cast(ap_val - 3, Uint256*));
+            let sender = Account.set_nonce(sender, sender.nonce + is_reverted);
+            State.update_account(sender);
+        }
 
-                tempvar syscall_ptr = syscall_ptr;
-                tempvar pedersen_ptr = pedersen_ptr;
-                tempvar range_check_ptr = range_check_ptr;
-                tempvar state = state;
-            } else {
-                // Because we only "cached" for the local execution the sender's balance minus the maximum
-                // fee paid for the transaction, we need to restore the sender's balance to its original
-                // value to charge the actual fee proportional to the gas used.
-                let sender = State.get_account(env.origin);
-                let (local balance_pre_fee, _) = uint256_add([sender.balance], max_fee_u256);
-                let sender = Account.set_balance(sender, &balance_pre_fee);
-                State.update_account(sender);
-                tempvar syscall_ptr = syscall_ptr;
-                tempvar pedersen_ptr = pedersen_ptr;
-                tempvar range_check_ptr = range_check_ptr;
-                tempvar state = state;
-            }
-            let syscall_ptr = cast([ap - 4], felt*);
-            let pedersen_ptr = cast([ap - 3], HashBuiltin*);
-            let range_check_ptr = [ap - 2];
-            let state = cast([ap - 1], model.State*);
+        // So as to not burn the base_fee_per gas, we send it to the coinbase.
+        let actual_fee = total_gas_used * env.gas_price;
+        let (fee_high, fee_low) = split_felt(actual_fee);
+        let actual_fee_u256 = Uint256(low=fee_low, high=fee_high);
+        let transfer = model.Transfer(sender.address, coinbase.address, actual_fee_u256);
 
-            // So as to not burn the base_fee_per gas, we send it to the coinbase.
-            let total_fee_charged = total_gas_used * env.gas_price;
-            let (fee_high, fee_low) = split_felt(total_fee_charged);
-            let fee_u256 = Uint256(low=fee_low, high=fee_high);
-
-            let transfer = model.Transfer(sender_address, coinbase.address, fee_u256);
-            // This should always succeed as we ensured the user has enough balance for value + gas_price * gas_limit
-            let success = State.add_transfer(transfer);
-
-            // State must be finalized as we added entries with the latest transfer
+        with state {
+            State.add_transfer(transfer);
             State.finalize();
         }
 

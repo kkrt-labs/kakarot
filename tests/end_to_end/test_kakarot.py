@@ -200,6 +200,7 @@ class TestKakarot:
             starknet: FullNodeClient,
             deploy_externally_owned_account,
             register_account,
+            random_seed,
         ):
             evm_address = generate_random_evm_address(random_seed)
             await deploy_externally_owned_account(evm_address)

@@ -65,14 +65,14 @@ def l1_contract_exists(address: HexBytes) -> bool:
         return False
 
 
-async def deploy_on_l1(
+def deploy_on_l1(
     contract_app: str, contract_name: str, *args, **kwargs
 ) -> Web3Contract:
     logger.info(f"⏳ Deploying {contract_name}")
     caller_eoa = kwargs.pop("caller_eoa", None)
     contract = get_l1_contract(contract_app, contract_name)
     value = kwargs.pop("value", 0)
-    receipt, response, success, gas_used = await send_l1_transaction(
+    receipt, response, success, gas_used = send_l1_transaction(
         to=0,
         gas=int(TRANSACTION_GAS_LIMIT),
         data=contract.constructor(*args, **kwargs).data_in_transaction,
@@ -117,7 +117,7 @@ def get_l1_contract(
     return contract
 
 
-async def send_l1_transaction(
+def send_l1_transaction(
     to: Union[int, str],
     data: Union[str, bytes],
     gas: int = 21_000,
@@ -161,7 +161,7 @@ async def send_l1_transaction(
 def _wrap_web3(fun: str, caller_eoa_: Optional[EvmAccount] = None):
     """Wrap a contract function call with the WEB3 provider."""
 
-    async def _wrapper(self, *args, **kwargs):
+    def _wrapper(self, *args, **kwargs):
         abi = self.get_function_by_name(fun).abi
         gas_price = kwargs.pop("gas_price", DEFAULT_GAS_PRICE)
         gas_limit = kwargs.pop("gas_limit", TRANSACTION_GAS_LIMIT)
@@ -196,7 +196,7 @@ def _wrap_web3(fun: str, caller_eoa_: Optional[EvmAccount] = None):
             return normalized[0] if len(normalized) == 1 else normalized
 
         logger.info(f"⏳ Executing {fun} at address {self.address}")
-        receipt, response, success, gas_used = await send_l1_transaction(
+        receipt, response, success, gas_used = send_l1_transaction(
             to=self.address,
             value=value,
             gas=gas_limit,

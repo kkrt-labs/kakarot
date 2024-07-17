@@ -22,7 +22,7 @@ from kakarot.account import Account
 
 func eth_call{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() -> (model.EVM*, model.State*, felt) {
+}() -> (model.EVM*, model.State*, felt, felt) {
     // Given
 
     tempvar origin;
@@ -42,7 +42,7 @@ func eth_call{
 
         ids.origin = program_input.get("origin", 0)
         ids.to.is_some = int(bool(program_input.get("to") is not None))
-        ids.to.value = program_input.get("to", 0)
+        ids.to.value = program_input.get("to") or 0
         ids.gas_limit = program_input.get("gas_limit", int(2**63 - 1))
         ids.gas_price = program_input.get("gas_price", 0)
         ids.nonce = program_input.get("nonce", 0)
@@ -53,7 +53,7 @@ func eth_call{
         ids.access_list_len = 0
     %}
 
-    let (evm, state, gas_used, _) = Kakarot.eth_call(
+    let (evm, state, gas_used, required_gas) = Kakarot.eth_call(
         nonce=nonce,
         origin=origin,
         to=to,
@@ -66,7 +66,7 @@ func eth_call{
         access_list=access_list,
     );
 
-    return (evm, state, gas_used);
+    return (evm, state, gas_used, required_gas);
 }
 
 func compute_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(

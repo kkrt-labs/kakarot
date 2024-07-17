@@ -14,7 +14,7 @@ func test__init__should_return_an_empty_memory() {
     return ();
 }
 
-func test__store__should_add_an_element_to_the_memory{range_check_ptr}() -> model.Memory* {
+func test__store__should_add_an_element_to_the_memory{range_check_ptr}() {
     alloc_locals;
     // Given
     let memory = Memory.init();
@@ -23,10 +23,13 @@ func test__store__should_add_an_element_to_the_memory{range_check_ptr}() -> mode
     // When
     with memory {
         Memory.store(value, 0);
+        let stored = Memory.load(0);
     }
 
+    assert_uint256_eq(value, stored);
+
     // Then
-    return memory;
+    return ();
 }
 
 func test__load__should_load_an_element_from_the_memory_with_offset{range_check_ptr}() {

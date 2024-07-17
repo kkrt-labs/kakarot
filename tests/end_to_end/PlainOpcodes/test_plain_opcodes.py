@@ -493,7 +493,7 @@ class TestPlainOpcodes:
             ],
         )
         async def test_should_emit_keccak_hash(self, plain_opcodes, input_length):
-            input = os.urandom(input_length)
-            receipt = (await plain_opcodes.computeHash(input))["receipt"]
+            input_bytes = os.urandom(input_length)
+            receipt = (await plain_opcodes.computeHash(input_bytes))["receipt"]
             events = plain_opcodes.events.parse_events(receipt)
-            assert events["HashComputed"][0]["hash"] == keccak(input)
+            assert events["HashComputed"][0]["hash"] == keccak(input_bytes)
