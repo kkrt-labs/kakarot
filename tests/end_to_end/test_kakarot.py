@@ -34,7 +34,7 @@ def evm(get_contract):
     return get_contract("EVM")
 
 
-@pytest.fixture(scope="session")
+@pytest_asyncio.fixture(scope="session")
 async def other():
     """
     Just another Starknet contract.
@@ -49,7 +49,7 @@ async def other():
 
 
 @pytest.fixture(scope="session")
-async def class_hashes():
+def class_hashes():
     """
     All declared class hashes.
     """
