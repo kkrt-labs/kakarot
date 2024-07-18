@@ -27,7 +27,7 @@ from kakarot.interfaces.interfaces import IKakarot, IAccount
 from kakarot.errors import Errors
 from utils.utils import Helpers
 
-const COMPUTE_STARKNET_ADDRESS_SELECTOR = 0x0ad7772990f7f5a506d84e5723efd1242e989c23f45653870d49d6d107f6e7;
+const GET_STARKNET_ADDRESS_SELECTOR = 0x03e5d65a345b3857ca9d72edca702b8e56c1923c118867752345f710d595b3cf;
 
 // @title EVM smart contract account representation.
 @constructor
@@ -316,17 +316,20 @@ func set_authorized_pre_eip155_tx{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*
     return ();
 }
 
+// @notice Used to preserve caller in Cairo Precompiles
+// @dev Reentrency check is done, only get_starknet_address is allowed for Solidity contracts
+//      to be able to get the corresponding Starknet address in their calldata.
 @external
 func execute_starknet_call{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     to: felt, function_selector: felt, calldata_len: felt, calldata: felt*
 ) -> (retdata_len: felt, retdata: felt*, success: felt) {
     Ownable.assert_only_owner();
     let (kakarot_address) = Ownable.owner();
-    let is_compute_starknet_address = Helpers.is_zero(
-        COMPUTE_STARKNET_ADDRESS_SELECTOR - function_selector
+    let is_get_starknet_address = Helpers.is_zero(
+        GET_STARKNET_ADDRESS_SELECTOR - function_selector
     );
     let is_kakarot = Helpers.is_zero(kakarot_address - to);
-    tempvar is_forbidden = is_kakarot * (1 - is_compute_starknet_address);
+    tempvar is_forbidden = is_kakarot * (1 - is_get_starknet_address);
     if (is_forbidden != FALSE) {
         let (error_len, error) = Errors.kakarotReentrancy();
         return (error_len, error, FALSE);
