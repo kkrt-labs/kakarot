@@ -27,10 +27,11 @@ namespace TestHelpers {
         bytecode: felt*,
         starknet_contract_address: felt,
         evm_contract_address: felt,
+        calldata_len: felt,
+        calldata: felt*,
     ) -> model.EVM* {
         alloc_locals;
 
-        let (calldata) = alloc();
         let env = Starknet.get_env(0, 0);
         tempvar address = new model.Address(
             starknet=starknet_contract_address, evm=evm_contract_address
@@ -45,7 +46,7 @@ namespace TestHelpers {
             valid_jumpdests_start=valid_jumpdests_start,
             valid_jumpdests=valid_jumpdests,
             calldata=calldata,
-            calldata_len=0,
+            calldata_len=calldata_len,
             value=zero,
             caller=env.origin,
             parent=cast(0, model.Parent*),
@@ -62,13 +63,21 @@ namespace TestHelpers {
 
     func init_evm{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> model.EVM* {
         let (bytecode) = alloc();
-        return init_evm_at_address(0, bytecode, 0, 0);
+        let (calldata) = alloc();
+        return init_evm_at_address(0, bytecode, 0, 0, 0, calldata);
     }
 
     func init_evm_with_bytecode{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         bytecode_len: felt, bytecode: felt*
     ) -> model.EVM* {
-        return init_evm_at_address(bytecode_len, bytecode, 0, 0);
+        let (calldata) = alloc();
+        return init_evm_at_address(bytecode_len, bytecode, 0, 0, 0, calldata);
+    }
+
+    func init_evm_with_calldata{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        bytecode_len: felt, bytecode: felt*, calldata_len: felt, calldata: felt*
+    ) -> model.EVM* {
+        return init_evm_at_address(bytecode_len, bytecode, 0, 0, calldata_len, calldata);
     }
 
     func init_stack_with_values(stack_len: felt, stack: Uint256*) -> model.Stack* {

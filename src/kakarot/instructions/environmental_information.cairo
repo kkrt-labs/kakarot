@@ -279,15 +279,17 @@ namespace EnvironmentalInformation {
 
         let opcode_number = [evm.message.bytecode + evm.program_counter];
 
+        let (data_to_store: felt*) = alloc();
         // Offset.high != 0 means that the sliced data is surely 0x00...00
-        // And storing 0 in Memory is just doing nothing.
+        // Store 0 in memory
         if (offset.high != 0) {
+            memset(dst=data_to_store, value=0, n=size.low);
+            Memory.store_n(size.low, data_to_store, dest_offset.low);
             return evm;
         }
 
         // 0x37: calldatacopy
         // 0x39: codecopy
-        let (sliced_data: felt*) = alloc();
         local data_len;
         local data: felt*;
         if (opcode_number == 0x37) {
@@ -300,9 +302,9 @@ namespace EnvironmentalInformation {
             tempvar range_check_ptr = range_check_ptr;
         }
         let range_check_ptr = [ap - 1];
-        slice(sliced_data, data_len, data, offset.low, size.low);
+        slice(data_to_store, data_len, data, offset.low, size.low);
 
-        Memory.store_n(size.low, sliced_data, dest_offset.low);
+        Memory.store_n(size.low, data_to_store, dest_offset.low);
 
         return evm;
     }
