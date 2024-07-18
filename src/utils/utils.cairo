@@ -1215,7 +1215,7 @@ namespace Helpers {
     }
 
     // @notice Ensure the tx is a view call
-    // @dev Verify tx field are empty except for chain_id
+    // @dev Verify tx fields are empty except for chain_id
     func assert_view_call{syscall_ptr: felt*}() -> () {
         let (tx_info) = get_tx_info();
         with_attr error_message("Only view call") {
