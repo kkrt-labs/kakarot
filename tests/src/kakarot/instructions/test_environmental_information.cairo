@@ -8,6 +8,8 @@ from starkware.cairo.common.uint256 import Uint256, assert_uint256_eq
 from starkware.cairo.common.memcpy import memcpy
 
 from kakarot.instructions.environmental_information import EnvironmentalInformation
+from kakarot.instructions.memory_operations import MemoryOperations
+
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
@@ -93,6 +95,53 @@ func test__exec_extcodecopy{
         Stack.push(item_2);  // offset
         Stack.push(item_1);  // dest_offset
         Stack.push(item_0);  // address
+        let evm = EnvironmentalInformation.exec_extcodecopy(evm);
+    }
+
+    // Then
+    assert stack.size = 0;
+    return memory;
+}
+
+func test__exec_extcodecopy_zellic_issue_1258{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() -> model.Memory* {
+    // Given
+    alloc_locals;
+    local address: felt;
+    local size: felt;
+    local offset_high: felt;
+    local dest_offset: felt;
+    %{
+        ids.address = program_input["address"]
+        ids.size = program_input["size"]
+        ids.offset_high = program_input["offset_high"]
+        ids.dest_offset = program_input["dest_offset"]
+    %}
+    let evm = TestHelpers.init_evm();
+    let stack = Stack.init();
+    let state = State.init();
+    let memory = Memory.init();
+
+    tempvar item_3_extcodecopy = new Uint256(size, 0);
+    tempvar item_2_extcodecopy = new Uint256(0, offset_high);
+    tempvar item_1_extcodecopy = new Uint256(dest_offset, 0);
+    tempvar item_0_extcodecopy = new Uint256(address, 0);
+
+    tempvar item_1_mstore = new Uint256(2 ** 128 - 1, 2 ** 128 - 1);
+    tempvar item_0_mstore = new Uint256(0, 0);
+
+    // When
+    with stack, memory, state {
+        Stack.push(item_1_mstore);
+        Stack.push(item_0_mstore);
+
+        let evm = MemoryOperations.exec_mstore(evm);
+
+        Stack.push(item_3_extcodecopy);  // size
+        Stack.push(item_2_extcodecopy);  // offset
+        Stack.push(item_1_extcodecopy);  // dest_offset
+        Stack.push(item_0_extcodecopy);  // address
         let evm = EnvironmentalInformation.exec_extcodecopy(evm);
     }
 

@@ -109,6 +109,40 @@ class TestEnvironmentalInformation:
                 == copied_bytecode
             )
 
+        @pytest.mark.parametrize(
+            "size",
+            [31, 32, 33, 0],
+            ids=[
+                "size_is_bytecodelen-1",
+                "size_is_bytecodelen",
+                "size_is_bytecodelen+1",
+                "size_is_0",
+            ],
+        )
+        @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
+        @SyscallHandler.patch("IAccount.get_nonce", lambda addr, data: [1])
+        @SyscallHandler.patch(
+            "Kakarot_evm_to_starknet_address", EXISTING_ACCOUNT, 0x1234
+        )
+        def test_extcodecopy_offset_high_zellic_issue_1258(
+            self, cairo_run, size, bytecode, address
+        ):
+            offset_high = 1
+
+            with SyscallHandler.patch(
+                "IAccount.bytecode", lambda addr, data: [len(bytecode), *bytecode]
+            ):
+                memory = cairo_run(
+                    "test__exec_extcodecopy_zellic_issue_1258",
+                    size=size,
+                    offset_high=offset_high,
+                    dest_offset=0,
+                    address=address,
+                )
+            # with a offset_high != 0 all copied bytes are 0
+            copied_bytecode = bytes([0] * size)
+            assert bytes.fromhex(memory)[0:size] == copied_bytecode
+
     class TestGasPrice:
         def test_gasprice(self, cairo_run):
             cairo_run("test__exec_gasprice")

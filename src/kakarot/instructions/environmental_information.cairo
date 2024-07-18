@@ -414,17 +414,19 @@ namespace EnvironmentalInformation {
             words_len=memory_expansion.new_words_len,
         );
 
+        let (data_to_store: felt*) = alloc();
         // Offset.high != 0 means that the sliced data is surely 0x00...00
-        // And storing 0 in Memory is just doing nothing
+        // Store 0 in memory
         if (offset.high != 0) {
+            memset(dst=data_to_store, value=0, n=size.low);
+            Memory.store_n(size.low, data_to_store, dest_offset.low);
             return evm;
         }
 
-        let (sliced_data: felt*) = alloc();
         let account = State.get_account(evm_address);
-        slice(sliced_data, account.code_len, account.code, offset.low, size.low);
+        slice(data_to_store, account.code_len, account.code, offset.low, size.low);
 
-        Memory.store_n(size.low, sliced_data, dest_offset.low);
+        Memory.store_n(size.low, data_to_store, dest_offset.low);
 
         return evm;
     }
