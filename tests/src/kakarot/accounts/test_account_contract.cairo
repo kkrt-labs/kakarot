@@ -14,7 +14,6 @@ from kakarot.accounts.account_contract import (
     write_jumpdests,
     is_valid_jumpdest,
     set_nonce,
-    set_implementation,
     set_authorized_pre_eip155_tx,
     execute_starknet_call,
 )
@@ -25,17 +24,11 @@ func test__initialize{
     alloc_locals;
 
     // Given
-    local kakarot_address: felt;
     local evm_address: felt;
-    local implementation_class: felt;
-    %{
-        ids.kakarot_address = program_input["kakarot_address"]
-        ids.evm_address = program_input["evm_address"]
-        ids.implementation_class = program_input["implementation_class"]
-    %}
+    %{ ids.evm_address = program_input["evm_address"] %}
 
     // When
-    initialize(kakarot_address, evm_address, implementation_class);
+    initialize(evm_address);
 
     return ();
 }
@@ -81,16 +74,6 @@ func test__set_nonce{
     local new_nonce: felt;
     %{ ids.new_nonce = program_input["new_nonce"] %}
     set_nonce(new_nonce);
-    return ();
-}
-
-func test__set_implementation{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    alloc_locals;
-    local new_implementation: felt;
-    %{ ids.new_implementation = program_input["new_implementation"] %}
-    set_implementation(new_implementation);
     return ();
 }
 

@@ -174,14 +174,14 @@ def private_key_from_hex(hex_key: str):
     return keys.PrivateKey(bytes.fromhex(hex_key))
 
 
-def generate_random_private_key(seed=0):
-    random.seed(seed)
+def generate_random_private_key(seed=None):
+    if seed is not None:
+        random.seed(seed)
     return keys.PrivateKey(int.to_bytes(random.getrandbits(256), 32, "big"))
 
 
-def generate_random_evm_address(seed=0):
-    random.seed(seed)
-    return to_checksum_address(f"{random.getrandbits(160):040x}")
+def generate_random_evm_address(seed=None):
+    return generate_random_private_key(seed).public_key.to_checksum_address()
 
 
 def ec_sign(

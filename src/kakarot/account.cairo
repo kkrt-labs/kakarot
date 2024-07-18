@@ -124,11 +124,6 @@ namespace Account {
         let balance = fetch_balance(address);
         assert balance_ptr = new Uint256(balance.low, balance.high);
 
-        // Upgrade the target starknet contract's class if it's not the latest one.
-        // The contract must be deployed on starknet already.
-        // TODO! Uncomment when the upgrade is needed
-        // Internals.check_and_upgrade_account_class(address);
-
         let (bytecode_len, bytecode) = IAccount.bytecode(contract_address=starknet_address);
         let (nonce) = IAccount.get_nonce(contract_address=starknet_address);
 
@@ -471,6 +466,13 @@ namespace Account {
         return starknet_address;
     }
 
+    func get_constructor_calldata(evm_address) -> (calldata_len: felt, calldata: felt*) {
+        let (constructor_calldata: felt*) = alloc();
+        assert constructor_calldata[0] = 1;
+        assert constructor_calldata[1] = evm_address;
+        return (2, constructor_calldata);
+    }
+
     // @dev As contract addresses are deterministic we can know what will be the address of a starknet contract from its input EVM address
     // @dev Adapted code from: https://github.com/starkware-libs/cairo-lang/blob/master/src/starkware/starknet/core/os/contract_address/contract_address.cairo
     // @param evm_address The EVM address to transform to a starknet address
@@ -484,8 +486,9 @@ namespace Account {
         let (
             uninitialized_account_class_hash: felt
         ) = Kakarot_uninitialized_account_class_hash.read();
-        let (constructor_calldata: felt*) = alloc();
-        assert constructor_calldata[0] = evm_address;
+        let (constructor_calldata_len, constructor_calldata) = get_constructor_calldata(
+            evm_address
+        );
         let (hash_state_ptr) = hash_init();
         let (hash_state_ptr) = hash_update_single{hash_ptr=pedersen_ptr}(
             hash_state_ptr=hash_state_ptr, item=Constants.CONTRACT_ADDRESS_PREFIX
@@ -504,7 +507,9 @@ namespace Account {
         );
         // hash constructor arguments
         let (hash_state_ptr) = hash_update_with_hashchain{hash_ptr=pedersen_ptr}(
-            hash_state_ptr=hash_state_ptr, data_ptr=constructor_calldata, data_length=1
+            hash_state_ptr=hash_state_ptr,
+            data_ptr=constructor_calldata,
+            data_length=constructor_calldata_len,
         );
         let (contract_address_before_modulo) = hash_finalize{hash_ptr=pedersen_ptr}(
             hash_state_ptr=hash_state_ptr
@@ -690,17 +695,5 @@ namespace Internals {
         dict_write{dict_ptr=storage_ptr}(key=storage_addr, new_value=cast(value_ptr, felt));
 
         return _cache_storage_keys(evm_address, storage_keys_len - 1, storage_keys + Uint256.SIZE);
-    }
-
-    func check_and_upgrade_account_class{
-        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
-    }(address: model.Address*) {
-        let (account_impl) = IAccount.get_implementation(address.starknet);
-        let (latest_impl) = Kakarot_account_contract_class_hash.read();
-        if (account_impl == latest_impl) {
-            return ();
-        }
-        IAccount.set_implementation(address.starknet, latest_impl);
-        return ();
     }
 }

@@ -42,7 +42,7 @@ logger.setLevel(logging.INFO)
 async def main():
     # %% Declarations
     account = await get_starknet_account()
-    logger.info(f"ℹ️  Using account {hex(account.address)} as deployer")
+    logger.info(f"ℹ️  Using account 0x{account.address:064x} as deployer")
 
     class_hash = {
         contract["contract_name"]: await declare(contract)
