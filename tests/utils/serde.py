@@ -108,6 +108,10 @@ class Serde:
         raw = self.serialize_pointers("Uint256", ptr)
         return hex(raw["low"] + raw["high"] * 2**128)
 
+    def serialize_nibbles(self, ptr):
+        raw = self.serialize_pointers("Nibbles", ptr)
+        return self.serialize_list(raw["nibbles"], list_len=raw["nibbles_len"])
+
     def serialize_account(self, ptr):
         raw = self.serialize_pointers("model.Account", ptr)
         return {
@@ -228,6 +232,8 @@ class Serde:
             return self.serialize_message(scope_ptr)
         if scope.path[-1] == "EVM":
             return self.serialize_evm(scope_ptr)
+        if scope.path[-1] == "Nibbles":
+            return self.serialize_nibbles(scope_ptr)
         try:
             return self.serialize_struct(str(scope), scope_ptr)
         except MissingIdentifierError:
