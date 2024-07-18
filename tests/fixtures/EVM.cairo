@@ -22,6 +22,7 @@ from kakarot.stack import Stack
 from kakarot.storages import (
     Kakarot_native_token_address,
     Kakarot_account_contract_class_hash,
+    Kakarot_uninitialized_account_class_hash,
     Kakarot_cairo1_helpers_class_hash,
     Kakarot_coinbase,
     Kakarot_block_gas_limit,
@@ -52,7 +53,7 @@ func execute{
     alloc_locals;
     // Deploy target account
     let evm_address = env.origin;
-    let starknet_address = Account.compute_starknet_address(evm_address);
+    let starknet_address = Account.get_starknet_address(evm_address);
     tempvar address = new model.Address(starknet_address, evm_address);
 
     // Write the valid jumpdests in the storage of the executed contract.

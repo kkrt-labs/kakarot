@@ -871,7 +871,7 @@ namespace CallHelper {
         local code_len: felt = code_account.code_len;
         local code: felt* = code_account.code;
 
-        let to_starknet_address = Account.compute_starknet_address(to);
+        let to_starknet_address = Account.get_starknet_address(to);
         tempvar to_address = new model.Address(starknet=to_starknet_address, evm=to);
 
         tempvar parent = new model.Parent(evm, stack, memory, state);
