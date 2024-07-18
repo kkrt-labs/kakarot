@@ -1,7 +1,7 @@
 from starkware.cairo.common.alloc import alloc
 from utils.mpt.nibbles import Nibbles, NibblesImpl
 
-func test__from_bytes{range_check_ptr}() -> Nibbles{
+func test__from_bytes{range_check_ptr}() -> Nibbles {
     // Given
     tempvar data_len: felt;
     let (data) = alloc();
@@ -15,7 +15,7 @@ func test__from_bytes{range_check_ptr}() -> Nibbles{
     return nibbles;
 }
 
-func test__pack_nibbles{range_check_ptr}() -> felt*{
+func test__pack_nibbles{range_check_ptr}() -> felt* {
     alloc_locals;
     // Given
     tempvar raw_nibbles_len: felt;
@@ -27,13 +27,13 @@ func test__pack_nibbles{range_check_ptr}() -> felt*{
 
     tempvar nibbles = new Nibbles(raw_nibbles_len, raw_nibbles);
 
-    let (bytes:felt*) = alloc();
+    let (bytes: felt*) = alloc();
     let bytes_len = NibblesImpl.pack_nibbles(nibbles, bytes);
 
     return bytes;
 }
 
-func test__encode_path_leaf{range_check_ptr}() -> felt*{
+func test__encode_path{range_check_ptr}() -> felt* {
     alloc_locals;
     // Given
     tempvar raw_nibbles_len: felt;
@@ -47,8 +47,7 @@ func test__encode_path_leaf{range_check_ptr}() -> felt*{
 
     tempvar nibbles = new Nibbles(raw_nibbles_len, raw_nibbles);
 
-    let (bytes_len, bytes) = NibblesImpl.encode_path_leaf(nibbles, is_leaf);
+    let (bytes_len, bytes) = NibblesImpl.encode_path(nibbles, is_leaf);
 
     return bytes;
-
 }

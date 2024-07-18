@@ -112,6 +112,17 @@ class Serde:
         raw = self.serialize_pointers("Nibbles", ptr)
         return self.serialize_list(raw["nibbles"], list_len=raw["nibbles_len"])
 
+    def serialize_node_encoding(self, ptr):
+        raw = self.serialize_pointers("NodeEncoding", ptr)
+        path_key_len = raw["path_key_len"]
+        data_len = raw["data_len"]
+        return self.serialize_list(raw["data"], list_len=path_key_len + data_len)
+
+    def serialize_encoded_node(self, ptr):
+        raw = self.serialize_pointers("EncodedNode", ptr)
+        data_len = raw["data_len"]
+        return self.serialize_list(raw["data"], list_len=data_len)
+
     def serialize_account(self, ptr):
         raw = self.serialize_pointers("model.Account", ptr)
         return {
@@ -234,6 +245,10 @@ class Serde:
             return self.serialize_evm(scope_ptr)
         if scope.path[-1] == "Nibbles":
             return self.serialize_nibbles(scope_ptr)
+        if scope.path[-1] == "NodeEncoding":
+            return self.serialize_node_encoding(scope_ptr)
+        if scope.path[-1] == "EncodedNode":
+            return self.serialize_encoded_node(scope_ptr)
         try:
             return self.serialize_struct(str(scope), scope_ptr)
         except MissingIdentifierError:
