@@ -1223,7 +1223,6 @@ namespace Helpers {
             assert tx_info.account_contract_address = 0;
             assert tx_info.max_fee = 0;
             assert tx_info.signature_len = 0;
-            assert [tx_info.signature] = 0;
             assert tx_info.transaction_hash = 0;
             assert is_not_zero(tx_info.chain_id) = 1;
             assert tx_info.nonce = 0;
