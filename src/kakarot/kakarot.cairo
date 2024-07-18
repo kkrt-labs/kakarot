@@ -224,15 +224,15 @@ func get_cairo1_helpers_class_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin
     return Kakarot.get_cairo1_helpers_class_hash();
 }
 
-// @notice Returns the registered starknet address for a given EVM address.
-// @dev Returns 0 if no contract is deployed for this EVM address.
+// @notice Returns the corresponding Starknet address for a given EVM address.
+// @dev Returns the registered address if there is one, otherwise returns the deterministic address got when Kakarot deploys an account.
 // @param evm_address The EVM address to transform to a starknet address
-// @return starknet_address The Starknet Account Contract address or 0 if not already deployed
+// @return starknet_address The Starknet Account Contract address
 @view
 func get_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     evm_address: felt
 ) -> (starknet_address: felt) {
-    let starknet_address = Account.get_registered_starknet_address(evm_address);
+    let starknet_address = Account.get_starknet_address(evm_address);
     return (starknet_address=starknet_address);
 }
 
@@ -304,7 +304,7 @@ func set_authorized_pre_eip155_tx{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*
     sender_address: felt, msg_hash: Uint256
 ) {
     Ownable.assert_only_owner();
-    let sender_starknet_address = Account.compute_starknet_address(sender_address);
+    let sender_starknet_address = Account.get_starknet_address(sender_address);
     IAccount.set_authorized_pre_eip155_tx(sender_starknet_address, msg_hash);
     return ();
 }

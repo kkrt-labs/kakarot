@@ -516,6 +516,22 @@ namespace Account {
         return contract_address;
     }
 
+    // @notice Returns the corresponding Starknet address for a given EVM address.
+    // @dev Returns the registered address if there is one, otherwise returns the deterministic address got when Kakarot deploys an account.
+    // @param evm_address The EVM address to transform to a starknet address
+    // @return starknet_address The Starknet Account Contract address
+    func get_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        evm_address: felt
+    ) -> felt {
+        let registered_starknet_address = get_registered_starknet_address(evm_address);
+        if (registered_starknet_address != 0) {
+            return registered_starknet_address;
+        }
+
+        let computed_starknet_address = compute_starknet_address(evm_address);
+        return computed_starknet_address;
+    }
+
     // @notice Tells if an account has code_len > 0 or nonce > 0
     // @dev See https://github.com/ethereum/execution-specs/blob/3fe6514f2d9d234e760d11af883a47c1263eff51/src/ethereum/shanghai/state.py#L352
     // @param self The pointer to the Account

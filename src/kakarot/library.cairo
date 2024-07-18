@@ -96,7 +96,7 @@ namespace Kakarot {
         let is_regular_tx = is_not_zero(to.is_some);
         let is_deploy_tx = 1 - is_regular_tx;
         let evm_contract_address = resolve_to(to, origin, nonce);
-        let starknet_contract_address = Account.compute_starknet_address(evm_contract_address);
+        let starknet_contract_address = Account.get_starknet_address(evm_contract_address);
         tempvar address = new model.Address(
             starknet=starknet_contract_address, evm=evm_contract_address
         );
@@ -305,7 +305,7 @@ namespace Kakarot {
         evm_address: felt, bytecode_len: felt, bytecode: felt*
     ) {
         alloc_locals;
-        let starknet_address = Account.compute_starknet_address(evm_address);
+        let starknet_address = Account.get_starknet_address(evm_address);
         IAccount.write_bytecode(starknet_address, bytecode_len, bytecode);
         return ();
     }
@@ -317,7 +317,7 @@ namespace Kakarot {
         evm_address: felt, nonce: felt
     ) {
         alloc_locals;
-        let starknet_address = Account.compute_starknet_address(evm_address);
+        let starknet_address = Account.get_starknet_address(evm_address);
         IAccount.set_nonce(starknet_address, nonce);
         return ();
     }
@@ -328,7 +328,7 @@ namespace Kakarot {
         evm_address: felt
     ) {
         alloc_locals;
-        let starknet_address = Account.compute_starknet_address(evm_address);
+        let starknet_address = Account.get_starknet_address(evm_address);
         let (account_contract_class_hash) = Kakarot_account_contract_class_hash.read();
         IAccount.set_implementation(starknet_address, account_contract_class_hash);
         return ();
@@ -368,7 +368,7 @@ namespace Kakarot {
     }(starknet_address: felt) -> (evm_address: felt) {
         alloc_locals;
         let (local evm_address) = IAccount.get_evm_address(starknet_address);
-        let computed_starknet_address = Account.compute_starknet_address(evm_address);
+        let computed_starknet_address = Account.get_starknet_address(evm_address);
 
         with_attr error_message("Kakarot: caller contract is not a Kakarot Account") {
             assert computed_starknet_address = starknet_address;
