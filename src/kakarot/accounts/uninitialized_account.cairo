@@ -8,38 +8,36 @@ from starkware.starknet.common.syscalls import (
     library_call,
     library_call_l1_handler,
     get_caller_address,
+    replace_class,
 )
 
 @contract_interface
-namespace IKakarot {
+namespace IOwner {
     func get_account_contract_class_hash() -> (account_contract_class_hash: felt) {
     }
 }
 
-@contract_interface
-namespace IAccount {
-    func initialize(kakarot_address: felt, evm_address: felt, implementation_class: felt) {
-    }
-}
+const INITIALIZE_SELECTOR = 0x79dc0da7c54b95f10aa182ad0a46400db63156920adb65eca2654c0945a463;
 
-// @title Uninitialized Contract Account. Used to get a deterministic address for an account, no
-// matter the actual implementation class used.
-
-// @notice Deploy and initialize the account with the Kakarot and EVM addresses it was deployed with.
-// @param kakarot_address The address of the main Kakarot contract.
-// @param evm_address The address of the EVM contract.
+// @title Uninitialized Contract Account
+// @dev Like a transparent proxy with a Owner, but pulling the implementation from the
+//      Owner and calling `initialize` upon deployment.
+// @param calldata_len The length of the calldata
+// @param calldata The calldata of the initializer
 @constructor
 func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    evm_address: felt
+    calldata_len: felt, calldata: felt*
 ) {
-    let (kakarot_address) = get_caller_address();
-    let (implementation_class) = IKakarot.get_account_contract_class_hash(kakarot_address);
+    alloc_locals;
+    let (owner_address) = get_caller_address();
+    Ownable.initializer(owner_address);
+    let (class_hash) = IOwner.get_account_contract_class_hash(owner_address);
 
-    IAccount.library_call_initialize(
-        implementation_class,
-        kakarot_address=kakarot_address,
-        evm_address=evm_address,
-        implementation_class=implementation_class,
+    library_call(
+        class_hash=class_hash,
+        function_selector=INITIALIZE_SELECTOR,
+        calldata_size=calldata_len,
+        calldata=calldata,
     );
 
     return ();
@@ -55,8 +53,8 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 func __default__{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     selector: felt, calldata_size: felt, calldata: felt*
 ) -> (retdata_size: felt, retdata: felt*) {
-    let (kakarot_address) = Ownable.owner();
-    let (class_hash) = IKakarot.get_account_contract_class_hash(kakarot_address);
+    let (owner_address) = Ownable.owner();
+    let (class_hash) = IOwner.get_account_contract_class_hash(owner_address);
 
     let (retdata_size: felt, retdata: felt*) = library_call(
         class_hash=class_hash,
@@ -72,8 +70,8 @@ func __default__{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 func __l1_default__{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     selector: felt, calldata_size: felt, calldata: felt*
 ) {
-    let (kakarot_address) = Ownable.owner();
-    let (class_hash) = IKakarot.get_account_contract_class_hash(kakarot_address);
+    let (owner_address) = Ownable.owner();
+    let (class_hash) = IOwner.get_account_contract_class_hash(owner_address);
 
     library_call_l1_handler(
         class_hash=class_hash,
@@ -82,4 +80,19 @@ func __l1_default__{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
         calldata=calldata,
     );
     return ();
+}
+
+// TODO: Remove this function for mainnet
+@external
+func set_implementation{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    new_implementation: felt
+) {
+    Ownable.assert_only_owner();
+    replace_class(new_implementation);
+    return ();
+}
+
+@view
+func get_owner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (owner: felt) {
+    return Ownable.owner();
 }

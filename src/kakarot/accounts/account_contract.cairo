@@ -18,7 +18,6 @@ from starkware.cairo.common.bool import FALSE, TRUE
 
 from kakarot.accounts.library import (
     AccountContract,
-    Account_implementation,
     Account_authorized_message_hashes,
     Account_bytecode_len,
 )
@@ -46,8 +45,8 @@ func constructor{
 @external
 func initialize{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(kakarot_address: felt, evm_address: felt, implementation_class: felt) {
-    return AccountContract.initialize(kakarot_address, evm_address, implementation_class);
+}(evm_address: felt) {
+    return AccountContract.initialize(evm_address);
 }
 
 // @notice Returns the version of the account class.
@@ -68,22 +67,6 @@ func get_evm_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
     address: felt
 ) {
     return AccountContract.get_evm_address();
-}
-
-@view
-func get_implementation{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
-    implementation: felt
-) {
-    return AccountContract.get_implementation();
-}
-
-@external
-func set_implementation{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    implementation_class: felt
-) {
-    // Access control check.
-    Ownable.assert_only_owner();
-    return AccountContract.set_implementation(implementation_class);
 }
 
 // @notice Checks if the account was initialized.

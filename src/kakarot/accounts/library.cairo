@@ -20,7 +20,6 @@ from starkware.starknet.common.syscalls import (
     CallContract,
     get_contract_address,
     get_caller_address,
-    replace_class,
 )
 from starkware.cairo.common.memset import memset
 
@@ -52,10 +51,6 @@ func Account_nonce() -> (nonce: felt) {
 }
 
 @storage_var
-func Account_implementation() -> (address: felt) {
-}
-
-@storage_var
 func Account_evm_address() -> (evm_address: felt) {
 }
 
@@ -79,7 +74,7 @@ const BYTES_PER_FELT = 31;
 
 // @title Account main library file.
 // @notice This file contains the EVM account representation logic.
-// @dev: Both EOAs and Contract Accounts are represented by this contract.
+// @dev: Both EOAs and Contract Accounts are represented by this contract. Owner is expected to be Kakarot.
 namespace AccountContract {
     // 000.001.000
     const VERSION = 000001000;
@@ -92,39 +87,23 @@ namespace AccountContract {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(kakarot_address, evm_address, implementation_class) {
+    }(evm_address) {
         alloc_locals;
         let (is_initialized) = Account_is_initialized.read();
         with_attr error_message("Account already initialized") {
             assert is_initialized = 0;
         }
         Account_is_initialized.write(1);
-        Ownable.initializer(kakarot_address);
         Account_evm_address.write(evm_address);
-        Account_implementation.write(implementation_class);
 
         // Give infinite ETH transfer allowance to Kakarot
+        let (kakarot_address) = Ownable_owner.read();
         let (native_token_address) = IKakarot.get_native_token(kakarot_address);
         let infinite = Uint256(Constants.UINT128_MAX, Constants.UINT128_MAX);
         IERC20.approve(native_token_address, kakarot_address, infinite);
 
         // Register the account in the Kakarot mapping
         IKakarot.register_account(kakarot_address, evm_address);
-        return ();
-    }
-
-    func get_implementation{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
-        implementation: felt
-    ) {
-        let (implementation) = Account_implementation.read();
-        return (implementation=implementation);
-    }
-
-    func set_implementation{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        new_implementation: felt
-    ) {
-        replace_class(new_implementation);
-        Account_implementation.write(new_implementation);
         return ();
     }
 
@@ -399,17 +378,6 @@ namespace AccountContract {
     ) {
         Account_nonce.write(new_nonce);
         return ();
-    }
-
-    // @notice Return the latest available implementation of the account contract.
-    // @returns The latest account class hash registered in Kakarot
-    func get_latest_classes{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
-        account_class: felt, cairo1_helpers_class: felt
-    ) {
-        let (kakarot_address) = Ownable_owner.read();
-        let (latest_account_class) = IKakarot.get_account_contract_class_hash(kakarot_address);
-        let (latest_cairo1_helpers_class) = IKakarot.get_cairo1_helpers_class_hash(kakarot_address);
-        return (latest_account_class, latest_cairo1_helpers_class);
     }
 
     // @notice Writes an array of valid jumpdests indexes to storage.
