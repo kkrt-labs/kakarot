@@ -6,7 +6,7 @@ from kakarot_scripts.utils.starknet import get_deployments, wait_for_transaction
 from tests.utils.errors import evm_error
 
 
-@pytest.fixture(autouse=True)
+@pytest_asyncio.fixture(autouse=True)
 async def cleanup(get_contract, max_fee):
     yield
     cairo_counter = get_contract("Counter")
