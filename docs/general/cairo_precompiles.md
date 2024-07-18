@@ -1,9 +1,7 @@
-# Cairo Precompiles
-
-Kakarot zkEVM being a Starknet appchain, it is technically possible to run Cairo
-Contracts on Kakarot. The purpose of this document is to explain the design
-behind the Cairo precompiles, which are the Cairo contracts that are deployed on
-Kakarot to provide additional functionality to the users.
+# Cairo Precompile
+Kakarot zkEVM being a Starknet appchain, it is possible to run Cairo Contracts on Kakarot.
+The address 75001 is reserved for the "Cairo precompile", that lets you invoke Cairo contracts from EVM contracts.
+To interact with the Cairo precompile, you can use the solidity CairoLib from your solidity contracts.
 
 ## Requirements
 
