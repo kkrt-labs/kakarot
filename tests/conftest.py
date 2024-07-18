@@ -1,8 +1,11 @@
 import asyncio
 import logging
+import random
 
 import pytest
 from starkware.cairo.lang.instances import LAYOUTS
+
+random.seed(0xABDE1)
 
 logging.getLogger("asyncio").setLevel(logging.ERROR)
 logger = logging.getLogger()

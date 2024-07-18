@@ -62,7 +62,7 @@ class EvmTransactionError(Exception):
 def get_solidity_artifacts(
     contract_app: str,
     contract_name: str,
-) -> Web3Contract:
+):
     import toml
 
     try:
@@ -168,7 +168,7 @@ async def deploy(
         starknet_address, evm_address = response
     contract.address = Web3.to_checksum_address(f"0x{evm_address:040x}")
     contract.starknet_address = starknet_address
-    logger.info(f"✅ {contract_name} deployed at address {contract.address}")
+    logger.info(f"✅ {contract_name} deployed at: {contract.address}")
 
     return contract
 
@@ -626,6 +626,6 @@ async def deploy_with_presigned_tx(
         deployer_evm_address, deployer_starknet_address, signed_tx
     )
     deployed_address = response[1]
-    logger.info(f"✅ {name} Deployed at 0x{deployed_address:040x}")
+    logger.info(f"✅ {name} Deployed at: 0x{deployed_address:040x}")
     deployed_starknet_address = await compute_starknet_address(deployed_address)
     return {"address": deployed_address, "starknet_address": deployed_starknet_address}

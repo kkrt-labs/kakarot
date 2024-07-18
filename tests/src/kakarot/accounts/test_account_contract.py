@@ -41,36 +41,20 @@ class TestAccountContract:
         @SyscallHandler.patch("IKakarot.register_account", lambda addr, data: [])
         @SyscallHandler.patch("IKakarot.get_native_token", lambda addr, data: [0xDEAD])
         @SyscallHandler.patch("IERC20.approve", lambda addr, data: [1])
+        @SyscallHandler.patch("Ownable_owner", 0x1234)
         def test_should_set_storage_variables(self, cairo_run):
-            cairo_run(
-                "test__initialize",
-                kakarot_address=0x1234,
-                evm_address=0xABDE1,
-                implementation_class=0xC1A55,
-            )
+            cairo_run("test__initialize", evm_address=0xABDE1)
             SyscallHandler.mock_storage.assert_any_call(
                 address=get_storage_var_address("Account_evm_address"), value=0xABDE1
-            )
-
-            SyscallHandler.mock_storage.assert_any_call(
-                address=get_storage_var_address("Ownable_owner"), value=0x1234
             )
             SyscallHandler.mock_storage.assert_any_call(
                 address=get_storage_var_address("Account_is_initialized"), value=1
             )
-            SyscallHandler.mock_storage.assert_any_call(
-                address=get_storage_var_address("Account_implementation"), value=0xC1A55
-            )
-            SyscallHandler.mock_event.assert_any_call(
-                keys=[get_selector_from_name("OwnershipTransferred")], data=[0, 0x1234]
-            )
-
             SyscallHandler.mock_call.assert_any_call(
                 contract_address=0xDEAD,
                 function_selector=get_selector_from_name("approve"),
                 calldata=[0x1234, *int_to_uint256(2**256 - 1)],
             )
-
             SyscallHandler.mock_call.assert_any_call(
                 contract_address=0x1234,
                 function_selector=get_selector_from_name("register_account"),
@@ -81,12 +65,7 @@ class TestAccountContract:
         @SyscallHandler.patch("Account_is_initialized", 1)
         def test_should_run_only_once(self, cairo_run):
             with cairo_error(message="Account already initialized"):
-                cairo_run(
-                    "test__initialize",
-                    kakarot_address=0x1234,
-                    evm_address=0xABDE1,
-                    implementation_class=0xC1A55,
-                )
+                cairo_run("test__initialize", evm_address=0xABDE1)
 
     class TestGetEvmAddress:
         @SyscallHandler.patch("Account_evm_address", 0xABDE1)
@@ -150,19 +129,6 @@ class TestAccountContract:
             SyscallHandler.mock_storage.assert_any_call(
                 address=get_storage_var_address("Account_nonce"),
                 value=1,
-            )
-
-    class TestImplementation:
-        @SyscallHandler.patch("Ownable_owner", 0xDEAD)
-        def test_should_assert_only_owner(self, cairo_run):
-            with cairo_error(message="Ownable: caller is not the owner"):
-                cairo_run("test__set_implementation", new_implementation=0x00)
-
-        @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
-        def test_should_set_implementation(self, cairo_run):
-            cairo_run("test__set_implementation", new_implementation=0x1234)
-            SyscallHandler.mock_storage.assert_any_call(
-                address=get_storage_var_address("Account_implementation"), value=0x1234
             )
 
     class TestJumpdests:

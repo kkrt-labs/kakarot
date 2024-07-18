@@ -72,12 +72,13 @@ namespace Starknet {
         let (
             uninitialized_account_class_hash: felt
         ) = Kakarot_uninitialized_account_class_hash.read();
-        let (constructor_calldata: felt*) = alloc();
-        assert constructor_calldata[0] = evm_address;
+        let (constructor_calldata_len, constructor_calldata) = Account.get_constructor_calldata(
+            evm_address
+        );
         let (starknet_address) = deploy_syscall(
             uninitialized_account_class_hash,
             contract_address_salt=evm_address,
-            constructor_calldata_size=1,
+            constructor_calldata_size=constructor_calldata_len,
             constructor_calldata=constructor_calldata,
             deploy_from_zero=TRUE,
         );

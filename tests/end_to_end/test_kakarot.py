@@ -1,4 +1,3 @@
-import hashlib
 import logging
 
 import pytest
@@ -9,7 +8,7 @@ from starknet_py.net.full_node_client import FullNodeClient
 from kakarot_scripts.utils.kakarot import get_eoa, get_solidity_artifacts
 from kakarot_scripts.utils.starknet import wait_for_transaction
 from tests.end_to_end.bytecodes import test_cases
-from tests.utils.constants import PRE_FUND_AMOUNT, TRANSACTION_GAS_LIMIT
+from tests.utils.constants import TRANSACTION_GAS_LIMIT
 from tests.utils.helpers import (
     extract_memory_from_execute,
     generate_random_evm_address,
@@ -75,25 +74,10 @@ async def origin(evm: Contract, max_fee):
     return evm_address
 
 
-@pytest.fixture(scope="function")
-def random_seed(request):
-    test_name = request.node.name
-    parameters = str(request.node.funcargs)
-
-    seed_string = test_name + parameters
-    seed_hash = hashlib.sha256(seed_string.encode()).hexdigest()
-    seed = int(seed_hash, 16)
-
-    return seed
-
-
 @pytest.mark.asyncio(scope="session")
 class TestKakarot:
     class TestEVM:
-        @pytest.mark.parametrize(
-            "params",
-            params_execute,
-        )
+        @pytest.mark.parametrize("params", params_execute)
         async def test_execute(
             self,
             starknet: FullNodeClient,
@@ -320,63 +304,40 @@ class TestKakarot:
                 assert "Ownable: caller is not the owner" in receipt.revert_reason
 
     class TestUpgradeAccount:
-        @pytest.fixture(autouse=True)
-        async def cleanup(self, invoke, new_account, class_hashes):
-            yield
-
-            await invoke(
-                "kakarot",
-                "set_account_contract_class_hash",
-                class_hashes["account_contract"],
-            )
-            await invoke("kakarot", "upgrade_account", int(new_account.address, 16))
-
         async def test_should_upgrade_account_class(
-            self, starknet: FullNodeClient, invoke, new_account, class_hashes, other
+            self,
+            starknet: FullNodeClient,
+            invoke,
+            new_eoa,
+            class_hashes,
         ):
-            await invoke("kakarot", "upgrade_account", int(new_account.address, 16))
-            prev_class = await starknet.get_class_hash_at(
-                new_account.starknet_contract.address
-            )
-            target_class = class_hashes["account_contract_fixture"]
-            assert prev_class != target_class
-            assert prev_class == class_hashes["account_contract"]
+            account = await new_eoa()
 
             await invoke(
                 "kakarot",
                 "set_account_contract_class_hash",
-                target_class,
+                class_hashes["uninitialized_account_fixture"],
             )
 
-            await invoke("kakarot", "upgrade_account", int(new_account.address, 16))
-
-            new_class = await starknet.get_class_hash_at(
-                new_account.starknet_contract.address
-            )
-            assert new_class == target_class
+            await invoke("kakarot", "upgrade_account", int(account.address, 16))
+            assert (
+                await starknet.get_class_hash_at(account.starknet_contract.address)
+                == class_hashes["uninitialized_account_fixture"]
+            ), "Class not upgraded"
 
         async def test_should_fail_not_owner(
-            self, starknet: FullNodeClient, invoke, new_account, class_hashes, other
+            self, starknet: FullNodeClient, invoke, new_eoa, class_hashes, other
         ):
-            await invoke("kakarot", "upgrade_account", int(new_account.address, 16))
-            prev_class = await starknet.get_class_hash_at(
-                new_account.starknet_contract.address
-            )
-            target_class = class_hashes["account_contract_fixture"]
-            assert prev_class != target_class
-            assert prev_class == class_hashes["account_contract"]
+            account = await new_eoa()
 
             await invoke(
                 "kakarot",
                 "set_account_contract_class_hash",
-                target_class,
+                class_hashes["uninitialized_account_fixture"],
             )
 
             tx_hash = await invoke(
-                "kakarot",
-                "upgrade_account",
-                int(new_account.address, 16),
-                account=other,
+                "kakarot", "upgrade_account", int(account.address, 16), account=other
             )
             receipt = await starknet.get_transaction_receipt(tx_hash)
             assert receipt.execution_status.name == "REVERTED"
@@ -391,29 +352,13 @@ class TestKakarot:
             compute_starknet_address,
             kakarot,
             random_seed,
+            new_eoa,
         ):
-            seed = random_seed
-            evm_address = generate_random_evm_address(seed=seed)
-            while await is_account_deployed(evm_address):
-                seed += 1
-                evm_address = generate_random_evm_address(seed=seed)
-
-            starknet_address = await compute_starknet_address(evm_address)
-            amount = PRE_FUND_AMOUNT / 1e16
-            await fund_starknet_address(starknet_address, amount)
-            tx = await deploy_externally_owned_account(evm_address)
-            status = await wait_for_transaction(
-                tx.hash,
-            )
-            assert status == "✅"
-
+            eoa = await new_eoa()
             result = await kakarot.functions["eth_call"].call(
                 nonce=0,
-                origin=int(evm_address, 16),
-                to={
-                    "is_some": 1,
-                    "value": int(generate_random_evm_address(seed=seed + 1), 16),
-                },
+                origin=int(eoa.address, 16),
+                to={"is_some": 1, "value": 0xDEAD},
                 gas_limit=TRANSACTION_GAS_LIMIT,
                 gas_price=1_000,
                 value=1_000,
@@ -421,7 +366,6 @@ class TestKakarot:
                 access_list=[],
             )
 
-            logger.info(f"result: {result}")
             assert result.success == 1
             assert result.return_data == []
             assert result.gas_used == 21_000
@@ -430,21 +374,20 @@ class TestKakarot:
         async def test_should_raise_when_caller_is_not_owner(
             self, starknet, kakarot, invoke, other, class_hashes
         ):
-            prev_class_hash = await starknet.get_class_hash_at(kakarot.address)
-            try:
-                await invoke("kakarot", "upgrade", class_hashes["EVM"], account=other)
-            except Exception as e:
-                print(e)
-            new_class_hash = await starknet.get_class_hash_at(kakarot.address)
-            assert prev_class_hash == new_class_hash
+            tx_hash = await invoke(
+                "kakarot", "upgrade", class_hashes["EVM"], account=other
+            )
+            receipt = await starknet.get_transaction_receipt(tx_hash)
+            assert receipt.execution_status.name == "REVERTED"
+            assert "Ownable: caller is not the owner" in receipt.revert_reason
 
         async def test_should_raise_when_class_hash_is_not_declared(
             self, starknet, kakarot, invoke
         ):
-            prev_class_hash = await starknet.get_class_hash_at(kakarot.address)
-            await invoke("kakarot", "upgrade", 0xDEAD)
-            new_class_hash = await starknet.get_class_hash_at(kakarot.address)
-            assert prev_class_hash == new_class_hash
+            tx_hash = await invoke("kakarot", "upgrade", 0xDEAD)
+            receipt = await starknet.get_transaction_receipt(tx_hash)
+            assert receipt.execution_status.name == "REVERTED"
+            assert "is not declared" in receipt.revert_reason
 
         async def test_should_upgrade_class_hash(
             self, starknet, kakarot, invoke, class_hashes
