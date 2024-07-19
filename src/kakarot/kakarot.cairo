@@ -273,10 +273,10 @@ func write_account_bytecode{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, rang
 // @param evm_address The evm address of the account.
 @external
 func upgrade_account{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    evm_address: felt
+    evm_address: felt, new_class_hash: felt
 ) {
     Ownable.assert_only_owner();
-    return Kakarot.upgrade_account(evm_address);
+    return Kakarot.upgrade_account(evm_address, new_class_hash);
 }
 
 // @notice Writes to an account's nonce

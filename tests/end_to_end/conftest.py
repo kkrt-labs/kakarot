@@ -404,14 +404,16 @@ def invoke():
 def new_eoa(max_fee) -> Wallet:
     from kakarot_scripts.utils.kakarot import get_eoa
 
-    async def _factory():
+    async def _factory(amount=None):
 
         private_key = generate_random_private_key()
         return Wallet(
             address=private_key.public_key.to_checksum_address(),
             private_key=private_key,
             # deploying an account with enough ETH to pass ~10 tx
-            starknet_contract=await get_eoa(private_key, amount=100 * max_fee / 1e18),
+            starknet_contract=await get_eoa(
+                private_key, amount=amount or (100 * max_fee / 1e18)
+            ),
         )
 
     yield _factory
