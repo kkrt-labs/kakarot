@@ -7,7 +7,7 @@
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin, HashBuiltin
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.math import unsigned_div_rem, assert_nn_le
-from starkware.cairo.common.math_cmp import is_nn_le, is_le
+from starkware.cairo.common.math_cmp import is_nn_le, is_nn
 from starkware.cairo.common.bitwise import bitwise_and, bitwise_xor, bitwise_or
 from starkware.cairo.common.dict_access import DictAccess
 from starkware.cairo.common.default_dict import default_dict_new, default_dict_finalize
@@ -128,7 +128,7 @@ func compress_data{dict_ptr: DictAccess*, range_check_ptr, bitwise_ptr: BitwiseB
     buf: felt*, bufsize: felt, input_len: felt, input: felt*
 ) -> (res: felt*, rsize: felt, new_msg: felt*) {
     alloc_locals;
-    let len_lt_63 = is_le(input_len, 63);
+    let len_lt_63 = is_nn(63 - input_len);
     if (len_lt_63 == FALSE) {
         parse_msg{dict_ptr=dict_ptr}(input, 0);
         let (local arr_x: felt*) = alloc();

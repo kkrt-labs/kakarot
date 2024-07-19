@@ -8,7 +8,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math import unsigned_div_rem, split_int, split_felt
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256, uint256_not, uint256_le
-from starkware.cairo.common.math_cmp import is_le
+from starkware.cairo.common.math_cmp import is_nn
 from starkware.starknet.common.syscalls import (
     StorageRead,
     StorageWrite,
@@ -179,7 +179,7 @@ namespace AccountContract {
         local y_parity: felt;
         local pre_eip155_tx: felt;
         if (tx_type == 0) {
-            let is_eip155_tx = is_le(v, 28);
+            let is_eip155_tx = is_nn(28 - v);
             assert pre_eip155_tx = is_eip155_tx;
             if (is_eip155_tx != FALSE) {
                 assert y_parity = v - 27;
@@ -262,25 +262,25 @@ namespace AccountContract {
         }
 
         let (block_gas_limit) = IKakarot.get_block_gas_limit(kakarot_address);
-        let tx_gas_fits_in_block = is_le(tx.gas_limit, block_gas_limit);
+        let tx_gas_fits_in_block = is_nn(block_gas_limit - tx.gas_limit);
         with_attr error_message("Transaction gas_limit > Block gas_limit") {
             assert tx_gas_fits_in_block = TRUE;
         }
 
         let (block_base_fee) = IKakarot.get_base_fee(kakarot_address);
-        let enough_fee = is_le(block_base_fee, tx.max_fee_per_gas);
+        let enough_fee = is_nn(tx.max_fee_per_gas - block_base_fee);
         with_attr error_message("Max fee per gas too low") {
             assert enough_fee = TRUE;
         }
 
-        let max_fee_greater_priority_fee = is_le(tx.max_priority_fee_per_gas, tx.max_fee_per_gas);
+        let max_fee_greater_priority_fee = is_nn(tx.max_fee_per_gas - tx.max_priority_fee_per_gas);
         with_attr error_message("Max priority fee greater than max fee per gas") {
             assert max_fee_greater_priority_fee = TRUE;
         }
 
         let possible_priority_fee = tx.max_fee_per_gas - block_base_fee;
-        let priority_fee_is_max_priority_fee = is_le(
-            tx.max_priority_fee_per_gas, possible_priority_fee
+        let priority_fee_is_max_priority_fee = is_nn(
+            possible_priority_fee - tx.max_priority_fee_per_gas
         );
         let priority_fee_per_gas = priority_fee_is_max_priority_fee * tx.max_priority_fee_per_gas +
             (1 - priority_fee_is_max_priority_fee) * possible_priority_fee;
@@ -304,7 +304,7 @@ namespace AccountContract {
         // See 300 max data_len for events
         // https://github.com/starkware-libs/blockifier/blob/9bfb3d4c8bf1b68a0c744d1249b32747c75a4d87/crates/blockifier/resources/versioned_constants.json
         // The whole data_len should be less than 300, so it's the return_data should be less than 297 (+3 for return_data_len, success, gas_used)
-        tempvar return_data_len = is_le(return_data_len, 297) * (return_data_len - 297) + 297;
+        tempvar return_data_len = is_nn(297 - return_data_len) * (return_data_len - 297) + 297;
         transaction_executed.emit(
             response_len=return_data_len, response=return_data, success=success, gas_used=gas_used
         );

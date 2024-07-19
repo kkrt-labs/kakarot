@@ -1,7 +1,7 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_in_range
+from starkware.cairo.common.math_cmp import is_nn, is_not_zero, is_in_range
 from starkware.starknet.common.syscalls import library_call
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE
@@ -50,7 +50,7 @@ namespace Precompiles {
         caller_code_address: felt,
         caller_address: felt,
     ) -> (output_len: felt, output: felt*, gas_used: felt, reverted: felt) {
-        let is_eth_precompile = is_le(precompile_address, LAST_ETHEREUM_PRECOMPILE_ADDRESS);
+        let is_eth_precompile = is_nn(LAST_ETHEREUM_PRECOMPILE_ADDRESS - precompile_address);
         tempvar syscall_ptr = syscall_ptr;
         tempvar pedersen_ptr = pedersen_ptr;
         tempvar range_check_ptr = range_check_ptr;

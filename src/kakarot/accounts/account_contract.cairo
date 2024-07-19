@@ -6,7 +6,7 @@ from openzeppelin.access.ownable.library import Ownable, Ownable_owner
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin, SignatureBuiltin
 from starkware.cairo.common.math import assert_le, unsigned_div_rem
-from starkware.cairo.common.math_cmp import is_le
+from starkware.cairo.common.math_cmp import is_nn
 from starkware.cairo.common.uint256 import Uint256
 from starkware.starknet.common.syscalls import (
     get_tx_info,
@@ -116,11 +116,11 @@ func execute_from_outside{
         assert caller = outside_execution.caller;
     }
     let (block_timestamp) = get_block_timestamp();
-    let too_early = is_le(block_timestamp, outside_execution.execute_after);
+    let too_early = is_nn(outside_execution.execute_after - block_timestamp);
     with_attr error_message("Execute from outside: too early") {
         assert too_early = FALSE;
     }
-    let too_late = is_le(outside_execution.execute_before, block_timestamp);
+    let too_late = is_nn(block_timestamp - outside_execution.execute_before);
     with_attr error_message("Execute from outside: too late") {
         assert too_late = FALSE;
     }

@@ -3,7 +3,7 @@
 // StarkWare dependencies
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.math import assert_le, split_felt, assert_nn_le, unsigned_div_rem
-from starkware.cairo.common.math_cmp import is_le, is_nn, is_not_zero
+from starkware.cairo.common.math_cmp import is_nn, is_not_zero
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.dict_access import DictAccess
 from starkware.cairo.common.bool import TRUE, FALSE
@@ -118,7 +118,7 @@ namespace Helpers {
             return res;
         }
 
-        let is_bytes_len_16_bytes_or_less = is_le(bytes_len, 16);
+        let is_bytes_len_16_bytes_or_less = is_nn(16 - bytes_len);
 
         // 1 - 16 bytes
         if (is_bytes_len_16_bytes_or_less != FALSE) {

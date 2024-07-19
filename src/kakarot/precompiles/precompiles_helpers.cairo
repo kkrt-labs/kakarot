@@ -1,4 +1,4 @@
-from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_in_range
+from starkware.cairo.common.math_cmp import is_nn, is_not_zero, is_in_range
 
 const LAST_ETHEREUM_PRECOMPILE_ADDRESS = 0x0a;
 const FIRST_ROLLUP_PRECOMPILE_ADDRESS = 0x100;
@@ -28,7 +28,7 @@ namespace PrecompilesHelpers {
         let is_rollup_precompile_ = is_rollup_precompile(address);
         let is_kakarot_precompile_ = is_kakarot_precompile(address);
         return is_not_zero(address) * (
-            is_le(address, LAST_ETHEREUM_PRECOMPILE_ADDRESS) +
+            is_nn(LAST_ETHEREUM_PRECOMPILE_ADDRESS - address) +
             is_rollup_precompile_ +
             is_kakarot_precompile_
         );

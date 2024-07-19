@@ -6,7 +6,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math import split_felt, unsigned_div_rem
-from starkware.cairo.common.math_cmp import is_le, is_nn, is_not_zero
+from starkware.cairo.common.math_cmp import is_nn, is_not_zero
 from starkware.cairo.common.registers import get_fp_and_pc
 from starkware.cairo.common.uint256 import Uint256, uint256_lt, uint256_le, uint256_eq
 from starkware.cairo.common.default_dict import default_dict_new
@@ -138,7 +138,7 @@ namespace SystemOperations {
         }
 
         // Check code size
-        let code_size_too_big = is_le(2 * Constants.MAX_CODE_SIZE + 1, size.low);
+        let code_size_too_big = is_nn(size.low - (2 * Constants.MAX_CODE_SIZE + 1));
         if (code_size_too_big != FALSE) {
             let evm = EVM.charge_gas(evm, evm.gas_left + 1);
             return evm;
@@ -962,7 +962,7 @@ namespace CallHelper {
             return evm;
         }
 
-        let actual_output_size_is_ret_size = is_le(ret_size.low, evm.return_data_len);
+        let actual_output_size_is_ret_size = is_nn(evm.return_data_len - ret_size.low);
         let actual_output_size = actual_output_size_is_ret_size * ret_size.low + (
             1 - actual_output_size_is_ret_size
         ) * evm.return_data_len;
@@ -1008,7 +1008,7 @@ namespace CreateHelper {
         let (message: felt*) = alloc();
         assert [message + 1] = 0x80 + 20;
         felt_to_bytes20(message + 2, sender_address);
-        let encode_nonce = is_le(0x80, nonce);
+        let encode_nonce = is_nn(nonce - 0x80);
         if (encode_nonce != FALSE) {
             let nonce_len = felt_to_bytes(message + 2 + 20 + 1, nonce);
             assert [message + 2 + 20] = 0x80 + nonce_len;
@@ -1171,7 +1171,7 @@ namespace CreateHelper {
         }
 
         // Charge final deposit gas
-        let code_size_limit = is_le(evm.return_data_len, Constants.MAX_CODE_SIZE);
+        let code_size_limit = is_nn(Constants.MAX_CODE_SIZE - evm.return_data_len);
         let code_deposit_cost = Gas.CODE_DEPOSIT * evm.return_data_len;
         let remaining_gas = evm.gas_left - code_deposit_cost;
         let enough_gas = is_nn(remaining_gas);
