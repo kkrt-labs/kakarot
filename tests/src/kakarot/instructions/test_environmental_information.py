@@ -54,24 +54,8 @@ class TestEnvironmentalInformation:
 
     class TestExtCodeCopy:
         @pytest.mark.parametrize(
-            "case",
-            [
-                {
-                    "size": 31,
-                    "offset": 0,
-                    "dest_offset": 0,
-                },
-                {
-                    "size": 33,
-                    "offset": 0,
-                    "dest_offset": 0,
-                },
-                {
-                    "size": 1,
-                    "offset": 32,
-                    "dest_offset": 0,
-                },
-            ],
+            "size, offset, dest_offset",
+            [(31, 0, 0), (33, 0, 0), (1, 32, 0)],
             ids=[
                 "size_is_bytecodelen-1",
                 "size_is_bytecodelen+1",
@@ -83,10 +67,9 @@ class TestEnvironmentalInformation:
         @SyscallHandler.patch(
             "Kakarot_evm_to_starknet_address", EXISTING_ACCOUNT, 0x1234
         )
-        def test_extcodecopy_should_copy_code(self, cairo_run, case, bytecode, address):
-            size = case["size"]
-            offset = case["offset"]
-            dest_offset = case["dest_offset"]
+        def test_extcodecopy_should_copy_code(
+            self, cairo_run, size, offset, dest_offset, bytecode, address
+        ):
 
             with SyscallHandler.patch(
                 "IAccount.bytecode", lambda addr, data: [len(bytecode), *bytecode]
@@ -108,6 +91,101 @@ class TestEnvironmentalInformation:
                 bytes.fromhex(memory)[dest_offset : dest_offset + size]
                 == copied_bytecode
             )
+
+        @pytest.mark.parametrize(
+            "size",
+            [31, 32, 33, 0],
+            ids=[
+                "size_is_bytecodelen-1",
+                "size_is_bytecodelen",
+                "size_is_bytecodelen+1",
+                "size_is_0",
+            ],
+        )
+        @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
+        @SyscallHandler.patch("IAccount.get_nonce", lambda addr, data: [1])
+        @SyscallHandler.patch(
+            "Kakarot_evm_to_starknet_address", EXISTING_ACCOUNT, 0x1234
+        )
+        def test_extcodecopy_offset_high_zellic_issue_1258(
+            self, cairo_run, size, bytecode, address
+        ):
+            offset_high = 1
+
+            with SyscallHandler.patch(
+                "IAccount.bytecode", lambda addr, data: [len(bytecode), *bytecode]
+            ):
+                memory = cairo_run(
+                    "test__exec_extcodecopy_zellic_issue_1258",
+                    size=size,
+                    offset_high=offset_high,
+                    dest_offset=0,
+                    address=address,
+                )
+            # with a offset_high != 0 all copied bytes are 0
+            copied_bytecode = bytes([0] * size)
+            assert bytes.fromhex(memory)[0:size] == copied_bytecode
+
+    class TestCopy:
+        @pytest.mark.parametrize("opcode_number", [0x39, 0x37])
+        @pytest.mark.parametrize(
+            "size, offset, dest_offset",
+            [(31, 0, 0), (33, 0, 0), (1, 32, 0)],
+            ids=[
+                "size_is_bytecodelen-1",
+                "size_is_bytecodelen+1",
+                "offset_is_bytecodelen",
+            ],
+        )
+        def test_exec_codecopy_should_copy_code(
+            self, cairo_run, size, offset, dest_offset, opcode_number, bytecode
+        ):
+            bytecode.insert(0, opcode_number)  # random bytecode that can be mutated
+            memory = cairo_run(
+                "test__exec_codecopy",
+                size=size,
+                offset=offset,
+                dest_offset=dest_offset,
+                bytecode=bytecode,
+                opcode_number=opcode_number,
+            )
+
+            copied_bytecode = bytes(
+                # bytecode is padded with surely enough 0 and then sliced
+                (bytecode + [0] * (offset + size))[offset : offset + size]
+            )
+            assert (
+                bytes.fromhex(memory)[dest_offset : dest_offset + size]
+                == copied_bytecode
+            )
+
+        @pytest.mark.parametrize("opcode_number", [0x39, 0x37])
+        @pytest.mark.parametrize(
+            "size",
+            [31, 32, 33, 0],
+            ids=[
+                "size_is_bytecodelen-1",
+                "size_is_bytecodelen",
+                "size_is_bytecodelen+1",
+                "size_is_0",
+            ],
+        )
+        def test_exec_codecopy_offset_high_zellic_issue_1258(
+            self, cairo_run, size, opcode_number, bytecode
+        ):
+            bytecode.insert(0, opcode_number)  # random bytecode that can be mutated
+            offset_high = 1
+            memory = cairo_run(
+                "test__exec_codecopy_offset_high_zellic_issue_1258",
+                size=size,
+                offset_high=offset_high,
+                dest_offset=0,
+                bytecode=bytecode,
+                opcode_number=opcode_number,
+            )
+            # with a offset_high != 0 all copied bytes are 0
+            copied_bytecode = bytes([0] * size)
+            assert bytes.fromhex(memory)[0:size] == copied_bytecode
 
     class TestGasPrice:
         def test_gasprice(self, cairo_run):
