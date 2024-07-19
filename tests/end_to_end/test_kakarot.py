@@ -344,7 +344,6 @@ class TestKakarot:
             assert receipt.execution_status.name == "REVERTED"
             assert "Ownable: caller is not the owner" in receipt.revert_reason
 
-    @pytest.mark.skip
     class TestEthCallNativeCoinTransfer:
         async def test_eth_call_should_succeed(
             self,
