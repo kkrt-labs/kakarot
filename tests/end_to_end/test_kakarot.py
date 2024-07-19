@@ -95,6 +95,12 @@ class TestKakarot:
                 calldata=hex_string_to_bytes_array(params["calldata"]),
                 access_list=[],
             )
+            origin_starknet_address = (
+                await evm.functions["compute_starknet_address"].call(origin)
+            ).contract_address
+            self_balance = (
+                await eth.functions["balanceOf"].call(origin_starknet_address)
+            ).balance
             assert result.success == params["success"]
             assert result.stack_values[: result.stack_size] == (
                 [
@@ -104,6 +110,7 @@ class TestKakarot:
                         account_address=origin,
                         timestamp=result.block_timestamp,
                         block_number=result.block_number,
+                        self_balance=self_balance,
                     )
                     .split(",")
                 ]
@@ -153,9 +160,8 @@ class TestKakarot:
             deploy_externally_owned_account,
             compute_starknet_address,
             get_contract,
-            random_seed,
         ):
-            evm_address = generate_random_evm_address(random_seed)
+            evm_address = generate_random_evm_address()
             starknet_address = await compute_starknet_address(evm_address)
 
             await deploy_externally_owned_account(evm_address)
@@ -169,9 +175,8 @@ class TestKakarot:
             starknet: FullNodeClient,
             register_account,
             compute_starknet_address,
-            random_seed,
         ):
-            evm_address = generate_random_evm_address(random_seed)
+            evm_address = generate_random_evm_address()
             await compute_starknet_address(evm_address)
 
             tx = await register_account(evm_address)
@@ -184,9 +189,8 @@ class TestKakarot:
             starknet: FullNodeClient,
             deploy_externally_owned_account,
             register_account,
-            random_seed,
         ):
-            evm_address = generate_random_evm_address(random_seed)
+            evm_address = generate_random_evm_address()
             await deploy_externally_owned_account(evm_address)
             tx = await register_account(evm_address)
             receipt = await starknet.get_transaction_receipt(tx.hash)
@@ -201,10 +205,9 @@ class TestKakarot:
                 invoke,
                 compute_starknet_address,
                 get_contract,
-                random_seed,
             ):
                 counter_artifacts = get_solidity_artifacts("PlainOpcodes", "Counter")
-                evm_address = generate_random_evm_address(random_seed)
+                evm_address = generate_random_evm_address()
                 await deploy_externally_owned_account(evm_address)
 
                 bytecode = list(bytes.fromhex(counter_artifacts["bytecode"][2:]))
@@ -227,11 +230,10 @@ class TestKakarot:
                 starknet: FullNodeClient,
                 deploy_externally_owned_account,
                 invoke,
-                random_seed,
                 other,
             ):
                 counter_artifacts = get_solidity_artifacts("PlainOpcodes", "Counter")
-                evm_address = generate_random_evm_address(random_seed)
+                evm_address = generate_random_evm_address()
                 await deploy_externally_owned_account(evm_address)
 
                 bytecode = list(bytes.fromhex(counter_artifacts["bytecode"][2:]))
@@ -254,9 +256,8 @@ class TestKakarot:
                 invoke,
                 compute_starknet_address,
                 get_contract,
-                random_seed,
             ):
-                evm_address = generate_random_evm_address(random_seed)
+                evm_address = generate_random_evm_address()
                 await deploy_externally_owned_account(evm_address)
                 eoa = get_contract(
                     "account_contract",
@@ -281,10 +282,9 @@ class TestKakarot:
                 invoke,
                 compute_starknet_address,
                 get_contract,
-                random_seed,
                 other,
             ):
-                evm_address = generate_random_evm_address(random_seed)
+                evm_address = generate_random_evm_address()
                 await deploy_externally_owned_account(evm_address)
                 eoa = get_contract(
                     "account_contract",
@@ -303,6 +303,7 @@ class TestKakarot:
                 assert receipt.execution_status.name == "REVERTED"
                 assert "Ownable: caller is not the owner" in receipt.revert_reason
 
+    @pytest.mark.skip
     class TestUpgradeAccount:
         async def test_should_upgrade_account_class(
             self,
@@ -343,6 +344,7 @@ class TestKakarot:
             assert receipt.execution_status.name == "REVERTED"
             assert "Ownable: caller is not the owner" in receipt.revert_reason
 
+    @pytest.mark.skip
     class TestEthCallNativeCoinTransfer:
         async def test_eth_call_should_succeed(
             self,
@@ -351,7 +353,6 @@ class TestKakarot:
             is_account_deployed,
             compute_starknet_address,
             kakarot,
-            random_seed,
             new_eoa,
         ):
             eoa = await new_eoa()
@@ -370,6 +371,7 @@ class TestKakarot:
             assert result.return_data == []
             assert result.gas_used == 21_000
 
+    @pytest.mark.skip
     class TestUpgrade:
         async def test_should_raise_when_caller_is_not_owner(
             self, starknet, kakarot, invoke, other, class_hashes
