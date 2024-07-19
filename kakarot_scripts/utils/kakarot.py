@@ -3,7 +3,7 @@ import json
 import logging
 from pathlib import Path
 from types import MethodType
-from typing import List, Optional, Union, cast
+from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
 import rlp
 from eth_abi import decode
@@ -52,6 +52,8 @@ from tests.utils.uint256 import int_to_uint256
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+LIBRARY_PLACEHOLDER_PREFIX_BYTES = 17
 
 
 class EvmTransactionError(Exception):
@@ -115,21 +117,24 @@ def get_solidity_artifacts(
 def get_contract(
     contract_app: str,
     contract_name: str,
+    deployed_libraries: List[Dict[str, str]] = None,
     address=None,
     caller_eoa: Optional[Account] = None,
 ) -> Web3Contract:
-
     artifacts = get_solidity_artifacts(contract_app, contract_name)
+    bytecode, bytecode_runtime = replace_library_placeholders(
+        artifacts, deployed_libraries or []
+    )
 
     contract = cast(
         Web3Contract,
         WEB3.eth.contract(
             address=to_checksum_address(address) if address is not None else address,
             abi=artifacts["abi"],
-            bytecode=artifacts["bytecode"],
+            bytecode=bytecode,
         ),
     )
-    contract.bytecode_runtime = HexBytes(artifacts["bytecode_runtime"])
+    contract.bytecode_runtime = HexBytes(bytecode_runtime)
 
     try:
         for fun in contract.functions:
@@ -140,14 +145,38 @@ def get_contract(
     return contract
 
 
-async def deploy(
-    contract_app: str, contract_name: str, *args, **kwargs
-) -> Web3Contract:
-    logger.info(f"⏳ Deploying {contract_name}")
-    caller_eoa = kwargs.pop("caller_eoa", None)
-    contract = get_contract(contract_app, contract_name, caller_eoa=caller_eoa)
-    max_fee = kwargs.pop("max_fee", None)
-    value = kwargs.pop("value", 0)
+def replace_library_placeholders(
+    artifacts: Dict[str, str], deployed_libraries: List[Dict[str, str]]
+) -> Tuple[str, str]:
+    bytecode = artifacts["bytecode"]
+    bytecode_runtime = artifacts["bytecode_runtime"]
+
+    for library in deployed_libraries:
+        placeholder = f"__${library['identifier'].hex()}$__"
+        address = Web3.to_checksum_address(library["address"]).lstrip("0x")
+        bytecode = bytecode.replace(placeholder, address)
+        bytecode_runtime = bytecode_runtime.replace(placeholder, address)
+        logger.info(f"ℹ️  Replaced {library['identifier'].hex()} in bytecode")
+
+    return bytecode, bytecode_runtime
+
+
+def compute_library_identifier(library_app: str, library_name: str) -> bytes:
+    return keccak(
+        f"solidity_contracts/src/{library_app}/{library_name}.sol:{library_name}".encode(
+            "utf-8"
+        )
+    )[:LIBRARY_PLACEHOLDER_PREFIX_BYTES]
+
+
+async def deploy_contract(
+    contract: Web3Contract,
+    *args: Any,
+    caller_eoa: Optional["Account"] = None,
+    max_fee: Optional[int] = None,
+    value: int = 0,
+    **kwargs: Any,
+) -> Tuple[Dict[str, Any], Any, int, int]:
     receipt, response, success, _ = await eth_send_transaction(
         to=0,
         gas=int(TRANSACTION_GAS_LIMIT),
@@ -161,13 +190,66 @@ async def deploy(
 
     if WEB3.is_connected():
         evm_address = int(receipt.contractAddress or receipt.to, 16)
+    else:
+        _, evm_address = response
+
+    return receipt, response, evm_address
+
+
+async def deploy_library(
+    library_app: str, library_name: str, *args: Any, **kwargs: Any
+) -> Dict[str, Any]:
+    logger.info(f"⏳ Deploying {library_name}")
+
+    caller_eoa = kwargs.pop("caller_eoa", None)
+    library = get_contract(library_app, library_name, caller_eoa=caller_eoa)
+
+    _, _, evm_address = await deploy_contract(library, *args, **kwargs)
+
+    library.address = Web3.to_checksum_address(f"0x{evm_address:040x}")
+    library_identifier = compute_library_identifier(library_app, library_name)
+
+    logger.info(f"✅ Library {library_name} deployed at address {library.address}")
+
+    return {
+        "address": library.address,
+        "identifier": library_identifier,
+    }
+
+
+async def deploy(
+    contract_app: str,
+    contract_name: str,
+    associated_libraries: Optional[List[Tuple[str, str]]] = None,
+    *args: Any,
+    **kwargs: Any,
+) -> Web3Contract:
+    deployed_libraries = [
+        await deploy_library(app, name) for (app, name) in (associated_libraries or [])
+    ]
+
+    logger.info(f"⏳ Deploying {contract_name}")
+
+    caller_eoa = kwargs.pop("caller_eoa", None)
+    contract = get_contract(
+        contract_app,
+        contract_name,
+        deployed_libraries=deployed_libraries,
+        caller_eoa=caller_eoa,
+    )
+
+    _, response, evm_address = await deploy_contract(contract, *args, **kwargs)
+
+    if WEB3.is_connected():
         starknet_address = (
-            await _call_starknet("kakarot", "compute_starknet_address", evm_address)
+            await compute_starknet_address(evm_address)
         ).contract_address
     else:
-        starknet_address, evm_address = response
+        starknet_address, _ = response
+
     contract.address = Web3.to_checksum_address(f"0x{evm_address:040x}")
     contract.starknet_address = starknet_address
+
     logger.info(f"✅ {contract_name} deployed at address {contract.address}")
 
     return contract
@@ -241,6 +323,22 @@ def get_log_receipts(tx_receipt):
     ]
 
 
+def _replace_library_placeholders(
+    artifacts: Dict, deployed_libraries: List[Dict[str, str]]
+) -> Tuple[str, str]:
+    bytecode = artifacts["bytecode"]
+    bytecode_runtime = artifacts["bytecode_runtime"]
+
+    for library in deployed_libraries:
+        placeholder = f"__${library['identifier'].hex()}$__"
+        address = Web3.to_checksum_address(library["address"]).lstrip("0x")
+        bytecode = bytecode.replace(placeholder, address)
+        bytecode_runtime = bytecode_runtime.replace(placeholder, address)
+        logger.info(f"ℹ️  Replaced {library['identifier'].hex()} in bytecode")
+
+    return bytecode, bytecode_runtime
+
+
 def _parse_events(cls: ContractEvents, tx_receipt):
     log_receipts = get_log_receipts(tx_receipt)
 
@@ -308,7 +406,9 @@ def _wrap_kakarot(fun: str, caller_eoa: Optional[Account] = None):
             normalized = map_abi_data(BASE_RETURN_NORMALIZERS, types, decoded)
             return normalized[0] if len(normalized) == 1 else normalized
 
-        logger.info(f"⏳ Executing {fun} at address {self.address}")
+        logger.info(
+            f"⏳ Executing {fun} at address {self.address} with gas {gas_limit}"
+        )
         receipt, response, success, gas_used = await eth_send_transaction(
             to=self.address,
             value=value,
@@ -429,6 +529,8 @@ async def eth_send_transaction(
         "value": value,
         "data": data,
     }
+
+    logger.info(f"⏳ Sending transaction to {to} with gas {gas}")
 
     typed_transaction = TypedTransaction.from_dict(payload)
 

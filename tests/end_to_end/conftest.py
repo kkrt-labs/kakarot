@@ -1,7 +1,7 @@
 import logging
 from collections import namedtuple
 from functools import partial
-from typing import List, Optional, Union
+from typing import List, Optional, Tuple, Union
 
 import pytest
 import pytest_asyncio
@@ -286,12 +286,23 @@ def deploy_contract(default_fee: int):
 
     from kakarot_scripts.utils.kakarot import deploy
 
-    async def _factory(contract_app, contract_name, *args, **kwargs):
+    async def _factory(
+        contract_app,
+        contract_name,
+        associated_libraries: List[Tuple[str, str]] = None,
+        *args,
+        **kwargs
+    ):
         """
         Create a web3.contract based on the basename of the target solidity file.
         """
         return await deploy(
-            contract_app, contract_name, *args, **kwargs, max_fee=default_fee
+            contract_app,
+            contract_name,
+            associated_libraries,
+            *args,
+            **kwargs,
+            max_fee=default_fee
         )
 
     return _factory
