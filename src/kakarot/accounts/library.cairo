@@ -652,6 +652,7 @@ namespace Internals {
 
         jmp cond if remaining_bytes != 0;
 
+        assert value = 0;
         let bytecode = cast([fp], felt*);
         return (bytecode=bytecode);
 
