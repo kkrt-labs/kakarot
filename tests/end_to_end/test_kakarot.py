@@ -303,7 +303,6 @@ class TestKakarot:
                 assert receipt.execution_status.name == "REVERTED"
                 assert "Ownable: caller is not the owner" in receipt.revert_reason
 
-    @pytest.mark.skip
     class TestUpgradeAccount:
         async def test_should_upgrade_account_class(
             self,
@@ -316,11 +315,10 @@ class TestKakarot:
 
             await invoke(
                 "kakarot",
-                "set_account_contract_class_hash",
+                "upgrade_account",
+                int(account.address, 16),
                 class_hashes["uninitialized_account_fixture"],
             )
-
-            await invoke("kakarot", "upgrade_account", int(account.address, 16))
             assert (
                 await starknet.get_class_hash_at(account.starknet_contract.address)
                 == class_hashes["uninitialized_account_fixture"]
@@ -331,14 +329,12 @@ class TestKakarot:
         ):
             account = await new_eoa()
 
-            await invoke(
-                "kakarot",
-                "set_account_contract_class_hash",
-                class_hashes["uninitialized_account_fixture"],
-            )
-
             tx_hash = await invoke(
-                "kakarot", "upgrade_account", int(account.address, 16), account=other
+                "kakarot",
+                "upgrade_account",
+                int(account.address, 16),
+                class_hashes["uninitialized_account_fixture"],
+                account=other,
             )
             receipt = await starknet.get_transaction_receipt(tx_hash)
             assert receipt.execution_status.name == "REVERTED"
@@ -370,7 +366,6 @@ class TestKakarot:
             assert result.return_data == []
             assert result.gas_used == 21_000
 
-    @pytest.mark.skip
     class TestUpgrade:
         async def test_should_raise_when_caller_is_not_owner(
             self, starknet, kakarot, invoke, other, class_hashes

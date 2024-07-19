@@ -7,7 +7,7 @@ from tests.utils.constants import ACCOUNT_BALANCE
 
 @pytest_asyncio.fixture(scope="package")
 async def owner(new_eoa):
-    return await new_eoa()
+    return await new_eoa(1)
 
 
 @pytest_asyncio.fixture(scope="package")
