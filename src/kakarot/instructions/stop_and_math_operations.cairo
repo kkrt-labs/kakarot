@@ -471,9 +471,10 @@ namespace StopAndMathOperations {
         let popped = cast([ap - 1], Uint256*);
 
         // compute y = (x >> (248 - i * 8)) & 0xFF
-        let (mul, carry_mul) = uint256_mul(popped[0], Uint256(8, 0));
-        let (no_overflow) = uint256_eq(carry_mul, Uint256(0, 0));
-        if (no_overflow != FALSE) {
+        let i = popped[0];
+        let (is_inf_or_equal_31) = uint256_lt(i, Uint256(31, 0));
+        if (is_inf_or_equal_31 != FALSE) {
+            let (mul, _) = uint256_mul(i, Uint256(8, 0));
             let (right) = uint256_sub(Uint256(248, 0), mul);
             let (shift_right) = uint256_shr(popped[1], right);
             let (result) = uint256_and(shift_right, Uint256(0xFF, 0));
@@ -481,9 +482,12 @@ namespace StopAndMathOperations {
             tempvar range_check_ptr = range_check_ptr;
             tempvar result = Uint256(result.low, result.high);
             jmp end;
+        } else {
+            tempvar bitwise_ptr = bitwise_ptr;
+            tempvar range_check_ptr = range_check_ptr;
+            tempvar result = Uint256(0, 0);
+            jmp end;
         }
-        tempvar result = Uint256(0, 0);
-        jmp end;
 
         SHL:
         let range_check_ptr = [ap - 2];
