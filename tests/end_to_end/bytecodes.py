@@ -801,7 +801,7 @@ test_cases = [
             "value": 0,
             "code": "4700",
             "calldata": "",
-            "stack": "0000000000000000000000000000000000000000000000000000000000000000",
+            "stack": "{self_balance}",
             "memory": "",
             "return_data": "",
             "success": 1,
