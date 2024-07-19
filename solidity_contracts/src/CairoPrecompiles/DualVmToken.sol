@@ -61,7 +61,7 @@ contract DualVmToken {
         uint256[] memory kakarotCallData = new uint256[](1);
         kakarotCallData[0] = uint256(uint160(account));
         uint256 accountStarknetAddress =
-            abi.decode(kakarot.staticcallCairo("compute_starknet_address", kakarotCallData), (uint256));
+            abi.decode(kakarot.staticcallCairo("get_starknet_address", kakarotCallData), (uint256));
         uint256[] memory balanceOfCallData = new uint256[](1);
         balanceOfCallData[0] = accountStarknetAddress;
         bytes memory returnData = starknetToken.staticcallCairo("balance_of", balanceOfCallData);
@@ -73,12 +73,12 @@ contract DualVmToken {
         uint256[] memory ownerAddressCalldata = new uint256[](1);
         ownerAddressCalldata[0] = uint256(uint160(owner));
         uint256 ownerStarknetAddress =
-            abi.decode(kakarot.staticcallCairo("compute_starknet_address", ownerAddressCalldata), (uint256));
+            abi.decode(kakarot.staticcallCairo("get_starknet_address", ownerAddressCalldata), (uint256));
 
         uint256[] memory spenderAddressCalldata = new uint256[](1);
         spenderAddressCalldata[0] = uint256(uint160(spender));
         uint256 spenderStarknetAddress =
-            abi.decode(kakarot.staticcallCairo("compute_starknet_address", spenderAddressCalldata), (uint256));
+            abi.decode(kakarot.staticcallCairo("get_starknet_address", spenderAddressCalldata), (uint256));
 
         uint256[] memory allowanceCallData = new uint256[](2);
         allowanceCallData[0] = ownerStarknetAddress;
@@ -107,7 +107,7 @@ contract DualVmToken {
         uint256[] memory spenderAddressCalldata = new uint256[](1);
         spenderAddressCalldata[0] = uint256(uint160(spender));
         uint256 spenderStarknetAddress =
-            abi.decode(kakarot.staticcallCairo("compute_starknet_address", spenderAddressCalldata), (uint256));
+            abi.decode(kakarot.staticcallCairo("get_starknet_address", spenderAddressCalldata), (uint256));
 
         // Split amount in [low, high]
         uint128 amountLow = uint128(amount);
@@ -127,7 +127,7 @@ contract DualVmToken {
         uint256[] memory toAddressCalldata = new uint256[](1);
         toAddressCalldata[0] = uint256(uint160(to));
         uint256 toStarknetAddress =
-            abi.decode(kakarot.staticcallCairo("compute_starknet_address", toAddressCalldata), (uint256));
+            abi.decode(kakarot.staticcallCairo("get_starknet_address", toAddressCalldata), (uint256));
 
         // Split amount in [low, high]
         uint128 amountLow = uint128(amount);
@@ -146,12 +146,12 @@ contract DualVmToken {
         uint256[] memory fromAddressCalldata = new uint256[](1);
         fromAddressCalldata[0] = uint256(uint160(from));
         uint256 fromStarknetAddress =
-            abi.decode(kakarot.staticcallCairo("compute_starknet_address", fromAddressCalldata), (uint256));
+            abi.decode(kakarot.staticcallCairo("get_starknet_address", fromAddressCalldata), (uint256));
 
         uint256[] memory toAddressCalldata = new uint256[](1);
         toAddressCalldata[0] = uint256(uint160(to));
         uint256 toStarknetAddress =
-            abi.decode(kakarot.staticcallCairo("compute_starknet_address", toAddressCalldata), (uint256));
+            abi.decode(kakarot.staticcallCairo("get_starknet_address", toAddressCalldata), (uint256));
 
         uint128 amountLow = uint128(amount);
         uint128 amountHigh = uint128(amount >> 128);
