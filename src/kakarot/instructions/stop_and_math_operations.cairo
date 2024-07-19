@@ -472,8 +472,8 @@ namespace StopAndMathOperations {
 
         // compute y = (x >> (248 - i * 8)) & 0xFF
         let i = popped[0];
-        let (is_inf_or_equal_31) = uint256_lt(i, Uint256(31, 0));
-        if (is_inf_or_equal_31 != FALSE) {
+        let (is_inf_32) = uint256_lt(i, Uint256(32, 0));
+        if (is_inf_32 != FALSE) {
             let (mul, _) = uint256_mul(i, Uint256(8, 0));
             let (right) = uint256_sub(Uint256(248, 0), mul);
             let (shift_right) = uint256_shr(popped[1], right);
