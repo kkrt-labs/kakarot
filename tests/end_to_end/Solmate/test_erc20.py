@@ -1,6 +1,7 @@
 import pytest
 import pytest_asyncio
 
+from kakarot_scripts.utils.kakarot import deploy
 from tests.utils.constants import MAX_INT
 from tests.utils.errors import evm_error
 from tests.utils.helpers import ec_sign, get_approval_digest
@@ -10,8 +11,8 @@ TEST_AMOUNT = int(0.9 * 10**18)
 
 
 @pytest_asyncio.fixture(scope="module")
-async def erc_20(deploy_contract, owner):
-    return await deploy_contract(
+async def erc_20(owner):
+    return await deploy(
         "Solmate",
         "ERC20",
         "Kakarot Token",
@@ -116,11 +117,14 @@ class TestERC20:
             "initial_allowance, final_allowance", ((TEST_SUPPLY, 0), (MAX_INT, MAX_INT))
         )
         async def test_should_transfer_and_update_allowance(
-            self, erc_20, owner, others, initial_allowance, final_allowance
+            self,
+            erc_20,
+            owner,
+            from_wallet,
+            to_wallet,
+            initial_allowance,
+            final_allowance,
         ):
-            from_wallet = others[0]
-            to_wallet = others[1]
-
             await erc_20.mint(
                 from_wallet.address,
                 TEST_SUPPLY,
@@ -153,7 +157,7 @@ class TestERC20:
             assert balance_receiver_after - balance_receiver_before == TEST_SUPPLY
 
         async def test_transfer_from_should_fail_when_insufficient_allowance(
-            self, erc_20, owner, other, others
+            self, erc_20, owner, other, to_wallet
         ):
             await erc_20.mint(
                 other.address, TEST_SUPPLY, caller_eoa=owner.starknet_contract
@@ -164,13 +168,13 @@ class TestERC20:
             with evm_error():
                 await erc_20.transferFrom(
                     other.address,
-                    others[1].address,
+                    to_wallet.address,
                     TEST_SUPPLY,
                     caller_eoa=owner.starknet_contract,
                 )
 
         async def test_transfer_from_should_fail_when_insufficient_balance(
-            self, erc_20, owner, other, others
+            self, erc_20, owner, other, to_wallet
         ):
             await erc_20.mint(
                 other.address, TEST_AMOUNT, caller_eoa=owner.starknet_contract
@@ -182,7 +186,7 @@ class TestERC20:
             with evm_error():
                 await erc_20.transferFrom(
                     other.address,
-                    others[1].address,
+                    to_wallet.address,
                     balance_other + 1,
                     caller_eoa=owner.starknet_contract,
                 )

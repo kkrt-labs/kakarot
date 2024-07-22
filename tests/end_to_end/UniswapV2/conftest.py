@@ -1,11 +1,13 @@
 import pytest_asyncio
 
+from kakarot_scripts.utils.kakarot import deploy
+
 TOTAL_SUPPLY = 10000 * 10**18
 
 
 @pytest_asyncio.fixture(scope="function")
-async def token_a(deploy_contract, owner):
-    return await deploy_contract(
+async def token_a(owner):
+    return await deploy(
         "UniswapV2",
         "ERC20",
         TOTAL_SUPPLY,
@@ -14,8 +16,8 @@ async def token_a(deploy_contract, owner):
 
 
 @pytest_asyncio.fixture(scope="module")
-async def weth(deploy_contract, owner):
-    return await deploy_contract(
+async def weth(owner):
+    return await deploy(
         "WETH",
         "WETH9",
         caller_eoa=owner.starknet_contract,
@@ -23,11 +25,8 @@ async def weth(deploy_contract, owner):
 
 
 @pytest_asyncio.fixture(scope="module")
-async def factory(
-    deploy_contract,
-    owner,
-):
-    return await deploy_contract(
+async def factory(owner):
+    return await deploy(
         "UniswapV2",
         "UniswapV2Factory",
         owner.address,
@@ -36,13 +35,8 @@ async def factory(
 
 
 @pytest_asyncio.fixture(scope="module")
-async def router(
-    deploy_contract,
-    owner,
-    factory,
-    weth,
-):
-    return await deploy_contract(
+async def router(owner, factory, weth):
+    return await deploy(
         "UniswapV2Router",
         "UniswapV2Router02",
         factory.address,

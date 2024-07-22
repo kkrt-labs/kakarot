@@ -1,5 +1,6 @@
 import pytest
 
+from kakarot_scripts.utils.kakarot import get_contract
 from tests.utils.errors import evm_error
 
 TEST_ADDRESSES = [
@@ -18,12 +19,7 @@ class TestUniswapV2Factory:
             assert await factory.allPairsLength() == 0
 
     class TestCreatePair:
-        async def test_should_create_pair_only_once(
-            self,
-            factory,
-            get_solidity_contract,
-            owner,
-        ):
+        async def test_should_create_pair_only_once(self, factory, owner):
             receipt = (
                 await factory.createPair(
                     *TEST_ADDRESSES, caller_eoa=owner.starknet_contract, max_fee=0
@@ -55,7 +51,7 @@ class TestUniswapV2Factory:
             assert await factory.allPairs(0) == pair_evm_address
             assert await factory.allPairsLength() == 1
 
-            pair = get_solidity_contract(
+            pair = get_contract(
                 "UniswapV2",
                 "UniswapV2Pair",
                 address=pair_evm_address,
