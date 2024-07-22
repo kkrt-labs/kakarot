@@ -27,7 +27,7 @@ class TestBlake2f:
         t0=integers(min_value=0, max_value=2**64 - 1),
         t1=integers(min_value=0, max_value=2**64 - 1),
     )
-    @settings(max_examples=5, deadline=None)
+    @settings(max_examples=5)
     def test_should_return_blake2f_compression(
         self, cairo_run, f, rounds, h, m, t0, t1
     ):

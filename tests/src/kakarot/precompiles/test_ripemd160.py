@@ -8,7 +8,7 @@ from hypothesis.strategies import binary
 @pytest.mark.slow
 class TestRIPEMD160:
     @given(msg_bytes=binary(min_size=1, max_size=200))
-    @settings(max_examples=3, deadline=None)
+    @settings(max_examples=3)
     async def test_ripemd160_should_return_correct_hash(self, cairo_run, msg_bytes):
         precompile_hash = cairo_run("test__ripemd160", msg=list(msg_bytes))
 
