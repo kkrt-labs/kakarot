@@ -355,7 +355,7 @@ class TestKakarot:
             assert result.return_data == []
             assert result.gas_used == 21_000
 
-        async def test_eth_call_should_after_uninitialized_class_update(
+        async def test_eth_call_should_handle_uninitialized_class_update(
             self, kakarot, new_eoa, class_hashes, invoke
         ):
             eoa = await new_eoa()
