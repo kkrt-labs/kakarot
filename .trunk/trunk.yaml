@@ -75,6 +75,9 @@ lint:
         - resources*
         - tests/ef_tests/test_data
         - .katana/messaging_config.json
+    - linters: [solidity]
+      paths:
+        - solidity_contracts/src/UniswapV2Router/libraries/UniswapV2Library.sol
 actions:
   disabled:
     - trunk-announce

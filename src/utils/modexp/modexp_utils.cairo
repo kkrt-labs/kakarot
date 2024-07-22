@@ -1,10 +1,16 @@
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
-from starkware.cairo.common.uint256 import Uint256, uint256_mul, uint256_eq, uint256_lt
+from starkware.cairo.common.uint256 import Uint256, uint256_mul, uint256_lt
 from starkware.cairo.common.bitwise import bitwise_and
 from starkware.cairo.common.registers import get_fp_and_pc
 from starkware.cairo.common.bool import FALSE
 
-from utils.uint256 import uint256_sub, uint256_add, uint256_unsigned_div_rem, uint256_mul_div_mod
+from utils.uint256 import (
+    uint256_sub,
+    uint256_add,
+    uint256_unsigned_div_rem,
+    uint256_mul_div_mod,
+    uint256_eq,
+)
 
 // @title ModExpHelpersUint256 Functions
 // @notice This file contains a selection of helper functions for modular exponentiation and gas cost calculation.

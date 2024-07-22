@@ -1,9 +1,10 @@
 from starkware.cairo.common.math import split_felt, unsigned_div_rem
-from starkware.cairo.common.math_cmp import is_not_zero, is_nn
+from starkware.cairo.common.math_cmp import is_not_zero, is_nn, is_le_felt
 from starkware.cairo.common.bool import FALSE
-from starkware.cairo.common.uint256 import Uint256, uint256_lt, uint256_eq
+from starkware.cairo.common.uint256 import Uint256, uint256_lt
 
 from kakarot.model import model
+from utils.uint256 import uint256_eq
 from utils.utils import Helpers
 
 namespace Gas {
@@ -137,25 +138,50 @@ namespace Gas {
         words_len: felt, offset_1: Uint256*, size_1: Uint256*, offset_2: Uint256*, size_2: Uint256*
     ) -> model.MemoryExpansion {
         alloc_locals;
-        let (is_zero_1) = uint256_eq([size_1], Uint256(0, 0));
-        let (is_zero_2) = uint256_eq([size_2], Uint256(0, 0));
-        let is_zero = is_zero_1 * is_zero_2;
-        if (is_zero != FALSE) {
-            let expansion = model.MemoryExpansion(cost=0, new_words_len=words_len);
-            return expansion;
-        }
-        let max_expansion_is_2 = is_nn(offset_2.low + size_2.low - (offset_1.low + size_1.low));
-        let max_expansion = max_expansion_is_2 * (offset_2.low + size_2.low) + (
-            1 - max_expansion_is_2
-        ) * (offset_1.low + size_1.low);
 
-        let low_expansion = calculate_gas_extend_memory(words_len, max_expansion);
-        let expansion_cost = low_expansion.cost + (
-            offset_1.high + size_1.high + offset_2.high + size_2.high
-        ) * Gas.MEMORY_COST_U128;
+        let (local is_zero_1) = uint256_eq([size_1], Uint256(0, 0));
+        let (local is_zero_2) = uint256_eq([size_2], Uint256(0, 0));
+        tempvar both_zero = is_zero_1 * is_zero_2;
+        jmp no_expansion if both_zero != 0;
 
+        tempvar is_not_saturated = Helpers.is_zero(offset_1.high) * Helpers.is_zero(size_1.high) *
+            Helpers.is_zero(offset_2.high) * Helpers.is_zero(size_2.high);
+        tempvar is_saturated = 1 - is_not_saturated;
+        jmp expansion_cost_saturated if is_saturated != 0;
+
+        tempvar max_expansion_is_2 = is_le_felt(
+            offset_1.low + size_1.low, offset_2.low + size_2.low
+        ) * (1 - is_zero_2);
+        jmp max_expansion_2 if max_expansion_is_2 != 0;
+        jmp no_expansion if is_zero_1 != 0;
+        jmp max_expansion_1;
+
+        no_expansion:
+        let range_check_ptr = [fp - 8];
+        let expansion = model.MemoryExpansion(cost=0, new_words_len=words_len);
+        return expansion;
+
+        max_expansion_1:
+        tempvar max_offset = offset_1.low + size_1.low;
+        jmp expansion_cost;
+
+        max_expansion_2:
+        tempvar max_offset = offset_2.low + size_2.low;
+        jmp expansion_cost;
+
+        expansion_cost:
+        let range_check_ptr = [ap - 8];
+        let max_offset = [ap - 1];
+        let expansion = calculate_gas_extend_memory(words_len, max_offset);
         let expansion = model.MemoryExpansion(
-            cost=expansion_cost, new_words_len=low_expansion.new_words_len
+            cost=expansion.cost, new_words_len=expansion.new_words_len
+        );
+        return expansion;
+
+        expansion_cost_saturated:
+        let range_check_ptr = [fp - 8];
+        let expansion = model.MemoryExpansion(
+            cost=Gas.MEMORY_COST_U128, new_words_len=0x8000000000000000000000000000000
         );
         return expansion;
     }
