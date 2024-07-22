@@ -522,6 +522,10 @@ async def send_starknet_transaction(
 
 
 async def compute_starknet_address(address: Union[str, int]):
+    """
+    Compute the Starknet address of an EVM address.
+    Warning: use get_starknet_address for getting the actual address of an account.
+    """
     evm_address = int(address, 16) if isinstance(address, str) else address
     kakarot_contract = _get_starknet_contract("kakarot")
     return (
@@ -529,15 +533,26 @@ async def compute_starknet_address(address: Union[str, int]):
     ).contract_address
 
 
+async def get_starknet_address(address: Union[str, int]):
+    """
+    Get the registered Starknet address of an EVM address, or the one it would get
+    if it was deployed right now with Kakarot.
+    Warning: this may not be the same as compute_starknet_address if kakarot base uninitialized class hash has changed.
+    """
+    evm_address = int(address, 16) if isinstance(address, str) else address
+    kakarot_contract = _get_starknet_contract("kakarot")
+    return (
+        await kakarot_contract.functions["get_starknet_address"].call(evm_address)
+    ).starknet_address
+
+
 async def deploy_and_fund_evm_address(evm_address: str, amount: float):
     """
     Deploy an EOA linked to the given EVM address and fund it with amount ETH.
     """
     starknet_address = (
-        await _call_starknet(
-            "kakarot", "compute_starknet_address", int(evm_address, 16)
-        )
-    ).contract_address
+        await _call_starknet("kakarot", "get_starknet_address", int(evm_address, 16))
+    ).starknet_address
 
     account_balance = await get_balance(evm_address)
     await fund_address(evm_address, amount - account_balance)
