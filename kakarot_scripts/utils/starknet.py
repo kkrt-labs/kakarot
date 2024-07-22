@@ -600,5 +600,5 @@ async def wait_for_transaction(tx_hash):
         )
         return "✅"
     except Exception as e:
-        logger.error(f"Error while waiting for transaction {tx_hash}: {e}")
+        logger.error(f"Error while waiting for transaction 0x{tx_hash:064x}: {e}")
         return "❌"
