@@ -195,6 +195,25 @@ func set_account_contract_class_hash{
     return Kakarot.set_account_contract_class_hash(account_contract_class_hash);
 }
 
+// @notice Return the transparent account class hash
+// @return uninitialized_account_class_hash The account implementation class hash
+@view
+func get_uninitialized_account_class_hash{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+}() -> (uninitialized_account_class_hash: felt) {
+    return Kakarot.get_uninitialized_account_class_hash();
+}
+
+// @notice Set the transparent account class hash
+// @param uninitialized_account_class_hash The new account implementation class hash
+@external
+func set_uninitialized_account_class_hash{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+}(uninitialized_account_class_hash: felt) {
+    Ownable.assert_only_owner();
+    return Kakarot.set_uninitialized_account_class_hash(uninitialized_account_class_hash);
+}
+
 // @notice Sets the authorization of an EVM address to call Cairo Precompiles
 // @param evm_address The EVM address
 // @param authorized Whether the EVM address is authorized or not

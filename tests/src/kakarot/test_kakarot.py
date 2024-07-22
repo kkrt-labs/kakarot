@@ -177,6 +177,22 @@ class TestKakarot:
                 value=class_hash,
             )
 
+    class TestUninitializedAccountClassHash:
+        @pytest.mark.slow
+        @SyscallHandler.patch("Ownable_owner", 0xDEAD)
+        def test_should_assert_only_owner(self, cairo_run):
+            with cairo_error(message="Ownable: caller is not the owner"):
+                cairo_run("test__set_uninitialized_account_class_hash", class_hash=0xABC)
+
+        @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
+        def test_should_set_uninitialized_account_class_hash(self, cairo_run):
+            class_hash = 0x123
+            cairo_run("test__set_uninitialized_account_class_hash", class_hash=class_hash)
+            SyscallHandler.mock_storage.assert_any_call(
+                address=get_storage_var_address("Kakarot_uninitialized_account_class_hash"),
+                value=class_hash,
+            )
+
     class TestAuthorizedCairoPrecompileCaller:
         @SyscallHandler.patch("Ownable_owner", 0xDEAD)
         def test_should_assert_only_owner(self, cairo_run):
