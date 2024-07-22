@@ -1,7 +1,9 @@
 import asyncio
 import logging
+import os
 
 import pytest
+from hypothesis import Verbosity, settings
 from starkware.cairo.lang.instances import LAYOUTS
 
 logging.getLogger("asyncio").setLevel(logging.ERROR)
@@ -54,3 +56,7 @@ def seed(request):
 
 
 pytest_plugins = ["tests.fixtures.starknet"]
+
+settings.register_profile("ci", deadline=None)
+settings.register_profile("debug", max_examples=10, verbosity=Verbosity.verbose)
+settings.load_profile(os.getenv("HYPOTHESIS_PROFILE", "default"))

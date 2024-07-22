@@ -3,14 +3,13 @@ from ethereum.shanghai.vm.gas import (
     calculate_gas_extend_memory,
     calculate_memory_gas_cost,
 )
-from hypothesis import given, settings
+from hypothesis import given
 from hypothesis.strategies import integers
 
 
 class TestGas:
     class TestCost:
         @given(max_offset=integers(min_value=0, max_value=0xFFFFFF))
-        @settings(max_examples=100, deadline=None)
         def test_should_return_same_as_execution_specs(self, cairo_run, max_offset):
             output = cairo_run("test__memory_cost", words_len=(max_offset + 31) // 32)
             assert calculate_memory_gas_cost(max_offset) == output
@@ -19,7 +18,6 @@ class TestGas:
             bytes_len=integers(min_value=0, max_value=0xFFFFFF),
             added_offset=integers(min_value=0, max_value=0xFFFFFF),
         )
-        @settings(deadline=None)
         def test_should_return_correct_expansion_cost(
             self, cairo_run, bytes_len, added_offset
         ):
@@ -42,7 +40,6 @@ class TestGas:
             offset_2=integers(min_value=0, max_value=0xFFFFF),
             size_2=integers(min_value=0, max_value=0xFFFFF),
         )
-        @settings(deadline=None)
         def test_should_return_max_expansion_cost(
             self, cairo_run, offset_1, size_1, offset_2, size_2
         ):
