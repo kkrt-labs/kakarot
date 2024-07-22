@@ -8,7 +8,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
 from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.registers import get_fp_and_pc, get_label_location
-from starkware.cairo.common.math_cmp import is_nn, is_le
+from starkware.cairo.common.math_cmp import is_nn
 from starkware.cairo.common.bool import FALSE
 
 // Internal dependencies

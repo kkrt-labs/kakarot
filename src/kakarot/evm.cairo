@@ -5,7 +5,7 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.math_cmp import is_le, is_le_felt
+from starkware.cairo.common.math_cmp import is_nn, is_le_felt
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.uint256 import Uint256
@@ -225,7 +225,7 @@ namespace EVM {
     func jump{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*}(
         self: model.EVM*, new_pc_offset: felt
     ) -> model.EVM* {
-        let out_of_range = is_le(self.message.bytecode_len, new_pc_offset);
+        let out_of_range = is_nn(new_pc_offset - self.message.bytecode_len);
         if (out_of_range != FALSE) {
             let (revert_reason_len, revert_reason) = Errors.invalidJumpDestError();
             let evm = EVM.stop(self, revert_reason_len, revert_reason, Errors.EXCEPTIONAL_HALT);

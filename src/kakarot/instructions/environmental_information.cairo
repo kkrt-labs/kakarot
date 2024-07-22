@@ -7,7 +7,7 @@ from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.memset import memset
 from starkware.cairo.common.math import unsigned_div_rem, split_felt
-from starkware.cairo.common.math_cmp import is_not_zero, is_le
+from starkware.cairo.common.math_cmp import is_not_zero, is_nn
 from starkware.cairo.common.uint256 import Uint256, uint256_le, uint256_eq
 
 from kakarot.account import Account
@@ -213,7 +213,7 @@ namespace EnvironmentalInformation {
         }
 
         let (sliced_data: felt*) = alloc();
-        tempvar is_in_bounds = is_le(returndata_offset.low + size.low, evm.return_data_len);
+        tempvar is_in_bounds = is_nn(evm.return_data_len - (returndata_offset.low + size.low));
         if (is_in_bounds == FALSE) {
             let (revert_reason_len, revert_reason) = Errors.outOfBoundsRead();
             let evm = EVM.stop(evm, revert_reason_len, revert_reason, Errors.EXCEPTIONAL_HALT);

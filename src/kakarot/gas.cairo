@@ -1,5 +1,5 @@
 from starkware.cairo.common.math import split_felt, unsigned_div_rem
-from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn
+from starkware.cairo.common.math_cmp import is_not_zero, is_nn
 from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.uint256 import Uint256, uint256_lt, uint256_eq
 
@@ -80,7 +80,7 @@ namespace Gas {
         words_len: felt, max_offset: felt
     ) -> model.MemoryExpansion {
         alloc_locals;
-        let memory_expansion = is_le(words_len * 32 - 1, max_offset);
+        let memory_expansion = is_nn(max_offset - (words_len * 32 - 1));
         if (memory_expansion == FALSE) {
             let expansion = model.MemoryExpansion(cost=0, new_words_len=words_len);
             return expansion;
@@ -144,7 +144,7 @@ namespace Gas {
             let expansion = model.MemoryExpansion(cost=0, new_words_len=words_len);
             return expansion;
         }
-        let max_expansion_is_2 = is_le(offset_1.low + size_1.low, offset_2.low + size_2.low);
+        let max_expansion_is_2 = is_nn(offset_2.low + size_2.low - (offset_1.low + size_1.low));
         let max_expansion = max_expansion_is_2 * (offset_2.low + size_2.low) + (
             1 - max_expansion_is_2
         ) * (offset_1.low + size_1.low);

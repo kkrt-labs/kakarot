@@ -11,7 +11,7 @@ from starkware.cairo.common.uint256 import (
 )
 from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.bool import FALSE
-from starkware.cairo.common.math_cmp import is_le
+from starkware.cairo.common.math_cmp import is_nn
 
 // Adds two integers. Returns the result as a 256-bit integer and the (1-bit) carry.
 // Strictly equivalent and faster version of common.uint256.uint256_add using the same whitelisted hint.
@@ -256,12 +256,12 @@ func uint256_signed_div_rem{range_check_ptr}(a: Uint256, div: Uint256) -> (
     }
 
     // Take the absolute value of a.
-    local a_sign = is_le(2 ** 127, a.high);
+    local a_sign = is_nn(a.high - 2 ** 127);
     local range_check_ptr = range_check_ptr;
     let (local a) = uint256_cond_neg(a, should_neg=a_sign);
 
     // Take the absolute value of div.
-    local div_sign = is_le(2 ** 127, div.high);
+    local div_sign = is_nn(div.high - 2 ** 127);
     local range_check_ptr = range_check_ptr;
     let (div) = uint256_cond_neg(div, should_neg=div_sign);
 

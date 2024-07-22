@@ -8,7 +8,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.dict_access import DictAccess
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.math import unsigned_div_rem
-from starkware.cairo.common.math_cmp import is_le
+from starkware.cairo.common.math_cmp import is_nn
 from starkware.cairo.common.memset import memset
 from starkware.starknet.common.syscalls import (
     emit_event,
@@ -245,7 +245,7 @@ namespace Internals {
         // See 300 max data_len for events
         // https://github.com/starkware-libs/blockifier/blob/9bfb3d4c8bf1b68a0c744d1249b32747c75a4d87/crates/blockifier/resources/versioned_constants.json
         // The whole data_len should be less than 300
-        tempvar data_len = is_le(event.data_len, 300) * (event.data_len - 300) + 300;
+        tempvar data_len = is_nn(300 - event.data_len) * (event.data_len - 300) + 300;
 
         emit_event(
             keys_len=event.topics_len, keys=event.topics, data_len=data_len, data=event.data

@@ -3,7 +3,7 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin, HashBuiltin
-from starkware.cairo.common.math_cmp import is_not_zero, is_le
+from starkware.cairo.common.math_cmp import is_not_zero, is_nn
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256
 
@@ -173,7 +173,7 @@ namespace EthTransaction {
     // @param tx_data The raw transaction data
     func get_tx_type{range_check_ptr}(tx_data: felt*) -> felt {
         let type = [tx_data];
-        let is_legacy = is_le(0xc0, type);
+        let is_legacy = is_nn(type - 0xc0);
         if (is_legacy != FALSE) {
             return 0;
         }
@@ -187,7 +187,7 @@ namespace EthTransaction {
         tx_data_len: felt, tx_data: felt*
     ) -> model.EthTransaction* {
         let tx_type = get_tx_type(tx_data);
-        let is_supported = is_le(tx_type, 2);
+        let is_supported = is_nn(2 - tx_type);
         with_attr error_message("Kakarot: transaction type not supported") {
             assert is_supported = TRUE;
         }

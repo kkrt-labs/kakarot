@@ -3,7 +3,7 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.math_cmp import is_le
+from starkware.cairo.common.math_cmp import is_nn
 
 from kakarot.constants import Constants
 from kakarot.errors import Errors
@@ -31,7 +31,7 @@ namespace PushOperations {
 
         // Copy code slice
         let pc = evm.program_counter + 1;
-        let out_of_bounds = is_le(evm.message.bytecode_len, pc + i);
+        let out_of_bounds = is_nn(pc + i - evm.message.bytecode_len);
         local len = (1 - out_of_bounds) * i + out_of_bounds * (evm.message.bytecode_len - pc);
 
         let stack_element = Helpers.bytes_to_uint256(len, evm.message.bytecode + pc);

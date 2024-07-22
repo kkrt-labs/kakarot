@@ -6,7 +6,7 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn, is_le_felt
+from starkware.cairo.common.math_cmp import is_not_zero, is_nn, is_le_felt
 from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.default_dict import default_dict_new
 from starkware.cairo.common.dict import DictAccess
@@ -62,7 +62,7 @@ namespace Interpreter {
         local opcode: model.Opcode*;
 
         let pc = evm.program_counter;
-        let is_pc_ge_code_len = is_le(evm.message.bytecode_len, pc);
+        let is_pc_ge_code_len = is_nn(pc - evm.message.bytecode_len);
         if (is_pc_ge_code_len != FALSE) {
             let is_precompile = PrecompilesHelpers.is_precompile(evm.message.code_address.evm);
             if (is_precompile != FALSE) {
@@ -110,14 +110,14 @@ namespace Interpreter {
         );
 
         // Check stack over/under flow
-        let stack_underflow = is_le(stack.size, opcode.stack_size_min - 1);
+        let stack_underflow = is_nn(opcode.stack_size_min - 1 - stack.size);
         if (stack_underflow != 0) {
             let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
             let evm = EVM.stop(evm, revert_reason_len, revert_reason, Errors.EXCEPTIONAL_HALT);
             return evm;
         }
-        let stack_overflow = is_le(
-            Constants.STACK_MAX_DEPTH + 1, stack.size + opcode.stack_size_diff
+        let stack_overflow = is_nn(
+            stack.size + opcode.stack_size_diff - (Constants.STACK_MAX_DEPTH + 1)
         );
         if (stack_overflow != 0) {
             let (revert_reason_len, revert_reason) = Errors.stackOverflow();
@@ -886,8 +886,8 @@ namespace Interpreter {
             return (evm, stack, memory, state, 0, 0);
         }
 
-        tempvar is_initcode_invalid = is_deploy_tx * is_le(
-            2 * Constants.MAX_CODE_SIZE + 1, bytecode_len
+        tempvar is_initcode_invalid = is_deploy_tx * is_nn(
+            bytecode_len - (2 * Constants.MAX_CODE_SIZE + 1)
         );
         if (is_initcode_invalid != FALSE) {
             let evm = EVM.halt_validation_failed(evm);
@@ -943,7 +943,7 @@ namespace Interpreter {
 
         let required_gas = gas_limit - evm.gas_left;
         let (max_refund, _) = unsigned_div_rem(required_gas, 5);
-        let is_max_refund_le_gas_refund = is_le(max_refund, evm.gas_refund);
+        let is_max_refund_le_gas_refund = is_nn(evm.gas_refund - max_refund);
         tempvar gas_refund = is_max_refund_le_gas_refund * max_refund + (
             1 - is_max_refund_le_gas_refund
         ) * evm.gas_refund;
@@ -1014,7 +1014,7 @@ namespace Internals {
         }
 
         // Charge final deposit gas
-        let code_size_limit = is_le(evm.return_data_len, Constants.MAX_CODE_SIZE);
+        let code_size_limit = is_nn(Constants.MAX_CODE_SIZE - evm.return_data_len);
         let code_deposit_cost = Gas.CODE_DEPOSIT * evm.return_data_len;
         let enough_gas = is_nn(evm.gas_left - code_deposit_cost);
         // https://github.com/ethereum/EIPs/blob/master/EIPS/eip-3540.md

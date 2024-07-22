@@ -1,7 +1,7 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.math_cmp import is_le
+from starkware.cairo.common.math_cmp import is_nn
 from starkware.cairo.common.math import assert_not_zero
 from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import call_contract, library_call, get_caller_address
@@ -45,7 +45,7 @@ namespace KakarotPrecompiles {
         alloc_locals;
 
         // Input must be at least 4 + 3*32 bytes long.
-        let is_input_invalid = is_le(input_len, 99);
+        let is_input_invalid = is_nn(99 - input_len);
         if (is_input_invalid != 0) {
             let (revert_reason_len, revert_reason) = Errors.outOfBoundsRead();
             return (revert_reason_len, revert_reason, CAIRO_PRECOMPILE_GAS, TRUE);
@@ -138,7 +138,7 @@ namespace KakarotPrecompiles {
         alloc_locals;
 
         // Input must be at least 3*32 bytes long.
-        let is_input_invalid = is_le(input_len, 95);
+        let is_input_invalid = is_nn(95 - input_len);
         if (is_input_invalid != 0) {
             let (revert_reason_len, revert_reason) = Errors.outOfBoundsRead();
             return (revert_reason_len, revert_reason, CAIRO_MESSAGE_GAS, TRUE);
@@ -151,7 +151,7 @@ namespace KakarotPrecompiles {
         let target_address = Helpers.bytes32_to_felt(input);
 
         let data_bytes_len = Helpers.bytes32_to_felt(input + 2 * 32);
-        let data_fits_in_input = is_le(data_bytes_len, input_len - 3 * 32);
+        let data_fits_in_input = is_nn(input_len - 3 * 32 - data_bytes_len);
         if (data_fits_in_input == 0) {
             let (revert_reason_len, revert_reason) = Errors.outOfBoundsRead();
             return (revert_reason_len, revert_reason, CAIRO_MESSAGE_GAS, TRUE);

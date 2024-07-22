@@ -1,5 +1,5 @@
 from starkware.cairo.common.bool import FALSE
-from starkware.cairo.common.math_cmp import is_le
+from starkware.cairo.common.math_cmp import is_nn
 from starkware.cairo.common.alloc import alloc
 
 from utils.utils import Helpers
@@ -28,24 +28,24 @@ namespace RLP {
         let prefix = [data];
 
         // Char
-        let is_le_127 = is_le(prefix, 0x7f);
+        let is_le_127 = is_nn(0x7f - prefix);
         if (is_le_127 != FALSE) {
             return (0, 0, 1);
         }
 
-        let is_le_183 = is_le(prefix, 0xb7);  // a max 55 bytes long string
+        let is_le_183 = is_nn(0xb7 - prefix);  // a max 55 bytes long string
         if (is_le_183 != FALSE) {
             return (0, 1, prefix - 0x80);
         }
 
-        let is_le_191 = is_le(prefix, 0xbf);  // string longer than 55 bytes
+        let is_le_191 = is_nn(0xbf - prefix);  // string longer than 55 bytes
         if (is_le_191 != FALSE) {
             local len_bytes_count = prefix - 0xb7;
             let string_len = Helpers.bytes_to_felt(len_bytes_count, data + 1);
             return (0, 1 + len_bytes_count, string_len);
         }
 
-        let is_le_247 = is_le(prefix, 0xf7);  // list 0-55 bytes long
+        let is_le_247 = is_nn(0xf7 - prefix);  // list 0-55 bytes long
         if (is_le_247 != FALSE) {
             local list_len = prefix - 0xc0;
             return (1, 1, list_len);
@@ -92,7 +92,7 @@ namespace RLP {
         tempvar items = items + Item.SIZE;
 
         let total_item_len = len + offset;
-        let is_lt_input = is_le(total_item_len, data_len + 1);
+        let is_lt_input = is_nn(data_len + 1 - total_item_len);
         if (is_lt_input != FALSE) {
             let items_len = decode(
                 items=items, data_len=data_len - total_item_len, data=data + total_item_len
