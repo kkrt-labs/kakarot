@@ -5,8 +5,8 @@
     "artifact": "build/kakarot.json"
   },
   "EVM": {
-    "address": "0x23ec7b0b243845a0ea9c50ff9ae03de6e78b199e7c974c7d3d230b202cac0e9",
-    "tx": "0x29d6af42760a0b836622173762c7f2ebaae6da123477b2aa0eb35f942d55733",
+    "address": "0x2c387d16dd5a3bf484f0b1e975a07be856a20109a47e4b7a3cd8dd3c1bd1105",
+    "tx": "0x5c0fb688b75affad8939e20065e18071385e83455d33f43b5e624ba33ca1877",
     "artifact": "build/fixtures/EVM.json"
   },
   "Counter": {
