@@ -19,7 +19,7 @@ from kakarot_scripts.constants import (
     RPC_CLIENT,
     NetworkType,
 )
-from kakarot_scripts.utils.kakarot import deploy as deploy_evm
+from kakarot_scripts.utils.kakarot import deploy_contract as deploy_evm
 from kakarot_scripts.utils.kakarot import deploy_with_presigned_tx
 from kakarot_scripts.utils.kakarot import dump_deployments as dump_evm_deployments
 from kakarot_scripts.utils.kakarot import get_deployments as get_evm_deployments
