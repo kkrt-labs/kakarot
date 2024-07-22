@@ -18,7 +18,6 @@ from tests.utils.syscall_handler import SyscallHandler
 
 params_execute = [pytest.param(case.pop("params"), **case) for case in test_cases]
 
-
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -83,7 +82,6 @@ class TestKakarot:
             starknet: FullNodeClient,
             eth: Contract,
             params: dict,
-            request,
             evm: Contract,
             max_fee,
             origin,
@@ -249,7 +247,6 @@ class TestKakarot:
                 assert "Ownable: caller is not the owner" in receipt.revert_reason
 
         class TestWriteAccountNonce:
-
             async def test_should_set_account_nonce(
                 self,
                 deploy_externally_owned_account,
@@ -341,15 +338,7 @@ class TestKakarot:
             assert "Ownable: caller is not the owner" in receipt.revert_reason
 
     class TestEthCallNativeCoinTransfer:
-        async def test_eth_call_should_succeed(
-            self,
-            fund_starknet_address,
-            deploy_externally_owned_account,
-            is_account_deployed,
-            compute_starknet_address,
-            kakarot,
-            new_eoa,
-        ):
+        async def test_eth_call_should_succeed(self, kakarot, new_eoa):
             eoa = await new_eoa()
             result = await kakarot.functions["eth_call"].call(
                 nonce=0,
@@ -365,6 +354,42 @@ class TestKakarot:
             assert result.success == 1
             assert result.return_data == []
             assert result.gas_used == 21_000
+
+        async def test_eth_call_should_after_uninitialized_class_update(
+            self, kakarot, new_eoa, class_hashes, invoke
+        ):
+            eoa = await new_eoa()
+            await invoke(
+                "kakarot",
+                "set_uninitialized_account_class_hash",
+                class_hashes["uninitialized_account_fixture"],
+            )
+            assert (
+                await kakarot.functions["compute_starknet_address"].call(
+                    int(eoa.address, 16)
+                )
+            ).contract_address != eoa.starknet_contract.address
+
+            result = await kakarot.functions["eth_call"].call(
+                nonce=0,
+                origin=int(eoa.address, 16),
+                to={"is_some": 1, "value": 0xDEAD},
+                gas_limit=TRANSACTION_GAS_LIMIT,
+                gas_price=1_000,
+                value=1_000,
+                data=bytes(),
+                access_list=[],
+            )
+
+            assert result.success == 1
+            assert result.return_data == []
+            assert result.gas_used == 21_000
+
+            await invoke(
+                "kakarot",
+                "set_uninitialized_account_class_hash",
+                class_hashes["uninitialized_account"],
+            )
 
     class TestUpgrade:
         async def test_should_raise_when_caller_is_not_owner(
@@ -420,12 +445,10 @@ class TestKakarot:
             await invoke("kakarot", "transfer_ownership", prev_owner, account=other)
 
     class TestBlockTransactionViewEntrypoint:
-
         @pytest.mark.parametrize("view_entrypoint", ["eth_call", "eth_estimate_gas"])
         async def test_should_raise_when_tx_view_entrypoint(
             self, starknet, kakarot, invoke, view_entrypoint
         ):
-
             evm_account = await get_eoa()
             calldata = bytes.fromhex("6001")
             tx_hash = await invoke(
