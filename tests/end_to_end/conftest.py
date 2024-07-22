@@ -284,13 +284,13 @@ def deploy_contract(default_fee: int):
     Fixture to deploy and attach a modified web3.contract instance to a contract in kakarot.
     """
 
-    from kakarot_scripts.utils.kakarot import deploy
+    from kakarot_scripts.utils.kakarot import deploy_contract
 
     async def _factory(contract_app, contract_name, *args, **kwargs):
         """
         Create a web3.contract based on the basename of the target solidity file.
         """
-        return await deploy(
+        return await deploy_contract(
             contract_app, contract_name, *args, **kwargs, max_fee=default_fee
         )
 

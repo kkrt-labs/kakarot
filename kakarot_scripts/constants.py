@@ -55,7 +55,7 @@ NETWORKS = {
         "l1_rpc_url": "http://127.0.0.1:8545",
         "type": NetworkType.DEV,
         "check_interval": 0.01,
-        "max_wait": 1,
+        "max_wait": 3,
     },
     "katana": {
         "name": "katana",
@@ -64,7 +64,7 @@ NETWORKS = {
         "l1_rpc_url": "http://127.0.0.1:8545",
         "type": NetworkType.DEV,
         "check_interval": 0.01,
-        "max_wait": 2,
+        "max_wait": 3,
     },
     "madara": {
         "name": "madara",
@@ -182,6 +182,7 @@ COINBASE = int(
     16,
 )
 SOURCE_DIR = Path("src")
+SOURCE_PATH = Path("solidity_contracs/src")
 SOURCE_DIR_FIXTURES = Path("tests/fixtures")
 CONTRACTS = {p.stem: p for p in list(SOURCE_DIR.glob("**/*.cairo"))}
 CONTRACTS_FIXTURES = {p.stem: p for p in list(SOURCE_DIR_FIXTURES.glob("**/*.cairo"))}
