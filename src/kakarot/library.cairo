@@ -242,6 +242,24 @@ namespace Kakarot {
         return (account_contract_class_hash,);
     }
 
+    // @notice Set the transparent account class hash
+    // @param uninitialized_account_class_hash The new account implementation class hash
+    func set_uninitialized_account_class_hash{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    }(uninitialized_account_class_hash: felt) {
+        Kakarot_uninitialized_account_class_hash.write(uninitialized_account_class_hash);
+        return ();
+    }
+
+    // @notice Return the class hash of the account implementation
+    // @return uninitialized_account_class_hash The class hash of the account implementation
+    func get_uninitialized_account_class_hash{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    }() -> (uninitialized_account_class_hash: felt) {
+        let (uninitialized_account_class_hash) = Kakarot_uninitialized_account_class_hash.read();
+        return (uninitialized_account_class_hash,);
+    }
+
     // @notice Return the hash of the Cairo1Helpers class
     // @return account_contract_class_hash The hash of the Cairo1Helpers class
     func get_cairo1_helpers_class_hash{
