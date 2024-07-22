@@ -3,7 +3,6 @@ from utils.mpt.nibbles import Nibbles, NibblesImpl
 from utils.mpt.nodes import (
     LeafNode,
     LeafNodeImpl,
-    NodeEncoding,
     EncodedNode,
     ExtensionNode,
     ExtensionNodeImpl,
@@ -11,7 +10,7 @@ from utils.mpt.nodes import (
     BranchNodeImpl,
 )
 
-func test__leaf_encode{range_check_ptr}() -> NodeEncoding* {
+func test__leaf_encode{range_check_ptr}() -> EncodedNode* {
     alloc_locals;
     // Given
     tempvar key_len: felt;
@@ -69,27 +68,29 @@ func test__branch_encode{range_check_ptr}() -> EncodedNode* {
     return encoding;
 }
 
-// func test__extension_encode{range_check_ptr}() -> NodeEncoding* {
-//     alloc_locals;
-//     // Given
-//     tempvar key_len: felt;
-//     let (key) = alloc();
+func test__extension_encode{range_check_ptr}() -> EncodedNode* {
+    alloc_locals;
+    // Given
+    tempvar key_len: felt;
+    let (key) = alloc();
 
-// local child_data_len: felt;
-//     let (child_data) = alloc();
+    local child_data_len: felt;
+    let (child_data) = alloc();
 
-// %{
-//         ids.key_len = len(program_input["key"])
-//         segments.write_arg(ids.key, program_input["key"])
+    %{
+        ids.key_len = len(program_input["key"])
+        segments.write_arg(ids.key, program_input["key"])
 
-// ids.child_data_len = len(program_input["child_data"])
-//         segments.write_arg(ids.child_data, program_input["child_data"])
-//     %}
+        ids.child_data_len = len(program_input["child"])
+        segments.write_arg(ids.child_data, program_input["child"])
+    %}
 
-// let key_nibbles = NibblesImpl.from_bytes(key_len, key);
-//     let extension = ExtensionNodeImpl.init(key_nibbles, child_ptr);
+    let key_nibbles = NibblesImpl.from_bytes(key_len, key);
+    let extension = ExtensionNodeImpl.init(
+        key_nibbles, new EncodedNode(child_data_len, child_data)
+    );
 
-// let encoding = ExtensionNodeImpl.encode(extension);
+    let encoding = ExtensionNodeImpl.encode(extension);
 
-// return encoding;
-// }
+    return encoding;
+}

@@ -25,12 +25,6 @@ struct LeafNode {
     value: Value,
 }
 
-struct NodeEncoding {
-    path_key_len: felt,
-    data_len: felt,
-    data: felt*,
-}
-
 namespace LeafNodeImpl {
     const EVEN_FLAG = 0x20;
     const ODD_FLAG = 0x30;
@@ -42,12 +36,12 @@ namespace LeafNodeImpl {
     }
 
     // TODO: keccak(rlp_encode(key)) if len(rlp_encoded) > 32
-    func encode{range_check_ptr}(self: LeafNode) -> NodeEncoding* {
+    func encode{range_check_ptr}(self: LeafNode) -> EncodedNode* {
         alloc_locals;
         let (path_key_len, output) = NibblesImpl.encode_path(self.key, 1);
         memcpy(dst=output + path_key_len, src=self.value.data, len=self.value.len);
-        tempvar leaf_encoding = new NodeEncoding(
-            path_key_len=path_key_len, data_len=self.value.len, data=output
+        tempvar leaf_encoding = new EncodedNode(
+            data_len=path_key_len + self.value.len, data=output
         );
 
         // TODO: rlp encoding of value if required
@@ -71,12 +65,12 @@ namespace ExtensionNodeImpl {
     }
 
     // TODO: keccak(rlp_encode(key)) if len(rlp_encoded) > 32
-    func encode{range_check_ptr}(self: ExtensionNode) -> NodeEncoding* {
+    func encode{range_check_ptr}(self: ExtensionNode) -> EncodedNode* {
         alloc_locals;
         let (path_key_len, output) = NibblesImpl.encode_path(self.key, 0);
         memcpy(dst=output + path_key_len, src=self.child.data, len=self.child.data_len);
-        tempvar extension_encoding = new NodeEncoding(
-            path_key_len=path_key_len, data_len=self.child.data_len, data=output
+        tempvar extension_encoding = new EncodedNode(
+            data_len=path_key_len + self.child.data_len, data=output
         );
 
         return extension_encoding;

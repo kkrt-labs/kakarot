@@ -1,7 +1,7 @@
 from starkware.cairo.common.alloc import alloc
 from utils.mpt.nibbles import Nibbles, NibblesImpl
 
-func test__from_bytes{range_check_ptr}() -> Nibbles {
+func test__from_bytes{range_check_ptr}() -> Nibbles* {
     // Given
     tempvar data_len: felt;
     let (data) = alloc();
