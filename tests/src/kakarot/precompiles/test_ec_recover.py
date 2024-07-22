@@ -1,5 +1,3 @@
-import random
-
 import pytest
 from ethereum.base_types import U256
 from ethereum.crypto.elliptic_curve import SECP256K1N, secp256k1_recover
@@ -38,8 +36,6 @@ def ecrecover(data):
 @pytest.mark.EC_RECOVER
 class TestEcRecover:
     def test_should_return_evm_address_in_bytes32(self, cairo_run):
-        random.seed(42)
-
         private_key = generate_random_private_key()
         msg = keccak256(b"test message")
         (v, r, s) = ec_sign(msg, private_key)
@@ -70,8 +66,6 @@ class TestEcRecover:
         assert output == []
 
     def test_should_fail_when_recovery_identifier_is_neither_27_nor_28(self, cairo_run):
-        random.seed(42)
-
         private_key = generate_random_private_key()
         msg = keccak256(b"test message")
         (_, r, s) = ec_sign(msg, private_key)

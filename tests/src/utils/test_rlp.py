@@ -14,7 +14,6 @@ class TestRLP:
             [0, 55, 256],
         )
         def test_should_match_decoded_rlp_type_string(self, cairo_run, payload_len):
-            random.seed(0)
             # generate random string of bytes. if payload_len is 0, then generate a single byte inferior to 0x80
             data = (
                 random.randbytes(payload_len)
@@ -39,7 +38,6 @@ class TestRLP:
 
         @pytest.mark.parametrize("payload_len", [0, 55, 256])
         def test_should_match_decoded_rlp_type_list(self, cairo_run, payload_len):
-            random.seed(0)
             data = [random.randbytes(payload_len)]
             encoded_data = encode(data)
 
@@ -62,7 +60,6 @@ class TestRLP:
         async def test_should_match_decode_reference_implementation(
             self, cairo_run, payload_len
         ):
-            random.seed(0)
             data = [random.randbytes(payload_len - 1)]
             encoded_data = encode(data)
             expected_result = decode(encoded_data)

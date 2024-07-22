@@ -1,30 +1,25 @@
-import random
-
 import pytest
 from ethereum.shanghai.vm.gas import (
     calculate_gas_extend_memory,
     calculate_memory_gas_cost,
 )
-
-random.seed(0)
+from hypothesis import given, settings
+from hypothesis.strategies import integers
 
 
 class TestGas:
     class TestCost:
-        @pytest.mark.parametrize(
-            "max_offset",
-            [random.randint(0, 0xFFFFFF) for _ in range(100)],
-        )
+        @given(max_offset=integers(min_value=0, max_value=0xFFFFFF))
+        @settings(max_examples=100, deadline=None)
         def test_should_return_same_as_execution_specs(self, cairo_run, max_offset):
-            output = cairo_run("test__memory_cost", words_len=((max_offset + 31) // 32))
+            output = cairo_run("test__memory_cost", words_len=(max_offset + 31) // 32)
             assert calculate_memory_gas_cost(max_offset) == output
 
-        @pytest.mark.parametrize(
-            "bytes_len", [random.randint(0, 0xFFFFFF) for _ in range(5)]
+        @given(
+            bytes_len=integers(min_value=0, max_value=0xFFFFFF),
+            added_offset=integers(min_value=0, max_value=0xFFFFFF),
         )
-        @pytest.mark.parametrize(
-            "added_offset", [random.randint(0, 0xFFFFFF) for _ in range(5)]
-        )
+        @settings(deadline=None)
         def test_should_return_correct_expansion_cost(
             self, cairo_run, bytes_len, added_offset
         ):
@@ -41,18 +36,13 @@ class TestGas:
             )
             assert diff == output
 
-        @pytest.mark.parametrize(
-            "offset_1", [random.randint(0, 0xFFFFF) for _ in range(3)]
+        @given(
+            offset_1=integers(min_value=0, max_value=0xFFFFF),
+            size_1=integers(min_value=0, max_value=0xFFFFF),
+            offset_2=integers(min_value=0, max_value=0xFFFFF),
+            size_2=integers(min_value=0, max_value=0xFFFFF),
         )
-        @pytest.mark.parametrize(
-            "size_1", [random.randint(0, 0xFFFFF) for _ in range(3)]
-        )
-        @pytest.mark.parametrize(
-            "offset_2", [random.randint(0, 0xFFFFF) for _ in range(3)]
-        )
-        @pytest.mark.parametrize(
-            "size_2", [random.randint(0, 0xFFFFF) for _ in range(3)]
-        )
+        @settings(deadline=None)
         def test_should_return_max_expansion_cost(
             self, cairo_run, offset_1, size_1, offset_2, size_2
         ):

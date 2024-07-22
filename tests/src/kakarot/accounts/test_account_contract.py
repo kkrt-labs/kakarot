@@ -34,7 +34,6 @@ class TestAccountContract:
         ]
     )
     def bytecode(self, request):
-        random.seed(0)
         return random.randbytes(request.param)
 
     class TestInitialize:
@@ -644,7 +643,6 @@ class TestAccountContract:
             "IKakarot.eth_send_transaction",
             lambda addr, data: [1, 0x68656C6C6F, 1, 1],  # hello
         )
-        @pytest.mark.parametrize("seed", (41, 42))
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
         def test_pass_all_transactions_types(self, cairo_run, seed, transaction):
             """
@@ -652,7 +650,6 @@ class TestAccountContract:
             were making the Counter deploy transaction failing because their signature parameters length (s and v)
             were not 32 bytes.
             """
-            random.seed(seed)
             private_key = generate_random_private_key()
             address = int(private_key.public_key.to_checksum_address(), 16)
             signed = Account.sign_transaction(transaction, private_key)

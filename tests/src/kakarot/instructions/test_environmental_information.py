@@ -13,7 +13,6 @@ NON_EXISTING_ACCOUNT = 0xDEAD
 
 @pytest.fixture(scope="module", params=[0, 32], ids=["no bytecode", "32 bytes"])
 def bytecode(request):
-    random.seed(0)
     return [random.randint(0, 255) for _ in range(request.param)]
 
 
