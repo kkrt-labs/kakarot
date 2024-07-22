@@ -48,7 +48,7 @@ class TestEthTransaction:
             self, cairo_run, transaction
         ):
             encoded_unsigned_tx = rlp_encode_signed_data(transaction)
-            with cairo_error():
+            with cairo_error("Kakarot: transaction type not supported"):
                 cairo_run(
                     "test__decode",
                     data=list(encoded_unsigned_tx),

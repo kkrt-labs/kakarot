@@ -2,6 +2,7 @@ import asyncio
 import logging
 
 import pytest
+from starkware.cairo.lang.instances import LAYOUTS
 
 logging.getLogger("asyncio").setLevel(logging.ERROR)
 logger = logging.getLogger()
@@ -13,6 +14,18 @@ def pytest_addoption(parser):
         action="store_true",
         default=False,
         help="compute and dump TracerData for the VM runner: True or False",
+    )
+    parser.addoption(
+        "--proof-mode",
+        action="store_true",
+        default=False,
+        help="run the CairoRunner in proof mode: True or False",
+    )
+    parser.addoption(
+        "--layout",
+        choices=list(LAYOUTS.keys()),
+        default="starknet_with_keccak",
+        help="The layout of the Cairo AIR.",
     )
 
 

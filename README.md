@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="docs/img/kakarot_github_banner.png" height="200">
+    <img src="docs/img/kakarot_github_banner.png" width="700">
 </p>
 <div align="center">
   <h3 align="center">
@@ -383,7 +383,3 @@ for being involved!
 <!-- prettier-ignore-end -->
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
-
-<p align="center">
-    <img src="docs/img/kakarot_github_banner_footer.png" height="200">
-</p>

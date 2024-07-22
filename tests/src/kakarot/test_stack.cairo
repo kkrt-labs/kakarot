@@ -122,7 +122,7 @@ func test__peek__should_return_stack_at_given_index__when_value_is_1{range_check
     return ();
 }
 
-func test__swap__should_swap_2_stacks{range_check_ptr}() -> model.Stack* {
+func test__swap__should_swap_2_stacks() -> model.Stack* {
     // Given
     alloc_locals;
 

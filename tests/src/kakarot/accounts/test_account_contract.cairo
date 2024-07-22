@@ -5,7 +5,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256
 
-from kakarot.accounts.library import Internals as AccountInternals
+from kakarot.accounts.library import Internals as AccountInternals, AccountContract
 from kakarot.accounts.account_contract import (
     initialize,
     get_evm_address,
@@ -15,6 +15,8 @@ from kakarot.accounts.account_contract import (
     is_valid_jumpdest,
     set_nonce,
     set_implementation,
+    set_authorized_pre_eip155_tx,
+    execute_starknet_call,
 )
 
 func test__initialize{
@@ -92,35 +94,65 @@ func test__set_implementation{
     return ();
 }
 
-func test__validate{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, bitwise_ptr: BitwiseBuiltin*, range_check_ptr
+func test__set_authorized_pre_eip155_tx{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 }() {
-    // Given
-    tempvar address: felt;
-    tempvar nonce: felt;
-    tempvar chain_id: felt;
-    tempvar r: Uint256;
-    tempvar s: Uint256;
-    tempvar v: felt;
-    tempvar tx_data_len: felt;
-    let (tx_data) = alloc();
+    alloc_locals;
+    local msg_hash: Uint256;
     %{
-        ids.address = program_input["address"]
-        ids.nonce = program_input["nonce"]
-        ids.chain_id = program_input["chain_id"]
-        ids.r.low = program_input["r"][0]
-        ids.r.high = program_input["r"][1]
-        ids.s.low = program_input["s"][0]
-        ids.s.high = program_input["s"][1]
-        ids.v = program_input["v"]
-        ids.tx_data_len = len(program_input["tx_data"])
-        segments.write_arg(ids.tx_data, program_input["tx_data"])
+        ids.msg_hash.low = program_input["msg_hash"][0]
+        ids.msg_hash.high = program_input["msg_hash"][1]
+    %}
+
+    set_authorized_pre_eip155_tx(msg_hash);
+    return ();
+}
+func test__execute_starknet_call{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    ) -> (felt*, felt) {
+    // Given
+    tempvar called_address: felt;
+    tempvar function_selector: felt;
+    tempvar calldata_len: felt;
+    let (calldata) = alloc();
+    %{
+        ids.called_address = program_input["called_address"]
+        ids.function_selector = program_input["function_selector"]
+        ids.calldata_len = len(program_input["calldata"])
+        segments.write_arg(ids.calldata, program_input["calldata"])
     %}
 
     // When
-    AccountInternals.validate(address, nonce, chain_id, r, s, v, tx_data_len, tx_data);
+    let (retdata_len, retdata, success) = execute_starknet_call(
+        called_address, function_selector, calldata_len, calldata
+    );
 
-    return ();
+    return (retdata, success);
+}
+
+func test__execute_from_outside{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, bitwise_ptr: BitwiseBuiltin*, range_check_ptr
+}() -> (felt, felt*) {
+    // Given
+    tempvar tx_data_len: felt;
+    let (tx_data) = alloc();
+    tempvar signature_len: felt;
+    let (signature) = alloc();
+    tempvar chain_id: felt;
+
+    %{
+        ids.tx_data_len = len(program_input["tx_data"])
+        segments.write_arg(ids.tx_data, program_input["tx_data"])
+        ids.signature_len = len(program_input["signature"])
+        segments.write_arg(ids.signature, program_input["signature"])
+        ids.chain_id = program_input["chain_id"]
+    %}
+
+    // When
+    let (return_data_len, return_data) = AccountContract.execute_from_outside(
+        tx_data_len, tx_data, signature_len, signature, chain_id
+    );
+
+    return (return_data_len, return_data);
 }
 
 func test__write_jumpdests{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {

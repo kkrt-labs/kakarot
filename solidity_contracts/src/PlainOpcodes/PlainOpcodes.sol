@@ -22,6 +22,11 @@ contract PlainOpcodes {
                             METADATA STORAGE
     //////////////////////////////////////////////////////////////*/
     ICounter counter;
+    mapping(address => uint256) public nonces;
+
+    /*//////////////////////////////////////////////////////////////
+                                EVENTS
+    //////////////////////////////////////////////////////////////*/
 
     event CreateAddress(address _address) anonymous;
     event Create2Address(address _address) anonymous;
@@ -31,11 +36,9 @@ contract PlainOpcodes {
     event Log2(address indexed owner, uint256 value);
     event Log3(address indexed owner, address indexed spender, uint256 value);
     event Log4(address indexed owner, address indexed spender, uint256 indexed value);
-
     event SentSome(address to, uint256 amount, bool success);
     event NonceIncreased(uint256 nonce);
-
-    mapping(address => uint256) public nonces;
+    event HashComputed(address indexed sender, bytes32 hash);
 
     /*//////////////////////////////////////////////////////////////
                                CONSTRUCTOR
@@ -194,8 +197,22 @@ contract PlainOpcodes {
         return mulmod(type(uint256).max, type(uint256).max, type(uint256).max);
     }
 
-    function addmodMax() public pure returns (uint) {
+    function addmodMax() public pure returns (uint256) {
         return addmod(type(uint256).max, type(uint256).max, type(uint256).max);
+    }
+
+    function computeHash(bytes memory input) public returns (bytes32) {
+        bytes32 hash = keccak256(input);
+        emit HashComputed(msg.sender, hash);
+        return hash;
+    }
+
+    function loopProfiling(uint256 max) public pure returns (uint256) {
+        uint256 val = 0;
+        for (uint256 i = 0; i < max; i++) {
+            val += i;
+        }
+        return val;
     }
 
     receive() external payable {}

@@ -17,49 +17,23 @@ from kakarot.precompiles.ec_recover import PrecompileEcRecover
 from kakarot.precompiles.p256verify import PrecompileP256Verify
 from kakarot.precompiles.ripemd160 import PrecompileRIPEMD160
 from kakarot.precompiles.sha256 import PrecompileSHA256
+from kakarot.precompiles.precompiles_helpers import (
+    PrecompilesHelpers,
+    LAST_ETHEREUM_PRECOMPILE_ADDRESS,
+    FIRST_ROLLUP_PRECOMPILE_ADDRESS,
+    FIRST_KAKAROT_PRECOMPILE_ADDRESS,
+)
 from utils.utils import Helpers
-
-const LAST_ETHEREUM_PRECOMPILE_ADDRESS = 0x0a;
-const FIRST_ROLLUP_PRECOMPILE_ADDRESS = 0x100;
-const LAST_ROLLUP_PRECOMPILE_ADDRESS = 0x100;
-const EXEC_PRECOMPILE_SELECTOR = 0x01e3e7ac032066525c37d0791c3c0f5fbb1c17f1cb6fe00afc206faa3fbd18e1;
-const FIRST_KAKAROT_PRECOMPILE_ADDRESS = 0x75001;
-const LAST_KAKAROT_PRECOMPILE_ADDRESS = 0x75002;
 
 // @title Precompile related functions.
 namespace Precompiles {
-    // @notice Return whether the address is a precompile address.
-    // @dev Ethereum precompiles start at address 0x01.
-    // @dev RIP precompiles start at address FIRST_ROLLUP_PRECOMPILE_ADDRESS.
-    // @dev Kakarot precompiles start at address FIRST_KAKAROT_PRECOMPILE_ADDRESS.
-    func is_precompile{range_check_ptr}(address: felt) -> felt {
-        alloc_locals;
-        let is_rollup_precompile_ = is_rollup_precompile(address);
-        let is_kakarot_precompile_ = is_kakarot_precompile(address);
-        return is_not_zero(address) * (
-            is_le(address, LAST_ETHEREUM_PRECOMPILE_ADDRESS) +
-            is_rollup_precompile_ +
-            is_kakarot_precompile_
-        );
-    }
-
-    func is_rollup_precompile{range_check_ptr}(address: felt) -> felt {
-        return is_in_range(
-            address, FIRST_ROLLUP_PRECOMPILE_ADDRESS, LAST_ROLLUP_PRECOMPILE_ADDRESS + 1
-        );
-    }
-
-    func is_kakarot_precompile{range_check_ptr}(address: felt) -> felt {
-        return is_in_range(
-            address, FIRST_KAKAROT_PRECOMPILE_ADDRESS, LAST_KAKAROT_PRECOMPILE_ADDRESS + 1
-        );
-    }
-
     // @notice Executes associated function of precompiled evm_address.
     // @dev This function uses an internal jump table to execute the corresponding precompile impmentation.
-    // @param evm_address The precompile evm_address.
+    // @param precompile_address The precompile evm_address.
     // @param input_len The length of the input array.
     // @param input The input array.
+    // @param caller_code_address The address of the code of the contract that calls the precompile.
+    // @param caller_address The address of the caller of the precompile. Delegatecall rules apply.
     // @return output_len The output length.
     // @return output The output array.
     // @return gas_used The gas usage of precompile.
@@ -69,56 +43,39 @@ namespace Precompiles {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(evm_address: felt, input_len: felt, input: felt*, caller_address: felt) -> (
-        output_len: felt, output: felt*, gas_used: felt, reverted: felt
-    ) {
-        let is_eth_precompile = is_le(evm_address, LAST_ETHEREUM_PRECOMPILE_ADDRESS);
+    }(
+        precompile_address: felt,
+        input_len: felt,
+        input: felt*,
+        caller_code_address: felt,
+        caller_address: felt,
+    ) -> (output_len: felt, output: felt*, gas_used: felt, reverted: felt) {
+        let is_eth_precompile = is_le(precompile_address, LAST_ETHEREUM_PRECOMPILE_ADDRESS);
         tempvar syscall_ptr = syscall_ptr;
         tempvar pedersen_ptr = pedersen_ptr;
         tempvar range_check_ptr = range_check_ptr;
         jmp eth_precompile if is_eth_precompile != 0;
 
-        let is_rollup_precompile_ = is_rollup_precompile(evm_address);
+        let is_rollup_precompile_ = PrecompilesHelpers.is_rollup_precompile(precompile_address);
         tempvar syscall_ptr = syscall_ptr;
         tempvar pedersen_ptr = pedersen_ptr;
         tempvar range_check_ptr = range_check_ptr;
         jmp rollup_precompile if is_rollup_precompile_ != 0;
 
-        let is_kakarot_precompile_ = is_kakarot_precompile(evm_address);
+        let is_kakarot_precompile_ = PrecompilesHelpers.is_kakarot_precompile(precompile_address);
         tempvar syscall_ptr = syscall_ptr;
         tempvar pedersen_ptr = pedersen_ptr;
         tempvar range_check_ptr = range_check_ptr;
-        jmp pre_kakarot_precompile if is_kakarot_precompile_ != 0;
+        jmp kakarot_precompile if is_kakarot_precompile_ != 0;
         jmp unauthorized_call;
 
         eth_precompile:
-        tempvar index = evm_address;
+        tempvar index = precompile_address;
         jmp call_precompile;
 
         rollup_precompile:
         tempvar index = (LAST_ETHEREUM_PRECOMPILE_ADDRESS + 1) + (
-            evm_address - FIRST_ROLLUP_PRECOMPILE_ADDRESS
-        );
-        jmp call_precompile;
-
-        pre_kakarot_precompile:
-        let is_cairo_contract_call = Helpers.is_zero(
-            FIRST_KAKAROT_PRECOMPILE_ADDRESS - evm_address
-        );
-        let is_whitelisted = KakarotPrecompiles.is_caller_whitelisted(caller_address);
-        tempvar is_authorized = is_cairo_contract_call * is_whitelisted;
-        tempvar syscall_ptr = syscall_ptr;
-        tempvar pedersen_ptr = pedersen_ptr;
-        tempvar range_check_ptr = range_check_ptr;
-        jmp kakarot_precompile if is_authorized != 0;
-        jmp unauthorized_call if is_cairo_contract_call != 0;
-        jmp kakarot_precompile;
-
-        kakarot_precompile:
-        let rollup_precompiles_count = LAST_ROLLUP_PRECOMPILE_ADDRESS -
-            FIRST_ROLLUP_PRECOMPILE_ADDRESS + 1;
-        tempvar index = (LAST_ETHEREUM_PRECOMPILE_ADDRESS + 1) + rollup_precompiles_count + (
-            evm_address - FIRST_KAKAROT_PRECOMPILE_ADDRESS
+            precompile_address - FIRST_ROLLUP_PRECOMPILE_ADDRESS
         );
         jmp call_precompile;
 
@@ -141,11 +98,11 @@ namespace Precompiles {
         [ap] = pedersen_ptr, ap++;
         [ap] = range_check_ptr, ap++;
         [ap] = bitwise_ptr, ap++;
-        [ap] = evm_address, ap++;
+        [ap] = precompile_address, ap++;
         [ap] = input_len, ap++;
         [ap] = input, ap++;
 
-        // call precompile evm_address
+        // call precompile precompile_address
         jmp rel offset;
         call unknown_precompile;  // 0x0
         ret;
@@ -173,9 +130,33 @@ namespace Precompiles {
         // based on the address of the precompile and the last ethereum precompile
         call PrecompileP256Verify.run;  // offset 0x0b: precompile 0x100
         ret;
+
+        kakarot_precompile:
+        let is_cairo_module = Helpers.is_zero(
+            FIRST_KAKAROT_PRECOMPILE_ADDRESS - precompile_address
+        );
+        let is_whitelisted = KakarotPrecompiles.is_caller_whitelisted(caller_code_address);
+        tempvar is_not_authorized = is_cairo_module * (1 - is_whitelisted);
+        tempvar syscall_ptr = syscall_ptr;
+        tempvar pedersen_ptr = pedersen_ptr;
+        tempvar range_check_ptr = range_check_ptr;
+        jmp unauthorized_call if is_not_authorized != 0;
+
+        tempvar index = precompile_address - FIRST_KAKAROT_PRECOMPILE_ADDRESS;
+        tempvar offset = 1 + 3 * index;
+
+        // Prepare arguments
+        [ap] = syscall_ptr, ap++;
+        [ap] = pedersen_ptr, ap++;
+        [ap] = range_check_ptr, ap++;
+        [ap] = bitwise_ptr, ap++;
+        [ap] = input_len, ap++;
+        [ap] = input, ap++;
+        [ap] = caller_address, ap++;
+
         // Kakarot precompiles. Offset must have been computed appropriately,
-        // based on the address of the precompile, the last ethereum precompile, and
-        // the amount of rollup precompiles.
+        // based on the total number of kakarot precompiles
+        jmp rel offset;
         call KakarotPrecompiles.cairo_precompile;  // offset 0x0c: precompile 0x75001
         ret;
         call KakarotPrecompiles.cairo_message;  // offset 0x0d: precompile 0x75002
@@ -194,7 +175,7 @@ namespace Precompiles {
         bitwise_ptr: BitwiseBuiltin*,
     }() -> (output_len: felt, output: felt*, gas_used: felt, reverted: felt) {
         let (revert_reason_len, revert_reason) = Errors.unauthorizedPrecompile();
-        return (revert_reason_len, revert_reason, 0, Errors.EXCEPTIONAL_HALT);
+        return (revert_reason_len, revert_reason, 0, Errors.REVERT);
     }
 
     // @notice A placeholder for precompile that don't exist.

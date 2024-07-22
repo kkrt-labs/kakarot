@@ -2,14 +2,13 @@
 
 from openzeppelin.access.ownable.library import Ownable, Ownable_owner
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.bool import FALSE
+from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.dict_access import DictAccess
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math import unsigned_div_rem, split_int, split_felt
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256, uint256_not, uint256_le
 from starkware.cairo.common.math_cmp import is_le
-from starkware.cairo.common.math import assert_not_zero
 from starkware.starknet.common.syscalls import (
     StorageRead,
     StorageWrite,
@@ -19,7 +18,6 @@ from starkware.starknet.common.syscalls import (
     storage_write,
     StorageReadRequest,
     CallContract,
-    get_tx_info,
     get_contract_address,
     get_caller_address,
     replace_class,
@@ -62,15 +60,15 @@ func Account_evm_address() -> (evm_address: felt) {
 }
 
 @storage_var
-func Account_cairo1_helpers_class_hash() -> (res: felt) {
-}
-
-@storage_var
 func Account_valid_jumpdests() -> (is_valid: felt) {
 }
 
 @storage_var
 func Account_jumpdests_initialized() -> (initialized: felt) {
+}
+
+@storage_var
+func Account_authorized_message_hashes(hash: Uint256) -> (res: felt) {
 }
 
 @event
@@ -97,7 +95,9 @@ namespace AccountContract {
     }(kakarot_address, evm_address, implementation_class) {
         alloc_locals;
         let (is_initialized) = Account_is_initialized.read();
-        assert is_initialized = 0;
+        with_attr error_message("Account already initialized") {
+            assert is_initialized = 0;
+        }
         Account_is_initialized.write(1);
         Ownable.initializer(kakarot_address);
         Account_evm_address.write(evm_address);
@@ -107,10 +107,6 @@ namespace AccountContract {
         let (native_token_address) = IKakarot.get_native_token(kakarot_address);
         let infinite = Uint256(Constants.UINT128_MAX, Constants.UINT128_MAX);
         IERC20.approve(native_token_address, kakarot_address, infinite);
-
-        // Write Cairo1Helpers class to storage
-        let (cairo1_helpers_class_hash) = IKakarot.get_cairo1_helpers_class_hash(kakarot_address);
-        Account_cairo1_helpers_class_hash.write(cairo1_helpers_class_hash);
 
         // Register the account in the Kakarot mapping
         IKakarot.register_account(kakarot_address, evm_address);
@@ -154,198 +150,166 @@ namespace AccountContract {
 
     // EOA functions
 
-    // @notice Validate the signature of every call in the call array.
-    // @dev Recursively validates if tx is signed and valid for each call -> see utils/eth_transaction.cairo
-    // @param call_array_len The length of the call array.
-    // @param call_array The call array.
-    // @param calldata_len The length of the calldata.
-    // @param calldata The calldata.
-    func validate{
+    // @notice Validate an Ethereum transaction and execute it.
+    // @dev This function validates the transaction by checking its signature,
+    // chain_id, nonce and gas. It then sends it to Kakarot.
+    // @param tx_data_len The length of tx data
+    // @param tx_data The tx data.
+    // @param signature_len The length of tx signature.
+    // @param signature The tx signature.
+    // @param chain_id The expected chain id of the tx
+    func execute_from_outside{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         bitwise_ptr: BitwiseBuiltin*,
         range_check_ptr,
-    }(call_array_len: felt, call_array: CallArray*, calldata_len: felt, calldata: felt*) -> () {
+    }(tx_data_len: felt, tx_data: felt*, signature_len: felt, signature: felt*, chain_id: felt) -> (
+        response_len: felt, response: felt*
+    ) {
         alloc_locals;
-        if (call_array_len == 0) {
-            // Validates that this account doesn't have code. Check only once at the end of the recursion.
-            let (bytecode_len) = Account_bytecode_len.read();
-            with_attr error_message("EOAs cannot have code") {
-                assert bytecode_len = 0;
+
+        with_attr error_message("Incorrect signature length") {
+            assert signature_len = 5;
+        }
+        let r = Uint256(signature[0], signature[1]);
+        let s = Uint256(signature[2], signature[3]);
+        let v = signature[4];
+
+        let tx_type = EthTransaction.get_tx_type(tx_data);
+        local y_parity: felt;
+        local pre_eip155_tx: felt;
+        if (tx_type == 0) {
+            let is_eip155_tx = is_le(v, 28);
+            assert pre_eip155_tx = is_eip155_tx;
+            if (is_eip155_tx != FALSE) {
+                assert y_parity = v - 27;
+            } else {
+                assert y_parity = (v - 2 * chain_id - 35);
             }
-
-            return ();
+            tempvar range_check_ptr = range_check_ptr;
+        } else {
+            assert pre_eip155_tx = FALSE;
+            assert y_parity = v;
+            tempvar range_check_ptr = range_check_ptr;
         }
+        let range_check_ptr = [ap - 1];
 
+        let (local words: felt*) = alloc();
+        let (words_len, last_word, last_word_num_bytes) = bytes_to_bytes8_little_endian(
+            words, tx_data_len, tx_data
+        );
+        let (kakarot_address) = Ownable_owner.read();
+        let (helpers_class) = IKakarot.get_cairo1_helpers_class_hash(kakarot_address);
+        let (msg_hash) = ICairo1Helpers.library_call_keccak(
+            class_hash=helpers_class,
+            words_len=words_len,
+            words=words,
+            last_input_word=last_word,
+            last_input_num_bytes=last_word_num_bytes,
+        );
         let (address) = Account_evm_address.read();
-        let (tx_info) = get_tx_info();
-
-        // Assert signature field is of length 5: r_low, r_high, s_low, s_high, v
-        assert tx_info.signature_len = 5;
-        let r = Uint256(tx_info.signature[0], tx_info.signature[1]);
-        let s = Uint256(tx_info.signature[2], tx_info.signature[3]);
-        let v = tx_info.signature[4];
-        let (_, chain_id) = unsigned_div_rem(tx_info.chain_id, 2 ** 32);
-
-        // Unpack the tx data
-        let packed_tx_data_len = [call_array].data_len;
-        let packed_tx_data = calldata + [call_array].data_offset;
-
-        let tx_data_len = [packed_tx_data];
-        let (tx_data) = Helpers.load_packed_bytes(
-            packed_tx_data_len - 1, packed_tx_data + 1, tx_data_len
-        );
-
-        Internals.validate(address, tx_info.nonce, chain_id, r, s, v, tx_data_len, tx_data);
-
-        validate(
-            call_array_len=call_array_len - 1,
-            call_array=call_array + CallArray.SIZE,
-            calldata_len=calldata_len,
-            calldata=calldata,
-        );
-
-        return ();
-    }
-
-    // @notice Execute the transaction.
-    // @param call_array_len The length of the call array.
-    // @param call_array The call array.
-    // @param calldata_len The length of the calldata.
-    // @param calldata The calldata.
-    // @param response The response data array to be updated.
-    // @return response_len The total length of the response data array.
-    func execute{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        bitwise_ptr: BitwiseBuiltin*,
-        range_check_ptr,
-    }(
-        call_array_len: felt,
-        call_array: CallArray*,
-        calldata_len: felt,
-        calldata: felt*,
-        response: felt*,
-    ) -> (response_len: felt) {
-        alloc_locals;
-        if (call_array_len == 0) {
-            return (response_len=0);
-        }
-
-        // Unpack the tx data
-        let packed_tx_data_len = [call_array].data_len;
-        let packed_tx_data = calldata + [call_array].data_offset;
-
-        let tx_data_len = [packed_tx_data];
-        let (tx_data) = Helpers.load_packed_bytes(
-            packed_tx_data_len - 1, packed_tx_data + 1, tx_data_len
+        Signature.verify_eth_signature_uint256(
+            msg_hash=msg_hash,
+            r=r,
+            s=s,
+            v=y_parity,
+            eth_address=address,
+            helpers_class=helpers_class,
         );
 
         let tx = EthTransaction.decode(tx_data_len, tx_data);
 
-        // No matter the status of the execution in EVM terms (success - failure - rejected), the nonce of the
-        // transaction sender must be incremented, as the protocol nonce is.  While we use the protocol nonce for the
-        // transaction validation, we don't make the distinction between CAs and EOAs in their
-        // Starknet contract representation. As such, the stored nonce of an EOA account must always match the
-        // protocol nonce, increased by one right before each transaction execution.
-        //
-        // In the official specification, this nonce increment is done right after the tx validation checks.
-        // Since we can only perform these checks in __execute__, which increments the protocol nonce by one,
-        // we need to increment the stored nonce here as well.
-        //
-        // The protocol nonce is updated once per __execute__ call, while the EVM nonce is updated once per
-        // transaction. If we were to execute more than one transaction in a single __execute__ call, we would
-        // need to change the nonce incrementation logic.
-        //
-        // TODO! If the previous execute failed with a CairoVM error, the protocol nonce was
-        // incremented but not the storage nonce, and there is an off-by-one count until it's
-        // overwritten by the next successful execute.
-        let (tx_info) = get_tx_info();
-        Account_nonce.write(tx_info.nonce + 1);
+        // Whitelisting pre-eip155 or validate chain_id for post eip155
+        if (pre_eip155_tx != FALSE) {
+            let (is_authorized) = Account_authorized_message_hashes.read(msg_hash);
+            with_attr error_message("Unauthorized pre-eip155 transaction") {
+                assert is_authorized = TRUE;
+            }
+            tempvar syscall_ptr = syscall_ptr;
+            tempvar pedersen_ptr = pedersen_ptr;
+            tempvar range_check_ptr = range_check_ptr;
+        } else {
+            with_attr error_message("Invalid chain id") {
+                assert tx.chain_id = chain_id;
+            }
+            tempvar syscall_ptr = syscall_ptr;
+            tempvar pedersen_ptr = pedersen_ptr;
+            tempvar range_check_ptr = range_check_ptr;
+        }
+        let syscall_ptr = cast([ap - 3], felt*);
+        let pedersen_ptr = cast([ap - 2], HashBuiltin*);
+        let range_check_ptr = [ap - 1];
 
+        // Validate nonce
+        let (account_nonce) = Account_nonce.read();
+        with_attr error_message("Invalid nonce") {
+            assert tx.signer_nonce = account_nonce;
+        }
+
+        // Validate gas and value
         let (kakarot_address) = Ownable_owner.read();
-        let (block_gas_limit) = IKakarot.get_block_gas_limit(kakarot_address);
-        let tx_gas_fits_in_block = is_le(tx.gas_limit, block_gas_limit);
-
-        let (base_fee) = IKakarot.get_base_fee(kakarot_address);
         let (native_token_address) = IKakarot.get_native_token(kakarot_address);
         let (contract_address) = get_contract_address();
         let (balance) = IERC20.balanceOf(native_token_address, contract_address);
 
-        // ensure that the user was willing to at least pay the base fee
-        let enough_fee = is_le(base_fee, tx.max_fee_per_gas);
-        let max_fee_greater_priority_fee = is_le(tx.max_priority_fee_per_gas, tx.max_fee_per_gas);
         let max_gas_fee = tx.gas_limit * tx.max_fee_per_gas;
         let (max_fee_high, max_fee_low) = split_felt(max_gas_fee);
         let (tx_cost, carry) = uint256_add(tx.amount, Uint256(low=max_fee_low, high=max_fee_high));
         assert carry = 0;
         let (is_balance_enough) = uint256_le(tx_cost, balance);
-
-        if (enough_fee * max_fee_greater_priority_fee * is_balance_enough * tx_gas_fits_in_block == 0) {
-            let (return_data_len, return_data) = Errors.eth_validation_failed();
-            tempvar range_check_ptr = range_check_ptr;
-            tempvar syscall_ptr = syscall_ptr;
-            tempvar pedersen_ptr = pedersen_ptr;
-            tempvar return_data_len = return_data_len;
-            tempvar return_data = return_data;
-            tempvar success = FALSE;
-            tempvar gas_used = 0;
-        } else {
-            // priority fee is capped because the base fee is filled first
-            let possible_priority_fee = tx.max_fee_per_gas - base_fee;
-            let priority_fee_is_max_priority_fee = is_le(
-                tx.max_priority_fee_per_gas, possible_priority_fee
-            );
-            let priority_fee_per_gas = priority_fee_is_max_priority_fee *
-                tx.max_priority_fee_per_gas + (1 - priority_fee_is_max_priority_fee) *
-                possible_priority_fee;
-            // signer pays both the priority fee and the base fee
-            let effective_gas_price = priority_fee_per_gas + base_fee;
-
-            let (return_data_len, return_data, success, gas_used) = IKakarot.eth_send_transaction(
-                contract_address=kakarot_address,
-                to=tx.destination,
-                gas_limit=tx.gas_limit,
-                gas_price=effective_gas_price,
-                value=tx.amount,
-                data_len=tx.payload_len,
-                data=tx.payload,
-                access_list_len=tx.access_list_len,
-                access_list=tx.access_list,
-            );
-            tempvar range_check_ptr = range_check_ptr;
-            tempvar syscall_ptr = syscall_ptr;
-            tempvar pedersen_ptr = pedersen_ptr;
-            tempvar return_data_len = return_data_len;
-            tempvar return_data = return_data;
-            tempvar success = success;
-            tempvar gas_used = gas_used;
+        with_attr error_message("Not enough ETH to pay msg.value + max gas fees") {
+            assert is_balance_enough = TRUE;
         }
-        let range_check_ptr = [ap - 7];
-        let syscall_ptr = cast([ap - 6], felt*);
-        let pedersen_ptr = cast([ap - 5], HashBuiltin*);
-        let return_data_len = [ap - 4];
-        let return_data = cast([ap - 3], felt*);
-        let success = [ap - 2];
-        let gas_used = [ap - 1];
 
-        memcpy(response, return_data, return_data_len);
+        let (block_gas_limit) = IKakarot.get_block_gas_limit(kakarot_address);
+        let tx_gas_fits_in_block = is_le(tx.gas_limit, block_gas_limit);
+        with_attr error_message("Transaction gas_limit > Block gas_limit") {
+            assert tx_gas_fits_in_block = TRUE;
+        }
+
+        let (block_base_fee) = IKakarot.get_base_fee(kakarot_address);
+        let enough_fee = is_le(block_base_fee, tx.max_fee_per_gas);
+        with_attr error_message("Max fee per gas too low") {
+            assert enough_fee = TRUE;
+        }
+
+        let max_fee_greater_priority_fee = is_le(tx.max_priority_fee_per_gas, tx.max_fee_per_gas);
+        with_attr error_message("Max priority fee greater than max fee per gas") {
+            assert max_fee_greater_priority_fee = TRUE;
+        }
+
+        let possible_priority_fee = tx.max_fee_per_gas - block_base_fee;
+        let priority_fee_is_max_priority_fee = is_le(
+            tx.max_priority_fee_per_gas, possible_priority_fee
+        );
+        let priority_fee_per_gas = priority_fee_is_max_priority_fee * tx.max_priority_fee_per_gas +
+            (1 - priority_fee_is_max_priority_fee) * possible_priority_fee;
+        let effective_gas_price = priority_fee_per_gas + block_base_fee;
+
+        // Send tx to Kakarot
+        let (return_data_len, return_data, success, gas_used) = IKakarot.eth_send_transaction(
+            contract_address=kakarot_address,
+            to=tx.destination,
+            gas_limit=tx.gas_limit,
+            gas_price=effective_gas_price,
+            value=tx.amount,
+            data_len=tx.payload_len,
+            data=tx.payload,
+            access_list_len=tx.access_list_len,
+            access_list=tx.access_list,
+        );
 
         // See Argent account
         // https://github.com/argentlabs/argent-contracts-starknet/blob/c6d3ee5e05f0f4b8a5c707b4094446c3bc822427/contracts/account/ArgentAccount.cairo#L132
+        // See 300 max data_len for events
+        // https://github.com/starkware-libs/blockifier/blob/9bfb3d4c8bf1b68a0c744d1249b32747c75a4d87/crates/blockifier/resources/versioned_constants.json
+        // The whole data_len should be less than 300, so it's the return_data should be less than 297 (+3 for return_data_len, success, gas_used)
+        tempvar return_data_len = is_le(return_data_len, 297) * (return_data_len - 297) + 297;
         transaction_executed.emit(
             response_len=return_data_len, response=return_data, success=success, gas_used=gas_used
         );
 
-        let (response_len) = execute(
-            call_array_len - 1,
-            call_array + CallArray.SIZE,
-            calldata_len,
-            calldata,
-            response + return_data_len,
-        );
-
-        return (response_len=return_data_len + response_len);
+        return (response_len=return_data_len, response=return_data);
     }
 
     // Contract Account functions
@@ -726,77 +690,5 @@ namespace Internals {
         cond:
         jmp body if count != 0;
         jmp read;
-    }
-
-    // @notice Validate an Ethereum transaction
-    // @dev This function validates an Ethereum transaction by checking if the transaction
-    // is correctly signed by the given address, and if the nonce in the transaction
-    // matches the nonce of the account. It decodes the transaction using the decode function,
-    // and then verifies the Ethereum signature on the transaction hash.
-    // @param address The address that is supposed to have signed the transaction
-    // @param account_nonce The nonce of the account
-    // @param tx_data_len The length of the raw transaction data
-    // @param tx_data The raw transaction data
-    func validate{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        bitwise_ptr: BitwiseBuiltin*,
-        range_check_ptr,
-    }(
-        address: felt,
-        account_nonce: felt,
-        chain_id: felt,
-        r: Uint256,
-        s: Uint256,
-        v: felt,
-        tx_data_len: felt,
-        tx_data: felt*,
-    ) {
-        alloc_locals;
-        let tx = EthTransaction.decode(tx_data_len, tx_data);
-        assert tx.signer_nonce = account_nonce;
-
-        // Note: here, the validate process assumes an ECDSA signature, and r, s, v field
-        // Technically, the transaction type can determine the signature scheme.
-        let tx_type = EthTransaction.get_tx_type(tx_data);
-        local y_parity: felt;
-        if (tx_type == 0) {
-            let is_eip155_tx = is_le(v, 28);
-            if (is_eip155_tx != FALSE) {
-                assert y_parity = v - 27;
-            } else {
-                assert y_parity = (v - 2 * chain_id - 35);
-                assert tx.chain_id = chain_id;
-            }
-            tempvar range_check_ptr = range_check_ptr;
-        } else {
-            assert y_parity = v;
-            assert tx.chain_id = chain_id;
-            tempvar range_check_ptr = range_check_ptr;
-        }
-
-        let (local words: felt*) = alloc();
-        let (words_len, last_word, last_word_num_bytes) = bytes_to_bytes8_little_endian(
-            words, tx_data_len, tx_data
-        );
-
-        let (helpers_class) = Account_cairo1_helpers_class_hash.read();
-        let (msg_hash) = ICairo1Helpers.library_call_keccak(
-            class_hash=helpers_class,
-            words_len=words_len,
-            words=words,
-            last_input_word=last_word,
-            last_input_num_bytes=last_word_num_bytes,
-        );
-
-        Signature.verify_eth_signature_uint256(
-            msg_hash=msg_hash,
-            r=r,
-            s=s,
-            v=y_parity,
-            eth_address=address,
-            helpers_class=helpers_class,
-        );
-        return ();
     }
 }

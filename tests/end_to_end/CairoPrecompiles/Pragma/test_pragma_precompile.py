@@ -40,7 +40,7 @@ def serialize_data_type(data_type: dict) -> Tuple:
         return (serialized_entry_type, query_args, 0)
 
 
-@pytest.fixture(autouse=True)
+@pytest_asyncio.fixture(autouse=True)
 async def setup(get_contract, invoke, mocked_values, pragma_caller, max_fee):
     pragma_oracle = get_contract("MockPragmaOracle")
     tx = await pragma_oracle.functions["set_price"].invoke_v1(

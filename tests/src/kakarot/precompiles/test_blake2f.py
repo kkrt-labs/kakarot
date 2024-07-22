@@ -9,6 +9,7 @@ from tests.utils.helpers import pack_64_bits_little
 
 @pytest.mark.BLAKE2F
 class TestBlake2f:
+    @pytest.mark.slow
     def test_should_fail_when_input_len_is_not_213(self, cairo_run):
         output = cairo_run("test_should_fail_when_input_is_not_213")
         assert bytes(output) == b"Precompile: wrong input_len"
@@ -17,6 +18,7 @@ class TestBlake2f:
         output = cairo_run("test_should_fail_when_flag_is_not_0_or_1")
         assert bytes(output) == b"Precompile: flag error"
 
+    @pytest.mark.slow
     @pytest.mark.parametrize("f", [0, 1])
     @pytest.mark.parametrize("seed", [0, 1, 2, 3, 4])
     def test_should_return_blake2f_compression(self, cairo_run, f, seed):

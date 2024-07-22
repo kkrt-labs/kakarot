@@ -8,15 +8,15 @@ packages = [{ include = "kakarot_scripts" }, { include = "tests" }]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.11"
-starknet-py = "^0.20.0"
+starknet-py = "^0.23.0"
 cairo-lang = "0.13.1"
 python-dotenv = "^0.21.0"
 async-lru = "^2.0.4"
+toml = "^0.10.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.1.1"
 pytest-asyncio = "~0.21.0"
-toml = "^0.10.2"
 pandas = "^1.5.1"
 matplotlib = "^3.8.2"
 black = "^22.10.0"
@@ -49,6 +49,7 @@ eth-bloom = "^3.0.0"
 trie = "^3.0.0"
 cached-property = "^1.5.2"
 py-ecc = "^7.0.0"
+sympy = "=1.11.1"
 
 [tool.pytest.ini_options]
 norecursedirs = "tests/ef_tests/test_data"
@@ -160,6 +161,7 @@ markers = [
   "SSTORE",
   "SLOAD",
   "NoCI",
+  "slow",
 ]
 env = [
   "PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION = python",

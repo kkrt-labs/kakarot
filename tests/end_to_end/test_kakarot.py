@@ -6,7 +6,7 @@ import pytest_asyncio
 from starknet_py.contract import Contract
 from starknet_py.net.full_node_client import FullNodeClient
 
-from kakarot_scripts.utils.kakarot import get_solidity_artifacts
+from kakarot_scripts.utils.kakarot import get_eoa, get_solidity_artifacts
 from kakarot_scripts.utils.starknet import wait_for_transaction
 from tests.end_to_end.bytecodes import test_cases
 from tests.utils.constants import PRE_FUND_AMOUNT, TRANSACTION_GAS_LIMIT
@@ -15,7 +15,6 @@ from tests.utils.helpers import (
     generate_random_evm_address,
     hex_string_to_bytes_array,
 )
-from tests.utils.reporting import traceit
 from tests.utils.syscall_handler import SyscallHandler
 
 params_execute = [pytest.param(case.pop("params"), **case) for case in test_cases]
@@ -35,7 +34,7 @@ def evm(get_contract):
     return get_contract("EVM")
 
 
-@pytest.fixture(scope="session")
+@pytest_asyncio.fixture(scope="session")
 async def other():
     """
     Just another Starknet contract.
@@ -50,7 +49,7 @@ async def other():
 
 
 @pytest.fixture(scope="session")
-async def class_hashes():
+def class_hashes():
     """
     All declared class hashes.
     """
@@ -105,14 +104,13 @@ class TestKakarot:
             max_fee,
             origin,
         ):
-            with traceit.context(request.node.callspec.id):
-                result = await evm.functions["evm_call"].call(
-                    origin=origin,
-                    value=int(params["value"]),
-                    bytecode=hex_string_to_bytes_array(params["code"]),
-                    calldata=hex_string_to_bytes_array(params["calldata"]),
-                    access_list=[],
-                )
+            result = await evm.functions["evm_call"].call(
+                origin=origin,
+                value=int(params["value"]),
+                bytecode=hex_string_to_bytes_array(params["code"]),
+                calldata=hex_string_to_bytes_array(params["calldata"]),
+                access_list=[],
+            )
             assert result.success == params["success"]
             assert result.stack_values[: result.stack_size] == (
                 [
@@ -202,6 +200,7 @@ class TestKakarot:
             starknet: FullNodeClient,
             deploy_externally_owned_account,
             register_account,
+            random_seed,
         ):
             evm_address = generate_random_evm_address(random_seed)
             await deploy_externally_owned_account(evm_address)
@@ -480,3 +479,28 @@ class TestKakarot:
             assert new_owner == other.address
 
             await invoke("kakarot", "transfer_ownership", prev_owner, account=other)
+
+    class TestBlockTransactionViewEntrypoint:
+
+        @pytest.mark.parametrize("view_entrypoint", ["eth_call", "eth_estimate_gas"])
+        async def test_should_raise_when_tx_view_entrypoint(
+            self, starknet, kakarot, invoke, view_entrypoint
+        ):
+
+            evm_account = await get_eoa()
+            calldata = bytes.fromhex("6001")
+            tx_hash = await invoke(
+                "kakarot",
+                view_entrypoint,
+                0,  # nonce
+                int(evm_account.signer.public_key.to_address(), 16),  # origin
+                {"is_some": False, "value": 0},  # to
+                10,  # gas_limit
+                10,  # gas_price
+                10,  # value
+                list(calldata),  # data
+                {},  # access_list
+            )
+            receipt = await starknet.get_transaction_receipt(tx_hash)
+            assert receipt.execution_status.name == "REVERTED"
+            assert "Only view call" in receipt.revert_reason

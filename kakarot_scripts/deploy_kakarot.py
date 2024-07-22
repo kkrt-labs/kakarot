@@ -3,27 +3,35 @@ import logging
 from asyncio import run
 
 from kakarot_scripts.constants import (
+    ARACHNID_PROXY_DEPLOYER,
+    ARACHNID_PROXY_SIGNED_TX,
     BLOCK_GAS_LIMIT,
     COINBASE,
+    CREATEX_DEPLOYER,
+    CREATEX_SIGNED_TX,
     DECLARED_CONTRACTS,
     DEFAULT_GAS_PRICE,
     ETH_TOKEN_ADDRESS,
     EVM_ADDRESS,
+    MULTICALL3_DEPLOYER,
+    MULTICALL3_SIGNED_TX,
     NETWORK,
     RPC_CLIENT,
     NetworkType,
 )
+from kakarot_scripts.utils.kakarot import deploy as deploy_evm
+from kakarot_scripts.utils.kakarot import deploy_with_presigned_tx
+from kakarot_scripts.utils.kakarot import dump_deployments as dump_evm_deployments
+from kakarot_scripts.utils.kakarot import get_deployments as get_evm_deployments
+from kakarot_scripts.utils.starknet import declare
+from kakarot_scripts.utils.starknet import deploy as deploy_starknet
 from kakarot_scripts.utils.starknet import (
-    declare,
-    deploy,
     dump_declarations,
     dump_deployments,
     get_declarations,
-    get_deployments,
-    get_starknet_account,
-    invoke,
-    upgrade,
 )
+from kakarot_scripts.utils.starknet import get_deployments as get_starknet_deployments
+from kakarot_scripts.utils.starknet import get_starknet_account, invoke, upgrade
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -44,13 +52,14 @@ async def main():
 
     # %% Deployments
     class_hash = get_declarations()
-    deployments = get_deployments()
+    starknet_deployments = get_starknet_deployments()
+    evm_deployments = get_evm_deployments()
     freshly_deployed = False
 
-    if deployments.get("kakarot") and NETWORK["type"] is not NetworkType.DEV:
+    if starknet_deployments.get("kakarot") and NETWORK["type"] is not NetworkType.DEV:
         logger.info("ℹ️  Kakarot already deployed, checking version.")
         deployed_class_hash = await RPC_CLIENT.get_class_hash_at(
-            deployments["kakarot"]["address"]
+            starknet_deployments["kakarot"]["address"]
         )
         if deployed_class_hash != class_hash["kakarot"]:
             await invoke("kakarot", "upgrade", class_hash["kakarot"])
@@ -67,7 +76,7 @@ async def main():
         else:
             logger.info("✅ Kakarot already up to date.")
     else:
-        deployments["kakarot"] = await deploy(
+        starknet_deployments["kakarot"] = await deploy_starknet(
             "kakarot",
             account.address,  # owner
             ETH_TOKEN_ADDRESS,  # native_token_address_
@@ -80,7 +89,7 @@ async def main():
         freshly_deployed = True
 
     if NETWORK["type"] is NetworkType.STAGING:
-        deployments["EVM"] = await upgrade(
+        starknet_deployments["EVM"] = await upgrade(
             "EVM",
             account.address,  # owner
             ETH_TOKEN_ADDRESS,  # native_token_address_
@@ -90,11 +99,11 @@ async def main():
             COINBASE,
             BLOCK_GAS_LIMIT,
         )
-        deployments["Counter"] = await upgrade("Counter")
-        deployments["MockPragmaOracle"] = await upgrade("MockPragmaOracle")
+        starknet_deployments["Counter"] = await upgrade("Counter")
+        starknet_deployments["MockPragmaOracle"] = await upgrade("MockPragmaOracle")
 
     if NETWORK["type"] is NetworkType.DEV:
-        deployments["EVM"] = await deploy(
+        starknet_deployments["EVM"] = await deploy_starknet(
             "EVM",
             account.address,  # owner
             ETH_TOKEN_ADDRESS,  # native_token_address_
@@ -104,10 +113,12 @@ async def main():
             COINBASE,
             BLOCK_GAS_LIMIT,
         )
-        deployments["Counter"] = await deploy("Counter")
-        deployments["MockPragmaOracle"] = await deploy("MockPragmaOracle")
+        starknet_deployments["Counter"] = await deploy_starknet("Counter")
+        starknet_deployments["MockPragmaOracle"] = await deploy_starknet(
+            "MockPragmaOracle"
+        )
 
-    dump_deployments(deployments)
+    dump_deployments(starknet_deployments)
 
     if EVM_ADDRESS:
         logger.info(f"ℹ️  Found default EVM address {EVM_ADDRESS}")
@@ -123,6 +134,25 @@ async def main():
     # Set the base fee if freshly deployed
     if freshly_deployed:
         await invoke("kakarot", "set_base_fee", DEFAULT_GAS_PRICE)
+
+    # Deploy the solidity contracts
+    weth = await deploy_evm("WETH", "WETH9")
+    evm_deployments["WETH"] = {
+        "address": int(weth.address, 16),
+        "starknet_address": weth.starknet_address,
+    }
+
+    # Pre-EIP155 deployments
+    evm_deployments["Multicall3"] = await deploy_with_presigned_tx(
+        MULTICALL3_DEPLOYER, MULTICALL3_SIGNED_TX, name="Multicall3"
+    )
+    evm_deployments["Arachnid_Proxy"] = await deploy_with_presigned_tx(
+        ARACHNID_PROXY_DEPLOYER, ARACHNID_PROXY_SIGNED_TX, name="Arachnid Proxy"
+    )
+    evm_deployments["CreateX"] = await deploy_with_presigned_tx(
+        CREATEX_DEPLOYER, CREATEX_SIGNED_TX, amount=0.3, name="CreateX"
+    )
+    dump_evm_deployments(evm_deployments)
 
 
 # %% Run

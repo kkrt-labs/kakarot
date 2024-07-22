@@ -1,18 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.7.0 <0.9.0;
 
-import "./CairoLib.sol";
+import {CairoLib} from "kakarot-lib/CairoLib.sol";
 
 using CairoLib for uint256;
 
-contract PragmaCaller  {
+contract PragmaCaller {
     /// @dev The starknet address of the pragma oracle
     uint256 pragmaOracle;
 
     /// @dev The cairo function selector to call - `get_data_median`
-    uint256 constant FUNCTION_SELECTOR_GET_DATA_MEDIAN = uint256(keccak256("get_data_median")) % 2**250;
+    uint256 constant FUNCTION_SELECTOR_GET_DATA_MEDIAN = uint256(keccak256("get_data_median")) % 2 ** 250;
 
-    struct PragmaPricesResponse{
+    struct PragmaPricesResponse {
         uint256 price;
         uint256 decimals;
         uint256 last_updated_timestamp;
@@ -46,7 +46,7 @@ contract PragmaCaller  {
             data[2] = request.expirationTimestamp;
         }
 
-        bytes memory returnData = pragmaOracle.staticcallContract(FUNCTION_SELECTOR_GET_DATA_MEDIAN, data);
+        bytes memory returnData = pragmaOracle.staticcallCairo(FUNCTION_SELECTOR_GET_DATA_MEDIAN, data);
 
         assembly {
             // Load the values from the return data
@@ -60,9 +60,7 @@ contract PragmaCaller  {
             // and we set it to 0 - otherwise, we load it from the return data
             let never_expires := mload(add(returnData, 0xa0))
             let maybe_expiration_timestamp := 0
-            if eq(never_expires, 0) {
-                maybe_expiration_timestamp := mload(add(returnData, 0xc0))
-            }
+            if eq(never_expires, 0) { maybe_expiration_timestamp := mload(add(returnData, 0xc0)) }
 
             // Store the values in the response struct
             mstore(response, price)

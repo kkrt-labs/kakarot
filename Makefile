@@ -10,7 +10,7 @@ endif
 KKRT_SSJ_RELEASE_ID = 154615699
 # Kakarot SSJ artifacts for precompiles.
 KKRT_SSJ_BUILD_ARTIFACT_URL = $(shell curl -L https://api.github.com/repos/kkrt-labs/kakarot-ssj/releases/${KKRT_SSJ_RELEASE_ID} | jq -r '.assets[0].browser_download_url')
-KATANA_VERSION = v0.7.0-alpha.5
+KATANA_VERSION = v1.0.0-alpha.0
 ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
 
@@ -38,17 +38,18 @@ fetch-ssj-artifacts:
 setup: fetch-ssj-artifacts
 	poetry install
 
-test: build-sol deploy
+test: build-sol build-cairo1 deploy
 	poetry run pytest tests/src -m "not NoCI" --log-cli-level=INFO -n logical
 	poetry run pytest tests/end_to_end
 
 test-unit: build-sol
 	poetry run pytest tests/src -m "not NoCI" -n logical
 
+# run make run-nodes in other terminal
 test-end-to-end: build-sol build-cairo1 deploy
 	poetry run pytest tests/end_to_end
 
-deploy: build
+deploy: build build-sol
 	poetry run python ./kakarot_scripts/deploy_kakarot.py
 
 format:

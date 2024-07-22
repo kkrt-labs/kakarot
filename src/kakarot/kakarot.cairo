@@ -8,7 +8,7 @@ from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math_cmp import is_not_zero
 from starkware.cairo.common.uint256 import Uint256
-from starkware.starknet.common.syscalls import get_caller_address, replace_class, get_tx_info
+from starkware.starknet.common.syscalls import get_caller_address, replace_class
 from starkware.cairo.common.registers import get_fp_and_pc
 from openzeppelin.access.ownable.library import Ownable, Ownable_owner
 
@@ -17,6 +17,7 @@ from backend.starknet import Starknet
 from kakarot.account import Account
 from kakarot.events import kakarot_upgraded
 from kakarot.library import Kakarot
+from kakarot.interfaces.interfaces import IAccount
 from kakarot.model import model
 from utils.utils import Helpers
 
@@ -298,6 +299,16 @@ func set_authorized_message_sender{syscall_ptr: felt*, pedersen_ptr: HashBuiltin
     return Kakarot.set_authorized_message_sender(sender, authorized);
 }
 
+@external
+func set_authorized_pre_eip155_tx{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    sender_address: felt, msg_hash: Uint256
+) {
+    Ownable.assert_only_owner();
+    let sender_starknet_address = Account.compute_starknet_address(sender_address);
+    IAccount.set_authorized_pre_eip155_tx(sender_starknet_address, msg_hash);
+    return ();
+}
+
 // @notice The eth_call function as described in the spec,
 //         see https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_call
 //         This is a view only function, meaning that it doesn't make any state change.
@@ -328,6 +339,9 @@ func eth_call{
     access_list: felt*,
 ) -> (return_data_len: felt, return_data: felt*, success: felt, gas_used: felt) {
     alloc_locals;
+
+    Helpers.assert_view_call();
+
     let fp_and_pc = get_fp_and_pc();
     local __fp__: felt* = fp_and_pc.fp_val;
     let (evm, state, gas_used, _) = Kakarot.eth_call(
@@ -377,6 +391,9 @@ func eth_estimate_gas{
     access_list: felt*,
 ) -> (return_data_len: felt, return_data: felt*, success: felt, required_gas: felt) {
     alloc_locals;
+
+    Helpers.assert_view_call();
+
     let fp_and_pc = get_fp_and_pc();
     local __fp__: felt* = fp_and_pc.fp_val;
     let (evm, state, _, gas_required) = Kakarot.eth_call(
@@ -428,11 +445,10 @@ func eth_send_transaction{
     local __fp__: felt* = fp_and_pc.fp_val;
     let (local starknet_caller_address) = get_caller_address();
     let (local origin) = Kakarot.safe_get_evm_address(starknet_caller_address);
-
-    let (tx_info) = get_tx_info();
+    let (local nonce) = IAccount.get_nonce(starknet_caller_address);
 
     let (evm, state, gas_used, _) = Kakarot.eth_call(
-        tx_info.nonce,
+        nonce,
         origin,
         to,
         gas_limit,
@@ -449,10 +465,6 @@ func eth_send_transaction{
 
     let is_reverted = is_not_zero(evm.reverted);
     let result = (evm.return_data_len, evm.return_data, 1 - is_reverted, gas_used);
-
-    if (evm.reverted != FALSE) {
-        return result;
-    }
 
     return result;
 }

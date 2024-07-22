@@ -2,22 +2,32 @@
 
 %lang starknet
 
-// Starkware dependencies
 from openzeppelin.access.ownable.library import Ownable, Ownable_owner
+from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin, SignatureBuiltin
+from starkware.cairo.common.math import assert_le, unsigned_div_rem
+from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.uint256 import Uint256
+from starkware.starknet.common.syscalls import (
+    get_tx_info,
+    get_caller_address,
+    get_block_timestamp,
+    call_contract,
+)
+from starkware.cairo.common.bool import FALSE, TRUE
 
-// Local dependencies
 from kakarot.accounts.library import (
     AccountContract,
     Account_implementation,
-    Account_cairo1_helpers_class_hash,
+    Account_authorized_message_hashes,
+    Account_bytecode_len,
 )
-from kakarot.accounts.model import CallArray
+from kakarot.accounts.model import CallArray, OutsideExecution
 from kakarot.interfaces.interfaces import IKakarot, IAccount
-from starkware.starknet.common.syscalls import get_tx_info, get_caller_address, replace_class
-from starkware.cairo.common.math import assert_le, unsigned_div_rem
-from starkware.cairo.common.alloc import alloc
+from kakarot.errors import Errors
+from utils.utils import Helpers
+
+const COMPUTE_STARKNET_ADDRESS_SELECTOR = 0x0ad7772990f7f5a506d84e5723efd1242e989c23f45653870d49d6d107f6e7;
 
 // @title EVM smart contract account representation.
 @constructor
@@ -86,6 +96,65 @@ func is_initialized{
 }
 
 // EOA specific entrypoints
+@external
+func execute_from_outside{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, bitwise_ptr: BitwiseBuiltin*, range_check_ptr
+}(
+    outside_execution: OutsideExecution,
+    call_array_len: felt,
+    call_array: CallArray*,
+    calldata_len: felt,
+    calldata: felt*,
+    signature_len: felt,
+    signature: felt*,
+) -> (response_len: felt, response: felt*) {
+    alloc_locals;
+    let (caller) = get_caller_address();
+
+    // Starknet validation
+    if (outside_execution.caller != 'ANY_CALLER') {
+        assert caller = outside_execution.caller;
+    }
+    let (block_timestamp) = get_block_timestamp();
+    let too_early = is_le(block_timestamp, outside_execution.execute_after);
+    with_attr error_message("Execute from outside: too early") {
+        assert too_early = FALSE;
+    }
+    let too_late = is_le(outside_execution.execute_before, block_timestamp);
+    with_attr error_message("Execute from outside: too late") {
+        assert too_late = FALSE;
+    }
+    with_attr error_message("Execute from outside: multicall not supported") {
+        assert call_array_len = 1;
+    }
+    let (tx_info) = get_tx_info();
+    let version = tx_info.version;
+    with_attr error_message("Deprecated tx version: {version}") {
+        assert_le(1, version);
+    }
+
+    // EOA validation
+    let (bytecode_len) = Account_bytecode_len.read();
+    with_attr error_message("EOAs cannot have code") {
+        assert bytecode_len = 0;
+    }
+
+    // Unpack the tx data
+    let packed_tx_data_len = [call_array].data_len;
+    let packed_tx_data = calldata + [call_array].data_offset;
+    let tx_data_len = [packed_tx_data];
+    let (tx_data) = Helpers.load_packed_bytes(
+        packed_tx_data_len - 1, packed_tx_data + 1, tx_data_len
+    );
+
+    // Cast Starknet chain id to u32
+    let (_, chain_id) = unsigned_div_rem(tx_info.chain_id, 2 ** 32);
+
+    let (response_len, response) = AccountContract.execute_from_outside(
+        tx_data_len, tx_data, signature_len, signature, chain_id
+    );
+    return (response_len, response);
+}
 
 // @notice Validate a transaction
 // @dev The transaction is considered as valid if it is signed with the correct address and is a valid kakarot transaction
@@ -97,12 +166,9 @@ func is_initialized{
 func __validate__{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, bitwise_ptr: BitwiseBuiltin*, range_check_ptr
 }(call_array_len: felt, call_array: CallArray*, calldata_len: felt, calldata: felt*) {
-    AccountContract.validate(
-        call_array_len=call_array_len,
-        call_array=call_array,
-        calldata_len=calldata_len,
-        calldata=calldata,
-    );
+    with_attr error_message("EOA: __validate__ not supported") {
+        assert 1 = 0;
+    }
     return ();
 }
 
@@ -137,65 +203,11 @@ func __execute__{
 }(call_array_len: felt, call_array: CallArray*, calldata_len: felt, calldata: felt*) -> (
     response_len: felt, response: felt*
 ) {
-    alloc_locals;
-
-    // Upgrade flow
-    let (latest_account_class, latest_helpers_class) = AccountContract.get_latest_classes();
-    let (this_helpers_class) = Account_cairo1_helpers_class_hash.read();
-    if (latest_helpers_class != this_helpers_class) {
-        Account_cairo1_helpers_class_hash.write(latest_helpers_class);
-        tempvar syscall_ptr = syscall_ptr;
-        tempvar range_check_ptr = range_check_ptr;
-        tempvar pedersen_ptr = pedersen_ptr;
-    } else {
-        tempvar syscall_ptr = syscall_ptr;
-        tempvar range_check_ptr = range_check_ptr;
-        tempvar pedersen_ptr = pedersen_ptr;
+    with_attr error_message("EOA: __execute__ not supported") {
+        assert 1 = 0;
     }
-    let syscall_ptr = cast([ap - 3], felt*);
-    let range_check_ptr = [ap - 2];
-    let pedersen_ptr = cast([ap - 1], HashBuiltin*);
-
-    let (this_class) = Account_implementation.read();
-    if (latest_account_class != this_class) {
-        Account_implementation.write(latest_account_class);
-        // Library call to new class
-        let (response_len, response) = IAccount.library_call___execute__(
-            class_hash=latest_account_class,
-            call_array_len=call_array_len,
-            call_array=call_array,
-            calldata_len=calldata_len,
-            calldata=calldata,
-        );
-        replace_class(latest_account_class);
-        return (response_len, response);
-    }
-
-    // Execution flow
-    let (tx_info) = get_tx_info();
-    let version = tx_info.version;
-    with_attr error_message("EOA: deprecated tx version: {version}") {
-        assert_le(1, version);
-    }
-
-    let (caller) = get_caller_address();
-    with_attr error_message("EOA: reentrant call") {
-        assert caller = 0;
-    }
-
-    with_attr error_message("EOA: multicall not supported") {
-        assert call_array_len = 1;
-    }
-
-    let (local response: felt*) = alloc();
-    let (response_len) = AccountContract.execute(
-        call_array_len=call_array_len,
-        call_array=call_array,
-        calldata_len=calldata_len,
-        calldata=calldata,
-        response=response,
-    );
-    return (response_len, response);
+    let (response) = alloc();
+    return (0, response);
 }
 
 // @notice Store the bytecode of the contract.
@@ -290,4 +302,35 @@ func is_valid_jumpdest{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_che
 ) -> (is_valid: felt) {
     let is_valid = AccountContract.is_valid_jumpdest(index);
     return (is_valid=is_valid);
+}
+
+// @notice Authorizes a pre-eip155 transaction by message hash.
+// @param message_hash The hash of the message.
+@external
+func set_authorized_pre_eip155_tx{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    message_hash: Uint256
+) {
+    // Access control check.
+    Ownable.assert_only_owner();
+    Account_authorized_message_hashes.write(message_hash, 1);
+    return ();
+}
+
+@external
+func execute_starknet_call{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    to: felt, function_selector: felt, calldata_len: felt, calldata: felt*
+) -> (retdata_len: felt, retdata: felt*, success: felt) {
+    Ownable.assert_only_owner();
+    let (kakarot_address) = Ownable.owner();
+    let is_compute_starknet_address = Helpers.is_zero(
+        COMPUTE_STARKNET_ADDRESS_SELECTOR - function_selector
+    );
+    let is_kakarot = Helpers.is_zero(kakarot_address - to);
+    tempvar is_forbidden = is_kakarot * (1 - is_compute_starknet_address);
+    if (is_forbidden != FALSE) {
+        let (error_len, error) = Errors.kakarotReentrancy();
+        return (error_len, error, FALSE);
+    }
+    let (retdata_len, retdata) = call_contract(to, function_selector, calldata_len, calldata);
+    return (retdata_len, retdata, TRUE);
 }

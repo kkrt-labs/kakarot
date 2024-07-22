@@ -16,7 +16,11 @@ from starkware.starknet.public.abi import (
     get_storage_var_address,
 )
 
-from tests.utils.constants import ACCOUNT_CLASS_IMPLEMENTATION, CHAIN_ID
+from tests.utils.constants import (
+    ACCOUNT_CLASS_IMPLEMENTATION,
+    CAIRO1_HELPERS_CLASS_HASH,
+    CHAIN_ID,
+)
 from tests.utils.uint256 import int_to_uint256, uint256_to_int
 
 
@@ -165,6 +169,7 @@ class SyscallHandler:
     mock_event = mock.MagicMock()
     mock_replace_class = mock.MagicMock()
     mock_send_message_to_l1 = mock.MagicMock()
+    mock_deploy = mock.MagicMock()
 
     # Patch the keccak library call to return the keccak of the input data.
     # We need to reconstruct the raw bytes from the Cairo-style keccak calldata.
@@ -178,7 +183,32 @@ class SyscallHandler:
             ACCOUNT_CLASS_IMPLEMENTATION
         ],
         get_selector_from_name("set_implementation"): lambda addr, data: [],
+        get_selector_from_name("get_cairo1_helpers_class_hash"): lambda addr, data: [
+            CAIRO1_HELPERS_CLASS_HASH
+        ],
     }
+
+    def __post_init__(self):
+        self.patches[get_selector_from_name("execute_starknet_call")] = (
+            lambda addr, data: self.execute_starknet_call(addr, data)
+        )
+
+    def execute_starknet_call(self, account_address, calldata):
+        contract_address = calldata[0]
+        function_selector = calldata[1]
+        calldata = calldata[2:]
+
+        if function_selector not in self.patches:
+            raise ValueError(
+                f"Function selector 0x{function_selector:x} not found in patches."
+            )
+        self.mock_call(
+            contract_address=contract_address,
+            function_selector=function_selector,
+            calldata=calldata,
+        )
+        inner_retdata = self.patches.get(function_selector)(contract_address, calldata)
+        return [len(inner_retdata), *inner_retdata, 1]
 
     def get_contract_address(self, segments, syscall_ptr):
         """
@@ -488,9 +518,69 @@ class SyscallHandler:
         payload = [segments.memory[payload_ptr + i] for i in range(payload_size)]
         self.mock_send_message_to_l1(to_address=to_address, payload=payload)
 
+    def deploy(self, segments, syscall_ptr):
+        """
+        Record the deploy call in the internal mock object.
+
+        Syscall structure is:
+            struct DeployRequest {
+                selector: felt,
+                class_hash: felt,
+                contract_address_salt: felt,
+                constructor_calldata_size: felt,
+                constructor_calldata: felt*,
+                deploy_from_zero: felt,
+            }
+
+            struct DeployResponse {
+                contract_address: felt,
+                constructor_retdata_size: felt,
+                constructor_retdata: felt*,
+            }
+
+        """
+        class_hash = segments.memory[syscall_ptr + 1]
+        contract_address_salt = segments.memory[syscall_ptr + 2]
+        constructor_calldata_size = segments.memory[syscall_ptr + 3]
+        constructor_calldata_ptr = segments.memory[syscall_ptr + 4]
+        constructor_calldata = [
+            segments.memory[constructor_calldata_ptr + i]
+            for i in range(constructor_calldata_size)
+        ]
+        deploy_from_zero = segments.memory[syscall_ptr + 5]
+        self.mock_deploy(
+            class_hash=class_hash,
+            contract_address_salt=contract_address_salt,
+            constructor_calldata=constructor_calldata,
+            deploy_from_zero=deploy_from_zero,
+        )
+
+        retdata = self.patches.get("deploy")(class_hash, constructor_calldata)
+        retdata_segment = segments.add()
+        segments.write_arg(retdata_segment, retdata)
+        segments.write_arg(syscall_ptr + 6, [len(retdata), retdata_segment])
+
     @classmethod
     @contextmanager
-    def patch(cls, target: str, *args, value: Optional[Union[callable, int]] = None):
+    def patch_deploy(cls, value: callable):
+        """
+        Patch the deploy syscall with the value.
+
+        :param value: The value to patch with, a callable that will be called with the class hash,
+            the contract address salt, the constructor calldata and the deploy from zero flag.
+        """
+        cls.patches["deploy"] = value
+        yield
+        del cls.patches["deploy"]
+
+    @classmethod
+    @contextmanager
+    def patch(
+        cls,
+        target: Union[int, str],
+        *args,
+        value: Optional[Union[callable, int]] = None,
+    ):
         """
         Patch the target with the value.
 
@@ -500,15 +590,23 @@ class SyscallHandler:
         :param value: The value to patch with, a callable that will be called with the contract
             address and the calldata, and should return the retdata as a List[int].
         """
-        selector_if_call = get_selector_from_name(
-            target.split(".")[-1].replace("library_call_", "")
-        )
+
+        if isinstance(target, str):
+            selector_if_call = get_selector_from_name(
+                target.split(".")[-1].replace("library_call_", "")
+            )
+        else:
+            selector_if_call = target
+
         if value is None:
             args = list(args)
             value = args.pop()
         cls.patches[selector_if_call] = value
         try:
-            selector_if_storage = get_storage_var_address(target, *args)
+            if isinstance(target, str):
+                selector_if_storage = get_storage_var_address(target, *args)
+            else:
+                selector_if_storage = target
             cls.patches[selector_if_storage] = value
         except AssertionError:
             pass

@@ -293,7 +293,7 @@ namespace Internals {
         range_check_ptr,
         valid_jumpdests: DictAccess*,
         state: model.State*,
-    }(code_address: felt, index: felt) -> felt {
+    }(code_address: model.Address*, index: felt) -> felt {
         alloc_locals;
         let (is_cached) = dict_read{dict_ptr=valid_jumpdests}(index);
         if (is_cached != 0) {
@@ -302,13 +302,12 @@ namespace Internals {
 
         // If the account was created in the same transaction,
         // a cache miss is an invalid jumpdest as all valid jumpdests were cached on deployment.
-        let code_account = State.get_account(code_address);
+        let code_account = State.get_account(code_address.evm);
         if (code_account.created != 0) {
             return FALSE;
         }
 
-        let code_starknet_address = Account.compute_starknet_address(code_address);
-        let (is_valid) = IAccount.is_valid_jumpdest(code_starknet_address, index);
+        let (is_valid) = IAccount.is_valid_jumpdest(code_address.starknet, index);
         dict_write{dict_ptr=valid_jumpdests}(index, is_valid);
 
         return is_valid;

@@ -8,6 +8,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.dict_access import DictAccess
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.math import unsigned_div_rem
+from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.memset import memset
 from starkware.starknet.common.syscalls import (
     emit_event,
@@ -19,7 +20,7 @@ from starkware.starknet.common.syscalls import (
 )
 
 from kakarot.account import Account
-from kakarot.precompiles.precompiles import Precompiles
+from kakarot.precompiles.precompiles_helpers import PrecompilesHelpers
 from kakarot.constants import Constants
 from kakarot.interfaces.interfaces import IERC20, IAccount
 
@@ -172,7 +173,7 @@ namespace Internals {
     }(self: model.Account*, native_token_address) {
         alloc_locals;
 
-        let is_precompile = Precompiles.is_precompile(self.address.evm);
+        let is_precompile = PrecompilesHelpers.is_precompile(self.address.evm);
         if (is_precompile != FALSE) {
             return ();
         }
@@ -183,42 +184,31 @@ namespace Internals {
         if (starknet_account_exists == 0) {
             // Deploy account
             Starknet.deploy(self.address.evm);
-
-            let has_code_or_nonce = Account.has_code_or_nonce(self);
-            if (has_code_or_nonce == FALSE) {
-                // Nothing to commit
-                return ();
-            }
-
-            // If SELFDESTRUCT, leave the account empty after deploying it - including
-            // burning any leftover balance.
-            if (self.selfdestruct != 0) {
-                let starknet_address = Account.compute_starknet_address(Constants.BURN_ADDRESS);
-                tempvar burn_address = new model.Address(
-                    starknet=starknet_address, evm=Constants.BURN_ADDRESS
-                );
-                let transfer = model.Transfer(self.address, burn_address, [self.balance]);
-                State.add_transfer(transfer);
-                return ();
-            }
-
-            // Write bytecode
-            IAccount.write_bytecode(starknet_address, self.code_len, self.code);
-            // Set nonce
-            IAccount.set_nonce(starknet_address, self.nonce);
-            // Save storages
-            _save_storage(starknet_address, self.storage_start, self.storage);
-
-            // Save valid jumpdests
-            Internals._save_valid_jumpdests(
-                starknet_address, self.valid_jumpdests_start, self.valid_jumpdests
-            );
-            return ();
+            tempvar syscall_ptr = syscall_ptr;
+            tempvar pedersen_ptr = pedersen_ptr;
+            tempvar range_check_ptr = range_check_ptr;
+        } else {
+            tempvar syscall_ptr = syscall_ptr;
+            tempvar pedersen_ptr = pedersen_ptr;
+            tempvar range_check_ptr = range_check_ptr;
         }
 
         // @dev: EIP-6780 - If selfdestruct on an account created, dont commit data
+        // and burn any leftover balance.
         let is_created_selfdestructed = self.created * self.selfdestruct;
         if (is_created_selfdestructed != 0) {
+            let starknet_address = Account.compute_starknet_address(Constants.BURN_ADDRESS);
+            tempvar burn_address = new model.Address(
+                starknet=starknet_address, evm=Constants.BURN_ADDRESS
+            );
+            let transfer = model.Transfer(self.address, burn_address, [self.balance]);
+            State.add_transfer(transfer);
+            return ();
+        }
+
+        let has_code_or_nonce = Account.has_code_or_nonce(self);
+        if (has_code_or_nonce == FALSE) {
+            // Nothing to commit
             return ();
         }
 
@@ -227,7 +217,7 @@ namespace Internals {
         // Save storages
         Internals._save_storage(starknet_address, self.storage_start, self.storage);
 
-        // Update bytecode and jumpdests if required (SELFDESTRUCTed contract, redeployed)
+        // Update bytecode and jumpdests if required (newly created account)
         if (self.created != FALSE) {
             IAccount.write_bytecode(starknet_address, self.code_len, self.code);
             Internals._save_valid_jumpdests(
@@ -252,8 +242,13 @@ namespace Internals {
         }
 
         let event: model.Event = [events];
+        // See 300 max data_len for events
+        // https://github.com/starkware-libs/blockifier/blob/9bfb3d4c8bf1b68a0c744d1249b32747c75a4d87/crates/blockifier/resources/versioned_constants.json
+        // The whole data_len should be less than 300
+        tempvar data_len = is_le(event.data_len, 300) * (event.data_len - 300) + 300;
+
         emit_event(
-            keys_len=event.topics_len, keys=event.topics, data_len=event.data_len, data=event.data
+            keys_len=event.topics_len, keys=event.topics, data_len=data_len, data=event.data
         );
 
         _emit_events(events_len - 1, events + model.Event.SIZE);

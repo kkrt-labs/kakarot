@@ -5,17 +5,17 @@ from pathlib import Path
 from types import MethodType
 from typing import List, Optional, Union, cast
 
+import rlp
 from eth_abi import decode
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_account import Account as EvmAccount
 from eth_account.typed_transactions import TypedTransaction
 from eth_keys import keys
+from eth_utils import keccak
 from eth_utils.address import to_checksum_address
 from hexbytes import HexBytes
 from starknet_py.net.account.account import Account
 from starknet_py.net.client_errors import ClientError
-from starknet_py.net.client_models import Call
-from starknet_py.net.models.transaction import InvokeV1
 from starknet_py.net.signer.stark_curve_signer import KeyPair
 from starkware.starknet.public.abi import starknet_keccak
 from web3 import Web3
@@ -29,6 +29,7 @@ from web3.types import LogReceipt
 
 from kakarot_scripts.constants import (
     DEFAULT_GAS_PRICE,
+    DEPLOYMENTS_DIR,
     EVM_ADDRESS,
     EVM_PRIVATE_KEY,
     NETWORK,
@@ -38,8 +39,10 @@ from kakarot_scripts.constants import (
 )
 from kakarot_scripts.utils.starknet import call as _call_starknet
 from kakarot_scripts.utils.starknet import fund_address as _fund_starknet_address
+from kakarot_scripts.utils.starknet import get_balance
 from kakarot_scripts.utils.starknet import get_contract as _get_starknet_contract
-from kakarot_scripts.utils.starknet import get_deployments
+from kakarot_scripts.utils.starknet import get_deployments as _get_starknet_deployments
+from kakarot_scripts.utils.starknet import get_starknet_account
 from kakarot_scripts.utils.starknet import invoke as _invoke_starknet
 from kakarot_scripts.utils.starknet import wait_for_transaction
 from tests.utils.constants import TRANSACTION_GAS_LIMIT
@@ -109,25 +112,6 @@ def get_solidity_artifacts(
     }
 
 
-@functools.lru_cache()
-def get_vyper_artifacts(
-    contract_app: str,
-    contract_name: str,
-) -> Web3Contract:
-    from vyper.cli.vyper_compile import compile_files
-
-    target_contract = (
-        Path("vyper_contracts") / "src" / contract_app / f"{contract_name}.vy"
-    )
-
-    if not target_contract.is_file():
-        raise ValueError("Cannot locate contract in app")
-
-    return compile_files([target_contract], ["bytecode", "bytecode_runtime", "abi"])[
-        target_contract
-    ]
-
-
 def get_contract(
     contract_app: str,
     contract_name: str,
@@ -135,10 +119,7 @@ def get_contract(
     caller_eoa: Optional[Account] = None,
 ) -> Web3Contract:
 
-    try:
-        artifacts = get_solidity_artifacts(contract_app, contract_name)
-    except ValueError:
-        artifacts = get_vyper_artifacts(contract_app, contract_name)
+    artifacts = get_solidity_artifacts(contract_app, contract_name)
 
     contract = cast(
         Web3Contract,
@@ -192,11 +173,43 @@ async def deploy(
     return contract
 
 
+async def deploy_details(
+    contract_app: str, contract_name: str, *args, **kwargs
+) -> Web3Contract:
+    contract = await deploy(contract_app, contract_name, *args, **kwargs)
+    return {
+        "address": int(contract.address, 16),
+        "starknet_address": contract.starknet_address,
+    }
+
+
+def dump_deployments(deployments):
+    json.dump(
+        {
+            name: {
+                **deployment,
+                "address": hex(deployment["address"]),
+                "starknet_address": hex(deployment["starknet_address"]),
+            }
+            for name, deployment in deployments.items()
+        },
+        open(DEPLOYMENTS_DIR / "kakarot_deployments.json", "w"),
+        indent=2,
+    )
+
+
+def get_deployments():
+    try:
+        return json.load(open(DEPLOYMENTS_DIR / "kakarot_deployments.json", "r"))
+    except FileNotFoundError:
+        return {}
+
+
 def get_log_receipts(tx_receipt):
     if WEB3.is_connected():
         return tx_receipt.logs
 
-    kakarot_address = get_deployments()["kakarot"]["address"]
+    kakarot_address = _get_starknet_deployments()["kakarot"]["address"]
     kakarot_events = [
         event
         for event in tx_receipt.events
@@ -344,6 +357,44 @@ async def get_eoa(private_key=None, amount=10) -> Account:
     )
 
 
+async def send_pre_eip155_transaction(
+    evm_address: str,
+    starknet_address: Union[int, str],
+    signed_tx: bytes,
+):
+    rlp_decoded = rlp.decode(signed_tx)
+    v, r, s = rlp_decoded[-3:]
+    unsigned_tx_data = rlp_decoded[:-3]
+    unsigned_encoded_tx = rlp.encode(unsigned_tx_data)
+    msg_hash = int.from_bytes(keccak(unsigned_encoded_tx), "big")
+
+    await _invoke_starknet(
+        "kakarot", "set_authorized_pre_eip155_tx", int(evm_address, 16), msg_hash
+    )
+
+    if WEB3.is_connected():
+        tx_hash = WEB3.eth.send_raw_transaction(signed_tx)
+        receipt = WEB3.eth.wait_for_transaction_receipt(
+            tx_hash, timeout=NETWORK["max_wait"], poll_latency=NETWORK["check_interval"]
+        )
+        return receipt, [], receipt.status, receipt.gasUsed
+
+    sender_account = Account(
+        address=starknet_address,
+        client=RPC_CLIENT,
+        chain=ChainId.starknet_chain_id,
+        # Keypair not required for already signed txs
+        key_pair=KeyPair(int(0x10), 0x20),
+    )
+    return await send_starknet_transaction(
+        evm_account=sender_account,
+        signature_r=int.from_bytes(r, "big"),
+        signature_s=int.from_bytes(s, "big"),
+        signature_v=int.from_bytes(v, "big"),
+        packed_encoded_unsigned_tx=pack_calldata(unsigned_encoded_tx),
+    )
+
+
 async def eth_send_transaction(
     to: Union[int, str],
     data: Union[str, bytes],
@@ -359,7 +410,13 @@ async def eth_send_transaction(
             evm_account.signer.public_key.to_checksum_address()
         )
     else:
-        nonce = await evm_account.get_nonce()
+        nonce = (
+            await (
+                _get_starknet_contract("account_contract", address=evm_account.address)
+                .functions["get_nonce"]
+                .call()
+            )
+        ).nonce
 
     payload = {
         "type": 0x2,
@@ -389,32 +446,60 @@ async def eth_send_transaction(
 
     encoded_unsigned_tx = rlp_encode_signed_data(typed_transaction.as_dict())
     packed_encoded_unsigned_tx = pack_calldata(bytes(encoded_unsigned_tx))
-
-    prepared_invoke = await evm_account._prepare_invoke(
-        calls=[
-            Call(
-                to_addr=0xDEAD,  # unused in current EOA implementation
-                selector=0xDEAD,  # unused in current EOA implementation
-                calldata=packed_encoded_unsigned_tx,
-            )
-        ],
-        max_fee=int(5e17) if max_fee is None else max_fee,
-    )
-    # We need to reconstruct the prepared_invoke with the new signature
-    # And Invoke.signature is Frozen
-    prepared_invoke = InvokeV1(
-        version=prepared_invoke.version,
-        max_fee=prepared_invoke.max_fee,
-        signature=[*int_to_uint256(evm_tx.r), *int_to_uint256(evm_tx.s), evm_tx.v],
-        nonce=prepared_invoke.nonce,
-        sender_address=prepared_invoke.sender_address,
-        calldata=prepared_invoke.calldata,
+    return await send_starknet_transaction(
+        evm_account,
+        evm_tx.r,
+        evm_tx.s,
+        evm_tx.v,
+        packed_encoded_unsigned_tx,
+        max_fee,
     )
 
-    response = await evm_account.client.send_transaction(prepared_invoke)
 
-    await wait_for_transaction(tx_hash=response.transaction_hash)
-    receipt = await RPC_CLIENT.get_transaction_receipt(response.transaction_hash)
+async def send_starknet_transaction(
+    evm_account,
+    signature_r: int,
+    signature_s: int,
+    signature_v: int,
+    packed_encoded_unsigned_tx: List[int],
+    max_fee: Optional[int] = None,
+):
+    relayer = await get_starknet_account()
+    current_timestamp = (await RPC_CLIENT.get_block("latest")).timestamp
+    outside_execution = {
+        "caller": int.from_bytes(b"ANY_CALLER", "big"),
+        "nonce": 0,  # not used in Kakarot
+        "execute_after": current_timestamp - 60 * 60,
+        "execute_before": current_timestamp + 60 * 60,
+    }
+    max_fee = int(5e17) if max_fee in [None, 0] else max_fee
+    response = (
+        await _get_starknet_contract(
+            "account_contract", address=evm_account.address, provider=relayer
+        )
+        .functions["execute_from_outside"]
+        .invoke_v1(
+            outside_execution=outside_execution,
+            call_array=[
+                {
+                    "to": 0xDEAD,
+                    "selector": 0xDEAD,
+                    "data_offset": 0,
+                    "data_len": len(packed_encoded_unsigned_tx),
+                }
+            ],
+            calldata=list(packed_encoded_unsigned_tx),
+            signature=[
+                *int_to_uint256(signature_r),
+                *int_to_uint256(signature_s),
+                signature_v,
+            ],
+            max_fee=max_fee,
+        )
+    )
+
+    await wait_for_transaction(tx_hash=response.hash)
+    receipt = await RPC_CLIENT.get_transaction_receipt(response.hash)
     transaction_events = [
         event
         for event in receipt.events
@@ -454,8 +539,9 @@ async def deploy_and_fund_evm_address(evm_address: str, amount: float):
         )
     ).contract_address
 
+    account_balance = await get_balance(evm_address)
+    await fund_address(evm_address, amount - account_balance)
     if not await _contract_exists(starknet_address):
-        await fund_address(evm_address, amount)
         await _invoke_starknet(
             "kakarot", "deploy_externally_owned_account", int(evm_address, 16)
         )
@@ -528,3 +614,18 @@ async def eth_get_code(address: Union[int, str]):
             )
         ).bytecode
     )
+
+
+async def deploy_with_presigned_tx(
+    deployer_evm_address: str, signed_tx: bytes, amount=0.1, name=""
+):
+    deployer_starknet_address = await deploy_and_fund_evm_address(
+        deployer_evm_address, amount
+    )
+    receipt, response, success, gas_used = await send_pre_eip155_transaction(
+        deployer_evm_address, deployer_starknet_address, signed_tx
+    )
+    deployed_address = response[1]
+    logger.info(f"✅ {name} Deployed at 0x{deployed_address:040x}")
+    deployed_starknet_address = await compute_starknet_address(deployed_address)
+    return {"address": deployed_address, "starknet_address": deployed_starknet_address}

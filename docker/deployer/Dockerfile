@@ -30,6 +30,12 @@ WORKDIR /app/kakarot
 ############################################
 FROM base as builder
 
+ENV PATH="$PATH:/root/.local/bin:/root/.foundry/bin"
+RUN curl -L https://foundry.paradigm.xyz -o foundry.sh \
+    && chmod +x foundry.sh \
+    && ./foundry.sh \
+    && foundryup
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-transport-https \
     ca-certificates \
@@ -58,9 +64,20 @@ RUN --mount=type=cache,target=/root/.cache \
 
 # split install in two steps to leverage docker cache
 COPY . .
-RUN curl --proto '=https' --tlsv1.2 -sSf https://docs.swmansion.com/scarb/install.sh | sh -s -- -v 0.7.0
+
+
+# Install asdf for multiple scarb versions
+RUN git clone --depth 1 https://github.com/asdf-vm/asdf.git "$HOME/.asdf" && \
+    echo ". $HOME/.asdf/asdf.sh" >> "$HOME/.bashrc" && \
+    echo ". $HOME/.asdf/asdf.sh" >> "$HOME/.profile"
+
+SHELL ["/bin/bash", "-c"]
+RUN source "$HOME/.asdf/asdf.sh" && asdf plugin add scarb && asdf install scarb 0.7.0  && asdf install scarb 2.6.5
+
+
 RUN --mount=type=cache,target=/root/.cache \
-    make fetch-ssj-artifacts && make build && make build-cairo1
+    source "$HOME/.asdf/asdf.sh" && make fetch-ssj-artifacts && make build && make build-cairo1 && make build-sol
+
 
 ############################################
 # Kakarot deployer
@@ -74,6 +91,9 @@ COPY --from=builder /app/kakarot/tests ./tests/
 # Cairo Smart contracts are used in deploy_kakarot.py
 # To limit the probability of this Dockerfile to break, we copy the entire src and not individual files
 COPY --from=builder /app/kakarot/src ./src/
+
+# Default Solidity contracts are also used in deploy_kakarot.py
+COPY --from=builder /app/kakarot/solidity_contracts ./solidity_contracts/
 
 COPY --from=builder /app/kakarot/Makefile .
 COPY --from=builder /app/kakarot/poetry.lock .
