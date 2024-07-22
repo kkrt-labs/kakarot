@@ -5,6 +5,7 @@ from typing import List, Optional, Union
 
 import pytest
 import pytest_asyncio
+from eth_keys.datatypes import PrivateKey
 from eth_utils.address import to_checksum_address
 from starknet_py.contract import Contract
 from starknet_py.net.account.account import Account
@@ -406,7 +407,7 @@ def new_eoa(max_fee) -> Wallet:
 
     async def _factory(amount=None):
 
-        private_key = generate_random_private_key()
+        private_key: PrivateKey = generate_random_private_key()
         return Wallet(
             address=private_key.public_key.to_checksum_address(),
             private_key=private_key,

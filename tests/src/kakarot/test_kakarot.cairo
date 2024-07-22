@@ -157,7 +157,6 @@ func test__set_account_contract_class_hash{
     return ();
 }
 
-
 func test__set_uninitialized_account_class_hash{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 }() {
