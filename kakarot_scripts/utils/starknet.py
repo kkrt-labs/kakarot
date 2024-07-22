@@ -553,8 +553,7 @@ async def invoke(contract: Union[str, int], *args, **kwargs):
     )
     status = await wait_for_transaction(response.transaction_hash)
     logger.info(
-        f"{status} {contract}.{args[0]} invoked at tx: %s",
-        hex(response.transaction_hash),
+        f"{status} {contract}.{args[0]} invoked at tx: 0x{response.transaction_hash:064x}"
     )
     return response.transaction_hash
 
