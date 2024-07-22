@@ -1,5 +1,6 @@
 import pytest
 
+from kakarot_scripts.utils.kakarot import deploy
 from tests.utils.errors import evm_error
 
 
@@ -7,11 +8,9 @@ from tests.utils.errors import evm_error
 @pytest.mark.Counter
 class TestCounter:
     class TestCount:
-        async def test_should_return_0_after_deployment(self, deploy_contract, owner):
-            counter = await deploy_contract(
-                "PlainOpcodes",
-                "Counter",
-                caller_eoa=owner.starknet_contract,
+        async def test_should_return_0_after_deployment(self, owner):
+            counter = await deploy(
+                "PlainOpcodes", "Counter", caller_eoa=owner.starknet_contract
             )
             assert await counter.count() == 0
 
@@ -62,9 +61,9 @@ class TestCounter:
             assert await counter.count() == 0
 
     class TestDeploymentWithValue:
-        async def test_deployment_with_value_should_fail(self, deploy_contract):
+        async def test_deployment_with_value_should_fail(self):
             with evm_error():
-                await deploy_contract("PlainOpcodes", "Counter", value=1)
+                await deploy("PlainOpcodes", "Counter", value=1)
 
     class TestLoops:
         @pytest.mark.parametrize("iterations", [0, 50, 100])

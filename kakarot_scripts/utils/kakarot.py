@@ -395,6 +395,29 @@ async def send_pre_eip155_transaction(
     )
 
 
+async def eth_get_code(address: Union[int, str]):
+    starknet_address = await get_starknet_address(address)
+    return bytes(
+        (
+            await _call_starknet(
+                "account_contract", "bytecode", address=starknet_address
+            )
+        ).bytecode
+    )
+
+
+async def eth_get_transaction_count(address: Union[int, str]):
+    starknet_address = await get_starknet_address(address)
+    return (
+        await _call_starknet("account_contract", "get_nonce", address=starknet_address)
+    ).nonce
+
+
+async def eth_balance_of(address: Union[int, str]):
+    starknet_address = await get_starknet_address(address)
+    return await get_balance(starknet_address)
+
+
 async def eth_send_transaction(
     to: Union[int, str],
     data: Union[str, bytes],
@@ -555,7 +578,8 @@ async def deploy_and_fund_evm_address(evm_address: str, amount: float):
     ).starknet_address
 
     account_balance = await get_balance(evm_address)
-    await fund_address(evm_address, amount - account_balance)
+    if account_balance < amount:
+        await fund_address(evm_address, amount - account_balance)
     if not await _contract_exists(starknet_address):
         await _invoke_starknet(
             "kakarot", "deploy_externally_owned_account", int(evm_address, 16)
@@ -618,17 +642,6 @@ async def store_bytecode(bytecode: Union[str, bytes], **kwargs):
     stored_bytecode = await eth_get_code(evm_address)
     assert stored_bytecode == bytecode
     return evm_address
-
-
-async def eth_get_code(address: Union[int, str]):
-    starknet_address = await get_starknet_address(address)
-    return bytes(
-        (
-            await _call_starknet(
-                "account_contract", "bytecode", address=starknet_address
-            )
-        ).bytecode
-    )
 
 
 async def deploy_with_presigned_tx(

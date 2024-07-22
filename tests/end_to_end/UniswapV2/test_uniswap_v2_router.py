@@ -1,5 +1,7 @@
 import pytest
 
+from kakarot_scripts.utils.kakarot import deploy
+
 
 @pytest.mark.asyncio(scope="session")
 @pytest.mark.UniswapV2Router
@@ -10,10 +12,8 @@ class TestUniswapV2Router:
             assert await router.factory() == factory.address
 
     class TestAddLiquidity:
-        async def test_should_add_liquidity(
-            self, router, token_a, deploy_contract, owner
-        ):
-            token_b = await deploy_contract(
+        async def test_should_add_liquidity(self, router, token_a, owner):
+            token_b = await deploy(
                 "UniswapV2",
                 "ERC20",
                 int(10000e18),

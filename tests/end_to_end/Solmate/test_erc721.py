@@ -2,13 +2,14 @@ import pytest
 import pytest_asyncio
 from eth_utils import keccak
 
+from kakarot_scripts.utils.kakarot import deploy
 from tests.utils.constants import ZERO_ADDRESS
 from tests.utils.errors import evm_error
 
 
 @pytest_asyncio.fixture(scope="module")
-async def erc_721(deploy_contract, owner):
-    return await deploy_contract(
+async def erc_721(owner):
+    return await deploy(
         "Solmate",
         "MockERC721",
         "Kakarot NFT",
@@ -18,8 +19,8 @@ async def erc_721(deploy_contract, owner):
 
 
 @pytest_asyncio.fixture(scope="module")
-async def erc_721_recipient(deploy_contract, owner):
-    return await deploy_contract(
+async def erc_721_recipient(owner):
+    return await deploy(
         "Solmate",
         "ERC721Recipient",
         caller_eoa=owner.starknet_contract,
@@ -27,8 +28,8 @@ async def erc_721_recipient(deploy_contract, owner):
 
 
 @pytest_asyncio.fixture(scope="module")
-async def erc_721_reverting_recipient(deploy_contract, owner):
-    return await deploy_contract(
+async def erc_721_reverting_recipient(owner):
+    return await deploy(
         "Solmate",
         "RevertingERC721Recipient",
         caller_eoa=owner.starknet_contract,
@@ -36,8 +37,8 @@ async def erc_721_reverting_recipient(deploy_contract, owner):
 
 
 @pytest_asyncio.fixture(scope="module")
-async def erc_721_recipient_with_wrong_return_data(deploy_contract, owner):
-    return await deploy_contract(
+async def erc_721_recipient_with_wrong_return_data(owner):
+    return await deploy(
         "Solmate",
         "WrongReturnDataERC721Recipient",
         caller_eoa=owner.starknet_contract,
@@ -45,8 +46,8 @@ async def erc_721_recipient_with_wrong_return_data(deploy_contract, owner):
 
 
 @pytest_asyncio.fixture(scope="module")
-async def erc_721_non_recipient(deploy_contract, owner):
-    return await deploy_contract(
+async def erc_721_non_recipient(owner):
+    return await deploy(
         "Solmate",
         "NonERC721Recipient",
         caller_eoa=owner.starknet_contract,
@@ -139,70 +140,76 @@ class TestERC721:
                 await erc_721.burn(token_id, caller_eoa=other.starknet_contract)
 
     class TestApprove:
-        async def test_should_approve(self, erc_721, others, token_id):
+        async def test_should_approve(self, erc_721, from_wallet, to_wallet, token_id):
             await erc_721.mint(
-                others[0].address, token_id, caller_eoa=others[0].starknet_contract
+                from_wallet.address, token_id, caller_eoa=from_wallet.starknet_contract
             )
             await erc_721.approve(
-                others[1].address, token_id, caller_eoa=others[0].starknet_contract
+                to_wallet.address, token_id, caller_eoa=from_wallet.starknet_contract
             )
-            assert await erc_721.getApproved(token_id) == others[1].address
+            assert await erc_721.getApproved(token_id) == to_wallet.address
 
-        async def test_should_approve_all(self, erc_721, others):
+        async def test_should_approve_all(self, erc_721, from_wallet, to_wallet):
             await erc_721.setApprovalForAll(
-                others[1].address, True, caller_eoa=others[0].starknet_contract
+                to_wallet.address, True, caller_eoa=from_wallet.starknet_contract
             )
 
             assert (
-                await erc_721.isApprovedForAll(others[0].address, others[1].address)
+                await erc_721.isApprovedForAll(from_wallet.address, to_wallet.address)
                 is True
             )
 
-        async def test_should_fail_to_approve_unminted(self, erc_721, others, token_id):
+        async def test_should_fail_to_approve_unminted(
+            self, erc_721, from_wallet, to_wallet, token_id
+        ):
             with evm_error("NOT_AUTHORIZED"):
                 await erc_721.approve(
-                    others[1].address,
+                    to_wallet.address,
                     token_id,
-                    caller_eoa=others[0].starknet_contract,
+                    caller_eoa=from_wallet.starknet_contract,
                 )
 
         async def test_should_fail_to_approve_unauthorized(
-            self, erc_721, others, token_id
+            self, erc_721, other, from_wallet, to_wallet, token_id
         ):
             await erc_721.mint(
-                others[0].address, token_id, caller_eoa=others[0].starknet_contract
+                from_wallet.address, token_id, caller_eoa=from_wallet.starknet_contract
             )
             with evm_error("NOT_AUTHORIZED"):
                 await erc_721.approve(
-                    others[1].address,
+                    to_wallet.address,
                     token_id,
-                    caller_eoa=others[2].starknet_contract,
+                    caller_eoa=other.starknet_contract,
                 )
 
     class TestTransferFrom:
-        async def test_should_transfer_from(self, erc_721, others, token_id):
+        async def test_should_transfer_from(
+            self, erc_721, other, from_wallet, to_wallet, token_id
+        ):
             await erc_721.mint(
-                others[1].address, token_id, caller_eoa=others[0].starknet_contract
+                to_wallet.address, token_id, caller_eoa=from_wallet.starknet_contract
             )
             await erc_721.approve(
-                others[2].address, token_id, caller_eoa=others[1].starknet_contract
+                other.address, token_id, caller_eoa=to_wallet.starknet_contract
             )
+            receiver_balance_prev = await erc_721.balanceOf(other.address)
+            sender_balance_prev = await erc_721.balanceOf(to_wallet.address)
             await erc_721.transferFrom(
-                others[1].address,
-                others[2].address,
+                to_wallet.address,
+                other.address,
                 token_id,
-                caller_eoa=others[1].starknet_contract,
+                caller_eoa=other.starknet_contract,
             )
 
             approved = await erc_721.getApproved(token_id)
             nft_owner = await erc_721.ownerOf(token_id)
-            receiver_balance = await erc_721.balanceOf(others[2].address)
-            sender_balance = await erc_721.balanceOf(others[1].address)
+            receiver_balance = await erc_721.balanceOf(other.address)
+            sender_balance = await erc_721.balanceOf(to_wallet.address)
 
             assert approved == ZERO_ADDRESS
-            assert nft_owner == others[2].address
-            assert receiver_balance == 1
-            assert sender_balance == 0
+            assert nft_owner == other.address
+            assert receiver_balance - receiver_balance_prev == 1
+            assert sender_balance - sender_balance_prev == -1
 
         async def test_should_transfer_from_self(self, erc_721, other, owner, token_id):
             receiver_balance_before = await erc_721.balanceOf(other.address)
@@ -228,59 +235,61 @@ class TestERC721:
             assert receiver_balance_after - receiver_balance_before == 1
             assert sender_balance_after == sender_balance_before
 
-        async def test_transfer_from_approve_all(self, erc_721, others, token_id):
-            receiver_balance_before = await erc_721.balanceOf(others[1].address)
-            sender_balance_before = await erc_721.balanceOf(others[0].address)
+        async def test_transfer_from_approve_all(
+            self, erc_721, from_wallet, to_wallet, token_id
+        ):
+            receiver_balance_before = await erc_721.balanceOf(to_wallet.address)
+            sender_balance_before = await erc_721.balanceOf(from_wallet.address)
 
             await erc_721.mint(
-                others[0].address, token_id, caller_eoa=others[0].starknet_contract
+                from_wallet.address, token_id, caller_eoa=from_wallet.starknet_contract
             )
 
             await erc_721.setApprovalForAll(
-                others[1].address, True, caller_eoa=others[0].starknet_contract
+                to_wallet.address, True, caller_eoa=from_wallet.starknet_contract
             )
 
             await erc_721.transferFrom(
-                others[0].address,
-                others[1].address,
+                from_wallet.address,
+                to_wallet.address,
                 token_id,
-                caller_eoa=others[0].starknet_contract,
+                caller_eoa=from_wallet.starknet_contract,
             )
 
             approved = await erc_721.getApproved(token_id)
             nft_owner = await erc_721.ownerOf(token_id)
 
-            receiver_balance_after = await erc_721.balanceOf(others[1].address)
-            sender_balance_after = await erc_721.balanceOf(others[0].address)
+            receiver_balance_after = await erc_721.balanceOf(to_wallet.address)
+            sender_balance_after = await erc_721.balanceOf(from_wallet.address)
 
             assert approved == ZERO_ADDRESS
-            assert nft_owner == others[1].address
+            assert nft_owner == to_wallet.address
             assert receiver_balance_after - receiver_balance_before == 1
             assert sender_balance_after == sender_balance_before
 
         async def test_should_fail_to_transfer_from_unowned(
-            self, erc_721, others, token_id
+            self, erc_721, from_wallet, to_wallet, token_id
         ):
             with evm_error():
                 await erc_721.transferFrom(
-                    others[0].address,
-                    others[1].address,
+                    from_wallet.address,
+                    to_wallet.address,
                     token_id,
-                    caller_eoa=others[0].starknet_contract,
+                    caller_eoa=from_wallet.starknet_contract,
                 )
 
         async def test_should_fail_to_transfer_from_wrong_from(
-            self, erc_721, others, token_id
+            self, erc_721, from_wallet, to_wallet, other, token_id
         ):
             await erc_721.mint(
-                others[1].address, token_id, caller_eoa=others[1].starknet_contract
+                to_wallet.address, token_id, caller_eoa=to_wallet.starknet_contract
             )
             with evm_error():
                 await erc_721.transferFrom(
-                    others[0].address,
-                    others[2].address,
+                    from_wallet.address,
+                    other.address,
                     token_id,
-                    caller_eoa=others[0].starknet_contract,
+                    caller_eoa=from_wallet.starknet_contract,
                 )
 
         async def test_should_fail_to_transfer_from_to_zero(
@@ -298,82 +307,82 @@ class TestERC721:
                 )
 
         async def test_should_fail_to_transfer_from_not_owner(
-            self, erc_721, others, token_id
+            self, erc_721, from_wallet, to_wallet, other, token_id
         ):
             await erc_721.mint(
-                others[0].address, token_id, caller_eoa=others[0].starknet_contract
+                from_wallet.address, token_id, caller_eoa=from_wallet.starknet_contract
             )
             await erc_721.setApprovalForAll(
-                others[1].address, False, caller_eoa=others[0].starknet_contract
+                to_wallet.address, False, caller_eoa=from_wallet.starknet_contract
             )
             with evm_error("NOT_AUTHORIZED"):
                 await erc_721.transferFrom(
-                    others[0].address,
-                    others[2].address,
+                    from_wallet.address,
+                    other.address,
                     token_id,
-                    caller_eoa=others[1].starknet_contract,
+                    caller_eoa=to_wallet.starknet_contract,
                 )
 
     class TestSafeTransferFrom:
         async def test_should_safe_transfer_from_to_EOA(
-            self, erc_721, others, token_id
+            self, erc_721, from_wallet, to_wallet, token_id
         ):
-            receiver_balance_before = await erc_721.balanceOf(others[1].address)
-            sender_balance_before = await erc_721.balanceOf(others[0].address)
+            receiver_balance_before = await erc_721.balanceOf(to_wallet.address)
+            sender_balance_before = await erc_721.balanceOf(from_wallet.address)
 
             await erc_721.mint(
-                others[0].address, token_id, caller_eoa=others[0].starknet_contract
+                from_wallet.address, token_id, caller_eoa=from_wallet.starknet_contract
             )
 
             await erc_721.setApprovalForAll(
-                others[1].address, True, caller_eoa=others[0].starknet_contract
+                to_wallet.address, True, caller_eoa=from_wallet.starknet_contract
             )
 
             await erc_721.safeTransferFrom(
-                others[0].address,
-                others[1].address,
+                from_wallet.address,
+                to_wallet.address,
                 token_id,
-                caller_eoa=others[0].starknet_contract,
+                caller_eoa=from_wallet.starknet_contract,
             )
 
             approved = await erc_721.getApproved(token_id)
             nft_owner = await erc_721.ownerOf(token_id)
-            receiver_balance_after = await erc_721.balanceOf(others[1].address)
-            sender_balance_after = await erc_721.balanceOf(others[0].address)
+            receiver_balance_after = await erc_721.balanceOf(to_wallet.address)
+            sender_balance_after = await erc_721.balanceOf(from_wallet.address)
 
             assert approved == ZERO_ADDRESS
-            assert nft_owner == others[1].address
+            assert nft_owner == to_wallet.address
             assert receiver_balance_after - receiver_balance_before == 1
             assert sender_balance_after - sender_balance_before == 0
 
         async def test_should_safe_transfer_from_to_ERC721Recipient(
-            self, erc_721, erc_721_recipient, others, token_id
+            self, erc_721, erc_721_recipient, from_wallet, to_wallet, token_id
         ):
             recipient_address = erc_721_recipient.address
 
             receiver_balance_before = await erc_721.balanceOf(recipient_address)
-            sender_balance_before = await erc_721.balanceOf(others[0].address)
+            sender_balance_before = await erc_721.balanceOf(from_wallet.address)
 
             await erc_721.mint(
-                others[0].address, token_id, caller_eoa=others[0].starknet_contract
+                from_wallet.address, token_id, caller_eoa=from_wallet.starknet_contract
             )
 
             await erc_721.setApprovalForAll(
-                others[1].address, True, caller_eoa=others[0].starknet_contract
+                to_wallet.address, True, caller_eoa=from_wallet.starknet_contract
             )
 
             await erc_721.safeTransferFrom(
-                others[0].address,
+                from_wallet.address,
                 recipient_address,
                 token_id,
-                caller_eoa=others[1].starknet_contract,
+                caller_eoa=to_wallet.starknet_contract,
             )
 
             approved = await erc_721.getApproved(token_id)
             nft_owner = await erc_721.ownerOf(token_id)
 
             receiver_balance_after = await erc_721.balanceOf(recipient_address)
-            sender_balance_after = await erc_721.balanceOf(others[0].address)
+            sender_balance_after = await erc_721.balanceOf(from_wallet.address)
 
             assert approved == ZERO_ADDRESS
             assert nft_owner == recipient_address
@@ -385,45 +394,45 @@ class TestERC721:
             recipient_token_id = await erc_721_recipient.id()
             recipient_data = await erc_721_recipient.data()
 
-            assert recipient_operator == others[1].address
-            assert recipient_from == others[0].address
+            assert recipient_operator == to_wallet.address
+            assert recipient_from == from_wallet.address
             assert recipient_token_id == token_id
             assert recipient_data == b""
 
         async def test_should_safe_transfer_from_to_ERC721Recipient_with_data(
-            self, erc_721, erc_721_recipient, others, token_id
+            self, erc_721, erc_721_recipient, from_wallet, to_wallet, token_id
         ):
             recipient_address = erc_721_recipient.address
 
             receiver_balance_before = await erc_721.balanceOf(recipient_address)
-            sender_balance_before = await erc_721.balanceOf(others[0].address)
+            sender_balance_before = await erc_721.balanceOf(from_wallet.address)
 
             await erc_721.mint(
-                others[0].address, token_id, caller_eoa=others[0].starknet_contract
+                from_wallet.address, token_id, caller_eoa=from_wallet.starknet_contract
             )
 
             await erc_721.setApprovalForAll(
-                others[1].address, True, caller_eoa=others[0].starknet_contract
+                to_wallet.address, True, caller_eoa=from_wallet.starknet_contract
             )
 
             data = b"testing 123"
 
             await erc_721.safeTransferFrom2(
-                others[0].address,
+                from_wallet.address,
                 recipient_address,
                 token_id,
                 data,
-                caller_eoa=others[1].starknet_contract,
+                caller_eoa=to_wallet.starknet_contract,
             )
 
             approved = await erc_721.getApproved(token_id)
             nft_owner = await erc_721.ownerOf(token_id)
 
             receiver_balance_after = await erc_721.balanceOf(recipient_address)
-            sender_balance_after = await erc_721.balanceOf(others[0].address)
+            sender_balance_after = await erc_721.balanceOf(from_wallet.address)
 
             await erc_721.balanceOf(recipient_address)
-            await erc_721.balanceOf(others[0].address)
+            await erc_721.balanceOf(from_wallet.address)
 
             assert approved == ZERO_ADDRESS
             assert nft_owner == recipient_address
@@ -435,8 +444,8 @@ class TestERC721:
             recipient_token_id = await erc_721_recipient.id()
             recipient_data = await erc_721_recipient.data()
 
-            assert recipient_operator == others[1].address
-            assert recipient_from == others[0].address
+            assert recipient_operator == to_wallet.address
+            assert recipient_from == from_wallet.address
             assert recipient_token_id == token_id
             assert recipient_data == data
 
