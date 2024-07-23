@@ -253,7 +253,7 @@ class TestERC721:
                 from_wallet.address,
                 to_wallet.address,
                 token_id,
-                caller_eoa=from_wallet.starknet_contract,
+                caller_eoa=to_wallet.starknet_contract,
             )
 
             approved = await erc_721.getApproved(token_id)
@@ -342,7 +342,7 @@ class TestERC721:
                 from_wallet.address,
                 to_wallet.address,
                 token_id,
-                caller_eoa=from_wallet.starknet_contract,
+                caller_eoa=to_wallet.starknet_contract,
             )
 
             approved = await erc_721.getApproved(token_id)
