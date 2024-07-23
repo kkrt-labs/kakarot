@@ -8,7 +8,6 @@ from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.registers import get_fp_and_pc
 from starkware.cairo.common.uint256 import (
     uint256_and,
-    uint256_eq,
     uint256_lt,
     uint256_mul,
     uint256_not,
@@ -37,6 +36,7 @@ from utils.uint256 import (
     uint256_signed_lt,
     uint256_shr,
     uint256_signed_div_rem,
+    uint256_eq,
 )
 from utils.utils import Helpers
 

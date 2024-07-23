@@ -3,7 +3,7 @@ from ethereum.shanghai.vm.gas import (
     calculate_gas_extend_memory,
     calculate_memory_gas_cost,
 )
-from hypothesis import given, reproduce_failure
+from hypothesis import given
 from hypothesis.strategies import integers
 
 

@@ -1,9 +1,10 @@
 from starkware.cairo.common.math import split_felt, unsigned_div_rem
 from starkware.cairo.common.math_cmp import is_not_zero, is_nn, is_le_felt
 from starkware.cairo.common.bool import FALSE
-from starkware.cairo.common.uint256 import Uint256, uint256_lt, uint256_eq
+from starkware.cairo.common.uint256 import Uint256, uint256_lt
 
 from kakarot.model import model
+from utils.uint256 import uint256_eq
 from utils.utils import Helpers
 
 namespace Gas {
