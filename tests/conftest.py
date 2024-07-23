@@ -58,7 +58,7 @@ def seed(request):
 pytest_plugins = ["tests.fixtures.starknet"]
 
 settings.register_profile("ci", deadline=None, max_examples=1000)
-settings.register_profile("dev", max_examples=10)
+settings.register_profile("dev", deadline=None, max_examples=10)
 settings.register_profile("debug", max_examples=10, verbosity=Verbosity.verbose)
 settings.load_profile(os.getenv("HYPOTHESIS_PROFILE", "default"))
 logger.info(f"Using Hypothesis profile: {os.getenv('HYPOTHESIS_PROFILE', 'default')}")
