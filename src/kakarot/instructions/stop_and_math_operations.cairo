@@ -473,21 +473,23 @@ namespace StopAndMathOperations {
         // compute y = (x >> (248 - i * 8)) & 0xFF
         let i = popped[0];
         let (is_inf_32) = uint256_lt(i, Uint256(32, 0));
-        if (is_inf_32 != FALSE) {
-            let (mul, _) = uint256_mul(i, Uint256(8, 0));
-            let (right) = uint256_sub(Uint256(248, 0), mul);
-            let (shift_right) = uint256_shr(popped[1], right);
-            let (result) = uint256_and(shift_right, Uint256(0xFF, 0));
-            tempvar bitwise_ptr = bitwise_ptr;
-            tempvar range_check_ptr = range_check_ptr;
-            tempvar result = Uint256(result.low, result.high);
-            jmp end;
-        } else {
-            tempvar bitwise_ptr = bitwise_ptr;
-            tempvar range_check_ptr = range_check_ptr;
-            tempvar result = Uint256(0, 0);
-            jmp end;
-        }
+        jmp byte_i if is_inf_32 != 0;
+
+        tempvar bitwise_ptr = bitwise_ptr;
+        tempvar range_check_ptr = range_check_ptr;
+        tempvar result = Uint256(0, 0);
+        jmp end;
+
+        // here i < 32 so we can use field ops
+        byte_i:
+        let right = Uint256(248 - i.low * 8, 0);
+        let (shift_right) = uint256_shr(popped[1], right);
+        let (result) = uint256_and(shift_right, Uint256(0xFF, 0));
+
+        tempvar bitwise_ptr = bitwise_ptr;
+        tempvar range_check_ptr = range_check_ptr;
+        tempvar result = Uint256(result.low, result.high);
+        jmp end;
 
         SHL:
         let range_check_ptr = [ap - 2];
