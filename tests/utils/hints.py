@@ -52,8 +52,6 @@ def new_default_dict(
 
 @contextmanager
 def patch_hint(program, hint, new_hint):
-    hints_before = program.hints
-    # create new hints dict
     patched_hints = {
         k: [
             (
@@ -71,5 +69,3 @@ def patch_hint(program, hint, new_hint):
     }
     with patch.object(program, "hints", new=patched_hints):
         yield
-
-    program.hints = hints_before
