@@ -1,6 +1,9 @@
 from collections import defaultdict
+from contextlib import contextmanager
+from unittest.mock import patch
 
 from starkware.cairo.common.dict import DictTracker
+from starkware.cairo.lang.compiler.program import CairoHint
 
 
 def debug_info(program):
@@ -45,3 +48,28 @@ def new_default_dict(
         current_ptr=base,
     )
     return base
+
+
+@contextmanager
+def patch_hint(program, hint, new_hint):
+    hints_before = program.hints
+    # create new hints dict
+    patched_hints = {
+        k: [
+            (
+                hint_
+                if hint_.code != hint
+                else CairoHint(
+                    accessible_scopes=hint_.accessible_scopes,
+                    flow_tracking_data=hint_.flow_tracking_data,
+                    code=new_hint,
+                )
+            )
+            for hint_ in v
+        ]
+        for k, v in program.hints.items()
+    }
+    with patch.object(program, "hints", new=patched_hints):
+        yield
+
+    program.hints = hints_before

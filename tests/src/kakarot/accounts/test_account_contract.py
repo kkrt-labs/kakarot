@@ -15,6 +15,7 @@ from kakarot_scripts.constants import ARACHNID_PROXY_DEPLOYER, ARACHNID_PROXY_SI
 from tests.utils.constants import CHAIN_ID, TRANSACTION_GAS_LIMIT, TRANSACTIONS
 from tests.utils.errors import cairo_error
 from tests.utils.helpers import generate_random_private_key, rlp_encode_signed_data
+from tests.utils.hints import patch_hint
 from tests.utils.syscall_handler import SyscallHandler
 from tests.utils.uint256 import int_to_uint256
 
@@ -115,6 +116,27 @@ class TestAccountContract:
             calls = [call(address=address) for address in addresses]
             mock_storage.assert_has_calls(calls)
             assert output[:output_len] == list(bytecode)
+
+        def test_should_raise_when_read_bytecode_zellic_issue_1279(
+            self, cairo_program, cairo_run, bytecode, storage
+        ):
+            with (
+                patch_hint(
+                    cairo_program,
+                    "memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base\nassert res < ids.bound, f'split_int(): Limb {res} is out of range.'",
+                    "memory[ids.output] = res = (int(ids.value) % PRIME + 1) % ids.base\nassert res < ids.bound, f'split_int(): Limb {res} is out of range.'",
+                ),
+            ):
+                raised = False
+                try:
+                    output_len, output = cairo_run("test__bytecode")
+                except Exception as e:
+                    raised = True
+                    assert any(
+                        x in e.args[0]
+                        for x in ["ASSERT_EQ instruction failed", "assert value = 0;"]
+                    )
+                assert raised if bytecode.len() > 0 else True
 
     class TestNonce:
         @SyscallHandler.patch("Ownable_owner", 0xDEAD)
@@ -367,8 +389,9 @@ class TestAccountContract:
                 signed.v,
             ]
 
-            with cairo_error(message="Invalid signature."), SyscallHandler.patch(
-                "Account_evm_address", address
+            with (
+                cairo_error(message="Invalid signature."),
+                SyscallHandler.patch("Account_evm_address", address),
             ):
                 cairo_run(
                     "test__execute_from_outside",
@@ -403,8 +426,9 @@ class TestAccountContract:
                 signed.v,
             ]
 
-            with cairo_error(message="Invalid chain id"), SyscallHandler.patch(
-                "Account_evm_address", address
+            with (
+                cairo_error(message="Invalid chain id"),
+                SyscallHandler.patch("Account_evm_address", address),
             ):
                 cairo_run(
                     "test__execute_from_outside",
@@ -429,8 +453,9 @@ class TestAccountContract:
             encoded_unsigned_tx = rlp_encode_signed_data(transaction)
             tx_data = list(encoded_unsigned_tx)
 
-            with cairo_error(message="Invalid nonce"), SyscallHandler.patch(
-                "Account_evm_address", address
+            with (
+                cairo_error(message="Invalid nonce"),
+                SyscallHandler.patch("Account_evm_address", address),
             ):
                 cairo_run(
                     "test__execute_from_outside",
@@ -454,12 +479,10 @@ class TestAccountContract:
             encoded_unsigned_tx = rlp_encode_signed_data(transaction)
             tx_data = list(encoded_unsigned_tx)
 
-            with cairo_error(
-                message="Not enough ETH to pay msg.value + max gas fees"
-            ), SyscallHandler.patch(
-                "Account_evm_address", address
-            ), SyscallHandler.patch(
-                "Account_nonce", transaction.get("nonce", 0)
+            with (
+                cairo_error(message="Not enough ETH to pay msg.value + max gas fees"),
+                SyscallHandler.patch("Account_evm_address", address),
+                SyscallHandler.patch("Account_nonce", transaction.get("nonce", 0)),
             ):
                 cairo_run(
                     "test__execute_from_outside",
@@ -486,12 +509,10 @@ class TestAccountContract:
             encoded_unsigned_tx = rlp_encode_signed_data(transaction)
             tx_data = list(encoded_unsigned_tx)
 
-            with cairo_error(
-                message="Transaction gas_limit > Block gas_limit"
-            ), SyscallHandler.patch(
-                "Account_evm_address", address
-            ), SyscallHandler.patch(
-                "Account_nonce", transaction.get("nonce", 0)
+            with (
+                cairo_error(message="Transaction gas_limit > Block gas_limit"),
+                SyscallHandler.patch("Account_evm_address", address),
+                SyscallHandler.patch("Account_nonce", transaction.get("nonce", 0)),
             ):
                 cairo_run(
                     "test__execute_from_outside",
@@ -523,9 +544,11 @@ class TestAccountContract:
             encoded_unsigned_tx = rlp_encode_signed_data(transaction)
             tx_data = list(encoded_unsigned_tx)
 
-            with cairo_error(message="Max fee per gas too low"), SyscallHandler.patch(
-                "Account_evm_address", address
-            ), SyscallHandler.patch("Account_nonce", transaction.get("nonce", 0)):
+            with (
+                cairo_error(message="Max fee per gas too low"),
+                SyscallHandler.patch("Account_evm_address", address),
+                SyscallHandler.patch("Account_nonce", transaction.get("nonce", 0)),
+            ):
                 cairo_run(
                     "test__execute_from_outside",
                     tx_data=tx_data,
@@ -565,12 +588,10 @@ class TestAccountContract:
                 signed.v,
             ]
 
-            with cairo_error(
-                message="Max priority fee greater than max fee per gas"
-            ), SyscallHandler.patch(
-                "Account_evm_address", address
-            ), SyscallHandler.patch(
-                "Account_nonce", transaction["nonce"]
+            with (
+                cairo_error(message="Max priority fee greater than max fee per gas"),
+                SyscallHandler.patch("Account_evm_address", address),
+                SyscallHandler.patch("Account_nonce", transaction["nonce"]),
             ):
                 cairo_run(
                     "test__execute_from_outside",
@@ -606,15 +627,17 @@ class TestAccountContract:
                 int.from_bytes(keccak(encoded_unsigned_tx), "big")
             )
 
-            with SyscallHandler.patch(
-                "Account_evm_address", int(ARACHNID_PROXY_DEPLOYER, 16)
-            ), SyscallHandler.patch(
-                "Account_authorized_message_hashes",
-                tx_hash_low,
-                tx_hash_high,
-                0x1,
-            ), SyscallHandler.patch(
-                "Account_nonce", 0
+            with (
+                SyscallHandler.patch(
+                    "Account_evm_address", int(ARACHNID_PROXY_DEPLOYER, 16)
+                ),
+                SyscallHandler.patch(
+                    "Account_authorized_message_hashes",
+                    tx_hash_low,
+                    tx_hash_high,
+                    0x1,
+                ),
+                SyscallHandler.patch("Account_nonce", 0),
             ):
                 output_len, output = cairo_run(
                     "test__execute_from_outside",
@@ -661,9 +684,10 @@ class TestAccountContract:
             encoded_unsigned_tx = rlp_encode_signed_data(transaction)
             tx_data = list(encoded_unsigned_tx)
 
-            with SyscallHandler.patch(
-                "Account_evm_address", address
-            ), SyscallHandler.patch("Account_nonce", transaction.get("nonce", 0)):
+            with (
+                SyscallHandler.patch("Account_evm_address", address),
+                SyscallHandler.patch("Account_nonce", transaction.get("nonce", 0)),
+            ):
                 output_len, output = cairo_run(
                     "test__execute_from_outside",
                     tx_data=tx_data,
@@ -713,9 +737,10 @@ class TestAccountContract:
                 signed.v,
             ]
 
-            with SyscallHandler.patch(
-                "Account_evm_address", address
-            ), SyscallHandler.patch("Account_nonce", transaction.get("nonce", 0)):
+            with (
+                SyscallHandler.patch("Account_evm_address", address),
+                SyscallHandler.patch("Account_nonce", transaction.get("nonce", 0)),
+            ):
                 output_len, output = cairo_run(
                     "test__execute_from_outside",
                     tx_data=tx_data,

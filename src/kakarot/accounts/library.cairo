@@ -658,6 +658,7 @@ namespace Internals {
 
         cond:
         jmp body if count != 0;
+        assert value = 0;
         jmp read;
     }
 }

@@ -72,15 +72,7 @@ def cairo_compile(path):
 
 
 @pytest.fixture(scope="module")
-def cairo_run(request) -> list:
-    """
-    Run the cairo program corresponding to the python test file at a given entrypoint with given program inputs as kwargs.
-    Returns the output of the cairo program put in the output memory segment.
-
-    When --profile-cairo is passed, the cairo program is run with the tracer enabled and the resulting trace is dumped.
-
-    Logic is mainly taken from starkware.cairo.lang.vm.cairo_run with minor updates like the addition of the output segment.
-    """
+def cairo_program(request) -> list:
     cairo_file = Path(request.node.fspath).with_suffix(".cairo")
     if not cairo_file.exists():
         raise ValueError(f"Missing cairo file: {cairo_file}")
@@ -89,23 +81,36 @@ def cairo_run(request) -> list:
     program = cairo_compile(cairo_file)
     stop = perf_counter()
     logger.info(f"{cairo_file} compiled in {stop - start:.2f}s")
+    return program
+
+
+@pytest.fixture(scope="module")
+def cairo_run(request, cairo_program) -> list:
+    """
+    Run the cairo program corresponding to the python test file at a given entrypoint with given program inputs as kwargs.
+    Returns the output of the cairo program put in the output memory segment.
+
+    When --profile-cairo is passed, the cairo program is run with the tracer enabled and the resulting trace is dumped.
+
+    Logic is mainly taken from starkware.cairo.lang.vm.cairo_run with minor updates like the addition of the output segment.
+    """
 
     def _factory(entrypoint, **kwargs) -> list:
         implicit_args = list(
-            program.identifiers.get_by_full_name(
+            cairo_program.identifiers.get_by_full_name(
                 ScopedName(path=["__main__", entrypoint, "ImplicitArgs"])
             ).members.keys()
         )
         args = list(
-            program.identifiers.get_by_full_name(
+            cairo_program.identifiers.get_by_full_name(
                 ScopedName(path=["__main__", entrypoint, "Args"])
             ).members.keys()
         )
-        return_data = program.identifiers.get_by_full_name(
+        return_data = cairo_program.identifiers.get_by_full_name(
             ScopedName(path=["__main__", entrypoint, "Return"])
         )
         # Fix builtins runner based on the implicit args since the compiler doesn't find them
-        program.builtins = [
+        cairo_program.builtins = [
             builtin
             # This list is extracted from the builtin runners
             # Builtins have to be declared in this order
@@ -125,7 +130,7 @@ def cairo_run(request) -> list:
 
         memory = MemoryDict()
         runner = CairoRunner(
-            program=program,
+            program=cairo_program,
             layout=request.config.getoption("layout"),
             memory=memory,
             proof_mode=request.config.getoption("proof_mode"),
@@ -165,7 +170,7 @@ def cairo_run(request) -> list:
         runner.execution_public_memory = list(range(len(stack)))
 
         runner.initialize_state(
-            entrypoint=program.identifiers.get_by_full_name(
+            entrypoint=cairo_program.identifiers.get_by_full_name(
                 ScopedName(path=["__main__", entrypoint])
             ).pc,
             stack=stack,
@@ -178,7 +183,7 @@ def cairo_run(request) -> list:
                 "syscall_handler": SyscallHandler(),
             },
             static_locals={
-                "debug_info": debug_info(program),
+                "debug_info": debug_info(cairo_program),
                 "serde": serde,
                 "Opcodes": Opcodes,
             },
@@ -234,7 +239,7 @@ def cairo_run(request) -> list:
         )
         if request.config.getoption("profile_cairo"):
             tracer_data = TracerData(
-                program=program,
+                program=cairo_program,
                 memory=runner.relocated_memory,
                 trace=runner.relocated_trace,
                 debug_info=runner.get_relocated_debug_info(),
@@ -253,7 +258,7 @@ def cairo_run(request) -> list:
                 write_binary_memory(
                     fp,
                     runner.relocated_memory,
-                    math.ceil(program.prime.bit_length() / 8),
+                    math.ceil(cairo_program.prime.bit_length() / 8),
                 )
 
             rc_min, rc_max = runner.get_perm_range_check_limits()
