@@ -1,5 +1,4 @@
 import math
-import random
 
 import pytest
 
@@ -8,7 +7,6 @@ import pytest
 class TestModExp:
     @pytest.mark.slow
     def test_modexp(self, cairo_run):
-        random.seed(0)
         b = 3
         b_size = math.ceil(math.log(b, 256))
         b_size_bytes = b_size.to_bytes(32, "big")

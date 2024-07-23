@@ -1,9 +1,10 @@
 from starkware.cairo.common.math import split_felt, unsigned_div_rem
 from starkware.cairo.common.math_cmp import is_not_zero, is_nn, is_le_felt
 from starkware.cairo.common.bool import FALSE
-from starkware.cairo.common.uint256 import Uint256, uint256_lt, uint256_eq
+from starkware.cairo.common.uint256 import Uint256, uint256_lt
 
 from kakarot.model import model
+from utils.uint256 import uint256_eq
 from utils.utils import Helpers
 
 namespace Gas {
@@ -111,10 +112,9 @@ namespace Gas {
         }
 
         if (offset.high + size.high != 0) {
-            // Hardcoded value of cost(2^128) and size of 2**128 bytes (will produce OOG in any case)
-            let expansion = model.MemoryExpansion(
-                cost=MEMORY_COST_U128, new_words_len=0x8000000000000000000000000000000
-            );
+            // Hardcoded value of cost(2**128) and size of 2**128 bytes = 2**123 words of 32 bytes
+            // This offset would produce an OOG error in any case
+            let expansion = model.MemoryExpansion(cost=MEMORY_COST_U128, new_words_len=2 ** 123);
             return expansion;
         }
 
@@ -166,9 +166,9 @@ namespace Gas {
 
         expansion_cost_saturated:
         let range_check_ptr = [fp - 8];
-        let expansion = model.MemoryExpansion(
-            cost=Gas.MEMORY_COST_U128, new_words_len=0x8000000000000000000000000000000
-        );
+        // Hardcoded value of cost(2**128) and size of 2**128 bytes = 2**123 words of 32 bytes
+        // This offset would produce an OOG error in any case
+        let expansion = model.MemoryExpansion(cost=Gas.MEMORY_COST_U128, new_words_len=2 ** 123);
         return expansion;
     }
 

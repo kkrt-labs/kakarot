@@ -2,38 +2,28 @@ import pytest
 import pytest_asyncio
 
 from kakarot_scripts.constants import DEFAULT_GAS_PRICE
+from kakarot_scripts.utils.kakarot import deploy, eth_balance_of
 from tests.utils.constants import ACCOUNT_BALANCE
 
 
 @pytest_asyncio.fixture(scope="package")
-async def owner(new_eoa):
-    return await new_eoa()
-
-
-@pytest_asyncio.fixture(scope="package")
-async def safe(deploy_contract, owner):
-    return await deploy_contract(
-        "PlainOpcodes", "Safe", caller_eoa=owner.starknet_contract
-    )
+async def safe():
+    return await deploy("PlainOpcodes", "Safe")
 
 
 @pytest.mark.asyncio(scope="package")
 @pytest.mark.Safe
 class TestSafe:
     class TestReceive:
-        async def test_should_receive_eth(self, safe, owner):
+        async def test_should_receive_eth(self, safe):
             balance_before = await safe.balance()
-            await safe.deposit(
-                value=ACCOUNT_BALANCE, caller_eoa=owner.starknet_contract
-            )
+            await safe.deposit(value=ACCOUNT_BALANCE)
             balance_after = await safe.balance()
             assert balance_after - balance_before == ACCOUNT_BALANCE
 
     class TestWithdrawTransfer:
-        async def test_should_withdraw_transfer_eth(self, safe, owner, eth_balance_of):
-            await safe.deposit(
-                value=ACCOUNT_BALANCE, caller_eoa=owner.starknet_contract
-            )
+        async def test_should_withdraw_transfer_eth(self, safe, owner):
+            await safe.deposit(value=ACCOUNT_BALANCE)
 
             safe_balance = await safe.balance()
             owner_balance_before = await eth_balance_of(owner.address)
@@ -52,10 +42,8 @@ class TestSafe:
             )
 
     class TestWithdrawCall:
-        async def test_should_withdraw_call_eth(self, safe, owner, eth_balance_of):
-            await safe.deposit(
-                value=ACCOUNT_BALANCE, caller_eoa=owner.starknet_contract
-            )
+        async def test_should_withdraw_call_eth(self, safe, owner):
+            await safe.deposit(value=ACCOUNT_BALANCE)
 
             safe_balance = await safe.balance()
             owner_balance_before = await eth_balance_of(owner.address)
@@ -74,11 +62,6 @@ class TestSafe:
             )
 
     class TestDeploySafeWithValue:
-        async def test_deploy_safe_with_value(self, safe, deploy_contract, owner):
-            safe = await deploy_contract(
-                "PlainOpcodes",
-                "Safe",
-                caller_eoa=owner.starknet_contract,
-                value=1,
-            )
+        async def test_deploy_safe_with_value(self):
+            safe = await deploy("PlainOpcodes", "Safe", value=1)
             assert await safe.balance() == 1

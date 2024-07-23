@@ -13,6 +13,7 @@ from kakarot.kakarot import (
     set_prev_randao,
     set_block_gas_limit,
     set_account_contract_class_hash,
+    set_uninitialized_account_class_hash,
     set_authorized_cairo_precompile_caller,
     set_cairo1_helpers_class_hash,
     transfer_ownership,
@@ -153,6 +154,17 @@ func test__set_account_contract_class_hash{
     %{ ids.value = program_input["class_hash"] %}
 
     set_account_contract_class_hash(value);
+    return ();
+}
+
+func test__set_uninitialized_account_class_hash{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+}() {
+    tempvar value;
+
+    %{ ids.value = program_input["class_hash"] %}
+
+    set_uninitialized_account_class_hash(value);
     return ();
 }
 

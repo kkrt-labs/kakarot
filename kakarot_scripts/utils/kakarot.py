@@ -62,7 +62,7 @@ class EvmTransactionError(Exception):
 def get_solidity_artifacts(
     contract_app: str,
     contract_name: str,
-) -> Web3Contract:
+):
     import toml
 
     try:
@@ -162,13 +162,13 @@ async def deploy(
     if WEB3.is_connected():
         evm_address = int(receipt.contractAddress or receipt.to, 16)
         starknet_address = (
-            await _call_starknet("kakarot", "compute_starknet_address", evm_address)
+            await _call_starknet("kakarot", "get_starknet_address", evm_address)
         ).contract_address
     else:
         starknet_address, evm_address = response
     contract.address = Web3.to_checksum_address(f"0x{evm_address:040x}")
     contract.starknet_address = starknet_address
-    logger.info(f"✅ {contract_name} deployed at address {contract.address}")
+    logger.info(f"✅ {contract_name} deployed at: {contract.address}")
 
     return contract
 
@@ -395,6 +395,29 @@ async def send_pre_eip155_transaction(
     )
 
 
+async def eth_get_code(address: Union[int, str]):
+    starknet_address = await get_starknet_address(address)
+    return bytes(
+        (
+            await _call_starknet(
+                "account_contract", "bytecode", address=starknet_address
+            )
+        ).bytecode
+    )
+
+
+async def eth_get_transaction_count(address: Union[int, str]):
+    starknet_address = await get_starknet_address(address)
+    return (
+        await _call_starknet("account_contract", "get_nonce", address=starknet_address)
+    ).nonce
+
+
+async def eth_balance_of(address: Union[int, str]):
+    starknet_address = await get_starknet_address(address)
+    return await get_balance(starknet_address)
+
+
 async def eth_send_transaction(
     to: Union[int, str],
     data: Union[str, bytes],
@@ -522,6 +545,10 @@ async def send_starknet_transaction(
 
 
 async def compute_starknet_address(address: Union[str, int]):
+    """
+    Compute the Starknet address of an EVM address.
+    Warning: use get_starknet_address for getting the actual address of an account.
+    """
     evm_address = int(address, 16) if isinstance(address, str) else address
     kakarot_contract = _get_starknet_contract("kakarot")
     return (
@@ -529,18 +556,27 @@ async def compute_starknet_address(address: Union[str, int]):
     ).contract_address
 
 
+async def get_starknet_address(address: Union[str, int]):
+    """
+    Get the registered Starknet address of an EVM address, or the one it would get
+    if it was deployed right now with Kakarot.
+    Warning: this may not be the same as compute_starknet_address if kakarot base uninitialized class hash has changed.
+    """
+    evm_address = int(address, 16) if isinstance(address, str) else address
+    kakarot_contract = _get_starknet_contract("kakarot")
+    return (
+        await kakarot_contract.functions["get_starknet_address"].call(evm_address)
+    ).starknet_address
+
+
 async def deploy_and_fund_evm_address(evm_address: str, amount: float):
     """
     Deploy an EOA linked to the given EVM address and fund it with amount ETH.
     """
-    starknet_address = (
-        await _call_starknet(
-            "kakarot", "compute_starknet_address", int(evm_address, 16)
-        )
-    ).contract_address
-
+    starknet_address = await get_starknet_address(int(evm_address, 16))
     account_balance = await get_balance(evm_address)
-    await fund_address(evm_address, amount - account_balance)
+    if account_balance < amount:
+        await fund_address(evm_address, amount - account_balance)
     if not await _contract_exists(starknet_address):
         await _invoke_starknet(
             "kakarot", "deploy_externally_owned_account", int(evm_address, 16)
@@ -549,7 +585,7 @@ async def deploy_and_fund_evm_address(evm_address: str, amount: float):
 
 
 async def fund_address(address: Union[str, int], amount: float):
-    starknet_address = await compute_starknet_address(address)
+    starknet_address = await get_starknet_address(address)
     logger.info(
         f"ℹ️  Funding EVM address {address} at Starknet address {hex(starknet_address)}"
     )
@@ -605,17 +641,6 @@ async def store_bytecode(bytecode: Union[str, bytes], **kwargs):
     return evm_address
 
 
-async def eth_get_code(address: Union[int, str]):
-    starknet_address = await compute_starknet_address(address)
-    return bytes(
-        (
-            await _call_starknet(
-                "account_contract", "bytecode", address=starknet_address
-            )
-        ).bytecode
-    )
-
-
 async def deploy_with_presigned_tx(
     deployer_evm_address: str, signed_tx: bytes, amount=0.1, name=""
 ):
@@ -626,6 +651,6 @@ async def deploy_with_presigned_tx(
         deployer_evm_address, deployer_starknet_address, signed_tx
     )
     deployed_address = response[1]
-    logger.info(f"✅ {name} Deployed at 0x{deployed_address:040x}")
-    deployed_starknet_address = await compute_starknet_address(deployed_address)
+    logger.info(f"✅ {name} Deployed at: 0x{deployed_address:040x}")
+    deployed_starknet_address = await get_starknet_address(deployed_address)
     return {"address": deployed_address, "starknet_address": deployed_starknet_address}

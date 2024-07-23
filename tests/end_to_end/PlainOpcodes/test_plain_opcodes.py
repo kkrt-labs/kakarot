@@ -5,6 +5,14 @@ from eth_abi import decode
 from eth_utils import keccak
 from web3 import Web3
 
+from kakarot_scripts.utils.kakarot import (
+    eth_balance_of,
+    eth_get_code,
+    eth_get_transaction_count,
+    eth_send_transaction,
+    fund_address,
+    get_contract,
+)
 from tests.utils.errors import evm_error
 
 
@@ -15,20 +23,13 @@ class TestPlainOpcodes:
         async def test_should_return_counter_count(self, counter, plain_opcodes):
             assert await plain_opcodes.opcodeStaticCall() == await counter.count()
 
-        async def test_should_revert_when_trying_to_modify_state(
-            self,
-            plain_opcodes,
-        ):
+        async def test_should_revert_when_trying_to_modify_state(self, plain_opcodes):
             success, error = await plain_opcodes.opcodeStaticCall2()
             assert not success
             assert error == b""
 
     class TestCall:
-        async def test_should_increase_counter(
-            self,
-            counter,
-            plain_opcodes,
-        ):
+        async def test_should_increase_counter(self, counter, plain_opcodes):
             count_before = await counter.count()
             await plain_opcodes.opcodeCall()
             count_after = await counter.count()
@@ -142,20 +143,9 @@ class TestPlainOpcodes:
     class TestCreate:
         @pytest.mark.parametrize("count", [1, 2])
         async def test_should_create_counters(
-            self,
-            plain_opcodes,
-            counter,
-            owner,
-            get_solidity_contract,
-            count,
-            get_contract,
+            self, plain_opcodes, counter, owner, count
         ):
-            plain_opcodes_contract_account = get_contract(
-                "account_contract", address=plain_opcodes.starknet_address
-            )
-            nonce_initial = (
-                await plain_opcodes_contract_account.functions["get_nonce"].call()
-            ).nonce
+            nonce_initial = await eth_get_transaction_count(plain_opcodes.address)
 
             receipt = (
                 await plain_opcodes.create(
@@ -167,24 +157,17 @@ class TestPlainOpcodes:
             events = plain_opcodes.events.parse_events(receipt)
             assert len(events["CreateAddress"]) == count
             for create_event in events["CreateAddress"]:
-                deployed_counter = get_solidity_contract(
+                deployed_counter = get_contract(
                     "PlainOpcodes", "Counter", address=create_event["_address"]
                 )
                 assert await deployed_counter.count() == 0
 
-            nonce_final = (
-                await plain_opcodes_contract_account.functions["get_nonce"].call()
-            ).nonce
+            nonce_final = await eth_get_transaction_count(plain_opcodes.address)
             assert nonce_final == nonce_initial + count
 
         @pytest.mark.parametrize("bytecode", ["0x", "0x6000600155600160015500"])
         async def test_should_create_empty_contract_when_creation_code_has_no_return(
-            self,
-            plain_opcodes,
-            owner,
-            bytecode,
-            compute_starknet_address,
-            get_contract,
+            self, plain_opcodes, owner, bytecode
         ):
             receipt = (
                 await plain_opcodes.create(
@@ -196,45 +179,31 @@ class TestPlainOpcodes:
 
             events = plain_opcodes.events.parse_events(receipt)
             assert len(events["CreateAddress"]) == 1
-            starknet_address = await compute_starknet_address(
-                events["CreateAddress"][0]["_address"]
-            )
-            contract_account = get_contract(
-                "account_contract", address=starknet_address
-            )
-            assert [] == (await contract_account.functions["bytecode"].call()).bytecode
+            assert b"" == await eth_get_code(events["CreateAddress"][0]["_address"])
 
         async def test_should_create_counter_and_call_in_the_same_tx(
-            self,
-            plain_opcodes,
-            get_solidity_contract,
+            self, plain_opcodes
         ):
             receipt = (await plain_opcodes.createCounterAndCall())["receipt"]
             events = plain_opcodes.events.parse_events(receipt)
             address = events["CreateAddress"][0]["_address"]
-            counter = get_solidity_contract("PlainOpcodes", "Counter", address=address)
+            counter = get_contract("PlainOpcodes", "Counter", address=address)
             assert await counter.count() == 0
 
         async def test_should_create_counter_and_invoke_in_the_same_tx(
-            self,
-            plain_opcodes,
-            get_solidity_contract,
+            self, plain_opcodes
         ):
             receipt = (await plain_opcodes.createCounterAndInvoke())["receipt"]
             events = plain_opcodes.events.parse_events(receipt)
             address = events["CreateAddress"][0]["_address"]
-            counter = get_solidity_contract("PlainOpcodes", "Counter", address=address)
+            counter = get_contract("PlainOpcodes", "Counter", address=address)
             assert await counter.count() == 1
 
     class TestCreate2:
         async def test_should_collision_after_selfdestruct_different_tx(
-            self,
-            plain_opcodes,
-            get_solidity_contract,
-            owner,
-            eth_get_code,
+            self, plain_opcodes, owner
         ):
-            contract_with_selfdestruct = get_solidity_contract(
+            contract_with_selfdestruct = get_contract(
                 "PlainOpcodes", "ContractWithSelfdestructMethod"
             )
             salt = 12345
@@ -247,7 +216,7 @@ class TestPlainOpcodes:
             )["receipt"]
             events = plain_opcodes.events.parse_events(receipt)
             assert len(events["Create2Address"]) == 1
-            contract_with_selfdestruct = get_solidity_contract(
+            contract_with_selfdestruct = get_contract(
                 "PlainOpcodes",
                 "ContractWithSelfdestructMethod",
                 address=events["Create2Address"][0]["_address"],
@@ -274,20 +243,9 @@ class TestPlainOpcodes:
             ]
 
         async def test_should_deploy_bytecode_at_address(
-            self,
-            plain_opcodes,
-            counter,
-            owner,
-            get_solidity_contract,
-            get_contract,
-            compute_starknet_address,
+            self, plain_opcodes, counter, owner
         ):
-            plain_opcodes_contract_account = get_contract(
-                "account_contract", address=plain_opcodes.starknet_address
-            )
-            nonce_initial = (
-                await plain_opcodes_contract_account.functions["get_nonce"].call()
-            ).nonce
+            nonce_initial = await eth_get_transaction_count(plain_opcodes.address)
 
             salt = 1234
             receipt = (
@@ -300,26 +258,17 @@ class TestPlainOpcodes:
             events = plain_opcodes.events.parse_events(receipt)
             assert len(events["Create2Address"]) == 1
 
-            deployed_counter = get_solidity_contract(
+            deployed_counter = get_contract(
                 "PlainOpcodes",
                 "Counter",
                 address=events["Create2Address"][0]["_address"],
             )
             assert await deployed_counter.count() == 0
-
-            deployed_counter_contract_account = get_contract(
-                "account_contract",
-                address=await compute_starknet_address(deployed_counter.address),
-            )
-
+            assert await eth_get_transaction_count(deployed_counter.address) == 1
             assert (
-                await deployed_counter_contract_account.functions["get_nonce"].call()
-            ).nonce == 1
-
-            nonce_final = (
-                await plain_opcodes_contract_account.functions["get_nonce"].call()
-            ).nonce
-            assert nonce_final == nonce_initial + 1
+                await eth_get_transaction_count(plain_opcodes.address)
+                == nonce_initial + 1
+            )
 
     class TestRequire:
         async def test_should_revert_when_value_is_zero(self, plain_opcodes):
@@ -341,16 +290,14 @@ class TestPlainOpcodes:
                     caller_eoa=owner.starknet_contract
                 )
 
-        async def test_should_revert_via_call(
-            self, plain_opcodes, get_solidity_contract, owner
-        ):
+        async def test_should_revert_via_call(self, plain_opcodes, owner):
             receipt = (
                 await plain_opcodes.contractCallRevert(
                     caller_eoa=owner.starknet_contract
                 )
             )["receipt"]
 
-            reverting_contract = get_solidity_contract(
+            reverting_contract = get_contract(
                 "PlainOpcodes", "ContractRevertsOnMethodCall"
             )
 
@@ -389,36 +336,30 @@ class TestPlainOpcodes:
             assert value == steps
 
     class TestTransfer:
-        async def test_send_some_should_send_to_eoa(
-            self, plain_opcodes, fund_starknet_address, eth_balance_of, owner, other
-        ):
+        async def test_send_some_should_send_to_eoa(self, plain_opcodes, owner, other):
             amount = 1
-            await fund_starknet_address(plain_opcodes.starknet_address, amount)
+            await fund_address(plain_opcodes.address, amount)
 
-            receiver_balance_before = await eth_balance_of(
-                other.starknet_contract.address
-            )
-            sender_balance_before = await eth_balance_of(plain_opcodes.starknet_address)
+            receiver_balance_before = await eth_balance_of(other.address)
+            sender_balance_before = await eth_balance_of(plain_opcodes.address)
 
             await plain_opcodes.sendSome(
                 other.address, amount, caller_eoa=owner.starknet_contract
             )
 
-            receiver_balance_after = await eth_balance_of(
-                other.starknet_contract.address
-            )
-            sender_balance_after = await eth_balance_of(plain_opcodes.starknet_address)
+            receiver_balance_after = await eth_balance_of(other.address)
+            sender_balance_after = await eth_balance_of(plain_opcodes.address)
 
             assert receiver_balance_after - receiver_balance_before == amount
             assert sender_balance_before - sender_balance_after == amount
 
         async def test_send_some_should_revert_when_amount_exceed_balance(
-            self, plain_opcodes, fund_starknet_address, eth_balance_of, owner, other
+            self, plain_opcodes, owner, other
         ):
             amount = 1
-            await fund_starknet_address(plain_opcodes.starknet_address, amount)
+            await fund_address(plain_opcodes.address, amount)
 
-            sender_balance_before = await eth_balance_of(plain_opcodes.starknet_address)
+            sender_balance_before = await eth_balance_of(plain_opcodes.address)
             receipt = (
                 await plain_opcodes.sendSome(
                     other.address,
@@ -434,9 +375,7 @@ class TestPlainOpcodes:
                     "success": False,
                 }
             ]
-            assert sender_balance_before == await eth_balance_of(
-                plain_opcodes.starknet_address
-            )
+            assert sender_balance_before == await eth_balance_of(plain_opcodes.address)
 
     class TestMapping:
         async def test_should_emit_event_and_increase_nonce(self, plain_opcodes):
@@ -452,20 +391,14 @@ class TestPlainOpcodes:
             "data,value,message", (("", 1234, "receive"), ("0x00", 0, "fallback"))
         )
         async def test_should_revert_on_fallbacks(
-            self,
-            revert_on_fallbacks,
-            eth_send_transaction,
-            data,
-            value,
-            message,
-            addresses,
+            self, revert_on_fallbacks, data, value, message, other
         ):
             receipt, response, success, gas_used = await eth_send_transaction(
                 to=revert_on_fallbacks.address,
                 gas=200_000,
                 data=data,
                 value=value,
-                caller_eoa=addresses[2].starknet_contract,
+                caller_eoa=other.starknet_contract,
             )
             assert not success
             assert (

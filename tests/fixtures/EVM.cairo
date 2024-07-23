@@ -53,7 +53,7 @@ func execute{
     alloc_locals;
     // Deploy target account
     let evm_address = env.origin;
-    let starknet_address = Account.compute_starknet_address(evm_address);
+    let starknet_address = Account.get_starknet_address(evm_address);
     tempvar address = new model.Address(starknet_address, evm_address);
 
     // Write the valid jumpdests in the storage of the executed contract.

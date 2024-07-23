@@ -3,7 +3,8 @@ from typing import OrderedDict, Tuple
 import pytest
 import pytest_asyncio
 
-from kakarot_scripts.utils.starknet import get_deployments, wait_for_transaction
+from kakarot_scripts.utils.kakarot import deploy
+from kakarot_scripts.utils.starknet import get_contract, get_deployments, invoke
 from tests.utils.errors import evm_error
 
 ENTRY_TYPE_INDEX = {"SpotEntry": 0, "FutureEntry": 1, "GenericEntry": 2}
@@ -40,31 +41,27 @@ def serialize_data_type(data_type: dict) -> Tuple:
         return (serialized_entry_type, query_args, 0)
 
 
-@pytest_asyncio.fixture(autouse=True)
-async def setup(get_contract, invoke, mocked_values, pragma_caller, max_fee):
-    pragma_oracle = get_contract("MockPragmaOracle")
-    tx = await pragma_oracle.functions["set_price"].invoke_v1(
-        *mocked_values,
-        max_fee=max_fee,
+@pytest_asyncio.fixture(scope="module")
+async def pragma_caller(owner):
+    pragma_oracle_address = get_deployments()["MockPragmaOracle"]["address"]
+    return await deploy(
+        "CairoPrecompiles",
+        "PragmaCaller",
+        pragma_oracle_address,
+        caller_eoa=owner.starknet_contract,
     )
-    await wait_for_transaction(tx.hash)
+
+
+@pytest_asyncio.fixture()
+async def cairo_pragma(mocked_values, pragma_caller):
+    await invoke("MockPragmaOracle", "set_price", *mocked_values)
     await invoke(
         "kakarot",
         "set_authorized_cairo_precompile_caller",
         int(pragma_caller.address, 16),
         True,
     )
-
-
-@pytest_asyncio.fixture(scope="module")
-async def pragma_caller(deploy_contract, owner):
-    pragma_oracle_address = get_deployments()["MockPragmaOracle"]["address"]
-    return await deploy_contract(
-        "CairoPrecompiles",
-        "PragmaCaller",
-        pragma_oracle_address,
-        caller_eoa=owner.starknet_contract,
-    )
+    return get_contract("MockPragmaOracle")
 
 
 @pytest.mark.asyncio(scope="module")
@@ -107,13 +104,13 @@ class TestPragmaPrecompile:
         ],
     )
     async def test_should_return_data_median_for_query(
-        self, get_contract, pragma_caller, data_type, mocked_values, max_fee
+        self, cairo_pragma, pragma_caller, data_type, mocked_values, max_fee
     ):
-        cairo_pragma = get_contract("MockPragmaOracle")
         (cairo_res,) = await cairo_pragma.functions["get_data_median"].call(data_type)
         solidity_input = serialize_data_type(data_type)
         sol_res = await pragma_caller.getDataMedianSpot(solidity_input)
         serialized_cairo_res = serialize_cairo_response(cairo_res)
+        assert serialized_cairo_res == sol_res
 
         (
             res_price,
@@ -122,7 +119,6 @@ class TestPragmaPrecompile:
             res_num_sources_aggregated,
             res_maybe_expiration_timestamp,
         ) = sol_res
-
         (
             _,
             mocked_price,
@@ -130,48 +126,28 @@ class TestPragmaPrecompile:
             mocked_last_updated_timestamp,
             mocked_num_sources_aggregated,
         ) = mocked_values
-
-        assert serialized_cairo_res == sol_res
         assert res_price == mocked_price
         assert res_decimals == mocked_decimals
         assert res_last_updated_timestamp == mocked_last_updated_timestamp
         assert res_num_sources_aggregated == mocked_num_sources_aggregated
 
-        if data_type.get("FutureEntry"):
-            assert (
-                res_maybe_expiration_timestamp
-                == mocked_last_updated_timestamp
-                + 1000  # behavior coded inside the mock
-            )
-        else:
-            assert res_maybe_expiration_timestamp == 0
+        assert res_maybe_expiration_timestamp == (
+            # behavior coded inside the mock
+            mocked_last_updated_timestamp + 1000
+            if data_type.get("FutureEntry")
+            else 0
+        )
 
     @pytest.mark.parametrize(
-        "data_type, mocked_values",
-        [
-            (
-                {"SpotEntry": int.from_bytes(b"BTC/USD", byteorder="big")},
-                (
-                    int.from_bytes(b"BTC/USD", byteorder="big"),
-                    70000,
-                    18,
-                    1717143838,
-                    1,
-                ),
-            ),
-        ],
+        "data_type", [{"SpotEntry": int.from_bytes(b"BTC/USD", byteorder="big")}]
     )
-    async def test_should_fail_unauthorized_caller(
-        self, get_contract, pragma_caller, invoke, data_type
-    ):
+    async def test_should_fail_unauthorized_caller(self, pragma_caller, data_type):
         await invoke(
             "kakarot",
             "set_authorized_cairo_precompile_caller",
             int(pragma_caller.address, 16),
             False,
         )
-        cairo_pragma = get_contract("MockPragmaOracle")
-        await cairo_pragma.functions["get_data_median"].call(data_type)
         solidity_input = serialize_data_type(data_type)
 
         with evm_error("CairoLib: call_contract failed"):

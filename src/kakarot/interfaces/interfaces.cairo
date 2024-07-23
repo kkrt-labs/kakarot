@@ -36,23 +36,7 @@ namespace IERC20 {
 
 @contract_interface
 namespace IAccount {
-    func __validate__(
-        call_array_len: felt, call_array: CallArray*, calldata_len: felt, calldata: felt*
-    ) {
-    }
-
-    func __execute__(
-        call_array_len: felt, call_array: CallArray*, calldata_len: felt, calldata: felt*
-    ) -> (response_len: felt, response: felt*) {
-    }
-
-    func initialize(implementation: felt, calldata_len: felt, calldata: felt*) {
-    }
-
     func get_evm_address() -> (evm_address: felt) {
-    }
-
-    func get_implementation() -> (implementation: felt) {
     }
 
     func set_implementation(implementation: felt) {
@@ -136,6 +120,15 @@ namespace IKakarot {
     }
 
     func get_account_contract_class_hash() -> (account_contract_class_hash: felt) {
+    }
+
+    func set_account_contract_class_hash(account_contract_class_hash: felt) {
+    }
+
+    func get_uninitialized_account_class_hash() -> (uninitialized_account_class_hash: felt) {
+    }
+
+    func set_uninitialized_account_class_hash(uninitialized_account_class_hash: felt) {
     }
 
     func set_cairo1_helpers_class_hash(cairo1_helpers_class_hash: felt) {

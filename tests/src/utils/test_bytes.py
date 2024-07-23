@@ -1,5 +1,4 @@
 import os
-import random
 
 import pytest
 
@@ -75,7 +74,6 @@ class TestBytes:
             ],
         )
         def test_should_return_bytes8(self, cairo_run, bytes_len):
-            random.seed(bytes_len)
             bytes_array = list(os.urandom(bytes_len))
             bytes8_little_endian = [
                 int.from_bytes(bytes(bytes_array[i : i + 8]), "little")

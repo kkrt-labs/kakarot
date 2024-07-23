@@ -84,7 +84,7 @@ def deploy_on_l1(
 
     evm_address = int(receipt.contractAddress or receipt.to, 16)
     contract.address = Web3.to_checksum_address(f"0x{evm_address:040x}")
-    logger.info(f"✅ {contract_name} deployed at address {contract.address}")
+    logger.info(f"✅ {contract_name} deployed at: {contract.address}")
 
     return contract
 

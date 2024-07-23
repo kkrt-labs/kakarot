@@ -1,5 +1,3 @@
-from datetime import timedelta
-
 import pytest
 from hypothesis import given, settings
 from hypothesis.strategies import integers
@@ -20,7 +18,7 @@ class TestUint256:
             a=integers(min_value=0, max_value=2**256 - 1),
             b=integers(min_value=0, max_value=2**256 - 1),
         )
-        @settings(deadline=timedelta(milliseconds=30_000), max_examples=50)
+        @settings(max_examples=50)
         def test_add(self, cairo_run, a, b):
             low, high, carry = cairo_run(
                 "test__uint256_add", a=int_to_uint256(a), b=int_to_uint256(b)
@@ -33,7 +31,7 @@ class TestUint256:
             a=integers(min_value=0, max_value=2**256 - 1),
             b=integers(min_value=0, max_value=2**256 - 1),
         )
-        @settings(deadline=timedelta(milliseconds=30_000), max_examples=50)
+        @settings(max_examples=50)
         def test_sub(self, cairo_run, a, b):
             res = cairo_run(
                 "test__uint256_sub", a=int_to_uint256(a), b=int_to_uint256(b)

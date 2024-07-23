@@ -195,6 +195,25 @@ func set_account_contract_class_hash{
     return Kakarot.set_account_contract_class_hash(account_contract_class_hash);
 }
 
+// @notice Return the transparent account class hash
+// @return uninitialized_account_class_hash The account implementation class hash
+@view
+func get_uninitialized_account_class_hash{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+}() -> (uninitialized_account_class_hash: felt) {
+    return Kakarot.get_uninitialized_account_class_hash();
+}
+
+// @notice Set the transparent account class hash
+// @param uninitialized_account_class_hash The new account implementation class hash
+@external
+func set_uninitialized_account_class_hash{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+}(uninitialized_account_class_hash: felt) {
+    Ownable.assert_only_owner();
+    return Kakarot.set_uninitialized_account_class_hash(uninitialized_account_class_hash);
+}
+
 // @notice Sets the authorization of an EVM address to call Cairo Precompiles
 // @param evm_address The EVM address
 // @param authorized Whether the EVM address is authorized or not
@@ -224,15 +243,15 @@ func get_cairo1_helpers_class_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin
     return Kakarot.get_cairo1_helpers_class_hash();
 }
 
-// @notice Returns the registered starknet address for a given EVM address.
-// @dev Returns 0 if no contract is deployed for this EVM address.
+// @notice Returns the corresponding Starknet address for a given EVM address.
+// @dev Returns the registered address if there is one, otherwise returns the deterministic address got when Kakarot deploys an account.
 // @param evm_address The EVM address to transform to a starknet address
-// @return starknet_address The Starknet Account Contract address or 0 if not already deployed
+// @return starknet_address The Starknet Account Contract address
 @view
 func get_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     evm_address: felt
 ) -> (starknet_address: felt) {
-    let starknet_address = Account.get_registered_starknet_address(evm_address);
+    let starknet_address = Account.get_starknet_address(evm_address);
     return (starknet_address=starknet_address);
 }
 
@@ -271,12 +290,13 @@ func write_account_bytecode{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, rang
 
 // @notice Upgrades the class of an account.
 // @param evm_address The evm address of the account.
+// @param new_class_hash The new class hash.
 @external
 func upgrade_account{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    evm_address: felt
+    evm_address: felt, new_class_hash: felt
 ) {
     Ownable.assert_only_owner();
-    return Kakarot.upgrade_account(evm_address);
+    return Kakarot.upgrade_account(evm_address, new_class_hash);
 }
 
 // @notice Writes to an account's nonce
@@ -304,7 +324,7 @@ func set_authorized_pre_eip155_tx{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*
     sender_address: felt, msg_hash: Uint256
 ) {
     Ownable.assert_only_owner();
-    let sender_starknet_address = Account.compute_starknet_address(sender_address);
+    let sender_starknet_address = Account.get_starknet_address(sender_address);
     IAccount.set_authorized_pre_eip155_tx(sender_starknet_address, msg_hash);
     return ();
 }

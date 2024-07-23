@@ -3,10 +3,12 @@ from textwrap import wrap
 import pytest
 import pytest_asyncio
 
+from kakarot_scripts.utils.kakarot import deploy
+
 
 @pytest_asyncio.fixture(scope="package")
-async def p256_verify_invoker(deploy_contract, owner):
-    return await deploy_contract(
+async def p256_verify_invoker(owner):
+    return await deploy(
         "RIP7212",
         "RIP7212Invoker",
         caller_eoa=owner.starknet_contract,

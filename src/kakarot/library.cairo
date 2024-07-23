@@ -96,7 +96,7 @@ namespace Kakarot {
         let is_regular_tx = is_not_zero(to.is_some);
         let is_deploy_tx = 1 - is_regular_tx;
         let evm_contract_address = resolve_to(to, origin, nonce);
-        let starknet_contract_address = Account.compute_starknet_address(evm_contract_address);
+        let starknet_contract_address = Account.get_starknet_address(evm_contract_address);
         tempvar address = new model.Address(
             starknet=starknet_contract_address, evm=evm_contract_address
         );
@@ -242,6 +242,24 @@ namespace Kakarot {
         return (account_contract_class_hash,);
     }
 
+    // @notice Set the transparent account class hash
+    // @param uninitialized_account_class_hash The new account implementation class hash
+    func set_uninitialized_account_class_hash{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    }(uninitialized_account_class_hash: felt) {
+        Kakarot_uninitialized_account_class_hash.write(uninitialized_account_class_hash);
+        return ();
+    }
+
+    // @notice Return the class hash of the account implementation
+    // @return uninitialized_account_class_hash The class hash of the account implementation
+    func get_uninitialized_account_class_hash{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    }() -> (uninitialized_account_class_hash: felt) {
+        let (uninitialized_account_class_hash) = Kakarot_uninitialized_account_class_hash.read();
+        return (uninitialized_account_class_hash,);
+    }
+
     // @notice Return the hash of the Cairo1Helpers class
     // @return account_contract_class_hash The hash of the Cairo1Helpers class
     func get_cairo1_helpers_class_hash{
@@ -305,7 +323,7 @@ namespace Kakarot {
         evm_address: felt, bytecode_len: felt, bytecode: felt*
     ) {
         alloc_locals;
-        let starknet_address = Account.compute_starknet_address(evm_address);
+        let starknet_address = Account.get_starknet_address(evm_address);
         IAccount.write_bytecode(starknet_address, bytecode_len, bytecode);
         return ();
     }
@@ -317,20 +335,20 @@ namespace Kakarot {
         evm_address: felt, nonce: felt
     ) {
         alloc_locals;
-        let starknet_address = Account.compute_starknet_address(evm_address);
+        let starknet_address = Account.get_starknet_address(evm_address);
         IAccount.set_nonce(starknet_address, nonce);
         return ();
     }
 
     // @notice Upgrades an account to a new contract implementation.
     // @param evm_address The evm address of the account.
+    // @param new_class_hash The new class hash of the account.
     func upgrade_account{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        evm_address: felt
+        evm_address: felt, new_class_hash: felt
     ) {
         alloc_locals;
-        let starknet_address = Account.compute_starknet_address(evm_address);
-        let (account_contract_class_hash) = Kakarot_account_contract_class_hash.read();
-        IAccount.set_implementation(starknet_address, account_contract_class_hash);
+        let starknet_address = Account.get_starknet_address(evm_address);
+        IAccount.set_implementation(starknet_address, new_class_hash);
         return ();
     }
 
@@ -368,7 +386,7 @@ namespace Kakarot {
     }(starknet_address: felt) -> (evm_address: felt) {
         alloc_locals;
         let (local evm_address) = IAccount.get_evm_address(starknet_address);
-        let computed_starknet_address = Account.compute_starknet_address(evm_address);
+        let computed_starknet_address = Account.get_starknet_address(evm_address);
 
         with_attr error_message("Kakarot: caller contract is not a Kakarot Account") {
             assert computed_starknet_address = starknet_address;

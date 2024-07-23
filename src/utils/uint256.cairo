@@ -1,6 +1,5 @@
 from starkware.cairo.common.uint256 import (
     Uint256,
-    uint256_eq,
     uint256_mul,
     uint256_le,
     uint256_pow2,
@@ -379,4 +378,16 @@ func uint256_fast_exp{range_check_ptr}(value: Uint256, exponent: Uint256) -> Uin
 func uint256_to_uint160{range_check_ptr}(x: Uint256) -> felt {
     let (_, high) = unsigned_div_rem(x.high, 2 ** 32);
     return x.low + high * 2 ** 128;
+}
+
+// @notice Return true if both integers are equal.
+// @dev Same as the one from starkware's cairo common library, but without the useless range_check arg
+func uint256_eq(a: Uint256, b: Uint256) -> (res: felt) {
+    if (a.high != b.high) {
+        return (res=0);
+    }
+    if (a.low != b.low) {
+        return (res=0);
+    }
+    return (res=1);
 }

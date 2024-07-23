@@ -365,7 +365,7 @@ async def deploy_starknet_account(class_hash=None, private_key=None, amount=1):
         max_fee=_max_fee,
     )
     status = await wait_for_transaction(res.hash)
-    logger.info(f"{status} Account deployed at address {hex(res.account.address)}")
+    logger.info(f"{status} Account deployed at: 0x{res.account.address:064x}")
 
     return {
         "address": res.account.address,
@@ -483,7 +483,7 @@ async def deploy(contract_name, *args):
     )
     status = await wait_for_transaction(deploy_result.hash)
     logger.info(
-        f"{status} {contract_name} deployed at: {hex(deploy_result.deployed_contract.address)}"
+        f"{status} {contract_name} deployed at: 0x{deploy_result.deployed_contract.address:064x}"
     )
     return {
         "address": deploy_result.deployed_contract.address,
@@ -553,8 +553,7 @@ async def invoke(contract: Union[str, int], *args, **kwargs):
     )
     status = await wait_for_transaction(response.transaction_hash)
     logger.info(
-        f"{status} {contract}.{args[0]} invoked at tx: %s",
-        hex(response.transaction_hash),
+        f"{status} {contract}.{args[0]} invoked at tx: 0x{response.transaction_hash:064x}"
     )
     return response.transaction_hash
 
@@ -600,5 +599,5 @@ async def wait_for_transaction(tx_hash):
         )
         return "✅"
     except Exception as e:
-        logger.error(f"Error while waiting for transaction {tx_hash}: {e}")
+        logger.error(f"Error while waiting for transaction 0x{tx_hash:064x}: {e}")
         return "❌"
