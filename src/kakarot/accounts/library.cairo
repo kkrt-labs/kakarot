@@ -652,13 +652,17 @@ namespace Internals {
 
         jmp cond if remaining_bytes != 0;
 
-        assert value = 0;
+        with_attr error_message("Value is not empty") {
+            assert value = 0;
+        }
         let bytecode = cast([fp], felt*);
         return (bytecode=bytecode);
 
         cond:
         jmp body if count != 0;
-        assert value = 0;
+        with_attr error_message("Value is not empty") {
+            assert value = 0;
+        }
         jmp read;
     }
 }

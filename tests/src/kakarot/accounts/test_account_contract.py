@@ -6,6 +6,8 @@ import pytest
 import rlp
 from eth_account.account import Account
 from eth_utils import keccak
+from hypothesis import given, settings
+from hypothesis.strategies import binary
 from starkware.starknet.public.abi import (
     get_selector_from_name,
     get_storage_var_address,
@@ -93,7 +95,7 @@ class TestAccountContract:
             SyscallHandler.mock_storage.assert_has_calls(calls)
 
     class TestBytecode:
-        @pytest.fixture
+
         def storage(self, bytecode):
             chunks = wrap(bytecode.hex(), 2 * 31)
 
@@ -106,9 +108,9 @@ class TestAccountContract:
 
             return _storage
 
-        def test_should_read_bytecode(self, cairo_run, bytecode, storage):
+        def test_should_read_bytecode(self, cairo_run, bytecode):
             with patch.object(
-                SyscallHandler, "mock_storage", side_effect=storage
+                SyscallHandler, "mock_storage", side_effect=self.storage(bytecode)
             ) as mock_storage:
                 output_len, output = cairo_run("test__bytecode")
             chunk_counts, remainder = divmod(len(bytecode), 31)
@@ -117,8 +119,10 @@ class TestAccountContract:
             mock_storage.assert_has_calls(calls)
             assert output[:output_len] == list(bytecode)
 
+        @given(bytecode=binary(min_size=1, max_size=400))
+        @settings(max_examples=5)
         def test_should_raise_when_read_bytecode_zellic_issue_1279(
-            self, cairo_program, cairo_run, bytecode, storage
+            self, cairo_program, cairo_run, bytecode
         ):
             with (
                 patch_hint(
@@ -126,17 +130,12 @@ class TestAccountContract:
                     "memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base\nassert res < ids.bound, f'split_int(): Limb {res} is out of range.'",
                     "memory[ids.output] = res = (int(ids.value) % PRIME + 1) % ids.base\nassert res < ids.bound, f'split_int(): Limb {res} is out of range.'",
                 ),
+                patch.object(
+                    SyscallHandler, "mock_storage", side_effect=self.storage(bytecode)
+                ),
             ):
-                raised = False
-                try:
+                with cairo_error(message="Value is not empty"):
                     output_len, output = cairo_run("test__bytecode")
-                except Exception as e:
-                    raised = True
-                    assert any(
-                        x in e.args[0]
-                        for x in ["ASSERT_EQ instruction failed", "assert value = 0;"]
-                    )
-                assert raised if bytecode.len() > 0 else True
 
     class TestNonce:
         @SyscallHandler.patch("Ownable_owner", 0xDEAD)
