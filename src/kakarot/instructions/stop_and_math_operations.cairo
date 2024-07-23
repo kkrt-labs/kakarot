@@ -471,8 +471,18 @@ namespace StopAndMathOperations {
         let popped = cast([ap - 1], Uint256*);
 
         // compute y = (x >> (248 - i * 8)) & 0xFF
-        let (mul, _) = uint256_mul(popped[0], Uint256(8, 0));
-        let (right) = uint256_sub(Uint256(248, 0), mul);
+        let i = popped[0];
+        let (is_inf_32) = uint256_lt(i, Uint256(32, 0));
+        jmp byte_i if is_inf_32 != 0;
+
+        tempvar bitwise_ptr = bitwise_ptr;
+        tempvar range_check_ptr = range_check_ptr;
+        tempvar result = Uint256(0, 0);
+        jmp end;
+
+        // here i < 32 so we can use field ops
+        byte_i:
+        let right = Uint256(248 - i.low * 8, 0);
         let (shift_right) = uint256_shr(popped[1], right);
         let (result) = uint256_and(shift_right, Uint256(0xFF, 0));
 

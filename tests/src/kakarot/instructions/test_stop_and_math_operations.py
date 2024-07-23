@@ -101,6 +101,14 @@ class TestStopMathOperations:
                 (Opcodes.XOR, [0xDD, 0xB9], 0x64),
                 (Opcodes.BYTE, [23, 0xFFEEDDCCBBAA998877665544332211], 0x99),
                 (Opcodes.BYTE, [8, 0x123456789ABCDEF0 * 2**128], 0x12),
+                (
+                    Opcodes.BYTE,
+                    [
+                        0x8000000000000000000000000000000000000000000000000000000000000000,  # zellic issue 1260
+                        0x11223344556677889900AABBCCDDEEFF11223344556677889900AABBCCDDEEFF,
+                    ],
+                    0x00,
+                ),
                 (Opcodes.SHL, [4, 2], 32),
                 (Opcodes.SHR, [2, 4], 1),
                 (Opcodes.SAR, [2, 4], 1),
