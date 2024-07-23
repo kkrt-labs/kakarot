@@ -75,6 +75,13 @@ lint:
         - resources*
         - tests/ef_tests/test_data
         - .katana/messaging_config.json
+    - linters: [solidity]
+      paths:
+        - solidity_contracts/src/UniswapV2/**/*.sol
+        - solidity_contracts/src/WETH/**/*.sol
+        - solidity_contracts/src/UniswapV2Router/**/*.sol
+        - solidity_contracts/src/Solmate/**/*.sol
+        - solidity_contracts/src/starknet/**/*.sol
 actions:
   disabled:
     - trunk-announce
