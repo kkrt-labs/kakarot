@@ -436,9 +436,15 @@ namespace Helpers {
     // @notice Splits a felt into `len` bytes, big-endian, and outputs to `dst`.
     func split_word{range_check_ptr}(value: felt, len: felt, dst: felt*) {
         if (len == 0) {
-            assert value = 0;
+            with_attr error_message("value not empty") {
+                assert value = 0;
+            }
             return ();
         }
+        with_attr error_message("len must be < 32") {
+            assert is_nn(31 - len) = TRUE;
+        }
+
         tempvar len = len - 1;
         let output = &dst[len];
         let base = 256;
@@ -455,8 +461,13 @@ namespace Helpers {
     // @notice Splits a felt into `len` bytes, little-endian, and outputs to `dst`.
     func split_word_little{range_check_ptr}(value: felt, len: felt, dst: felt*) {
         if (len == 0) {
-            assert value = 0;
+            with_attr error_message("value not empty") {
+                assert value = 0;
+            }
             return ();
+        }
+        with_attr error_message("len must be < 32") {
+            assert is_nn(31 - len) = TRUE;
         }
         let output = &dst[0];
         let base = 256;

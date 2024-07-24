@@ -15,7 +15,7 @@ from starkware.cairo.common.cairo_secp.signature import (
 from starkware.cairo.common.uint256 import Uint256, uint256_reverse_endian
 from starkware.cairo.common.cairo_secp.bigint import bigint_to_uint256
 from starkware.cairo.common.keccak_utils.keccak_utils import keccak_add_uint256s
-
+from starkware.cairo.common.memset import memset
 from utils.utils import Helpers
 from utils.array import slice
 from kakarot.errors import Errors
@@ -74,7 +74,8 @@ namespace PrecompileEcRecover {
         }
 
         let (output) = alloc();
-        Helpers.split_word(recovered_address, 32, output);
+        memset(output, 0, 12);
+        Helpers.split_word(recovered_address, 20, output + 12);
 
         return (32, output, GAS_COST_EC_RECOVER, 0);
     }
