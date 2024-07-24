@@ -185,24 +185,15 @@ class TestLoadPackedBytes:
 
 
 class TestSplitWord:
-    @given(
-        value=st.integers(min_value=0, max_value=2**248 - 1),
-    )
-    @settings(max_examples=10)
+    @given(value=st.integers(min_value=0, max_value=2**248 - 1))
     def test_should_split_word(self, cairo_run, value):
         length = (value.bit_length() + 7) // 8
         output = cairo_run("test__split_word", value=value, length=length)
-        res = bytes(output)
-        assert (
-            bytes.fromhex(f"{value:x}".rjust(length * 2, "0"))
-            if value != 0
-            else b"" == res
+        assert bytes(output) == (
+            bytes.fromhex(f"{value:x}".rjust(length * 2, "0")) if value != 0 else b""
         )
 
-    @given(
-        value=st.integers(min_value=1, max_value=2**248 - 1),
-    )
-    @settings(max_examples=5)
+    @given(value=st.integers(min_value=1, max_value=2**248 - 1))
     def test_should_raise_value_not_empty_split_word(self, cairo_run, value):
         length = (value.bit_length() + 7) // 8
         with cairo_error("value not empty"):
@@ -212,29 +203,21 @@ class TestSplitWord:
         value=st.integers(min_value=0, max_value=2**248 - 1),
         length=st.integers(min_value=32),
     )
-    @settings(max_examples=5)
     def test_should_raise_issue_zellic_1278_split_word(self, cairo_run, value, length):
         with cairo_error("len must be < 32"):
             cairo_run("test__split_word", value=value, length=length)
 
-    @given(
-        value=st.integers(min_value=0, max_value=2**248 - 1),
-    )
-    @settings(max_examples=10)
+    @given(value=st.integers(min_value=0, max_value=2**248 - 1))
     def test_should_split_word_little(self, cairo_run, value):
         length = (value.bit_length() + 7) // 8
         output = cairo_run("test__split_word_little", value=value, length=length)
-        res = bytes(output)
-        assert (
+        assert bytes(output) == (
             bytes.fromhex(f"{value:x}".rjust(length * 2, "0"))[::-1]
             if value != 0
-            else b"" == res
+            else b""
         )
 
-    @given(
-        value=st.integers(min_value=1, max_value=2**248 - 1),
-    )
-    @settings(max_examples=5)
+    @given(value=st.integers(min_value=1, max_value=2**248 - 1))
     def test_should_raise_value_not_empty_split_word_little(self, cairo_run, value):
         length = (value.bit_length() + 7) // 8
         with cairo_error("value not empty"):
@@ -244,7 +227,6 @@ class TestSplitWord:
         value=st.integers(min_value=0, max_value=2**248 - 1),
         length=st.integers(min_value=32),
     )
-    @settings(max_examples=5)
     def test_should_raise_issue_zellic_1278_split_word_little(
         self, cairo_run, value, length
     ):
