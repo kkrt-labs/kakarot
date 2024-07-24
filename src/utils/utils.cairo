@@ -1146,6 +1146,7 @@ namespace Helpers {
 
         let chunk_counts = [fp + 3];
         let remainder = [fp + 4];
+
         tempvar remaining_chunk = chunk_counts - index;
         jmp full_chunk if remaining_chunk != 0;
         tempvar count = remainder;

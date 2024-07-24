@@ -168,7 +168,7 @@ class TestLoadPackedBytes:
         output = cairo_run("test__load_packed_bytes", data=packed_bytes)
         assert output == list(bytes)
 
-    def test_should_rasise_zellic_issue_1283_load_packed_bytes(
+    def test_should_raise_zellic_issue_1283_load_packed_bytes(
         self, cairo_program, cairo_run
     ):
         bytes = random.randbytes(100)
