@@ -1,3 +1,5 @@
+from typing import Dict, Tuple
+from collections import defaultdict
 from eth_utils.address import to_checksum_address
 from starkware.cairo.lang.compiler.ast.cairo_types import (
     TypeFelt,
@@ -7,6 +9,8 @@ from starkware.cairo.lang.compiler.ast.cairo_types import (
 )
 from starkware.cairo.lang.compiler.identifier_definition import StructDefinition
 from starkware.cairo.lang.compiler.identifier_manager import MissingIdentifierError
+from starkware.cairo.lang.vm.relocatable import RelocatableValue
+from starkware.cairo.common.dict import DictManager, DictTracker
 
 
 class Serde:
@@ -288,3 +292,45 @@ class Serde:
     def serialize(self, cairo_type):
         shift = self.get_offset(cairo_type)
         return self._serialize(cairo_type, self.runner.vm.run_context.ap - shift, shift)
+
+    def deserialize_dict(self, obj: Dict, __dict_manager: DictManager, default_value=0, initial_dict={}) -> Tuple[RelocatableValue, RelocatableValue]:
+        """
+        Deserializes a python dict into a Cairo dict.
+
+        Args:
+            obj: The python dict.
+            dict_ptr: The pointer to the address of the Cairo dict, as a RelocatableValue.
+            __dict_manager: The dict manager object.
+        """
+        DictAccess = self.get_identifier("DictAccess", StructDefinition)
+        dict_ptr = base = self.runner.segments.add()
+        assert base.segment_index not in __dict_manager.trackers
+        dict_tracker = __dict_manager.trackers[base.segment_index] = DictTracker(
+            data=defaultdict(lambda: default_value, initial_dict),
+        current_ptr=base,
+        )
+
+        # Manually handling cases where the dict contains sequence (list or bytes) that cannot be passed to defaultdict
+        for key in obj:
+            if isinstance(key, list) or isinstance(key, bytes):
+                cairo_key = self.runner.segments.add()
+                self.runner.segments.write_arg(cairo_key, key)
+            else:
+                cairo_key = key
+
+
+            # If the value is a list, we need to serialize it.
+            if isinstance(obj[key], list) or isinstance(obj[key], bytes):
+                cairo_value = self.runner.segments.add()
+                self.runner.segments.write_arg(cairo_value, obj[key])
+            else:
+                cairo_value = obj[key]
+
+            dict_tracker.current_ptr += DictAccess.size
+            self.runner.memory[dict_ptr + 1] = dict_tracker.data[cairo_key]
+            dict_tracker.data[cairo_key] = cairo_value
+            self.runner.memory[dict_ptr] = cairo_key
+            self.runner.memory[dict_ptr + 2] = cairo_value
+            dict_ptr = dict_ptr + DictAccess.size
+
+        return base, dict_ptr
