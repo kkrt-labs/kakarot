@@ -177,8 +177,8 @@ class TestLoadPackedBytes:
             patch_hint(
                 cairo_program,
                 "memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base\nassert res < ids.bound, f'split_int(): Limb {res} is out of range.'",
-                "memory[ids.output] = res = 0x12\nassert res < ids.bound, f'split_int(): Limb {res} is out of range.'",
+                "memory[ids.output] = res = 0x12",
             ),
+            cairo_error(message="Value is not empty"),
         ):
-            with cairo_error(message="Value is not empty"):
-                cairo_run("test__load_packed_bytes", data=packed_bytes)
+            cairo_run("test__load_packed_bytes", data=packed_bytes)
