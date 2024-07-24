@@ -1206,11 +1206,18 @@ namespace Helpers {
 
         jmp cond if remaining_bytes != 0;
 
+        with_attr error_message("Value is not empty") {
+            assert value = 0;
+        }
+
         let bytes = cast([fp], felt*);
         return (bytes=bytes);
 
         cond:
         jmp body if count != 0;
+        with_attr error_message("Value is not empty") {
+            assert value = 0;
+        }
         jmp read;
     }
 
