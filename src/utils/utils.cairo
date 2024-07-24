@@ -1120,13 +1120,12 @@ namespace Helpers {
         alloc_locals;
 
         let (local bytes: felt*) = alloc();
-        local bound = 256;
-        local base = 256;
-
         if (bytes_len == 0) {
             return (bytes=bytes);
         }
 
+        local bound = 256;
+        local base = 256;
         let (local chunk_counts, local remainder) = unsigned_div_rem(bytes_len, BYTES_PER_FELT);
 
         tempvar remaining_bytes = bytes_len;
@@ -1145,8 +1144,9 @@ namespace Helpers {
 
         tempvar value = input[index];
 
-        let remainder = [fp + 4];
         let chunk_counts = [fp + 3];
+        let remainder = [fp + 4];
+
         tempvar remaining_chunk = chunk_counts - index;
         jmp full_chunk if remaining_chunk != 0;
         tempvar count = remainder;
@@ -1169,9 +1169,9 @@ namespace Helpers {
         let value = [ap - 2];
         let count = [ap - 1];
 
-        let base = [fp + 1];
-        let bound = [fp + 2];
         let bytes = cast([fp], felt*);
+        let bound = [fp + 1];
+        let base = [fp + 2];
 
         tempvar offset = (index - 1) * BYTES_PER_FELT + count - 1;
         let output = bytes + offset;
@@ -1206,11 +1206,17 @@ namespace Helpers {
 
         jmp cond if remaining_bytes != 0;
 
+        with_attr error_message("Value is not empty") {
+            assert value = 0;
+        }
         let bytes = cast([fp], felt*);
         return (bytes=bytes);
 
         cond:
         jmp body if count != 0;
+        with_attr error_message("Value is not empty") {
+            assert value = 0;
+        }
         jmp read;
     }
 

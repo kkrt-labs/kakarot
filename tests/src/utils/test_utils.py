@@ -7,7 +7,9 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from kakarot_scripts.utils.kakarot import get_contract
+from tests.utils.errors import cairo_error
 from tests.utils.helpers import pack_calldata
+from tests.utils.hints import patch_hint
 
 
 @pytest.mark.parametrize(
@@ -165,3 +167,18 @@ class TestLoadPackedBytes:
         packed_bytes = pack_calldata(bytes)
         output = cairo_run("test__load_packed_bytes", data=packed_bytes)
         assert output == list(bytes)
+
+    def test_should_raise_zellic_issue_1283_load_packed_bytes(
+        self, cairo_program, cairo_run
+    ):
+        bytes = random.randbytes(100)
+        packed_bytes = pack_calldata(bytes)
+        with (
+            patch_hint(
+                cairo_program,
+                "memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base\nassert res < ids.bound, f'split_int(): Limb {res} is out of range.'",
+                "memory[ids.output] = res = 0x12",
+            ),
+            cairo_error(message="Value is not empty"),
+        ):
+            cairo_run("test__load_packed_bytes", data=packed_bytes)
