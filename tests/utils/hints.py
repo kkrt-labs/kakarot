@@ -67,5 +67,7 @@ def patch_hint(program, hint, new_hint):
         ]
         for k, v in program.hints.items()
     }
+    if patched_hints == program.hints:
+        raise ValueError(f"Hint\n\n{hint}\n\nnot found in program hints.")
     with patch.object(program, "hints", new=patched_hints):
         yield
