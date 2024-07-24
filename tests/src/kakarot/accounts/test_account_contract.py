@@ -258,6 +258,21 @@ class TestAccountContract:
                     SyscallHandler.mock_storage.assert_has_calls(expected_read_calls)
                     SyscallHandler.mock_storage.assert_has_calls(expected_write_calls)
 
+    class TestCodeHash:
+        @SyscallHandler.patch("Ownable_owner", 0xDEAD)
+        def test_should_assert_only_owner(self, cairo_run):
+            with cairo_error(message="Ownable: caller is not the owner"):
+                cairo_run("test__set_code_hash", code_hash=int_to_uint256(0x32))
+
+        @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
+        def test__should_set_code_hash(self, cairo_run):
+            cairo_run("test__set_code_hash", code_hash=int_to_uint256(0x32))
+
+            code_hash = get_storage_var_address("Account_code_hash")
+            SyscallHandler.mock_storage.assert_has_calls(
+                [call(address=code_hash, value=0x32)]
+            )
+
     class TestSetAuthorizedPreEIP155Transactions:
         def test_should_assert_only_owner(self, cairo_run):
             with cairo_error(message="Ownable: caller is not the owner"):
