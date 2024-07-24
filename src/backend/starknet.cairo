@@ -22,7 +22,7 @@ from starkware.starknet.common.syscalls import (
 from kakarot.account import Account
 from kakarot.precompiles.precompiles_helpers import PrecompilesHelpers
 from kakarot.constants import Constants
-from kakarot.interfaces.interfaces import IERC20, IAccount
+from kakarot.interfaces.interfaces import IERC20, IAccount, ICairo1Helpers
 
 from kakarot.model import model
 from kakarot.state import State
@@ -35,7 +35,9 @@ from kakarot.storages import (
     Kakarot_base_fee,
     Kakarot_block_gas_limit,
     Kakarot_prev_randao,
+    Kakarot_cairo1_helpers_class_hash,
 )
+from utils.bytes import bytes_to_bytes8_little_endian
 
 namespace Starknet {
     // @notice Commit the current state to the underlying data backend (here, Starknet)
@@ -221,6 +223,21 @@ namespace Internals {
             Internals._save_valid_jumpdests(
                 starknet_address, self.valid_jumpdests_start, self.valid_jumpdests
             );
+            // Set the code hash
+            let (local dst: felt*) = alloc();
+            let (dst_len, last_word, last_word_num_bytes) = bytes_to_bytes8_little_endian(
+                dst, self.code_len, self.code
+            );
+
+            let (implementation) = Kakarot_cairo1_helpers_class_hash.read();
+            let (code_hash) = ICairo1Helpers.library_call_keccak(
+                class_hash=implementation,
+                words_len=dst_len,
+                words=dst,
+                last_input_word=last_word,
+                last_input_num_bytes=last_word_num_bytes,
+            );
+            IAccount.set_code_hash(starknet_address, code_hash);
             return ();
         }
 

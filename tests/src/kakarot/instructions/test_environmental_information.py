@@ -3,8 +3,8 @@ import random
 import pytest
 from Crypto.Hash import keccak
 
-from tests.utils.constants import CAIRO1_HELPERS_CLASS_HASH
 from tests.utils.syscall_handler import SyscallHandler
+from tests.utils.uint256 import int_to_uint256
 
 EXISTING_ACCOUNT = 0xABDE1
 EXISTING_ACCOUNT_SN_ADDR = 0x1234
@@ -206,15 +206,19 @@ class TestEnvironmentalInformation:
             EXISTING_ACCOUNT,
             EXISTING_ACCOUNT_SN_ADDR,
         )
-        @SyscallHandler.patch(
-            "Kakarot_cairo1_helpers_class_hash",
-            CAIRO1_HELPERS_CLASS_HASH,
-        )
         def test_extcodehash__should_push_hash(
             self, cairo_run, bytecode, bytecode_hash, address
         ):
-            with SyscallHandler.patch(
-                "IAccount.bytecode", lambda sn_addr, data: [len(bytecode), *bytecode]
+            low, high = int_to_uint256(bytecode_hash)
+            with (
+                SyscallHandler.patch(
+                    "IAccount.bytecode",
+                    lambda sn_addr, data: [len(bytecode), *bytecode],
+                ),
+                SyscallHandler.patch(
+                    " IAccount.get_code_hash",
+                    lambda sn_addr, data: [low, high],
+                ),
             ):
                 output = cairo_run("test__exec_extcodehash", address=address)
 

@@ -66,6 +66,10 @@ func Account_jumpdests_initialized() -> (initialized: felt) {
 func Account_authorized_message_hashes(hash: Uint256) -> (res: felt) {
 }
 
+@storage_var
+func Account_code_hash() -> (codeHash: Uint256) {
+}
+
 @event
 func transaction_executed(response_len: felt, response: felt*, success: felt, gas_used: felt) {
 }
@@ -435,6 +439,19 @@ namespace AccountContract {
             iteration_size=DictAccess.SIZE,
         );
         return is_valid_jumpdest(index=index);
+    }
+
+    func get_code_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+        code_hash: Uint256
+    ) {
+        let (code_hash) = Account_code_hash.read();
+        return (code_hash,);
+    }
+
+    func set_code_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        code_hash: Uint256
+    ) -> () {
+        return Account_code_hash.write(code_hash);
     }
 }
 
