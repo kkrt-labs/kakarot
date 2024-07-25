@@ -464,8 +464,14 @@ namespace Internals {
         let balance = Account.fetch_balance(address);
         tempvar balance_ptr = new Uint256(balance.low, balance.high);
         let (bytecode) = alloc();
+        tempvar code_hash = new Uint256(0, 0);
         let account = Account.init(
-            address=address, code_len=0, code=bytecode, nonce=0, balance=balance_ptr
+            address=address,
+            code_len=0,
+            code=bytecode,
+            code_hash=code_hash,
+            nonce=0,
+            balance=balance_ptr,
         );
         dict_write{dict_ptr=accounts_ptr}(key=address.evm, new_value=cast(account, felt));
         return ();

@@ -451,7 +451,8 @@ namespace AccountContract {
     func set_code_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         code_hash: Uint256
     ) -> () {
-        return Account_code_hash.write(code_hash);
+        Account_code_hash.write(code_hash);
+        return ();
     }
 }
 

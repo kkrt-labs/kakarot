@@ -37,7 +37,6 @@ from kakarot.storages import (
     Kakarot_prev_randao,
     Kakarot_cairo1_helpers_class_hash,
 )
-from utils.bytes import bytes_to_bytes8_little_endian
 
 namespace Starknet {
     // @notice Commit the current state to the underlying data backend (here, Starknet)
@@ -224,20 +223,7 @@ namespace Internals {
                 starknet_address, self.valid_jumpdests_start, self.valid_jumpdests
             );
             // Set the code hash
-            let (local dst: felt*) = alloc();
-            let (dst_len, last_word, last_word_num_bytes) = bytes_to_bytes8_little_endian(
-                dst, self.code_len, self.code
-            );
-
-            let (implementation) = Kakarot_cairo1_helpers_class_hash.read();
-            let (code_hash) = ICairo1Helpers.library_call_keccak(
-                class_hash=implementation,
-                words_len=dst_len,
-                words=dst,
-                last_input_word=last_word,
-                last_input_num_bytes=last_word_num_bytes,
-            );
-            IAccount.set_code_hash(starknet_address, code_hash);
+            IAccount.set_code_hash(starknet_address, [self.code_hash]);
             return ();
         }
 
