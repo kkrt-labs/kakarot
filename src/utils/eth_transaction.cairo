@@ -28,12 +28,12 @@ namespace EthTransaction {
     ) -> model.EthTransaction* {
         // see https://github.com/ethereum/EIPs/blob/master/EIPS/eip-155.md
         alloc_locals;
-        let (items: RLP.Item*) = alloc();
-        RLP.decode(items, tx_data_len, tx_data);
+        let (tx_items: RLP.Item*) = alloc();
+        RLP.decode(tx_items, tx_data_len, tx_data);
 
-        assert [items].is_list = TRUE;
-        let items_len = [items].data_len;
-        let items = cast([items].data, RLP.Item*);
+        assert [tx_items].is_list = TRUE;
+        let items_len = [tx_items].data_len;
+        let items = cast([tx_items].data, RLP.Item*);
 
         // Pre eip-155 txs have 6 fields, post eip-155 txs have 9 fields
         // We check for both cases here, and do the remaining ones in the next if block
@@ -91,12 +91,12 @@ namespace EthTransaction {
     ) -> model.EthTransaction* {
         alloc_locals;
 
-        let (items: RLP.Item*) = alloc();
-        RLP.decode(items, tx_data_len - 1, tx_data + 1);
+        let (tx_items: RLP.Item*) = alloc();
+        RLP.decode(tx_items, tx_data_len - 1, tx_data + 1);
 
-        assert [items].is_list = TRUE;
-        let items_len = [items].data_len;
-        let items = cast([items].data, RLP.Item*);
+        assert [tx_items].is_list = TRUE;
+        let items_len = [tx_items].data_len;
+        let items = cast([tx_items].data, RLP.Item*);
 
         assert items_len = 8;
         assert items[0].is_list = FALSE;
@@ -148,12 +148,12 @@ namespace EthTransaction {
     ) -> model.EthTransaction* {
         alloc_locals;
 
-        let (items: RLP.Item*) = alloc();
-        RLP.decode(items, tx_data_len - 1, tx_data + 1);
+        let (tx_items: RLP.Item*) = alloc();
+        RLP.decode(tx_items, tx_data_len - 1, tx_data + 1);
 
-        assert [items].is_list = TRUE;
-        let items_len = [items].data_len;
-        let items = cast([items].data, RLP.Item*);
+        assert [tx_items].is_list = TRUE;
+        let items_len = [tx_items].data_len;
+        let items = cast([tx_items].data, RLP.Item*);
 
         assert items_len = 9;
         assert items[0].is_list = FALSE;
