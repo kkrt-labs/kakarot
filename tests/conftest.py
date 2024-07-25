@@ -3,9 +3,11 @@ import logging
 import os
 
 import pytest
+from dotenv import load_dotenv
 from hypothesis import Verbosity, settings
 from starkware.cairo.lang.instances import LAYOUTS
 
+load_dotenv()
 logging.getLogger("asyncio").setLevel(logging.ERROR)
 logger = logging.getLogger()
 

@@ -1,6 +1,6 @@
 import pytest
 from hypothesis import given
-from hypothesis.strategies import binary
+from hypothesis.strategies import binary, lists, recursive
 from rlp import codec, decode, encode
 
 from tests.utils.constants import TRANSACTIONS
@@ -10,25 +10,9 @@ from tests.utils.helpers import rlp_encode_signed_data
 
 class TestRLP:
     class TestDecodeType:
-        @given(data=binary(min_size=0, max_size=255))
-        def test_should_match_decoded_rlp_type_string(self, cairo_run, data):
+        @given(data=lists(binary()) | binary())
+        def test_should_match_prefix_reference_implementation(self, cairo_run, data):
             encoded_data = encode(data)
-
-            [
-                prefix,
-                rlp_type,
-                expected_len,
-                expected_offset,
-            ] = codec.consume_length_prefix(encoded_data, 0)
-            expected_type = 0 if rlp_type == bytes else 1
-
-            output = cairo_run("test__decode_type", data=list(encoded_data))
-
-            assert output == [expected_type, expected_offset, expected_len]
-
-        @given(data=binary(min_size=0, max_size=255))
-        def test_should_match_decoded_rlp_type_list(self, cairo_run, data):
-            encoded_data = encode([data])
 
             [
                 prefix,
@@ -43,7 +27,7 @@ class TestRLP:
             assert output == [expected_type, expected_offset, expected_len]
 
     class TestDecode:
-        @given(data=binary(min_size=0, max_size=255))
+        @given(data=recursive(binary(), lists))
         async def test_should_match_decode_reference_implementation(
             self, cairo_run, data
         ):
@@ -54,7 +38,7 @@ class TestRLP:
             assert decoded == decode(encoded_data)
 
         @given(
-            data=binary(min_size=0, max_size=255),
+            data=recursive(binary(), lists),
             extra_data=binary(min_size=1, max_size=255),
         )
         async def test_raise_when_data_contains_extra_bytes(

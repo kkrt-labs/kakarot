@@ -234,9 +234,6 @@ def cairo_run(request, cairo_program) -> list:
         output_stem = Path(
             f"{output_stem[:160]}_{int(time_ns())}_{md5(output_stem.encode()).digest().hex()[:8]}"
         )
-        logger.info(
-            f"Test {request.node.path.stem}_{entrypoint}_{displayed_args} artifacts saved at: {output_stem}"
-        )
         if request.config.getoption("profile_cairo"):
             tracer_data = TracerData(
                 program=cairo_program,
