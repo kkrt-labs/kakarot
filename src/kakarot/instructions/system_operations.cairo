@@ -1210,7 +1210,7 @@ namespace CreateHelper {
         let account = Account.set_code(account, evm.return_data_len, evm.return_data);
         Account.compute_code_hash(account);
         let (ap_val) = get_ap();
-        let code_hash = cast(ap_val - 1, Uint256*);
+        let code_hash = cast(ap_val - 2, Uint256*);
         let account = Account.set_code_hash(account, code_hash);
 
         // Update local state with the updated account inner pointers.
