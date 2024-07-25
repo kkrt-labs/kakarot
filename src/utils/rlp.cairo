@@ -91,14 +91,8 @@ namespace RLP {
         }
         tempvar items = items + Item.SIZE;
 
-        let total_item_len = len + offset;
-        let is_lt_input = is_nn(data_len + 1 - total_item_len);
-        if (is_lt_input != FALSE) {
-            let items_len = decode(
-                items=items, data_len=data_len - total_item_len, data=data + total_item_len
-            );
-            return 1 + items_len;
-        }
-        return 1;
+        let remaining_data_len = data_len - len - offset;
+        let items_len = decode(items=items, data_len=remaining_data_len, data=data + offset + len);
+        return 1 + items_len;
     }
 }

@@ -57,6 +57,9 @@ class Serde:
         return output
 
     def serialize_dict(self, dict_ptr, value_scope=None, dict_size=None):
+        """
+        Serialize a dict.
+        """
         if dict_size is None:
             dict_size = self.runner.segments.get_segment_size(dict_ptr.segment_index)
         output = {}
@@ -79,6 +82,9 @@ class Serde:
         return output
 
     def serialize_pointers(self, name, ptr):
+        """
+        Serialize a pointer to a struct, e.g. Uint256*.
+        """
         members = self.get_identifier(name, StructDefinition).members
         output = {}
         for name, member in members.items():
@@ -89,6 +95,9 @@ class Serde:
         return output
 
     def serialize_struct(self, name, ptr):
+        """
+        Serialize a struct, e.g. Uint256.
+        """
         if ptr is None:
             return None
         members = self.get_identifier(name, StructDefinition).members
@@ -209,6 +218,19 @@ class Serde:
             [f"{memory_dict.get(i, 0):032x}" for i in range(raw["words_len"] * 2)]
         )
 
+    def serialize_rlp_item(self, ptr):
+        raw = self.serialize_list(ptr)
+        items = []
+        for i in range(0, len(raw), 3):
+            data_len = raw[i]
+            data_ptr = raw[i + 1]
+            is_list = raw[i + 2]
+            if not is_list:
+                items += [bytes(self.serialize_list(data_ptr)[:data_len])]
+            else:
+                items += [self.serialize_rlp_item(data_ptr)]
+        return items
+
     def serialize_scope(self, scope, scope_ptr):
         if scope.path[-1] == "State":
             return self.serialize_state(scope_ptr)
@@ -228,6 +250,8 @@ class Serde:
             return self.serialize_message(scope_ptr)
         if scope.path[-1] == "EVM":
             return self.serialize_evm(scope_ptr)
+        if scope.path[-2:] == ("RLP", "Item"):
+            return self.serialize_rlp_item(scope_ptr)
         try:
             return self.serialize_struct(str(scope), scope_ptr)
         except MissingIdentifierError:
