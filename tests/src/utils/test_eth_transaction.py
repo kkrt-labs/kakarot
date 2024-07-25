@@ -10,6 +10,19 @@ from tests.utils.helpers import flatten_tx_access_list, rlp_encode_signed_data
 class TestEthTransaction:
 
     class TestDecodeTransaction:
+
+        async def test_should_raise_with_list_items(self, cairo_run):
+            transaction = {
+                "nonce": 0,
+                "gasPrice": 234567897654321,
+                "gas": 2_000_000,
+                "to": "0xF0109fC8DF283027b6285cc889F5aA624EaC1F55",
+                "value": ["000000000"],
+                "data": b"",
+            }
+            with cairo_error():
+                cairo_run("test__decode", data=list(encode(list(transaction.values()))))
+
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
         async def test_should_decode_all_transactions_types(
             self, cairo_run, transaction
