@@ -55,7 +55,7 @@ NETWORKS = {
         "l1_rpc_url": "http://127.0.0.1:8545",
         "type": NetworkType.DEV,
         "check_interval": 0.01,
-        "max_wait": 1,
+        "max_wait": 3,
     },
     "katana": {
         "name": "katana",
@@ -64,7 +64,7 @@ NETWORKS = {
         "l1_rpc_url": "http://127.0.0.1:8545",
         "type": NetworkType.DEV,
         "check_interval": 0.01,
-        "max_wait": 2,
+        "max_wait": 3,
     },
     "madara": {
         "name": "madara",

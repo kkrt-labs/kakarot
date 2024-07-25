@@ -103,10 +103,10 @@ def get_l1_contract(
         L1_RPC_PROVIDER.eth.contract(
             address=to_checksum_address(address) if address is not None else address,
             abi=artifacts["abi"],
-            bytecode=artifacts["bytecode"],
+            bytecode=artifacts["bytecode"]["object"],
         ),
     )
-    contract.bytecode_runtime = HexBytes(artifacts["bytecode_runtime"])
+    contract.bytecode_runtime = HexBytes(artifacts["bytecode_runtime"]["object"])
 
     try:
         for fun in contract.functions:
