@@ -98,7 +98,7 @@ namespace RLP {
         return 1 + items_len;
     }
 
-    func decode{range_check_ptr}(items: Item*, data_len: felt, data: felt*) -> felt {
+    func decode{range_check_ptr}(items: Item*, data_len: felt, data: felt*) {
         alloc_locals;
         let (rlp_type, offset, len) = decode_type(data_len=data_len, data=data);
         local extra_bytes = data_len - offset - len;
@@ -107,6 +107,6 @@ namespace RLP {
         }
         let items_len = decode_raw(items=items, data_len=data_len, data=data);
         assert items_len = 1;
-        return items_len;
+        return ();
     }
 }

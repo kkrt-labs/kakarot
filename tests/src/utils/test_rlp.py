@@ -33,9 +33,8 @@ class TestRLP:
         ):
             encoded_data = encode(data)
 
-            items_len, items = cairo_run("test__decode", data=list(encoded_data))
-            decoded = items[0] if items_len == 1 else items
-            assert decoded == decode(encoded_data)
+            items = cairo_run("test__decode", data=list(encoded_data))
+            assert items[0] == decode(encoded_data)
 
         @given(
             data=recursive(binary(), lists),
@@ -61,6 +60,5 @@ class TestRLP:
             else:
                 rlp_encoding = encoded_unsigned_tx
 
-            items_len, items = cairo_run("test__decode", data=list(rlp_encoding))
-            decoded = items[0] if items_len == 1 else items
-            assert decoded == decode(rlp_encoding)
+            items = cairo_run("test__decode", data=list(rlp_encoding))
+            assert items[0] == decode(rlp_encoding)
