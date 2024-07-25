@@ -15,10 +15,7 @@ class TestEthTransaction:
             self, cairo_run, transaction
         ):
             encoded_unsigned_tx = rlp_encode_signed_data(transaction)
-            decoded_tx = cairo_run(
-                "test__decode",
-                data=list(encoded_unsigned_tx),
-            )
+            decoded_tx = cairo_run("test__decode", data=list(encoded_unsigned_tx))
 
             expected_data = (
                 "0x" + transaction["data"].hex()

@@ -106,6 +106,7 @@ namespace RLP {
             assert extra_bytes = 0;
         }
         let items_len = decode_raw(items=items, data_len=data_len, data=data);
+        assert items_len = 1;
         return items_len;
     }
 }
