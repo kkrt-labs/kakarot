@@ -20,12 +20,16 @@ func test__init__should_return_account_with_default_dict_as_storage{
     local evm_address: felt;
     local code_len: felt;
     let (code) = alloc();
+    let (code_hash_ptr) = alloc();
     local nonce: felt;
     local balance_low: felt;
     %{
+        from tests.utils.uint256 import int_to_uint256
+
         ids.evm_address = program_input["evm_address"]
         ids.code_len = len(program_input["code"])
         segments.write_arg(ids.code, program_input["code"])
+        segments.write_arg(ids.code_hash_ptr, int_to_uint256(program_input["code_hash"]))
         ids.nonce = program_input["nonce"]
         ids.balance_low = program_input["balance_low"]
     %}
@@ -35,7 +39,9 @@ func test__init__should_return_account_with_default_dict_as_storage{
     tempvar balance = new Uint256(balance_low, 0);
 
     // When
-    let account = Account.init(address, code_len, code, nonce, balance);
+    let account = Account.init(
+        address, code_len, code, cast(code_hash_ptr, Uint256*), nonce, balance
+    );
 
     // Then
     assert account.address = address;
@@ -58,12 +64,16 @@ func test__copy__should_return_new_account_with_same_attributes{
     local evm_address: felt;
     local code_len: felt;
     let (code) = alloc();
+    let (code_hash_ptr) = alloc();
     local nonce: felt;
     local balance_low: felt;
     %{
+        from tests.utils.uint256 import int_to_uint256
+
         ids.evm_address = program_input["evm_address"]
         ids.code_len = len(program_input["code"])
         segments.write_arg(ids.code, program_input["code"])
+        segments.write_arg(ids.code_hash_ptr, int_to_uint256(program_input["code_hash"]))
         ids.nonce = program_input["nonce"]
         ids.balance_low = program_input["balance_low"]
     %}
@@ -71,7 +81,9 @@ func test__copy__should_return_new_account_with_same_attributes{
     let starknet_address = Account.compute_starknet_address(evm_address);
     tempvar address = new model.Address(starknet=starknet_address, evm=evm_address);
     tempvar balance = new Uint256(balance_low, 0);
-    let account = Account.init(address, code_len, code, nonce, balance);
+    let account = Account.init(
+        address, code_len, code, cast(code_hash_ptr, Uint256*), nonce, balance
+    );
     tempvar key = new Uint256(1, 2);
     tempvar value = new Uint256(3, 4);
     let account = Account.write_storage(account, key, value);
@@ -124,8 +136,9 @@ func test__write_storage__should_store_value_at_key{
     let starknet_address = Account.compute_starknet_address(0);
     tempvar address = new model.Address(starknet_address, 0);
     let (local code: felt*) = alloc();
+    tempvar code_hash = new Uint256(0, 0);
     tempvar balance = new Uint256(0, 0);
-    let account = Account.init(address, 0, code, 0, balance);
+    let account = Account.init(address, 0, code, code_hash, 0, balance);
 
     // When
     let account = Account.write_storage(account, key, value);
@@ -160,8 +173,9 @@ func test__fetch_original_storage__state_modified{
     let starknet_address = Account.compute_starknet_address(evm_address);
     tempvar address = new model.Address(starknet_address, evm_address);
     let (local code: felt*) = alloc();
+    tempvar code_hash = new Uint256(0, 0);
     tempvar balance = new Uint256(0, 0);
-    let account = Account.init(address, 0, code, 0, balance);
+    let account = Account.init(address, 0, code, code_hash, 0, balance);
 
     // When
     let account = Account.write_storage(account, key, value);
@@ -177,17 +191,23 @@ func test__has_code_or_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ran
     // Given
     local code_len: felt;
     let (code) = alloc();
+    let (code_hash_ptr) = alloc();
     local nonce: felt;
     %{
+        from tests.utils.uint256 import int_to_uint256
+
         ids.code_len = len(program_input["code"])
         segments.write_arg(ids.code, program_input["code"])
+        segments.write_arg(ids.code_hash_ptr, int_to_uint256(program_input["code_hash"]))
         ids.nonce = program_input["nonce"]
     %}
 
     let starknet_address = Account.compute_starknet_address(0);
     tempvar address = new model.Address(starknet_address, 0);
     tempvar balance = new Uint256(0, 0);
-    let account = Account.init(address, code_len, code, nonce, balance);
+    let account = Account.init(
+        address, code_len, code, cast(code_hash_ptr, Uint256*), nonce, balance
+    );
 
     // When
     let result = Account.has_code_or_nonce(account);

@@ -111,18 +111,24 @@ func test__is_account_alive__account_alive_in_state{
     local balance_low: felt;
     local code_len: felt;
     let (code) = alloc();
+    let (code_hash_ptr) = alloc();
     %{
+        from tests.utils.uint256 import int_to_uint256
+
         ids.nonce = program_input["nonce"]
         ids.balance_low = program_input["balance_low"]
         ids.code_len = len(program_input["code"])
-        segments.write_arg(ids.code, program_input["code"]);
+        segments.write_arg(ids.code, program_input["code"])
+        segments.write_arg(ids.code_hash_ptr, int_to_uint256(program_input["code_hash"]))
     %}
 
     let evm_address = 'alive';
     let starknet_address = Account.compute_starknet_address(evm_address);
     tempvar address = new model.Address(starknet_address, evm_address);
     tempvar balance = new Uint256(balance_low, 0);
-    let account = Account.init(address, code_len, code, nonce, balance);
+    let account = Account.init(
+        address, code_len, code, cast(code_hash_ptr, Uint256*), nonce, balance
+    );
     let state = State.init();
 
     with state {
@@ -166,7 +172,8 @@ func test___copy_accounts__should_handle_null_pointers{range_check_ptr}() {
     tempvar address = new model.Address(1, 2);
     tempvar balance = new Uint256(1, 0);
     let (code) = alloc();
-    let account = Account.init(address, 0, code, 1, balance);
+    tempvar code_hash = new Uint256(0, 0);
+    let account = Account.init(address, 0, code, code_hash, 1, balance);
     dict_write{dict_ptr=accounts}(address.evm, cast(account, felt));
     let empty_address = 'empty address';
     dict_read{dict_ptr=accounts}(empty_address);
@@ -193,7 +200,8 @@ func test__is_account_warm__account_in_state{
     tempvar address = new model.Address(starknet_address, evm_address);
     tempvar balance = new Uint256(1, 0);
     let (code) = alloc();
-    let account = Account.init(address, 0, code, 1, balance);
+    tempvar code_hash = new Uint256(0, 0);
+    let account = Account.init(address, 0, code, code_hash, 1, balance);
     tempvar state = State.init();
 
     with state {

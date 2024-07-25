@@ -21,18 +21,20 @@ from starkware.cairo.common.hash_state import (
 )
 from starkware.starknet.common.storage import normalize_address
 from starkware.starknet.common.syscalls import get_contract_address
-
+from starkware.cairo.lang.compiler.lib.registers import get_fp_and_pc, get_ap
 from kakarot.constants import Constants
 from kakarot.storages import (
     Kakarot_uninitialized_account_class_hash,
     Kakarot_native_token_address,
     Kakarot_account_contract_class_hash,
+    Kakarot_cairo1_helpers_class_hash,
 )
-from kakarot.interfaces.interfaces import IAccount, IERC20
+from kakarot.interfaces.interfaces import IAccount, IERC20, ICairo1Helpers
 from kakarot.model import model
 from kakarot.storages import Kakarot_evm_to_starknet_address
 from utils.dict import default_dict_copy
 from utils.utils import Helpers
+from utils.bytes import bytes_to_bytes8_little_endian
 
 namespace Account {
     // @notice Create a new account
@@ -44,7 +46,12 @@ namespace Account {
     // @return The updated state
     // @return The account
     func init(
-        address: model.Address*, code_len: felt, code: felt*, nonce: felt, balance: Uint256*
+        address: model.Address*,
+        code_len: felt,
+        code: felt*,
+        code_hash: Uint256*,
+        nonce: felt,
+        balance: Uint256*,
     ) -> model.Account* {
         let (storage_start) = default_dict_new(0);
         let (transient_storage_start) = default_dict_new(0);
@@ -53,6 +60,7 @@ namespace Account {
             address=address,
             code_len=code_len,
             code=code,
+            code_hash=code_hash,
             storage_start=storage_start,
             storage=storage_start,
             transient_storage_start=transient_storage_start,
@@ -82,6 +90,7 @@ namespace Account {
             address=self.address,
             code_len=self.code_len,
             code=self.code,
+            code_hash=self.code_hash,
             storage_start=storage_start,
             storage=storage,
             transient_storage_start=transient_storage_start,
@@ -114,8 +123,14 @@ namespace Account {
             tempvar address = new model.Address(starknet=starknet_address, evm=evm_address);
             let balance = fetch_balance(address);
             assert balance_ptr = new Uint256(balance.low, balance.high);
+            tempvar code_hash_ptr = new Uint256(0, 0);
             let account = Account.init(
-                address=address, code_len=0, code=bytecode, nonce=0, balance=balance_ptr
+                address=address,
+                code_len=0,
+                code=bytecode,
+                code_hash=code_hash_ptr,
+                nonce=0,
+                balance=balance_ptr,
             );
             return account;
         }
@@ -126,14 +141,21 @@ namespace Account {
 
         let (bytecode_len, bytecode) = IAccount.bytecode(contract_address=starknet_address);
         let (nonce) = IAccount.get_nonce(contract_address=starknet_address);
+        IAccount.get_code_hash(contract_address=starknet_address);
+        let (ap_val) = get_ap();
+        let code_hash = cast(ap_val - 1, Uint256*);
 
         // CAs are instantiated with their actual nonce - EOAs are instantiated with the nonce=1
         // that is set when they're deployed.
-
         // If an account was created-selfdestructed in the same tx, its nonce is 0, thus
         // it is considered as a new account as per the `has_code_or_nonce` rule.
         let account = Account.init(
-            address=address, code_len=bytecode_len, code=bytecode, nonce=nonce, balance=balance_ptr
+            address=address,
+            code_len=bytecode_len,
+            code=bytecode,
+            code_hash=code_hash,
+            nonce=nonce,
+            balance=balance_ptr,
         );
         return account;
     }
@@ -161,6 +183,7 @@ namespace Account {
                 address=self.address,
                 code_len=self.code_len,
                 code=self.code,
+                code_hash=self.code_hash,
                 storage_start=self.storage_start,
                 storage=storage,
                 transient_storage_start=self.transient_storage_start,
@@ -200,6 +223,7 @@ namespace Account {
             address=self.address,
             code_len=self.code_len,
             code=self.code,
+            code_hash=self.code_hash,
             storage_start=self.storage_start,
             storage=storage,
             transient_storage_start=self.transient_storage_start,
@@ -229,6 +253,7 @@ namespace Account {
             address=self.address,
             code_len=self.code_len,
             code=self.code,
+            code_hash=self.code_hash,
             storage_start=self.storage_start,
             storage=storage,
             transient_storage_start=self.transient_storage_start,
@@ -258,6 +283,7 @@ namespace Account {
             address=self.address,
             code_len=self.code_len,
             code=self.code,
+            code_hash=self.code_hash,
             storage_start=self.storage_start,
             storage=self.storage,
             transient_storage_start=self.transient_storage_start,
@@ -296,6 +322,7 @@ namespace Account {
             address=self.address,
             code_len=self.code_len,
             code=self.code,
+            code_hash=self.code_hash,
             storage_start=self.storage_start,
             storage=self.storage,
             transient_storage_start=self.transient_storage_start,
@@ -327,6 +354,7 @@ namespace Account {
             address=self.address,
             code_len=code_len,
             code=code,
+            code_hash=self.code_hash,
             storage_start=self.storage_start,
             storage=self.storage,
             transient_storage_start=self.transient_storage_start,
@@ -340,6 +368,51 @@ namespace Account {
         );
     }
 
+    // @notice Set the code_hash of the Account
+    // @param self The pointer to the Account
+    // @param code_hash The new code_hash
+    func set_code_hash(self: model.Account*, code_hash: Uint256*) -> model.Account* {
+        return new model.Account(
+            address=self.address,
+            code_len=self.code_len,
+            code=self.code,
+            code_hash=code_hash,
+            storage_start=self.storage_start,
+            storage=self.storage,
+            transient_storage_start=self.transient_storage_start,
+            transient_storage=self.transient_storage,
+            valid_jumpdests_start=self.valid_jumpdests_start,
+            valid_jumpdests=self.valid_jumpdests,
+            nonce=self.nonce,
+            balance=self.balance,
+            selfdestruct=self.selfdestruct,
+            created=self.created,
+        );
+    }
+
+    // @notice Compute the code hash of an account
+    // @param address The address of the account
+    // @return the hash of the code
+    func compute_code_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        self: model.Account*
+    ) -> (code_hash: Uint256) {
+        alloc_locals;
+        let (local dst: felt*) = alloc();
+        let (dst_len, last_word, last_word_num_bytes) = bytes_to_bytes8_little_endian(
+            dst, self.code_len, self.code
+        );
+
+        let (implementation) = Kakarot_cairo1_helpers_class_hash.read();
+        let (code_hash) = ICairo1Helpers.library_call_keccak(
+            class_hash=implementation,
+            words_len=dst_len,
+            words=dst,
+            last_input_word=last_word,
+            last_input_num_bytes=last_word_num_bytes,
+        );
+        return (code_hash=code_hash);
+    }
+
     // @notice Set the nonce of the Account
     // @param self The pointer to the Account
     // @param nonce The new nonce
@@ -348,6 +421,7 @@ namespace Account {
             address=self.address,
             code_len=self.code_len,
             code=self.code,
+            code_hash=self.code_hash,
             storage_start=self.storage_start,
             storage=self.storage,
             transient_storage_start=self.transient_storage_start,
@@ -367,6 +441,7 @@ namespace Account {
             address=self.address,
             code_len=self.code_len,
             code=self.code,
+            code_hash=self.code_hash,
             storage_start=self.storage_start,
             storage=self.storage,
             transient_storage_start=self.transient_storage_start,
@@ -421,6 +496,7 @@ namespace Account {
             address=self.address,
             code_len=self.code_len,
             code=self.code,
+            code_hash=self.code_hash,
             storage_start=self.storage_start,
             storage=self.storage,
             transient_storage_start=self.transient_storage_start,
@@ -442,6 +518,7 @@ namespace Account {
             address=self.address,
             code_len=self.code_len,
             code=self.code,
+            code_hash=self.code_hash,
             storage_start=self.storage_start,
             storage=self.storage,
             transient_storage_start=self.transient_storage_start,
@@ -578,6 +655,7 @@ namespace Account {
             address=self.address,
             code_len=self.code_len,
             code=self.code,
+            code_hash=self.code_hash,
             storage_start=self.storage_start,
             storage=self.storage,
             transient_storage_start=self.transient_storage_start,
@@ -603,6 +681,7 @@ namespace Account {
             address=self.address,
             code_len=self.code_len,
             code=self.code,
+            code_hash=self.code_hash,
             storage_start=self.storage_start,
             storage=storage,
             transient_storage_start=self.transient_storage_start,
@@ -637,6 +716,7 @@ namespace Account {
             address=self.address,
             code_len=self.code_len,
             code=self.code,
+            code_hash=self.code_hash,
             storage_start=self.storage_start,
             storage=storage_ptr,
             transient_storage_start=self.transient_storage_start,

@@ -7,7 +7,7 @@ from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math import split_felt, unsigned_div_rem
 from starkware.cairo.common.math_cmp import is_nn, is_not_zero
-from starkware.cairo.common.registers import get_fp_and_pc
+from starkware.cairo.common.registers import get_fp_and_pc, get_ap
 from starkware.cairo.common.uint256 import Uint256, uint256_lt, uint256_le
 from starkware.cairo.common.default_dict import default_dict_new
 from starkware.cairo.common.dict_access import DictAccess
@@ -1205,9 +1205,13 @@ namespace CreateHelper {
             return evm;
         }
 
-        // Write bytecode and valid jumpdests to Account
+        // Write bytecode, valid jumpdests and code_hash to Account
         let account = State.get_account(evm.message.address.evm);
         let account = Account.set_code(account, evm.return_data_len, evm.return_data);
+        Account.compute_code_hash(account);
+        let (ap_val) = get_ap();
+        let code_hash = cast(ap_val - 1, Uint256*);
+        let account = Account.set_code_hash(account, code_hash);
 
         // Update local state with the updated account inner pointers.
         State.update_account(account);

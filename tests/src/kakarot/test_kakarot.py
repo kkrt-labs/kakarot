@@ -297,6 +297,9 @@ class TestKakarot:
             "IAccount.is_valid_jumpdest",
             lambda addr, data: [1],
         )
+        @SyscallHandler.patch(
+            "IAccount.get_code_hash", lambda sn_addr, data: [0x1, 0x1]
+        )
         def test_erc20_transfer(self, get_contract):
             erc20 = get_contract("Solmate", "ERC20")
             amount = int(1e18)
@@ -320,6 +323,9 @@ class TestKakarot:
         @SyscallHandler.patch(
             "IAccount.is_valid_jumpdest",
             lambda addr, data: [1],
+        )
+        @SyscallHandler.patch(
+            "IAccount.get_code_hash", lambda sn_addr, data: [0x1, 0x1]
         )
         def test_erc721_transfer(self, get_contract):
             erc721 = get_contract("Solmate", "ERC721")

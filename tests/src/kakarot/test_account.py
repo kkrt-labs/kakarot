@@ -1,4 +1,5 @@
 import pytest
+from eth_utils import keccak
 
 from tests.utils.syscall_handler import SyscallHandler
 from tests.utils.uint256 import int_to_uint256
@@ -13,12 +14,15 @@ class TestAccount:
         def test_should_return_account_with_default_dict_as_storage(
             self, cairo_run, address, code, nonce, balance
         ):
+            code_hash_bytes = keccak(bytes(code))
+            code_hash = int.from_bytes(code_hash_bytes, "big")
             cairo_run(
                 "test__init__should_return_account_with_default_dict_as_storage",
                 evm_address=address,
                 code=code,
                 nonce=nonce,
                 balance_low=balance,
+                code_hash=code_hash,
             )
 
     class TestCopy:
@@ -29,12 +33,15 @@ class TestAccount:
         def test_should_return_new_account_with_same_attributes(
             self, cairo_run, address, code, nonce, balance
         ):
+            code_hash_bytes = keccak(bytes(code))
+            code_hash = int.from_bytes(code_hash_bytes, "big")
             cairo_run(
                 "test__copy__should_return_new_account_with_same_attributes",
                 evm_address=address,
                 code=code,
                 nonce=nonce,
                 balance_low=balance,
+                code_hash=code_hash,
             )
 
     class TestWriteStorage:
@@ -88,8 +95,15 @@ class TestAccount:
                 (1, [1], True),
             ),
         )
+        @SyscallHandler.patch(
+            "IAccount.get_code_hash", lambda sn_addr, data: [0x1, 0x1]
+        )
         def test_should_return_true_when_nonce(
             self, cairo_run, nonce, code, expected_result
         ):
-            output = cairo_run("test__has_code_or_nonce", nonce=nonce, code=code)
+            code_hash_bytes = keccak(bytes(code))
+            code_hash = int.from_bytes(code_hash_bytes, "big")
+            output = cairo_run(
+                "test__has_code_or_nonce", nonce=nonce, code=code, code_hash=code_hash
+            )
             assert output == expected_result

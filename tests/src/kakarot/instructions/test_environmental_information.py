@@ -43,6 +43,9 @@ class TestEnvironmentalInformation:
         @SyscallHandler.patch(
             "Kakarot_evm_to_starknet_address", EXISTING_ACCOUNT, 0x1234
         )
+        @SyscallHandler.patch(
+            "IAccount.get_code_hash", lambda sn_addr, data: [0x1, 0x1]
+        )
         def test_extcodesize_should_push_code_size(self, cairo_run, bytecode, address):
             with SyscallHandler.patch(
                 "IAccount.bytecode", lambda addr, data: [len(bytecode), *bytecode]
@@ -65,6 +68,9 @@ class TestEnvironmentalInformation:
         @SyscallHandler.patch("IAccount.get_nonce", lambda addr, data: [1])
         @SyscallHandler.patch(
             "Kakarot_evm_to_starknet_address", EXISTING_ACCOUNT, 0x1234
+        )
+        @SyscallHandler.patch(
+            "IAccount.get_code_hash", lambda sn_addr, data: [0x1, 0x1]
         )
         def test_extcodecopy_should_copy_code(
             self, cairo_run, size, offset, dest_offset, bytecode, address
@@ -105,6 +111,9 @@ class TestEnvironmentalInformation:
         @SyscallHandler.patch("IAccount.get_nonce", lambda addr, data: [1])
         @SyscallHandler.patch(
             "Kakarot_evm_to_starknet_address", EXISTING_ACCOUNT, 0x1234
+        )
+        @SyscallHandler.patch(
+            "IAccount.get_code_hash", lambda sn_addr, data: [0x1, 0x1]
         )
         def test_extcodecopy_offset_high_zellic_issue_1258(
             self, cairo_run, size, bytecode, address
