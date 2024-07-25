@@ -1,6 +1,5 @@
 import pytest
 
-# TODO(temp): the `encode_internal_node` import was patched to skip rlp encoding and keccak hashing
 from ethereum.cancun.trie import (
     BranchNode,
     ExtensionNode,
@@ -8,47 +7,6 @@ from ethereum.cancun.trie import (
     bytes_to_nibble_list,
     encode_internal_node,
 )
-
-# # TODO: use import instead - which encodes keccak(rlp) that we currently dont have
-# def encode_internal_node(node: Any) -> Any:
-#     """
-#     Encode a Merkle Trie node into its RLP form. The RLP will then be
-#     serialized into a `Bytes` and hashed unless it is less that 32 bytes
-#     when serialized.
-
-#     This function also accepts `None`, representing the absence of a node,
-#     which is encoded to `b""`.
-
-#     Parameters
-#     ----------
-#     node : Optional[InternalNode]
-#         The node to encode.
-
-#     Returns
-#     -------
-#     encoded : `rlp.RLP`
-#         The node encoded as RLP.
-
-#     """
-#     unencoded: Any
-#     if node is None:
-#         unencoded = b""
-#     elif isinstance(node, LeafNode):
-#         unencoded = (
-#             nibble_list_to_compact(node.rest_of_key, True),
-#             node.value,
-#         )
-#     elif isinstance(node, ExtensionNode):
-#         unencoded = (
-#             nibble_list_to_compact(node.key_segment, False),
-#             node.subnode,
-#         )
-#     elif isinstance(node, BranchNode):
-#         unencoded = node.subnodes + [node.value]
-#     else:
-#         raise AssertionError(f"Invalid internal node type {type(node)}!")
-
-#     return unencoded
 
 
 @pytest.fixture(scope="module")
@@ -70,7 +28,8 @@ def default_branch(default_leaf):
 
     branch = BranchNode(children, value)
 
-    return b"".join([item for item in encode_internal_node(branch)])
+    encoding = encode_internal_node(branch)
+    return b"".join([item for item in encode_internal_node(branch)]) if not isinstance(encoding, bytes) else encoding
 
 
 @pytest.fixture(scope="module")
@@ -78,7 +37,8 @@ def default_extension(default_branch):
     """Extension with the value 'verb' and a leaf child 'doge'."""
     extension = ExtensionNode(bytes_to_nibble_list(b"dog"), default_branch)
 
-    return b"".join([item for item in encode_internal_node(extension)])
+    encoding = encode_internal_node(extension)
+    return b"".join([item for item in encoding]) if not isinstance(encoding, bytes) else encoding
 
 
 class TestNodes:

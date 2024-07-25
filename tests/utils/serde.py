@@ -339,3 +339,7 @@ class Serde:
             dict_ptr = dict_ptr + DictAccess.size
 
         return base, dict_ptr
+
+    # def deserialize_list(
+    #         self,
+    # )
