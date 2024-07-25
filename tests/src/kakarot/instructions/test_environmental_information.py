@@ -225,8 +225,7 @@ class TestEnvironmentalInformation:
                     lambda sn_addr, data: [len(bytecode), *bytecode],
                 ),
                 SyscallHandler.patch(
-                    " IAccount.get_code_hash",
-                    lambda sn_addr, data: [low, high],
+                    " IAccount.get_code_hash", lambda sn_addr, data: [low, high]
                 ),
             ):
                 output = cairo_run("test__exec_extcodehash", address=address)
