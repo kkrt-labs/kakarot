@@ -11,7 +11,7 @@ from starkware.cairo.common.math_cmp import is_not_zero, is_nn
 from starkware.cairo.common.uint256 import Uint256, uint256_le
 
 from kakarot.account import Account
-from kakarot.interfaces.interfaces import ICairo1Helpers, IAccount
+from kakarot.interfaces.interfaces import IAccount
 
 from kakarot.evm import EVM
 from kakarot.errors import Errors

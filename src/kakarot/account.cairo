@@ -21,7 +21,7 @@ from starkware.cairo.common.hash_state import (
 )
 from starkware.starknet.common.storage import normalize_address
 from starkware.starknet.common.syscalls import get_contract_address
-from starkware.cairo.lang.compiler.lib.registers import get_fp_and_pc, get_ap
+from starkware.cairo.lang.compiler.lib.registers import get_ap
 from kakarot.constants import Constants
 from kakarot.storages import (
     Kakarot_uninitialized_account_class_hash,
@@ -395,7 +395,7 @@ namespace Account {
     // @return the hash of the code
     func compute_code_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         self: model.Account*
-    ) -> (code_hash: Uint256) {
+    ) -> Uint256 {
         alloc_locals;
         let (local dst: felt*) = alloc();
         let (dst_len, last_word, last_word_num_bytes) = bytes_to_bytes8_little_endian(
@@ -410,7 +410,7 @@ namespace Account {
             last_input_word=last_word,
             last_input_num_bytes=last_word_num_bytes,
         );
-        return (code_hash=code_hash);
+        return code_hash;
     }
 
     // @notice Set the nonce of the Account

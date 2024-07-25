@@ -67,7 +67,7 @@ func Account_authorized_message_hashes(hash: Uint256) -> (res: felt) {
 }
 
 @storage_var
-func Account_code_hash() -> (codeHash: Uint256) {
+func Account_code_hash() -> (code_hash: Uint256) {
 }
 
 @event
@@ -450,7 +450,7 @@ namespace AccountContract {
 
     func set_code_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         code_hash: Uint256
-    ) -> () {
+    ) {
         Account_code_hash.write(code_hash);
         return ();
     }

@@ -22,7 +22,7 @@ from starkware.starknet.common.syscalls import (
 from kakarot.account import Account
 from kakarot.precompiles.precompiles_helpers import PrecompilesHelpers
 from kakarot.constants import Constants
-from kakarot.interfaces.interfaces import IERC20, IAccount, ICairo1Helpers
+from kakarot.interfaces.interfaces import IERC20, IAccount
 
 from kakarot.model import model
 from kakarot.state import State
@@ -35,7 +35,6 @@ from kakarot.storages import (
     Kakarot_base_fee,
     Kakarot_block_gas_limit,
     Kakarot_prev_randao,
-    Kakarot_cairo1_helpers_class_hash,
 )
 
 namespace Starknet {
