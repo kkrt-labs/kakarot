@@ -4,6 +4,7 @@ from hypothesis.strategies import binary
 from rlp import codec, decode, encode
 
 from tests.utils.constants import TRANSACTIONS
+from tests.utils.errors import cairo_error
 from tests.utils.helpers import rlp_encode_signed_data
 
 
@@ -52,9 +53,22 @@ class TestRLP:
             decoded = items[0] if items_len == 1 else items
             assert decoded == decode(encoded_data)
 
+        @given(
+            data=binary(min_size=0, max_size=255),
+            extra_data=binary(min_size=1, max_size=255),
+        )
+        async def test_raise_when_data_contains_extra_bytes(
+            self, cairo_run, data, extra_data
+        ):
+            encoded_data = encode(data)
+
+            with cairo_error(
+                f"RLP string ends with {len(extra_data)} superfluous bytes"
+            ):
+                cairo_run("test__decode", data=list(encoded_data + extra_data))
+
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
         def test_should_decode_all_tx_types(self, cairo_run, transaction):
-            transaction = {**transaction, "chainId": 1}
             encoded_unsigned_tx = rlp_encode_signed_data(transaction)
             if "type" in transaction:
                 # remove the type info from the encoded RLP

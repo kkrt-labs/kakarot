@@ -68,7 +68,7 @@ namespace RLP {
     // @param data The RLP encoded data.
     // @param items The pointer to the next free cell in the list of items decoded.
     // @return items_len The number of items decoded.
-    func decode{range_check_ptr}(items: Item*, data_len: felt, data: felt*) -> felt {
+    func decode_raw{range_check_ptr}(items: Item*, data_len: felt, data: felt*) -> felt {
         alloc_locals;
 
         if (data_len == 0) {
@@ -80,7 +80,7 @@ namespace RLP {
         if (rlp_type == 1) {
             // Case list
             let (sub_items: Item*) = alloc();
-            let sub_items_len = decode(items=sub_items, data_len=len, data=data + offset);
+            let sub_items_len = decode_raw(items=sub_items, data_len=len, data=data + offset);
             assert [items] = Item(data_len=sub_items_len, data=cast(sub_items, felt*), is_list=1);
             tempvar range_check_ptr = range_check_ptr;
         } else {
@@ -92,7 +92,20 @@ namespace RLP {
         tempvar items = items + Item.SIZE;
 
         let remaining_data_len = data_len - len - offset;
-        let items_len = decode(items=items, data_len=remaining_data_len, data=data + offset + len);
+        let items_len = decode_raw(
+            items=items, data_len=remaining_data_len, data=data + offset + len
+        );
         return 1 + items_len;
+    }
+
+    func decode{range_check_ptr}(items: Item*, data_len: felt, data: felt*) -> felt {
+        alloc_locals;
+        let (rlp_type, offset, len) = decode_type(data_len=data_len, data=data);
+        local extra_bytes = data_len - offset - len;
+        with_attr error_message("RLP string ends with {extra_bytes} superfluous bytes") {
+            assert extra_bytes = 0;
+        }
+        let items_len = decode_raw(items=items, data_len=data_len, data=data);
+        return items_len;
     }
 }
