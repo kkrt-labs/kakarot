@@ -1,6 +1,8 @@
-from typing import Dict, Tuple
 from collections import defaultdict
+from typing import Dict, Tuple
+
 from eth_utils.address import to_checksum_address
+from starkware.cairo.common.dict import DictManager, DictTracker
 from starkware.cairo.lang.compiler.ast.cairo_types import (
     TypeFelt,
     TypePointer,
@@ -10,7 +12,6 @@ from starkware.cairo.lang.compiler.ast.cairo_types import (
 from starkware.cairo.lang.compiler.identifier_definition import StructDefinition
 from starkware.cairo.lang.compiler.identifier_manager import MissingIdentifierError
 from starkware.cairo.lang.vm.relocatable import RelocatableValue
-from starkware.cairo.common.dict import DictManager, DictTracker
 
 
 class Serde:
@@ -293,21 +294,26 @@ class Serde:
         shift = self.get_offset(cairo_type)
         return self._serialize(cairo_type, self.runner.vm.run_context.ap - shift, shift)
 
-    def deserialize_dict(self, obj: Dict, __dict_manager: DictManager, default_value=0, initial_dict={}) -> Tuple[RelocatableValue, RelocatableValue]:
+    def deserialize_dict(
+        self, obj: Dict, __dict_manager: DictManager, default_value=0, initial_dict=None
+    ) -> Tuple[RelocatableValue, RelocatableValue]:
         """
-        Deserializes a python dict into a Cairo dict.
+        Deserialize a python dict into a Cairo dict.
 
         Args:
+        ----
             obj: The python dict.
-            dict_ptr: The pointer to the address of the Cairo dict, as a RelocatableValue.
-            __dict_manager: The dict manager object.
+            __dict_manager: The dict manager, global variable of the execution.
+            default_value: An optional default value for the dict defaulted to 0.
+            initial_dict: An optional initial dict.
+
         """
         DictAccess = self.get_identifier("DictAccess", StructDefinition)
         dict_ptr = base = self.runner.segments.add()
         assert base.segment_index not in __dict_manager.trackers
         dict_tracker = __dict_manager.trackers[base.segment_index] = DictTracker(
-            data=defaultdict(lambda: default_value, initial_dict),
-        current_ptr=base,
+            data=defaultdict(lambda: default_value, initial_dict or {}),
+            current_ptr=base,
         )
 
         # Manually handling cases where the dict contains sequence (list or bytes) that cannot be passed to defaultdict
@@ -317,7 +323,6 @@ class Serde:
                 self.runner.segments.write_arg(cairo_key, key)
             else:
                 cairo_key = key
-
 
             # If the value is a list, we need to serialize it.
             if isinstance(obj[key], list) or isinstance(obj[key], bytes):
