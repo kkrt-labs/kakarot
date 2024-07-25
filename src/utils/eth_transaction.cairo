@@ -35,6 +35,13 @@ namespace EthTransaction {
         let items_len = [items].data_len;
         let items = cast([items].data, RLP.Item*);
 
+        assert items[0].is_list = FALSE;
+        assert items[1].is_list = FALSE;
+        assert items[2].is_list = FALSE;
+        assert items[3].is_list = FALSE;
+        assert items[4].is_list = FALSE;
+        assert items[5].is_list = FALSE;
+
         let nonce = Helpers.bytes_to_felt(items[0].data_len, items[0].data);
         let gas_price = Helpers.bytes_to_felt(items[1].data_len, items[1].data);
         let gas_limit = Helpers.bytes_to_felt(items[2].data_len, items[2].data);
@@ -50,6 +57,9 @@ namespace EthTransaction {
             tempvar chain_id = 0;
         } else {
             assert items_len = 9;
+            assert items[6].is_list = FALSE;
+            assert items[7].is_list = FALSE;
+            assert items[8].is_list = FALSE;
             let chain_id = Helpers.bytes_to_felt(items[6].data_len, items[6].data);
         }
         let chain_id = [ap - 1];
@@ -87,6 +97,14 @@ namespace EthTransaction {
         let items = cast([items].data, RLP.Item*);
 
         assert items_len = 8;
+        assert items[0].is_list = FALSE;
+        assert items[1].is_list = FALSE;
+        assert items[2].is_list = FALSE;
+        assert items[3].is_list = FALSE;
+        assert items[4].is_list = FALSE;
+        assert items[5].is_list = FALSE;
+        assert items[6].is_list = FALSE;
+        assert items[7].is_list = TRUE;
 
         let chain_id = Helpers.bytes_to_felt(items[0].data_len, items[0].data);
         let nonce = Helpers.bytes_to_felt(items[1].data_len, items[1].data);
@@ -136,6 +154,15 @@ namespace EthTransaction {
         let items = cast([items].data, RLP.Item*);
 
         assert items_len = 9;
+        assert items[0].is_list = FALSE;
+        assert items[1].is_list = FALSE;
+        assert items[2].is_list = FALSE;
+        assert items[3].is_list = FALSE;
+        assert items[4].is_list = FALSE;
+        assert items[5].is_list = FALSE;
+        assert items[6].is_list = FALSE;
+        assert items[7].is_list = FALSE;
+        assert items[8].is_list = TRUE;
 
         let chain_id = Helpers.bytes_to_felt(items[0].data_len, items[0].data);
         let nonce = Helpers.bytes_to_felt(items[1].data_len, items[1].data);
