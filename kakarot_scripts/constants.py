@@ -182,7 +182,6 @@ COINBASE = int(
     16,
 )
 SOURCE_DIR = Path("src")
-SOURCE_PATH = Path("solidity_contracs/src")
 SOURCE_DIR_FIXTURES = Path("tests/fixtures")
 CONTRACTS = {p.stem: p for p in list(SOURCE_DIR.glob("**/*.cairo"))}
 CONTRACTS_FIXTURES = {p.stem: p for p in list(SOURCE_DIR_FIXTURES.glob("**/*.cairo"))}

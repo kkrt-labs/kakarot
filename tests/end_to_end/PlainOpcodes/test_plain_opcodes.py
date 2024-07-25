@@ -157,7 +157,7 @@ class TestPlainOpcodes:
             events = plain_opcodes.events.parse_events(receipt)
             assert len(events["CreateAddress"]) == count
             for create_event in events["CreateAddress"]:
-                deployed_counter = get_contract(
+                deployed_counter = await get_contract(
                     "PlainOpcodes", "Counter", address=create_event["_address"]
                 )
                 assert await deployed_counter.count() == 0
@@ -187,7 +187,7 @@ class TestPlainOpcodes:
             receipt = (await plain_opcodes.createCounterAndCall())["receipt"]
             events = plain_opcodes.events.parse_events(receipt)
             address = events["CreateAddress"][0]["_address"]
-            counter = get_contract("PlainOpcodes", "Counter", address=address)
+            counter = await get_contract("PlainOpcodes", "Counter", address=address)
             assert await counter.count() == 0
 
         async def test_should_create_counter_and_invoke_in_the_same_tx(
@@ -196,14 +196,14 @@ class TestPlainOpcodes:
             receipt = (await plain_opcodes.createCounterAndInvoke())["receipt"]
             events = plain_opcodes.events.parse_events(receipt)
             address = events["CreateAddress"][0]["_address"]
-            counter = get_contract("PlainOpcodes", "Counter", address=address)
+            counter = await get_contract("PlainOpcodes", "Counter", address=address)
             assert await counter.count() == 1
 
     class TestCreate2:
         async def test_should_collision_after_selfdestruct_different_tx(
             self, plain_opcodes, owner
         ):
-            contract_with_selfdestruct = get_contract(
+            contract_with_selfdestruct = await get_contract(
                 "PlainOpcodes", "ContractWithSelfdestructMethod"
             )
             salt = 12345
@@ -216,7 +216,7 @@ class TestPlainOpcodes:
             )["receipt"]
             events = plain_opcodes.events.parse_events(receipt)
             assert len(events["Create2Address"]) == 1
-            contract_with_selfdestruct = get_contract(
+            contract_with_selfdestruct = await get_contract(
                 "PlainOpcodes",
                 "ContractWithSelfdestructMethod",
                 address=events["Create2Address"][0]["_address"],
@@ -258,7 +258,7 @@ class TestPlainOpcodes:
             events = plain_opcodes.events.parse_events(receipt)
             assert len(events["Create2Address"]) == 1
 
-            deployed_counter = get_contract(
+            deployed_counter = await get_contract(
                 "PlainOpcodes",
                 "Counter",
                 address=events["Create2Address"][0]["_address"],
@@ -297,7 +297,7 @@ class TestPlainOpcodes:
                 )
             )["receipt"]
 
-            reverting_contract = get_contract(
+            reverting_contract = await get_contract(
                 "PlainOpcodes", "ContractRevertsOnMethodCall"
             )
 

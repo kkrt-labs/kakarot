@@ -51,7 +51,7 @@ class TestUniswapV2Factory:
             assert await factory.allPairs(0) == pair_evm_address
             assert await factory.allPairsLength() == 1
 
-            pair = get_contract(
+            pair = await get_contract(
                 "UniswapV2",
                 "UniswapV2Pair",
                 address=pair_evm_address,

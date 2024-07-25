@@ -297,8 +297,8 @@ class TestKakarot:
             "IAccount.is_valid_jumpdest",
             lambda addr, data: [1],
         )
-        def test_erc20_transfer(self, get_contract):
-            erc20 = get_contract("Solmate", "ERC20")
+        async def test_erc20_transfer(self, get_contract):
+            erc20 = await get_contract("Solmate", "ERC20")
             amount = int(1e18)
             initial_state = {
                 CONTRACT_ADDRESS: {
@@ -321,8 +321,8 @@ class TestKakarot:
             "IAccount.is_valid_jumpdest",
             lambda addr, data: [1],
         )
-        def test_erc721_transfer(self, get_contract):
-            erc721 = get_contract("Solmate", "ERC721")
+        async def test_erc721_transfer(self, get_contract):
+            erc721 = await get_contract("Solmate", "ERC721")
             token_id = 1337
             initial_state = {
                 CONTRACT_ADDRESS: {
@@ -414,8 +414,8 @@ class TestKakarot:
         @pytest.mark.NoCI
         @pytest.mark.parametrize("steps", [10, 50, 100, 200])
         @SyscallHandler.patch("IAccount.is_valid_jumpdest", lambda addr, data: [1])
-        def test_loop_profiling(self, get_contract, steps):
-            plain_opcodes = get_contract("PlainOpcodes", "PlainOpcodes")
+        async def test_loop_profiling(self, get_contract, steps):
+            plain_opcodes = await get_contract("PlainOpcodes", "PlainOpcodes")
             initial_state = {
                 CONTRACT_ADDRESS: {
                     "code": list(plain_opcodes.bytecode_runtime),

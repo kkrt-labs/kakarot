@@ -1,13 +1,14 @@
 import pytest
 import pytest_asyncio
 
+from kakarot_scripts.utils.kakarot import deploy
+
 
 @pytest_asyncio.fixture(scope="module")
-async def univ3_position(deploy_contract, owner):
-    return await deploy_contract(
+async def univ3_position(owner):
+    return await deploy(
         "UniswapV3",
         "UniswapV3NFTManager",
-        associated_libraries=[("UniswapV3", "NFTDescriptor")],
         caller_eoa=owner.starknet_contract,
     )
 

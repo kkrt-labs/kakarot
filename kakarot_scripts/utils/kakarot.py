@@ -1,4 +1,3 @@
-import asyncio
 import functools
 import json
 import logging
@@ -7,6 +6,7 @@ from types import MethodType
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
 import rlp
+from async_lru import alru_cache
 from eth_abi import decode
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_account import Account as EvmAccount
@@ -35,7 +35,6 @@ from kakarot_scripts.constants import (
     EVM_PRIVATE_KEY,
     NETWORK,
     RPC_CLIENT,
-    SOURCE_PATH,
     WEB3,
     ChainId,
 )
@@ -54,8 +53,6 @@ from tests.utils.uint256 import int_to_uint256
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-
-LIBRARY_PLACEHOLDER_PREFIX_BYTES = 17
 
 
 class EvmTransactionError(Exception):
@@ -76,6 +73,7 @@ def get_solidity_artifacts(
     except (NameError, FileNotFoundError):
         foundry_file = toml.loads(Path("foundry.toml").read_text())
 
+    src_path = Path(foundry_file["profile"]["default"]["src"])
     all_compilation_outputs = [
         json.load(open(file))
         for file in Path(foundry_file["profile"]["default"]["out"]).glob(
@@ -86,9 +84,7 @@ def get_solidity_artifacts(
         target_compilation_output = all_compilation_outputs[0]
     else:
         target_solidity_file_path = list(
-            (Path(foundry_file["profile"]["default"]["src"]) / contract_app).glob(
-                f"**/{contract_name}.sol"
-            )
+            (src_path / contract_app).glob(f"**/{contract_name}.sol")
         )
         if len(target_solidity_file_path) != 1:
             raise ValueError(
@@ -109,24 +105,47 @@ def get_solidity_artifacts(
                 f"found {len(target_compilation_output)} outputs:\n{target_compilation_output}"
             )
         target_compilation_output = target_compilation_output[0]
+
+    def process_link_references(
+        link_references: Dict[str, Dict[str, Any]]
+    ) -> Dict[str, Dict[str, Any]]:
+        return {
+            Path(file_path)
+            .relative_to(src_path)
+            .parts[0]: {
+                library_name: references
+                for library_name, references in libraries.items()
+            }
+            for file_path, libraries in link_references.items()
+        }
+
     return {
-        "bytecode": target_compilation_output["bytecode"]["object"],
-        "bytecode_runtime": target_compilation_output["deployedBytecode"]["object"],
+        "bytecode": {
+            "object": target_compilation_output["bytecode"]["object"],
+            "linkReferences": process_link_references(
+                target_compilation_output["bytecode"].get("linkReferences", {})
+            ),
+        },
+        "bytecode_runtime": {
+            "object": target_compilation_output["deployedBytecode"]["object"],
+            "linkReferences": process_link_references(
+                target_compilation_output["deployedBytecode"].get("linkReferences", {})
+            ),
+        },
         "abi": target_compilation_output["abi"],
+        "name": contract_name,
     }
 
 
-def get_contract(
+async def get_contract(
     contract_app: str,
     contract_name: str,
-    deployed_libraries: List[Dict[str, str]] = None,
     address=None,
     caller_eoa: Optional[Account] = None,
 ) -> Web3Contract:
     artifacts = get_solidity_artifacts(contract_app, contract_name)
-    bytecode, bytecode_runtime = replace_library_placeholders(
-        artifacts, deployed_libraries or []
-    )
+
+    bytecode, bytecode_runtime = await link_libraries(artifacts)
 
     contract = cast(
         Web3Contract,
@@ -147,31 +166,74 @@ def get_contract(
     return contract
 
 
-def replace_library_placeholders(
-    artifacts: Dict[str, str], deployed_libraries: List[Dict[str, str]]
-) -> Tuple[str, str]:
-    bytecode = artifacts["bytecode"]
-    bytecode_runtime = artifacts["bytecode_runtime"]
+@alru_cache()
+async def get_or_deploy_library(library_app: str, library_name: str) -> str:
+    """
+    Deploy a solidity library if not already deployed and return its address.
 
-    for library in deployed_libraries:
-        placeholder = f"__${library['identifier'].hex()}$__"
-        address = Web3.to_checksum_address(library["address"]).lstrip("0x")
-        bytecode = bytecode.replace(placeholder, address)
-        bytecode_runtime = bytecode_runtime.replace(placeholder, address)
-        logger.info(f"ℹ️  Replaced {library['identifier'].hex()} in bytecode")
+    Args:
+    ----
+        library_app (str): The application name of the library.
+        library_name (str): The name of the library.
+
+    Returns:
+    -------
+        str: The deployed library address as a hexstring with the '0x' prefix.
+
+    """
+    library_contract = await deploy(library_app, library_name)
+    logger.info(f"ℹ️  Deployed {library_name} at address {library_contract.address}")
+    return library_contract.address
+
+
+async def link_libraries(artifacts: Dict[str, Any]) -> Tuple[str, str]:
+    """
+    Process an artifacts bytecode by linking libraries with their deployed addresses.
+
+    Args:
+    ----
+        artifacts (Dict[str, Any]): The contract artifacts containing bytecode and link references.
+
+    Returns:
+    -------
+        Tuple[str, str]: The processed bytecode and runtime bytecode.
+
+    """
+
+    async def process_bytecode(bytecode_type: str) -> str:
+        bytecode_obj = artifacts[bytecode_type]
+        current_bytecode = bytecode_obj["object"][2:]
+        link_references = bytecode_obj.get("linkReferences", {})
+
+        for library_app, libraries in link_references.items():
+            for library_name, references in libraries.items():
+                library_address = await get_or_deploy_library(library_app, library_name)
+
+                for ref in references:
+                    start, length = ref["start"] * 2, ref["length"] * 2
+                    placeholder = current_bytecode[start : start + length]
+                    current_bytecode = current_bytecode.replace(
+                        placeholder, library_address[2:].lower()
+                    )
+
+                logger.info(
+                    f"ℹ️  Replaced {library_name} in {bytecode_type} with address 0x{library_address}"
+                )
+
+        return current_bytecode
+
+    bytecode = await process_bytecode("bytecode")
+    bytecode_runtime = await process_bytecode("bytecode_runtime")
 
     return bytecode, bytecode_runtime
 
 
-def compute_library_identifier(library_app: str, library_name: str) -> bytes:
-    return keccak(
-        f"{SOURCE_PATH}/{library_app}/{library_name}.sol:{library_name}".encode("utf-8")
-    )[:LIBRARY_PLACEHOLDER_PREFIX_BYTES]
-
-
 async def deploy(
-    contract: Web3Contract, *args, caller_eoa: Optional[Account] = None, **kwargs
+    contract_app: str, contract_name: str, *args, **kwargs
 ) -> Web3Contract:
+    logger.info(f"⏳ Deploying {contract_name}")
+    caller_eoa = kwargs.pop("caller_eoa", None)
+    contract = await get_contract(contract_app, contract_name, caller_eoa=caller_eoa)
     max_fee = kwargs.pop("max_fee", None)
     value = kwargs.pop("value", 0)
     receipt, response, success, _ = await eth_send_transaction(
@@ -192,59 +254,6 @@ async def deploy(
         ).contract_address
     else:
         starknet_address, evm_address = response
-
-    return receipt, starknet_address, evm_address
-
-
-async def deploy_library(
-    library_app: str, library_name: str, *args: Any, **kwargs: Any
-) -> Dict[str, Any]:
-    logger.info(f"⏳ Deploying {library_name}")
-
-    caller_eoa = kwargs.pop("caller_eoa", None)
-    library = get_contract(library_app, library_name, caller_eoa=caller_eoa)
-
-    _, _, evm_address = await deploy(library, *args, **kwargs)
-
-    library.address = Web3.to_checksum_address(f"0x{evm_address:040x}")
-    library_identifier = compute_library_identifier(library_app, library_name)
-
-    logger.info(f"✅ Library {library_name} deployed at address {library.address}")
-
-    return {
-        "address": library.address,
-        "identifier": library_identifier,
-    }
-
-
-async def deploy_contract(
-    contract_app: str,
-    contract_name: str,
-    *args: Any,
-    **kwargs: Any,
-) -> Web3Contract:
-    logger.info(f"⏳ Deploying {contract_name}")
-    associated_libraries = kwargs.pop("associated_libraries", [])
-    deployed_libraries = (
-        await asyncio.gather(
-            *(deploy_library(app, name) for app, name in associated_libraries)
-        )
-        if associated_libraries
-        else []
-    )
-
-    caller_eoa = kwargs.pop("caller_eoa", None)
-    contract = get_contract(
-        contract_app,
-        contract_name,
-        deployed_libraries=deployed_libraries,
-        caller_eoa=caller_eoa,
-    )
-
-    _, starknet_address, evm_address = await deploy(
-        contract, *args, caller_eoa=caller_eoa, **kwargs
-    )
-
     contract.address = Web3.to_checksum_address(f"0x{evm_address:040x}")
     contract.starknet_address = starknet_address
     logger.info(f"✅ {contract_name} deployed at: {contract.address}")
