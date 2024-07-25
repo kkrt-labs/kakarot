@@ -35,6 +35,8 @@ namespace EthTransaction {
         let items_len = [items].data_len;
         let items = cast([items].data, RLP.Item*);
 
+        // Pre eip-155 txs have 6 fields, post eip-155 txs have 9 fields
+        // We check for both cases here, and do the remaining ones in the next if block
         assert items[0].is_list = FALSE;
         assert items[1].is_list = FALSE;
         assert items[2].is_list = FALSE;
