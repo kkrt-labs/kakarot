@@ -117,5 +117,5 @@ class TestAccount:
                 "test__compute_code_hash",
                 code=bytecode,
             )
-            code_hash = "0x" + keccak(bytecode).hex()
-            assert output == code_hash
+            code_hash = int.from_bytes(keccak(bytecode), byteorder="big")
+            assert int(output, 16) == code_hash
