@@ -224,7 +224,7 @@ class TestEnvironmentalInformation:
                     lambda sn_addr, data: [len(bytecode), *bytecode],
                 ),
                 SyscallHandler.patch(
-                    " IAccount.get_code_hash",
+                    "IAccount.get_code_hash",
                     lambda sn_addr, data: [*int_to_uint256(bytecode_hash)],
                 ),
             ):
