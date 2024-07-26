@@ -172,7 +172,9 @@ func test___copy_accounts__should_handle_null_pointers{range_check_ptr}() {
     tempvar address = new model.Address(1, 2);
     tempvar balance = new Uint256(1, 0);
     let (code) = alloc();
-    tempvar code_hash = new Uint256(0, 0);
+    tempvar code_hash = new Uint256(
+        304396909071904405792975023732328604784, 262949717399590921288928019264691438528
+    );
     let account = Account.init(address, 0, code, code_hash, 1, balance);
     dict_write{dict_ptr=accounts}(address.evm, cast(account, felt));
     let empty_address = 'empty address';
@@ -200,7 +202,9 @@ func test__is_account_warm__account_in_state{
     tempvar address = new model.Address(starknet_address, evm_address);
     tempvar balance = new Uint256(1, 0);
     let (code) = alloc();
-    tempvar code_hash = new Uint256(0, 0);
+    tempvar code_hash = new Uint256(
+        304396909071904405792975023732328604784, 262949717399590921288928019264691438528
+    );
     let account = Account.init(address, 0, code, code_hash, 1, balance);
     tempvar state = State.init();
 

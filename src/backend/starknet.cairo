@@ -218,10 +218,10 @@ namespace Internals {
         // Update bytecode and jumpdests if required (newly created account)
         if (self.created != FALSE) {
             IAccount.write_bytecode(starknet_address, self.code_len, self.code);
-            IAccount.set_code_hash(starknet_address, [self.code_hash]);
             Internals._save_valid_jumpdests(
                 starknet_address, self.valid_jumpdests_start, self.valid_jumpdests
             );
+            IAccount.set_code_hash(starknet_address, [self.code_hash]);
             return ();
         }
 

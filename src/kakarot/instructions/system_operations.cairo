@@ -1204,7 +1204,7 @@ namespace CreateHelper {
             return evm;
         }
 
-        // Write bytecode, valid jumpdests and code_hash to Account
+        // Write bytecode and valid jumpdests to Account
         let account = State.get_account(evm.message.address.evm);
         let account = Account.set_code(account, evm.return_data_len, evm.return_data);
 

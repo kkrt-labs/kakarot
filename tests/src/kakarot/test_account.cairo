@@ -173,7 +173,9 @@ func test__fetch_original_storage__state_modified{
     let starknet_address = Account.compute_starknet_address(evm_address);
     tempvar address = new model.Address(starknet_address, evm_address);
     let (local code: felt*) = alloc();
-    tempvar code_hash = new Uint256(0, 0);
+    tempvar code_hash = new Uint256(
+        304396909071904405792975023732328604784, 262949717399590921288928019264691438528
+    );
     tempvar balance = new Uint256(0, 0);
     let account = Account.init(address, 0, code, code_hash, 0, balance);
 
