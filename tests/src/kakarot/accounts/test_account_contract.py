@@ -269,9 +269,16 @@ class TestAccountContract:
         @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
         def test__should_set_code_hash(self, cairo_run, code_hash):
             with patch.object(SyscallHandler, "mock_storage") as mock_storage:
-                cairo_run("test__set_code_hash", code_hash=int_to_uint256(code_hash))
+                low, high = int_to_uint256(code_hash)
+                cairo_run("test__set_code_hash", code_hash=(low, high))
                 code_hash_address = get_storage_var_address("Account_code_hash")
-                mock_storage.assert_any_call(address=code_hash_address, value=code_hash)
+                ownable_address = get_storage_var_address("Ownable_owner")
+                calls = [
+                    call(address=ownable_address),
+                    call(address=code_hash_address, value=low),
+                    call(address=code_hash_address + 1, value=high),
+                ]
+                mock_storage.assert_has_calls(calls)
 
     class TestSetAuthorizedPreEIP155Transactions:
         def test_should_assert_only_owner(self, cairo_run):
