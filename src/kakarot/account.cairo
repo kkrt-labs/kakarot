@@ -345,7 +345,6 @@ namespace Account {
     // @param self The pointer to the Account.
     // @param code_len The len of the code
     // @param code The code array
-    // @param code_hash  The code hash
     // @return The updated Account with the code and valid jumpdests set
     func set_code{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         self: model.Account*, code_len: felt, code: felt*
