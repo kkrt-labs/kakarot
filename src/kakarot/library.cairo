@@ -325,7 +325,6 @@ namespace Kakarot {
         alloc_locals;
         let starknet_address = Account.get_starknet_address(evm_address);
         IAccount.write_bytecode(starknet_address, bytecode_len, bytecode);
-        // compute code_hash
         let code_hash = Account.compute_code_hash(bytecode_len, bytecode);
         IAccount.set_code_hash(starknet_address, code_hash);
         return ();
