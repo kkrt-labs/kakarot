@@ -298,7 +298,7 @@ func get_code_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
 @external
 func set_code_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     code_hash: Uint256
-) -> () {
+) {
     Ownable.assert_only_owner();
     AccountContract.set_code_hash(code_hash);
     return ();
