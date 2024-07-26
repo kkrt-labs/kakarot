@@ -353,7 +353,7 @@ namespace Account {
         alloc_locals;
         compute_code_hash(code_len, code);
         let (ap_val) = get_ap();
-        local code_hash: Uint256* = cast([ap_val - 2], Uint256*);
+        let code_hash = cast([ap_val - 2], Uint256*);
         let (valid_jumpdests_start, valid_jumpdests) = Helpers.initialize_jumpdests(code_len, code);
         return new model.Account(
             address=self.address,
