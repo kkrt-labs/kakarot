@@ -1,5 +1,7 @@
 import pytest
 from eth_utils import keccak
+from hypothesis import given
+from hypothesis.strategies import binary
 
 from tests.utils.syscall_handler import SyscallHandler
 from tests.utils.uint256 import int_to_uint256
@@ -107,3 +109,13 @@ class TestAccount:
                 "test__has_code_or_nonce", nonce=nonce, code=code, code_hash=code_hash
             )
             assert output == expected_result
+
+    class TestComputeCodeHash:
+        @given(bytecode=binary(min_size=1, max_size=400))
+        def test_should_compute_code_hash(self, cairo_run, bytecode):
+            output = cairo_run(
+                "test__compute_code_hash",
+                code=bytecode,
+            )
+            code_hash = "0x" + keccak(bytecode).hex()
+            assert output == code_hash

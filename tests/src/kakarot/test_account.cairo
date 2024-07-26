@@ -215,3 +215,21 @@ func test__has_code_or_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ran
     // Then
     return result;
 }
+
+func test__compute_code_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    ) -> Uint256 {
+    alloc_locals;
+    // Given
+    local code_len: felt;
+    let (code) = alloc();
+    %{
+        ids.code_len = len(program_input["code"])
+        segments.write_arg(ids.code, program_input["code"])
+    %}
+
+    // When
+    let result = Account.compute_code_hash(code_len, code);
+
+    // Then
+    return result;
+}
