@@ -441,11 +441,10 @@ namespace AccountContract {
         return is_valid_jumpdest(index=index);
     }
 
-    func get_code_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
-        code_hash: Uint256
-    ) {
+    func get_code_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        ) -> Uint256 {
         let (code_hash) = Account_code_hash.read();
-        return (code_hash,);
+        return code_hash;
     }
 
     func set_code_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(

@@ -1047,10 +1047,6 @@ namespace Internals {
         // Write bytecode and cache the final code valid jumpdests to Account
         let account = State.get_account(evm.message.address.evm);
         let account = Account.set_code(account, evm.return_data_len, evm.return_data);
-        Account.compute_code_hash(account);
-        let (ap_val) = get_ap();
-        let code_hash = cast(ap_val - 2, Uint256*);
-        let account = Account.set_code_hash(account, code_hash);
 
         State.update_account(account);
         State.finalize();

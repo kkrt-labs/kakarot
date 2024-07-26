@@ -16,7 +16,6 @@ from kakarot.accounts.account_contract import (
     set_nonce,
     set_authorized_pre_eip155_tx,
     execute_starknet_call,
-    set_code_hash,
 )
 
 func test__initialize{
@@ -162,17 +161,4 @@ func test__is_valid_jumpdest{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ran
     let (is_valid) = is_valid_jumpdest(index);
 
     return is_valid;
-}
-
-func test__set_code_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
-    alloc_locals;
-    local code_hash: Uint256;
-    %{
-        ids.code_hash.low = program_input["code_hash"][0]
-        ids.code_hash.high = program_input["code_hash"][1]
-    %}
-
-    set_code_hash(code_hash);
-
-    return ();
 }

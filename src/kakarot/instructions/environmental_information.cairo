@@ -487,9 +487,9 @@ namespace EnvironmentalInformation {
         );
 
         let (starknet_address) = Kakarot_evm_to_starknet_address.read(evm_address);
-        let (code_hash) = IAccount.get_code_hash(contract_address=starknet_address);
+        let code_hash = account.code_hash;
 
-        Stack.push_uint256(code_hash);
+        Stack.push_uint256([code_hash]);
 
         return evm;
     }

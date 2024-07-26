@@ -143,7 +143,7 @@ namespace Account {
         let (nonce) = IAccount.get_nonce(contract_address=starknet_address);
         IAccount.get_code_hash(contract_address=starknet_address);
         let (ap_val) = get_ap();
-        let code_hash = cast(ap_val - 1, Uint256*);
+        let code_hash = cast(ap_val - 2, Uint256*);
 
         // CAs are instantiated with their actual nonce - EOAs are instantiated with the nonce=1
         // that is set when they're deployed.
@@ -345,16 +345,21 @@ namespace Account {
     // @param self The pointer to the Account.
     // @param code_len The len of the code
     // @param code The code array
+    // @param code_hash  The code hash
     // @return The updated Account with the code and valid jumpdests set
-    func set_code{range_check_ptr}(
+    func set_code{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         self: model.Account*, code_len: felt, code: felt*
     ) -> model.Account* {
+        alloc_locals;
+        compute_code_hash(code_len, code);
+        let (ap_val) = get_ap();
+        local code_hash: Uint256* = cast([ap_val - 2], Uint256*);
         let (valid_jumpdests_start, valid_jumpdests) = Helpers.initialize_jumpdests(code_len, code);
         return new model.Account(
             address=self.address,
             code_len=code_len,
             code=code,
-            code_hash=self.code_hash,
+            code_hash=code_hash,
             storage_start=self.storage_start,
             storage=self.storage,
             transient_storage_start=self.transient_storage_start,
@@ -366,51 +371,6 @@ namespace Account {
             selfdestruct=self.selfdestruct,
             created=1,
         );
-    }
-
-    // @notice Set the code_hash of the Account
-    // @param self The pointer to the Account
-    // @param code_hash The new code_hash
-    func set_code_hash(self: model.Account*, code_hash: Uint256*) -> model.Account* {
-        return new model.Account(
-            address=self.address,
-            code_len=self.code_len,
-            code=self.code,
-            code_hash=code_hash,
-            storage_start=self.storage_start,
-            storage=self.storage,
-            transient_storage_start=self.transient_storage_start,
-            transient_storage=self.transient_storage,
-            valid_jumpdests_start=self.valid_jumpdests_start,
-            valid_jumpdests=self.valid_jumpdests,
-            nonce=self.nonce,
-            balance=self.balance,
-            selfdestruct=self.selfdestruct,
-            created=self.created,
-        );
-    }
-
-    // @notice Compute the code hash of an account
-    // @param address The address of the account
-    // @return the hash of the code
-    func compute_code_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.Account*
-    ) -> Uint256 {
-        alloc_locals;
-        let (local dst: felt*) = alloc();
-        let (dst_len, last_word, last_word_num_bytes) = bytes_to_bytes8_little_endian(
-            dst, self.code_len, self.code
-        );
-
-        let (implementation) = Kakarot_cairo1_helpers_class_hash.read();
-        let (code_hash) = ICairo1Helpers.library_call_keccak(
-            class_hash=implementation,
-            words_len=dst_len,
-            words=dst,
-            last_input_word=last_word,
-            last_input_num_bytes=last_word_num_bytes,
-        );
-        return code_hash;
     }
 
     // @notice Set the nonce of the Account
@@ -729,6 +689,26 @@ namespace Account {
             created=self.created,
         );
         return self;
+    }
+
+    func compute_code_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        code_len: felt, code: felt*
+    ) -> Uint256 {
+        alloc_locals;
+        let (local dst: felt*) = alloc();
+        let (dst_len, last_word, last_word_num_bytes) = bytes_to_bytes8_little_endian(
+            dst, code_len, code
+        );
+
+        let (implementation) = Kakarot_cairo1_helpers_class_hash.read();
+        let (code_hash) = ICairo1Helpers.library_call_keccak(
+            class_hash=implementation,
+            words_len=dst_len,
+            words=dst,
+            last_input_word=last_word,
+            last_input_num_bytes=last_word_num_bytes,
+        );
+        return code_hash;
     }
 }
 
