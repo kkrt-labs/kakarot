@@ -20,7 +20,6 @@ from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.state import State
-from kakarot.storages import Kakarot_cairo1_helpers_class_hash, Kakarot_evm_to_starknet_address
 from utils.array import slice
 from utils.bytes import bytes_to_bytes8_little_endian
 from utils.uint256 import uint256_to_uint160, uint256_add, uint256_eq
@@ -486,10 +485,7 @@ namespace EnvironmentalInformation {
             dst, account.code_len, account.code
         );
 
-        let (starknet_address) = Kakarot_evm_to_starknet_address.read(evm_address);
-        let code_hash = account.code_hash;
-
-        Stack.push_uint256([code_hash]);
+        Stack.push_uint256([account.code_hash]);
 
         return evm;
     }
