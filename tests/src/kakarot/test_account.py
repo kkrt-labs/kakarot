@@ -111,7 +111,7 @@ class TestAccount:
             assert output == expected_result
 
     class TestComputeCodeHash:
-        @given(bytecode=binary(min_size=1, max_size=400))
+        @given(bytecode=binary(min_size=0, max_size=400))
         def test_should_compute_code_hash(self, cairo_run, bytecode):
             output = cairo_run(
                 "test__compute_code_hash",

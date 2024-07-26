@@ -123,7 +123,10 @@ namespace Account {
             tempvar address = new model.Address(starknet=starknet_address, evm=evm_address);
             let balance = fetch_balance(address);
             assert balance_ptr = new Uint256(balance.low, balance.high);
-            tempvar code_hash_ptr = new Uint256(0, 0);
+            // empty code hash see https://eips.ethereum.org/EIPS/eip-1052
+            tempvar code_hash_ptr = new Uint256(
+                304396909071904405792975023732328604784, 262949717399590921288928019264691438528
+            );
             let account = Account.init(
                 address=address,
                 code_len=0,
@@ -694,6 +697,14 @@ namespace Account {
         code_len: felt, code: felt*
     ) -> Uint256 {
         alloc_locals;
+        if (code_len == 0) {
+            // see https://eips.ethereum.org/EIPS/eip-1052
+            let empty_code_hash = Uint256(
+                304396909071904405792975023732328604784, 262949717399590921288928019264691438528
+            );
+            return empty_code_hash;
+        }
+
         let (local dst: felt*) = alloc();
         let (dst_len, last_word, last_word_num_bytes) = bytes_to_bytes8_little_endian(
             dst, code_len, code
