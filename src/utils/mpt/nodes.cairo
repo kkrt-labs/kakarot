@@ -81,15 +81,19 @@ namespace ExtensionNodeImpl {
     // TODO: keccak(rlp_encode(key)) if len(rlp_encoded) > 32
     func encode{range_check_ptr}(self: ExtensionNode*) -> EncodedNode* {
         alloc_locals;
-        let (path_key_len, local unencoded) = NibblesImpl.encode_path(self.key, 0);
-        memcpy(dst=unencoded + path_key_len, src=self.child.data, len=self.child.data_len);
+        let (local path_key_len, local unencoded) = NibblesImpl.encode_path(self.key, 0);
+
+        assert unencoded[path_key_len] = self.child.data_len;
+        assert unencoded[path_key_len + 1] = cast(self.child.data, felt);
 
         let (output) = alloc();
         tempvar output_len;
         %{
             import rlp
             from ethereum.crypto.hash import keccak256
-            unencoded = serde.serialize_list(ids.unencoded, list_len=ids.path_key_len +ids.self.child.data_len)
+            key_bytes = serde.serialize_list(ids.unencoded, list_len=ids.path_key_len)
+            child_bytes = serde.serialize_list(ids.unencoded+ids.path_key_len, item_scope="EncodedNode", list_len=1)[0]
+            unencoded = [bytes(key_bytes), bytes(child_bytes)]
             encoded = rlp.encode(unencoded)
 
             if len(encoded) < 32:
@@ -101,9 +105,7 @@ namespace ExtensionNodeImpl {
                 ids.output_len = len(hashed_rlp)
         %}
 
-        tempvar extension_encoding = new EncodedNode(
-            data_len=path_key_len + self.child.data_len, data=output
-        );
+        tempvar extension_encoding = new EncodedNode(data_len=output_len, data=output);
 
         return extension_encoding;
     }
@@ -127,16 +129,18 @@ namespace BranchNodeImpl {
     func encode{range_check_ptr}(self: BranchNode*) -> EncodedNode* {
         alloc_locals;
         let (unencoded) = alloc();
-        let branches_encodings_len = _encode_child(self, 0, 0, unencoded);
+        let subnodes_len = 16;
 
-        memcpy(dst=unencoded + branches_encodings_len, src=self.value.data, len=self.value.len);
+        memcpy(dst=unencoded, src=self.children, len=self.children_len * EncodedNode.SIZE);
+        assert unencoded[subnodes_len * EncodedNode.SIZE] = self.value.len;
+        assert unencoded[subnodes_len * EncodedNode.SIZE + 1] = cast(self.value.data, felt);
 
         let (output) = alloc();
         tempvar output_len;
         %{
             import rlp
             from ethereum.crypto.hash import keccak256
-            unencoded = serde.serialize_list(ids.unencoded, list_len=ids.branches_encodings_len +ids.self.value.len)
+            unencoded = [bytes(elem) for elem in serde.serialize_list(ids.unencoded, item_scope="EncodedNode", list_len=17*2)]
             encoded = rlp.encode(unencoded)
 
             if len(encoded) < 32:
@@ -148,16 +152,14 @@ namespace BranchNodeImpl {
                 ids.output_len = len(hashed_rlp)
         %}
 
-        tempvar branch_encoding = new EncodedNode(
-            data_len=branches_encodings_len + self.value.len, data=output
-        );
+        tempvar branch_encoding = new EncodedNode(data_len=output_len, data=output);
 
         return branch_encoding;
     }
 
-    func _encode_child(self: BranchNode*, index: felt, unencoded_len: felt, unencoded: felt*) -> felt {
+    func _encode_child(self: BranchNode*, index: felt, unencoded: felt*) {
         if (index == 16) {
-            return unencoded_len;
+            return ();
         }
 
         let child = self.children[index];
@@ -165,10 +167,13 @@ namespace BranchNodeImpl {
         let child_data = child.data;
 
         if (child_data_len == 0) {
-            return _encode_child(self, index + 1, unencoded_len, unencoded);
+            let subnode = alloc();
+            assert unencoded[index] = subnode;
+            return _encode_child(self, index + 1, unencoded);
         }
-        memcpy(dst=unencoded + unencoded_len, src=child.data, len=child_data_len);
 
-        return _encode_child(self, index + 1, unencoded_len + child_data_len, unencoded);
+        assert unencoded[index] = child_data;
+
+        return _encode_child(self, index + 1, unencoded);
     }
 }

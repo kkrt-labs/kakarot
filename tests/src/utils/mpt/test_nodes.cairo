@@ -58,7 +58,7 @@ func test__branch_encode{range_check_ptr}() -> EncodedNode* {
             if len_child != 0:
                 for j in range(len_child):
                     memory[tmp_segment + j] = child[j]
-                memory[ids.children.address_ + i + 1] = tmp_segment
+            memory[ids.children.address_ + i + 1] = tmp_segment
             i+=2
     %}
 

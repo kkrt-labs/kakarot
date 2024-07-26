@@ -25,28 +25,17 @@ func patricialize{range_check_ptr}(
         return new EncodedNode(0, data);
     }
 
-    let key_bytes = get_key_from_entry(dict_start);
+    let (key_len, key) = get_key_from_entry(dict_start);
     let remaining = dict_end - dict_start;
     if (remaining == DictAccess.SIZE) {
-        let key_nibbles = NibblesImpl.from_bytes(32, key_bytes);
-        tempvar value_len;
-        %{
-            value_segment = ids.dict_start.new_value
-            i = 0
-            while True:
-                try:
-                    memory[value_segment + i]
-                    i += 1
-                except:
-                    break
-            ids.value_len = i
-        %}
-        let leaf = LeafNodeImpl.init(key_nibbles, value_len, cast(dict_start.new_value, felt*));
+        let key_nibbles = NibblesImpl.from_bytes(key_len, key);
+        let (value_len, value) = get_value_from_entry(dict_start);
+        let leaf = LeafNodeImpl.init(key_nibbles, value_len, value);
         let encoded_leaf = LeafNodeImpl.encode(leaf);
         return encoded_leaf;
     }
 
-    let substring = key_bytes + level;
+    let substring = key + level;
     let prefix_len = 32 - level;
 
     let prefix_len = find_shortest_common_prefix(
@@ -116,44 +105,19 @@ func patricialize{range_check_ptr}(
 }
 
 // @notice Given a pointer to a memory location, returns the u256 [low, high] stored at that location.
-func get_key_from_entry{range_check_ptr}(dict_access: DictAccess*) -> felt* {
+func get_key_from_entry{range_check_ptr}(dict_access: DictAccess*) -> (felt, felt*) {
     alloc_locals;
-    let key_ptr = dict_access.key;
-    let (bytes) = alloc();
-    uint256_to_bytes32(bytes, [cast(key_ptr, Uint256*)]);
-    return bytes;
+    let key_len = [dict_access.key];
+    let key = cast([dict_access.key + 1], felt*);
+    return (key_len, key);
 }
 
-// func find_shortest_common_prefix{range_check_ptr}(dict_start: DictAccess*, dict_end: DictAccess*, prefix_length: felt, substring: felt*) -> felt{
-//     if (dict_start == dict_end){
-//         return prefix_length;
-//     }
-
-// tempvar entry_ptr;
-//     %{
-//         dict_tracker = __dict_manager.get_tracker(ids.dict_end)
-//         dict_tracker.current_ptr += ids.DictAccess.SIZE
-//         ids.entry_ptr = dict_tracker.data[ids.key]
-//         breakpoint()
-//     %}
-
-// let key_bytes = get_key_from_entry(entry_ptr);
-
-// tempvar new_prefix_length;
-//     %{
-//         for i in range(prefix_length):
-//             if memory[ids.substring + i] != memory[ids.key_bytes + i]:
-//                 break
-//         ids.new_prefix_length = i
-//     %}
-//     tempvar prefix_length = new_prefix_length;
-
-// if (prefix_length == 0){
-//         return 0;
-//     }
-
-// return find_shortest_common_prefix(entry_ptr + DictAccess.SIZE, dict_end, prefix_length, substring);
-// }
+func get_value_from_entry{range_check_ptr}(dict_access: DictAccess*) -> (felt, felt*) {
+    alloc_locals;
+    let value_len = [dict_access.new_value];
+    let value = cast([dict_access.new_value + 1], felt*);
+    return (value_len, value);
+}
 
 func find_shortest_common_prefix{range_check_ptr}(
     dict_start: DictAccess*,

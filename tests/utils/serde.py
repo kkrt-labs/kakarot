@@ -319,15 +319,23 @@ class Serde:
         # Manually handling cases where the dict contains sequence (list or bytes) that cannot be passed to defaultdict
         for key in obj:
             if isinstance(key, list) or isinstance(key, bytes):
+                key_data = self.runner.segments.add()
+                self.runner.segments.write_arg(key_data, key)
+
                 cairo_key = self.runner.segments.add()
-                self.runner.segments.write_arg(cairo_key, key)
+                self.runner.segments.write_arg(cairo_key, [len(key)])
+                self.runner.segments.write_arg(cairo_key + 1, [key_data])
             else:
                 cairo_key = key
 
             # If the value is a list, we need to serialize it.
             if isinstance(obj[key], list) or isinstance(obj[key], bytes):
+                value_data = self.runner.segments.add()
+                self.runner.segments.write_arg(value_data, obj[key])
+
                 cairo_value = self.runner.segments.add()
-                self.runner.segments.write_arg(cairo_value, obj[key])
+                self.runner.segments.write_arg(cairo_value, [len(obj[key])])
+                self.runner.segments.write_arg(cairo_value + 1, [value_data])
             else:
                 cairo_value = obj[key]
 
