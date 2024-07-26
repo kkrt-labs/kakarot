@@ -218,14 +218,14 @@ class TestEnvironmentalInformation:
         def test_extcodehash__should_push_hash(
             self, cairo_run, bytecode, bytecode_hash, address
         ):
-            low, high = int_to_uint256(bytecode_hash)
             with (
                 SyscallHandler.patch(
                     "IAccount.bytecode",
                     lambda sn_addr, data: [len(bytecode), *bytecode],
                 ),
                 SyscallHandler.patch(
-                    " IAccount.get_code_hash", lambda sn_addr, data: [low, high]
+                    " IAccount.get_code_hash",
+                    lambda sn_addr, data: [*int_to_uint256(bytecode_hash)],
                 ),
             ):
                 output = cairo_run("test__exec_extcodehash", address=address)
