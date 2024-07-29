@@ -58,8 +58,10 @@ class TestNibbles:
                 ),  # Extension, even length
             ],
         )
-        def test_should_encode_path(
+        def test_should_pack_with_prefix(
             self, cairo_run, nibbles, is_leaf, expected_encoded
         ):
-            output = cairo_run("test__encode_path", nibbles=nibbles, is_leaf=is_leaf)
+            output = cairo_run(
+                "test__pack_with_prefix", nibbles=nibbles, is_leaf=is_leaf
+            )
             assert output == expected_encoded

@@ -5,11 +5,11 @@ from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.uint256 import Uint256
 
-from utils.mpt.nodes import EncodedNode
+from utils.mpt.nodes import Bytes
 from utils.mpt.trie import find_shortest_common_prefix, patricialize
 from utils.bytes import uint256_to_bytes32
 
-func test__patricialize{range_check_ptr}() -> EncodedNode* {
+func test__patricialize{range_check_ptr}() -> Bytes* {
     alloc_locals;
     local dict_ptr_start: DictAccess*;
     local dict_ptr: DictAccess*;

@@ -33,7 +33,7 @@ func test__pack_nibbles{range_check_ptr}() -> felt* {
     return bytes;
 }
 
-func test__encode_path{range_check_ptr}() -> felt* {
+func test__pack_with_prefix{range_check_ptr}() -> felt* {
     alloc_locals;
     // Given
     tempvar raw_nibbles_len: felt;
@@ -47,7 +47,7 @@ func test__encode_path{range_check_ptr}() -> felt* {
 
     tempvar nibbles = new Nibbles(raw_nibbles_len, raw_nibbles);
 
-    let (bytes_len, bytes) = NibblesImpl.encode_path(nibbles, is_leaf);
+    let (bytes_len, bytes) = NibblesImpl.pack_with_prefix(nibbles, is_leaf);
 
     return bytes;
 }

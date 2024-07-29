@@ -100,7 +100,7 @@ namespace NibblesImpl {
         return bytes_len;
     }
 
-    func encode_path{range_check_ptr}(self: Nibbles*, is_leaf: felt) -> (
+    func pack_with_prefix{range_check_ptr}(self: Nibbles*, is_leaf: felt) -> (
         bytes_len: felt, bytes: felt*
     ) {
         alloc_locals;

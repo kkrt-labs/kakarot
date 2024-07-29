@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Dict, Tuple
+from typing import Dict, List, Tuple
 
 from eth_utils.address import to_checksum_address
 from starkware.cairo.common.dict import DictManager, DictTracker
@@ -117,8 +117,8 @@ class Serde:
         raw = self.serialize_pointers("Nibbles", ptr)
         return self.serialize_list(raw["nibbles"], list_len=raw["nibbles_len"])
 
-    def serialize_encoded_node(self, ptr):
-        raw = self.serialize_pointers("EncodedNode", ptr)
+    def serialize_bytes(self, ptr):
+        raw = self.serialize_pointers("Bytes", ptr)
         data_len = raw["data_len"]
         return self.serialize_list(raw["data"], list_len=data_len)
 
@@ -244,8 +244,8 @@ class Serde:
             return self.serialize_evm(scope_ptr)
         if scope.path[-1] == "Nibbles":
             return self.serialize_nibbles(scope_ptr)
-        if scope.path[-1] == "EncodedNode":
-            return self.serialize_encoded_node(scope_ptr)
+        if scope.path[-1] == "Bytes":
+            return self.serialize_bytes(scope_ptr)
         try:
             return self.serialize_struct(str(scope), scope_ptr)
         except MissingIdentifierError:
@@ -348,6 +348,25 @@ class Serde:
 
         return base, dict_ptr
 
-    # def deserialize_list(
-    #         self,
-    # )
+    def deserialize_bytes_list(self, bytes_list: List[bytes]) -> List[RelocatableValue]:
+        """
+        Deserialize a list of python bytes into a list of Cairo Bytes.
+        """
+        Bytes = self.get_identifier("Bytes", StructDefinition)
+        bytes_ptr = base = self.runner.segments.add()
+        for elem in bytes_list:
+            bytes_len, bytes_data = self.deserialize_bytes(elem)
+            self.runner.memory[bytes_ptr] = bytes_len
+            self.runner.memory[bytes_ptr + 1] = bytes_data
+            bytes_ptr += Bytes.size
+
+        return len(bytes_list), base
+
+    def deserialize_bytes(self, input_bytes: bytes) -> RelocatableValue:
+        """
+        Deserialize python bytes into a Cairo Bytes.
+        """
+        bytes_len = len(input_bytes)
+        bytes_data = self.runner.segments.add()
+        self.runner.segments.write_arg(bytes_data, input_bytes)
+        return bytes_len, bytes_data

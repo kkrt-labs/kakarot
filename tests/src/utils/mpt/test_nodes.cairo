@@ -3,50 +3,49 @@ from utils.mpt.nibbles import Nibbles, NibblesImpl
 from utils.mpt.nodes import (
     LeafNode,
     LeafNodeImpl,
-    EncodedNode,
+    Bytes,
     ExtensionNode,
     ExtensionNodeImpl,
     BranchNode,
     BranchNodeImpl,
 )
 
-func test__leaf_encode{range_check_ptr}() -> EncodedNode* {
+func test__leaf_encode{range_check_ptr}() -> Bytes* {
     alloc_locals;
     // Given
     tempvar key_len: felt;
     let (key) = alloc();
-    local value_len: felt;
-    let (value) = alloc();
+    local value: Bytes;
 
     %{
         ids.key_len = len(program_input["key"])
         segments.write_arg(ids.key, program_input["key"])
 
-        ids.value_len = len(program_input["value"])
-        segments.write_arg(ids.value, program_input["value"])
+        value_len, value_bytes = serde.deserialize_bytes(program_input["value"])
+        ids.value.data_len = value_len
+        ids.value.data = value_bytes
     %}
 
     let key_nibbles = NibblesImpl.from_bytes(key_len, key);
-    let leaf = LeafNodeImpl.init(key_nibbles, value_len, value);
+    let leaf = LeafNodeImpl.init(key_nibbles, value);
 
     let encoding = LeafNodeImpl.encode(leaf);
 
     return encoding;
 }
 
-func test__branch_encode{range_check_ptr}() -> EncodedNode* {
+func test__branch_encode{range_check_ptr}() -> Bytes* {
     alloc_locals;
     // Given
     tempvar children_len: felt;
-    let (children: EncodedNode*) = alloc();
+    let (children: Bytes*) = alloc();
 
-    tempvar value_len: felt;
-    let (value) = alloc();
-
+    tempvar value: Bytes;
     tempvar new_segments: felt;
     %{
-        ids.value_len = len(program_input["value"])
-        segments.write_arg(ids.value, program_input["value"])
+        value_len, value_bytes = serde.deserialize_bytes(program_input["value"])
+        ids.value.data_len = value_len
+        ids.value.data = value_bytes
 
         i = 0
         new_segments = 0
@@ -62,13 +61,13 @@ func test__branch_encode{range_check_ptr}() -> EncodedNode* {
             i+=2
     %}
 
-    let branch = BranchNodeImpl.init(children, value_len, value);
+    let branch = BranchNodeImpl.init(children, value);
     let encoding = BranchNodeImpl.encode(branch);
 
     return encoding;
 }
 
-func test__extension_encode{range_check_ptr}() -> EncodedNode* {
+func test__extension_encode{range_check_ptr}() -> Bytes* {
     alloc_locals;
     // Given
     tempvar key_len: felt;
@@ -86,9 +85,7 @@ func test__extension_encode{range_check_ptr}() -> EncodedNode* {
     %}
 
     let key_nibbles = NibblesImpl.from_bytes(key_len, key);
-    let extension = ExtensionNodeImpl.init(
-        key_nibbles, new EncodedNode(child_data_len, child_data)
-    );
+    let extension = ExtensionNodeImpl.init(key_nibbles, new Bytes(child_data_len, child_data));
 
     let encoding = ExtensionNodeImpl.encode(extension);
 
