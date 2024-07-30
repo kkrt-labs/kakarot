@@ -23,7 +23,7 @@ func test__felt_to_ascii{range_check_ptr}(output_ptr: felt*) {
     return ();
 }
 
-func test__felt_to_bytes_little(output_ptr: felt*) {
+func test__felt_to_bytes_little{range_check_ptr}(output_ptr: felt*) {
     alloc_locals;
     tempvar n: felt;
     %{ ids.n = program_input["n"] %}
@@ -32,7 +32,7 @@ func test__felt_to_bytes_little(output_ptr: felt*) {
     return ();
 }
 
-func test__felt_to_bytes(output_ptr: felt*) {
+func test__felt_to_bytes{range_check_ptr}(output_ptr: felt*) {
     alloc_locals;
     tempvar n: felt;
     %{ ids.n = program_input["n"] %}

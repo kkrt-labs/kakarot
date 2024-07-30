@@ -1,5 +1,6 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.math import unsigned_div_rem, split_int, split_felt
+from starkware.cairo.common.math_cmp import is_le_felt
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.memset import memset
@@ -41,13 +42,15 @@ func felt_to_ascii{range_check_ptr}(dst: felt*, n: felt) -> felt {
 
 // @notice Split a felt into an array of bytes little endian
 // @dev Use a hint from split_int
-func felt_to_bytes_little(dst: felt*, value: felt) -> felt {
+func felt_to_bytes_little{range_check_ptr}(dst: felt*, value: felt) -> felt {
     alloc_locals;
 
+    tempvar range_check_ptr = range_check_ptr;
     tempvar value = value;
     tempvar bytes_len = 0;
 
     body:
+    let range_check_ptr = [ap - 3];
     let value = [ap - 2];
     let bytes_len = [ap - 1];
     let bytes = cast([fp - 4], felt*);
@@ -60,22 +63,117 @@ func felt_to_bytes_little(dst: felt*, value: felt) -> felt {
         assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
     %}
     let byte = [output];
-    let value = (value - byte) / base;
+    let is_inf_base = is_le_felt(byte, base - 1);
+    with_attr error_message("output superior to base") {
+        assert is_inf_base = 1;
+    }
+    tempvar value = (value - byte) / base;
 
+    tempvar range_check_ptr = range_check_ptr;
     tempvar value = value;
     tempvar bytes_len = bytes_len + 1;
 
     jmp body if value != 0;
 
+    let range_check_ptr = [ap - 3];
     let value = [ap - 2];
     let bytes_len = [ap - 1];
     assert value = 0;
 
+    let (high, low) = split_felt([fp - 3]);
+    local max_bytes_used: felt;
+    if (high == 0) {
+        let max_bytes_used_low = bytes_used_128(low);
+        // bytes_used_128 sends back 0 if input equals 0
+        if (max_bytes_used_low == 0) {
+            assert max_bytes_used = 1;
+        } else {
+            assert max_bytes_used = max_bytes_used_low;
+        }
+        tempvar range_check_ptr = range_check_ptr;
+    } else {
+        let max_bytes_used_high = bytes_used_128(high);
+        assert max_bytes_used = max_bytes_used_high + 16;
+        tempvar range_check_ptr = range_check_ptr;
+    }
+    let is_inf_to_max = is_le_felt(bytes_len, max_bytes_used);
+    tempvar range_check_ptr = range_check_ptr;
+    with_attr error_message("bytes_len superior to max_bytes_used") {
+        assert is_inf_to_max = 1;
+    }
+
     return bytes_len;
 }
 
+func bytes_used_128{range_check_ptr}(value: felt) -> felt {
+    let (q, r) = unsigned_div_rem(value, 256 ** 15);
+    if (q != 0) {
+        return 16;
+    }
+    let (q, r) = unsigned_div_rem(value, 256 ** 14);
+    if (q != 0) {
+        return 15;
+    }
+    let (q, r) = unsigned_div_rem(value, 256 ** 13);
+    if (q != 0) {
+        return 14;
+    }
+    let (q, r) = unsigned_div_rem(value, 256 ** 12);
+    if (q != 0) {
+        return 13;
+    }
+    let (q, r) = unsigned_div_rem(value, 256 ** 11);
+    if (q != 0) {
+        return 12;
+    }
+    let (q, r) = unsigned_div_rem(value, 256 ** 10);
+    if (q != 0) {
+        return 11;
+    }
+    let (q, r) = unsigned_div_rem(value, 256 ** 9);
+    if (q != 0) {
+        return 10;
+    }
+    let (q, r) = unsigned_div_rem(value, 256 ** 8);
+    if (q != 0) {
+        return 9;
+    }
+    let (q, r) = unsigned_div_rem(value, 256 ** 7);
+    if (q != 0) {
+        return 8;
+    }
+    let (q, r) = unsigned_div_rem(value, 256 ** 6);
+    if (q != 0) {
+        return 7;
+    }
+    let (q, r) = unsigned_div_rem(value, 256 ** 5);
+    if (q != 0) {
+        return 6;
+    }
+    let (q, r) = unsigned_div_rem(value, 256 ** 4);
+    if (q != 0) {
+        return 5;
+    }
+    let (q, r) = unsigned_div_rem(value, 256 ** 3);
+    if (q != 0) {
+        return 4;
+    }
+    let (q, r) = unsigned_div_rem(value, 256 ** 2);
+    if (q != 0) {
+        return 3;
+    }
+    let (q, r) = unsigned_div_rem(value, 256 ** 1);
+    if (q != 0) {
+        return 2;
+    }
+    if (value != 0) {
+        return 1;
+    }
+    return 0;
+}
+
 // @notice Split a felt into an array of bytes
-func felt_to_bytes(dst: felt*, value: felt) -> felt {
+func felt_to_bytes{range_check_ptr}(dst: felt*, value: felt) -> felt {
     alloc_locals;
     let (local bytes: felt*) = alloc();
     let bytes_len = felt_to_bytes_little(bytes, value);

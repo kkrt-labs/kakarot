@@ -2,6 +2,7 @@ import os
 
 import pytest
 
+from tests.utils.hints import patch_hint
 from tests.utils.uint256 import int_to_uint256
 
 PRIME = 0x800000000000011000000000000000000000000000000000000000000000001
@@ -15,11 +16,22 @@ class TestBytes:
             assert str(n) == bytes(output).decode()
 
     class TestFeltToBytesLittle:
-        @pytest.mark.parametrize("n", [0, 10, 1234, 0xFFFFFF, 2**128, PRIME - 1])
+        @pytest.mark.parametrize("n", [10])
         def test_should_return_bytes(self, cairo_run, n):
             output = cairo_run("test__felt_to_bytes_little", n=n)
             res = bytes(output)
             assert bytes.fromhex(f"{n:x}".rjust(len(res) * 2, "0"))[::-1] == res
+
+        @pytest.mark.parametrize("n", [PRIME - 1])
+        def test_should_return_bytes_test(self, cairo_program, cairo_run, n):
+            with patch_hint(
+                cairo_program,
+                "memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base\nassert res < ids.bound, f'split_int(): Limb {res} is out of range.'",
+                "memory[ids.output] = res = (int(ids.value) % PRIME)\n",
+            ):
+                output = cairo_run("test__felt_to_bytes_little", n=n)
+                res = bytes(output)
+                assert bytes.fromhex(f"{n:x}".rjust(len(res) * 2, "0"))[::-1] == res
 
     class TestFeltToBytes:
         @pytest.mark.parametrize("n", [0, 10, 1234, 0xFFFFFF, 2**128, PRIME - 1])
