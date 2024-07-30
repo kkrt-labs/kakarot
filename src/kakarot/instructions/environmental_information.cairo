@@ -479,11 +479,6 @@ namespace EnvironmentalInformation {
             return evm;
         }
 
-        let (local dst: felt*) = alloc();
-        let (dst_len, last_word, last_word_num_bytes) = bytes_to_bytes8_little_endian(
-            dst, account.code_len, account.code
-        );
-
         Stack.push_uint256([account.code_hash]);
 
         return evm;
