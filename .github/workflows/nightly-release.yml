@@ -1,0 +1,75 @@
+name: Nightly Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  packages: read
+
+jobs:
+  create-nightly-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.10.14
+      - name: Load cached Poetry installation
+        id: cached-poetry
+        uses: actions/cache@v4
+        with:
+          path: ~/.local
+          key: poetry-${{ runner.os }}
+      - name: Install Poetry
+        if: steps.cached-poetry.outputs.cache-hit != 'true'
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          installer-parallel: true
+      - run: poetry config installer.modern-installation false
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: make setup
+      - name: Compile all the cairo files
+        run: make build
+      - name: Create release artifact
+        run: |
+          zip -r kakarot-nightly-build.zip build/
+      - name: Generate release notes
+        run: |
+          echo "Nightly build created on $(date +'%Y-%m-%d %H:%M:%S')" > release_notes.md
+          echo "Commit: ${{ github.sha }}" >> release_notes.md
+          echo "Recent changes:" >> release_notes.md
+          git log -n 5 --pretty=format:"- %s" >> release_notes.md
+      - name: Create GitHub release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: nightly-${{ github.sha }}
+          release_name: Nightly Release ${{ github.sha }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: true
+
+      - name: Upload release asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./kakarot-nightly-build.zip
+          asset_name: kakarot-nightly-build.zip
+          asset_content_type: application/zip
