@@ -55,7 +55,6 @@ class TestEcRecover:
             keccak_result_bytes,
             "big",
         )  # output of cairo_keccak is in little endian, but our library reverses it back to big endian
-        low, high = int_to_uint256(keccak_res)
 
         [output] = cairo_run("test__ec_recover", input=input_data)
 
