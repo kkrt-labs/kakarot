@@ -1,7 +1,10 @@
 import os
 
 import pytest
+from hypothesis import given
+from hypothesis.strategies import integers
 
+from tests.utils.errors import cairo_error
 from tests.utils.hints import patch_hint
 from tests.utils.uint256 import int_to_uint256
 
@@ -16,18 +19,39 @@ class TestBytes:
             assert str(n) == bytes(output).decode()
 
     class TestFeltToBytesLittle:
-        @pytest.mark.parametrize("n", [10])
+        @given(n=integers(min_value=0, max_value=PRIME - 1))
         def test_should_return_bytes(self, cairo_run, n):
             output = cairo_run("test__felt_to_bytes_little", n=n)
             res = bytes(output)
             assert bytes.fromhex(f"{n:x}".rjust(len(res) * 2, "0"))[::-1] == res
 
-        @pytest.mark.parametrize("n", [PRIME - 1])
-        def test_should_return_bytes_test(self, cairo_program, cairo_run, n):
+        @given(n=integers(min_value=256, max_value=PRIME - 1))
+        def test_should_raise_output_superior_to_base_when_not_modulo_base(
+            self, cairo_program, cairo_run, n
+        ):
+            with (
+                patch_hint(
+                    cairo_program,
+                    "memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base\nassert res < ids.bound, f'split_int(): Limb {res} is out of range.'",
+                    "memory[ids.output] = (int(ids.value) % PRIME)\n",
+                ),
+                cairo_error(message="output superior to base"),
+            ):
+                cairo_run("test__felt_to_bytes_little", n=n)
+
+        @given(
+            n=integers(
+                min_value=452312848583266388373324160190187140051835877600158453279131187530910663137,
+                max_value=452312848583266388373324160190187140051835877600158453279131187530910663137,
+            ).filter(lambda x: x != 256)
+        )
+        def test_should_raise_bytes_len_superior_to_max_bytes_used(
+            self, cairo_program, cairo_run, n
+        ):
             with patch_hint(
                 cairo_program,
                 "memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base\nassert res < ids.bound, f'split_int(): Limb {res} is out of range.'",
-                "memory[ids.output] = res = (int(ids.value) % PRIME)\n",
+                f"if ids.value == {452312848583266388373324160190187140051835877600158453279131187530910663137}:\n    memory[ids.output] = 0\nelse:\n    memory[ids.output] = (int(ids.value) % PRIME) % ids.base",
             ):
                 output = cairo_run("test__felt_to_bytes_little", n=n)
                 res = bytes(output)
