@@ -2,6 +2,7 @@ import os
 
 import pytest
 
+from tests.utils.hints import patch_hint
 from tests.utils.uint256 import int_to_uint256
 
 PRIME = 0x800000000000011000000000000000000000000000000000000000000000001
@@ -19,7 +20,35 @@ class TestBytes:
         def test_should_return_bytes(self, cairo_run, n):
             output = cairo_run("test__felt_to_bytes_little", n=n)
             res = bytes(output)
-            assert bytes.fromhex(f"{n:x}".rjust(len(res) * 2, "0"))[::-1] == res
+            n_ = n
+            print(n, output, res)
+            expected = (
+                int.to_bytes(n_, length=(n.bit_length() + 7) // 8, byteorder="little")
+                if n > 0
+                else b"\x00"
+            )
+            assert expected == res
+
+    class TestSplitInt:
+        def test_should_return_bytes(
+            self,
+            cairo_program,
+            cairo_run,
+            n=452312848583266388373324160190187140051835877600158453279131187530910663137,
+        ):
+            with patch_hint(
+                cairo_program,
+                "memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base\nassert res < ids.bound, f'split_int(): Limb {res} is out of range.'",
+                f"if ids.value == {452312848583266388373324160190187140051835877600158453279131187530910663137}:\n    memory[ids.output] = 0\nelse:\n    memory[ids.output] = (int(ids.value) % PRIME) % ids.base",
+            ):
+                output = cairo_run("test__split_int", value=n)
+            res = bytes(output)
+            expected = (
+                int.to_bytes(n, length=(n.bit_length() + 7) // 8, byteorder="little")
+                if n > 0
+                else b"\x00"
+            )
+            assert expected == res
 
     class TestFeltToBytes:
         @pytest.mark.parametrize("n", [0, 10, 1234, 0xFFFFFF, 2**128, PRIME - 1])

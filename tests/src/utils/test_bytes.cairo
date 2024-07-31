@@ -1,6 +1,7 @@
 %builtins range_check
 
 from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.math import split_int
 from starkware.cairo.common.uint256 import Uint256
 
 from utils.bytes import (
@@ -32,7 +33,22 @@ func test__felt_to_bytes_little(output_ptr: felt*) {
     return ();
 }
 
-func test__felt_to_bytes(output_ptr: felt*) {
+func test__split_int{range_check_ptr}(output_ptr: felt*) {
+    alloc_locals;
+    tempvar n: felt;
+    tempvar value: felt;
+    %{
+        value = program_input["value"]
+        value_bytes_len = (value.bit_length() + 7) // 8
+        ids.n = value_bytes_len
+        ids.value =value
+    %}
+
+    split_int(value, n, 2 ** 8, 2 ** 8, output_ptr);
+    return ();
+}
+
+func test__felt_to_bytes{range_check_ptr}(output_ptr: felt*) {
     alloc_locals;
     tempvar n: felt;
     %{ ids.n = program_input["n"] %}
