@@ -5,7 +5,6 @@ from ethereum.crypto.hash import Hash32, keccak256
 from ethereum.utils.byte import left_pad_zero_bytes
 
 from tests.utils.helpers import ec_sign, generate_random_private_key
-from tests.utils.uint256 import int_to_uint256
 
 
 def ecrecover(data):
@@ -51,7 +50,7 @@ class TestEcRecover:
 
         # Prepare the output of the keccak syscall
         keccak_result_bytes = keccak256(public_key)
-        keccak_res = int.from_bytes(
+        int.from_bytes(
             keccak_result_bytes,
             "big",
         )  # output of cairo_keccak is in little endian, but our library reverses it back to big endian
