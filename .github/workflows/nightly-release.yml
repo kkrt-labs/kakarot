@@ -1,4 +1,4 @@
-name: Nightly Release
+name: Pre-Release on Main Push
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
   packages: read
 
 jobs:
-  create-nightly-release:
+  create-pre-release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -45,31 +45,30 @@ jobs:
         run: make build
       - name: Create release artifact
         run: |
-          zip -r kakarot-nightly-build.zip build/
-      - name: Generate release notes
+          zip -r kakarot-pre-release-build.zip build/
+      - name: Generate and process release notes
+        id: release_notes
         run: |
-          echo "Nightly build created on $(date +'%Y-%m-%d %H:%M:%S')" > release_notes.md
-          echo "Commit: ${{ github.sha }}" >> release_notes.md
-          echo "Recent changes:" >> release_notes.md
-          git log -n 5 --pretty=format:"- %s" >> release_notes.md
-      - name: Create GitHub release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: nightly-${{ github.sha }}
-          release_name: Nightly Release ${{ github.sha }}
-          body_path: release_notes.md
-          draft: false
-          prerelease: true
+          {
+            echo "Pre-release build created on $(date +'%Y-%m-%d %H:%M:%S')"
+            echo "Commit: ${{ github.sha }}"
+            echo "Recent changes:"
+            git log -n 5 --pretty=format:"- %s"
+          } > release_notes.md
 
-      - name: Upload release asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_BODY=$(cat release_notes.md)
+          RELEASE_BODY="${RELEASE_BODY//'%'/'%25'}"
+          RELEASE_BODY="${RELEASE_BODY//$'\n'/'%0A'}"
+          RELEASE_BODY="${RELEASE_BODY//$'\r'/'%0D'}"
+          echo "RELEASE_BODY=$RELEASE_BODY" >> $GITHUB_OUTPUT
+      - name: Create Pre-Release and Upload Asset
+        uses: svenstaro/upload-release-action@v2
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./kakarot-nightly-build.zip
-          asset_name: kakarot-nightly-build.zip
-          asset_content_type: application/zip
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: kakarot-pre-release-build.zip
+          asset_name: kakarot-pre-release-build.zip
+          tag: pre-release-${{ github.sha }}
+          release_name: Pre-Release ${{ github.sha }}
+          prerelease: true
+          body: |
+            ${{ steps.release_notes.outputs.RELEASE_BODY }}
