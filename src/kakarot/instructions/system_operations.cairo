@@ -1013,12 +1013,15 @@ namespace CreateHelper {
             let nonce_len = felt_to_bytes(message + 2 + 20 + 1, nonce);
             assert [message + 2 + 20] = 0x80 + nonce_len;
             assert message_len = 1 + 1 + 20 + 1 + nonce_len;
+            tempvar range_check_ptr = range_check_ptr;
         } else {
             let is_nonce_not_zero = is_not_zero(nonce);
             let encoded_nonce = nonce * is_nonce_not_zero + (1 - is_nonce_not_zero) * 0x80;
             assert [message + 2 + 20] = encoded_nonce;
             assert message_len = 1 + 1 + 20 + 1;
+            tempvar range_check_ptr = range_check_ptr;
         }
+        let range_check_ptr = [ap - 1];
         assert message[0] = message_len + 0xc0 - 1;
 
         let (message_bytes8: felt*) = alloc();

@@ -5,6 +5,7 @@ from hypothesis import given
 from hypothesis.strategies import integers
 
 from tests.utils.errors import cairo_error
+from tests.utils.hints import patch_hint
 from tests.utils.uint256 import int_to_uint256
 
 PRIME = 0x800000000000011000000000000000000000000000000000000000000000001
@@ -29,12 +30,42 @@ class TestBytes:
             )
             assert expected == res
 
-        def test_should_raise_value_32_bytes(self, cairo_run, n=2**248):
-            with cairo_error(message="felt_to_bytes_little: value is too big"):
+        def test_should_raise_value_32_bytes(self, cairo_run, n=2**248 - 1):
+            with cairo_error(message="felt_to_bytes_little: value > 2**248"):
+                cairo_run("test__felt_to_bytes_little", n=n)
+
+        # This test checks the function fails if the % base is removed from the hint
+        # All values up to 256 will have the same decomposition if the it is removed
+        @given(n=integers(min_value=256, max_value=2**248 - 1))
+        def test_should_raise_output_superior_to_base_when_not_modulo_base(
+            self, cairo_program, cairo_run, n
+        ):
+            with (
+                patch_hint(
+                    cairo_program,
+                    "memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base\nassert res < ids.bound, f'split_int(): Limb {res} is out of range.'",
+                    "memory[ids.output] = (int(ids.value) % PRIME)\n",
+                ),
+                cairo_error(message="felt_to_bytes_little: byte value is too big"),
+            ):
+                cairo_run("test__felt_to_bytes_little", n=n)
+
+        @given(n=integers(min_value=1, max_value=2**248 - 1))
+        def test_should_raise_bytes_len_superior_to_max_bytes_used(
+            self, cairo_program, cairo_run, n
+        ):
+            with (
+                patch_hint(
+                    cairo_program,
+                    "memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base\nassert res < ids.bound, f'split_int(): Limb {res} is out of range.'",
+                    f"if ids.value == {n}:\n    memory[ids.output] = 0\nelse:\n    memory[ids.output] = (int(ids.value) % PRIME) % ids.base",
+                ),
+                cairo_error(message="bytes_len is not the minimal possible"),
+            ):
                 cairo_run("test__felt_to_bytes_little", n=n)
 
     class TestFeltToBytes:
-        @pytest.mark.parametrize("n", [0, 10, 1234, 0xFFFFFF, 2**128, PRIME - 1])
+        @given(n=integers(min_value=0, max_value=2**248 - 1))
         def test_should_return_bytes(self, cairo_run, n):
             output = cairo_run("test__felt_to_bytes", n=n)
             res = bytes(output)

@@ -1,5 +1,11 @@
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.math import unsigned_div_rem, split_int, split_felt, assert_le_felt
+from starkware.cairo.common.math import (
+    unsigned_div_rem,
+    split_int,
+    split_felt,
+    assert_le_felt,
+    assert_nn_le,
+)
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.memset import memset
@@ -40,18 +46,21 @@ func felt_to_ascii{range_check_ptr}(dst: felt*, n: felt) -> felt {
 }
 
 // @notice Split a felt into an array of bytes little endian
-// @dev Use a hint from split_int
+// @dev Use a hint from split_int: the value must be lower than 248 bits
+// as the prover assumption is n_bytes**256 < PRIME
 func felt_to_bytes_little{range_check_ptr}(dst: felt*, value: felt) -> felt {
     alloc_locals;
 
-    with_attr error_message("felt_to_bytes_little(): Value > 2**248 ") {
-        assert_le_felt(value, 2 ** 248);
+    with_attr error_message("felt_to_bytes_little: value > 2**248") {
+        assert_le_felt(value, 2 ** 248 - 1);
     }
 
+    tempvar range_check_ptr = range_check_ptr;
     tempvar value = value;
     tempvar bytes_len = 0;
 
     body:
+    let range_check_ptr = [ap - 3];
     let value = [ap - 2];
     let bytes_len = [ap - 1];
     let bytes = cast([fp - 4], felt*);
@@ -63,14 +72,19 @@ func felt_to_bytes_little{range_check_ptr}(dst: felt*, value: felt) -> felt {
         memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
         assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
     %}
-    let byte = [output];
-    let value = (value - byte) / base;
+    tempvar byte = [output];
+    with_attr error_message("felt_to_bytes_little: byte value is too big") {
+        assert_nn_le(byte, bound - 1);
+    }
+    tempvar value = (value - byte) / base;
 
+    tempvar range_check_ptr = range_check_ptr;
     tempvar value = value;
     tempvar bytes_len = bytes_len + 1;
 
     jmp body if value != 0;
 
+    let range_check_ptr = [ap - 3];
     let value = [ap - 2];
     let bytes_len = [ap - 1];
     assert value = 0;
@@ -87,8 +101,10 @@ func felt_to_bytes_little{range_check_ptr}(dst: felt*, value: felt) -> felt {
     let initial_value = [fp - 3];
     let lower_bound = [ap - 1];
     let upper_bound = pow256_address[bytes_len];
-    assert_le_felt(lower_bound, initial_value);
-    assert_le_felt(initial_value, upper_bound - 1);
+    with_attr error_message("bytes_len is not the minimal possible") {
+        assert_le_felt(lower_bound, initial_value);
+        assert_le_felt(initial_value, upper_bound - 1);
+    }
     return bytes_len;
 
     pow256_table:
@@ -127,6 +143,8 @@ func felt_to_bytes_little{range_check_ptr}(dst: felt*, value: felt) -> felt {
 }
 
 // @notice Split a felt into an array of bytes
+// @dev Use felt_to_bytes_little: the value must be lower than 248 bits
+// as the prover assumption is n_bytes**256 < PRIME
 func felt_to_bytes{range_check_ptr}(dst: felt*, value: felt) -> felt {
     alloc_locals;
     let (local bytes: felt*) = alloc();
@@ -286,8 +304,4 @@ func bytes_to_bytes8_little_endian{range_check_ptr}(dst: felt*, bytes_len: felt,
     dw 256 ** 2;
     dw 256 ** 1;
     dw 256 ** 0;
-}
-
-// @notice Computes 256 ** i for 0 <= i <= 31.
-func pow256(i: felt) -> felt {
 }
