@@ -221,6 +221,7 @@ namespace Internals {
             Internals._save_valid_jumpdests(
                 starknet_address, self.valid_jumpdests_start, self.valid_jumpdests
             );
+            IAccount.set_code_hash(starknet_address, [self.code_hash]);
             return ();
         }
 

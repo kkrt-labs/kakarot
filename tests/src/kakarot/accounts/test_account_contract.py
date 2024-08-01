@@ -7,7 +7,7 @@ import rlp
 from eth_account.account import Account
 from eth_utils import keccak
 from hypothesis import given, settings
-from hypothesis.strategies import binary
+from hypothesis.strategies import binary, integers
 from starkware.starknet.public.abi import (
     get_selector_from_name,
     get_storage_var_address,
@@ -257,6 +257,28 @@ class TestAccountContract:
 
                     SyscallHandler.mock_storage.assert_has_calls(expected_read_calls)
                     SyscallHandler.mock_storage.assert_has_calls(expected_write_calls)
+
+    class TestCodeHash:
+        @given(code_hash=integers(min_value=0, max_value=2**256 - 1))
+        @SyscallHandler.patch("Ownable_owner", 0xDEAD)
+        def test_should_assert_only_owner(self, cairo_run, code_hash):
+            with cairo_error(message="Ownable: caller is not the owner"):
+                cairo_run("test__set_code_hash", code_hash=int_to_uint256(code_hash))
+
+        @given(code_hash=integers(min_value=0, max_value=2**256 - 1))
+        @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
+        def test__should_set_code_hash(self, cairo_run, code_hash):
+            with patch.object(SyscallHandler, "mock_storage") as mock_storage:
+                low, high = int_to_uint256(code_hash)
+                cairo_run("test__set_code_hash", code_hash=(low, high))
+                code_hash_address = get_storage_var_address("Account_code_hash")
+                ownable_address = get_storage_var_address("Ownable_owner")
+                calls = [
+                    call(address=ownable_address),
+                    call(address=code_hash_address, value=low),
+                    call(address=code_hash_address + 1, value=high),
+                ]
+                mock_storage.assert_has_calls(calls)
 
     class TestSetAuthorizedPreEIP155Transactions:
         def test_should_assert_only_owner(self, cairo_run):

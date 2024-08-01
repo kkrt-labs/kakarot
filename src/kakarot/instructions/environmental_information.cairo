@@ -11,7 +11,7 @@ from starkware.cairo.common.math_cmp import is_not_zero, is_nn
 from starkware.cairo.common.uint256 import Uint256, uint256_le
 
 from kakarot.account import Account
-from kakarot.interfaces.interfaces import ICairo1Helpers
+
 from kakarot.evm import EVM
 from kakarot.errors import Errors
 from kakarot.gas import Gas
@@ -19,7 +19,6 @@ from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.state import State
-from kakarot.storages import Kakarot_cairo1_helpers_class_hash
 from utils.array import slice
 from utils.bytes import bytes_to_bytes8_little_endian
 from utils.uint256 import uint256_to_uint160, uint256_add, uint256_eq
@@ -480,21 +479,7 @@ namespace EnvironmentalInformation {
             return evm;
         }
 
-        let (local dst: felt*) = alloc();
-        let (dst_len, last_word, last_word_num_bytes) = bytes_to_bytes8_little_endian(
-            dst, account.code_len, account.code
-        );
-
-        let (implementation) = Kakarot_cairo1_helpers_class_hash.read();
-        let (code_hash) = ICairo1Helpers.library_call_keccak(
-            class_hash=implementation,
-            words_len=dst_len,
-            words=dst,
-            last_input_word=last_word,
-            last_input_num_bytes=last_word_num_bytes,
-        );
-
-        Stack.push_uint256(code_hash);
+        Stack.push_uint256([account.code_hash]);
 
         return evm;
     }
