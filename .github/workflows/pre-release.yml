@@ -70,5 +70,6 @@ jobs:
           tag: pre-release-${{ github.sha }}
           release_name: Pre-Release ${{ github.sha }}
           prerelease: true
+          make_latest: false
           body: |
             ${{ steps.release_notes.outputs.RELEASE_BODY }}
