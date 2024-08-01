@@ -1,7 +1,7 @@
 import os
 
 import pytest
-from hypothesis import given
+from hypothesis import given, settings
 from hypothesis.strategies import integers
 
 from tests.utils.errors import cairo_error
@@ -53,6 +53,7 @@ class TestBytes:
         # This test checks the function fails if the first bytes is replaced by 0
         # All values that have 0 as first bytes will not raise an error
         # The value 0 is also excluded as it is treated as a special case in the function
+        # THere is a max_examples as without it it fills up the memory and run forever in CI
         @given(
             n=integers(min_value=1, max_value=2**248 - 1).filter(
                 lambda x: int.to_bytes(
@@ -61,6 +62,7 @@ class TestBytes:
                 != 0
             )
         )
+        @settings(max_examples=50)
         def test_should_raise_when_bytes_len_is_not_minimal(
             self, cairo_program, cairo_run, n
         ):
