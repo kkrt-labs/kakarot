@@ -79,6 +79,12 @@ namespace IAccount {
         to: felt, function_selector: felt, calldata_len: felt, calldata: felt*
     ) -> (retdata_len: felt, retdata: felt*, success: felt) {
     }
+
+    func get_code_hash() -> (code_hash: Uint256) {
+    }
+
+    func set_code_hash(code_hash: Uint256) {
+    }
 }
 
 @contract_interface

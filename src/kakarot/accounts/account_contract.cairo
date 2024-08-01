@@ -287,6 +287,23 @@ func is_valid_jumpdest{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_che
     return (is_valid=is_valid);
 }
 
+@view
+func get_code_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    code_hash: Uint256
+) {
+    let code_hash = AccountContract.get_code_hash();
+    return (code_hash,);
+}
+
+@external
+func set_code_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    code_hash: Uint256
+) {
+    Ownable.assert_only_owner();
+    AccountContract.set_code_hash(code_hash);
+    return ();
+}
+
 // @notice Authorizes a pre-eip155 transaction by message hash.
 // @param message_hash The hash of the message.
 @external
