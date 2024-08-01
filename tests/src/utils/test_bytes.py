@@ -1,7 +1,10 @@
 import os
 
 import pytest
+from hypothesis import given
+from hypothesis.strategies import integers
 
+from tests.utils.errors import cairo_error
 from tests.utils.uint256 import int_to_uint256
 
 PRIME = 0x800000000000011000000000000000000000000000000000000000000000001
@@ -15,11 +18,20 @@ class TestBytes:
             assert str(n) == bytes(output).decode()
 
     class TestFeltToBytesLittle:
-        @pytest.mark.parametrize("n", [0, 10, 1234, 0xFFFFFF, 2**128, PRIME - 1])
+        @given(n=integers(min_value=0, max_value=2**248 - 1))
         def test_should_return_bytes(self, cairo_run, n):
             output = cairo_run("test__felt_to_bytes_little", n=n)
             res = bytes(output)
-            assert bytes.fromhex(f"{n:x}".rjust(len(res) * 2, "0"))[::-1] == res
+            expected = (
+                int.to_bytes(n, length=(n.bit_length() + 7) // 8, byteorder="little")
+                if n > 0
+                else b"\x00"
+            )
+            assert expected == res
+
+        def test_should_raise_value_32_bytes(self, cairo_run, n=2**248):
+            with cairo_error(message="felt_to_bytes_little: value is too big"):
+                cairo_run("test__felt_to_bytes_little", n=n)
 
     class TestFeltToBytes:
         @pytest.mark.parametrize("n", [0, 10, 1234, 0xFFFFFF, 2**128, PRIME - 1])

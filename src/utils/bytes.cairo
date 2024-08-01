@@ -1,5 +1,5 @@
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.math import unsigned_div_rem, split_int, split_felt
+from starkware.cairo.common.math import unsigned_div_rem, split_int, split_felt, assert_le_felt
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.memset import memset
@@ -41,8 +41,12 @@ func felt_to_ascii{range_check_ptr}(dst: felt*, n: felt) -> felt {
 
 // @notice Split a felt into an array of bytes little endian
 // @dev Use a hint from split_int
-func felt_to_bytes_little(dst: felt*, value: felt) -> felt {
+func felt_to_bytes_little{range_check_ptr}(dst: felt*, value: felt) -> felt {
     alloc_locals;
+
+    with_attr error_message("felt_to_bytes_little(): Value > 2**248 ") {
+        assert_le_felt(value, 2 ** 248);
+    }
 
     tempvar value = value;
     tempvar bytes_len = 0;
@@ -71,11 +75,59 @@ func felt_to_bytes_little(dst: felt*, value: felt) -> felt {
     let bytes_len = [ap - 1];
     assert value = 0;
 
+    let (pow256_address) = get_label_location(pow256_table);
+    if (bytes_len == 1) {
+        tempvar lower_bound = 0;
+    } else {
+        let lower_bound_ = pow256_address[bytes_len - 1];
+        tempvar lower_bound = lower_bound_;
+    }
+
+    // Assert that the `bytes_len` found is the minimal one possible to represent the value.
+    let initial_value = [fp - 3];
+    let lower_bound = [ap - 1];
+    let upper_bound = pow256_address[bytes_len];
+    assert_le_felt(lower_bound, initial_value);
+    assert_le_felt(initial_value, upper_bound - 1);
     return bytes_len;
+
+    pow256_table:
+    dw 256 ** 0;
+    dw 256 ** 1;
+    dw 256 ** 2;
+    dw 256 ** 3;
+    dw 256 ** 4;
+    dw 256 ** 5;
+    dw 256 ** 6;
+    dw 256 ** 7;
+    dw 256 ** 8;
+    dw 256 ** 9;
+    dw 256 ** 10;
+    dw 256 ** 11;
+    dw 256 ** 12;
+    dw 256 ** 13;
+    dw 256 ** 14;
+    dw 256 ** 15;
+    dw 256 ** 16;
+    dw 256 ** 17;
+    dw 256 ** 18;
+    dw 256 ** 19;
+    dw 256 ** 20;
+    dw 256 ** 21;
+    dw 256 ** 22;
+    dw 256 ** 23;
+    dw 256 ** 24;
+    dw 256 ** 25;
+    dw 256 ** 26;
+    dw 256 ** 27;
+    dw 256 ** 28;
+    dw 256 ** 29;
+    dw 256 ** 30;
+    dw 256 ** 31;
 }
 
 // @notice Split a felt into an array of bytes
-func felt_to_bytes(dst: felt*, value: felt) -> felt {
+func felt_to_bytes{range_check_ptr}(dst: felt*, value: felt) -> felt {
     alloc_locals;
     let (local bytes: felt*) = alloc();
     let bytes_len = felt_to_bytes_little(bytes, value);
@@ -234,4 +286,8 @@ func bytes_to_bytes8_little_endian{range_check_ptr}(dst: felt*, bytes_len: felt,
     dw 256 ** 2;
     dw 256 ** 1;
     dw 256 ** 0;
+}
+
+// @notice Computes 256 ** i for 0 <= i <= 31.
+func pow256(i: felt) -> felt {
 }
