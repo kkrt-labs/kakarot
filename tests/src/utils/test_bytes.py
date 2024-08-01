@@ -22,22 +22,22 @@ class TestBytes:
         @given(n=integers(min_value=0, max_value=2**248 - 1))
         def test_should_return_bytes(self, cairo_run, n):
             output = cairo_run("test__felt_to_bytes_little", n=n)
-            res = bytes(output)
             expected = (
                 int.to_bytes(n, length=(n.bit_length() + 7) // 8, byteorder="little")
                 if n > 0
                 else b"\x00"
             )
-            assert expected == res
+            assert expected == bytes(output)
 
-        def test_should_raise_value_32_bytes(self, cairo_run, n=2**248 - 1):
+        @given(n=integers(min_value=2**248, max_value=PRIME - 1))
+        def test_should_raise_when_value_sup_31_bytes(self, cairo_run, n):
             with cairo_error(message="felt_to_bytes_little: value > 2**248"):
                 cairo_run("test__felt_to_bytes_little", n=n)
 
         # This test checks the function fails if the % base is removed from the hint
         # All values up to 256 will have the same decomposition if the it is removed
         @given(n=integers(min_value=256, max_value=2**248 - 1))
-        def test_should_raise_output_superior_to_base_when_not_modulo_base(
+        def test_should_raise_when_byte_value_not_modulo_base(
             self, cairo_program, cairo_run, n
         ):
             with (
@@ -50,8 +50,18 @@ class TestBytes:
             ):
                 cairo_run("test__felt_to_bytes_little", n=n)
 
-        @given(n=integers(min_value=1, max_value=2**248 - 1))
-        def test_should_raise_bytes_len_superior_to_max_bytes_used(
+        # This test checks the function fails if the first bytes is replaced by 0
+        # All values that have 0 as first bytes will not raise an error
+        # The value 0 is also excluded as it is treated as a special case in the function
+        @given(
+            n=integers(min_value=1, max_value=2**248 - 1).filter(
+                lambda x: int.to_bytes(
+                    x, length=(x.bit_length() + 7) // 8, byteorder="little"
+                )[0]
+                != 0
+            )
+        )
+        def test_should_raise_when_bytes_len_is_not_minimal(
             self, cairo_program, cairo_run, n
         ):
             with (
