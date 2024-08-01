@@ -51,7 +51,7 @@ func felt_to_ascii{range_check_ptr}(dst: felt*, n: felt) -> felt {
 func felt_to_bytes_little{range_check_ptr}(dst: felt*, value: felt) -> felt {
     alloc_locals;
 
-    with_attr error_message("felt_to_bytes_little: value > 2**248") {
+    with_attr error_message("felt_to_bytes_little: value >= 2**248") {
         assert_le_felt(value, 2 ** 248 - 1);
     }
 
@@ -72,7 +72,7 @@ func felt_to_bytes_little{range_check_ptr}(dst: felt*, value: felt) -> felt {
         memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
         assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
     %}
-    tempvar byte = [output];
+    let byte = [output];
     with_attr error_message("felt_to_bytes_little: byte value is too big") {
         assert_nn_le(byte, bound - 1);
     }

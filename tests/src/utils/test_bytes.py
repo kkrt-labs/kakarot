@@ -31,7 +31,7 @@ class TestBytes:
 
         @given(n=integers(min_value=2**248, max_value=PRIME - 1))
         def test_should_raise_when_value_sup_31_bytes(self, cairo_run, n):
-            with cairo_error(message="felt_to_bytes_little: value > 2**248"):
+            with cairo_error(message="felt_to_bytes_little: value >= 2**248"):
                 cairo_run("test__felt_to_bytes_little", n=n)
 
         # This test checks the function fails if the % base is removed from the hint
