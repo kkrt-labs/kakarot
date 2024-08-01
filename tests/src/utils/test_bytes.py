@@ -53,7 +53,7 @@ class TestBytes:
         # This test checks the function fails if the first bytes is replaced by 0
         # All values that have 0 as first bytes will not raise an error
         # The value 0 is also excluded as it is treated as a special case in the function
-        # THere is a max_examples as without it it fills up the memory and run forever in CI
+        # There is a max_examples as without it, it fills up the memory and run forever in CI
         @given(
             n=integers(min_value=1, max_value=2**248 - 1).filter(
                 lambda x: int.to_bytes(
