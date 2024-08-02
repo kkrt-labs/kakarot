@@ -5,7 +5,8 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.math_cmp import is_nn, is_le_felt
+from starkware.cairo.common.math_cmp import is_nn, is_le_felt, RC_BOUND
+from starkware.cairo.common.math import assert_le_felt
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.uint256 import Uint256
@@ -144,31 +145,51 @@ namespace EVM {
     // @param amount The amount of gas the current operation requires.
     // @return EVM The pointer to the updated execution context.
     func charge_gas{range_check_ptr}(self: model.EVM*, amount: felt) -> model.EVM* {
-        let out_of_gas = is_le_felt(self.gas_left + 1, amount);
+        tempvar a = self.gas_left - amount;
+        %{ memory[ap] = 0 if 0 <= (ids.a % PRIME) < range_check_builtin.bound else 1 %}
+        jmp out_of_range if [ap] != 0, ap++;
+        [range_check_ptr] = a;
+        ap += 20;
+        tempvar range_check_ptr = range_check_ptr + 1;
+        jmp enough_gas;
 
-        if (out_of_gas != 0) {
-            let (revert_reason_len, revert_reason) = Errors.outOfGas(self.gas_left, amount);
-            return new model.EVM(
-                message=self.message,
-                return_data_len=revert_reason_len,
-                return_data=revert_reason,
-                program_counter=self.program_counter,
-                stopped=TRUE,
-                gas_left=0,
-                gas_refund=self.gas_refund,
-                reverted=Errors.EXCEPTIONAL_HALT,
-            );
-        }
+        out_of_range:
+        %{ memory[ap] = 0 if 0 <= ((-ids.a - 1) % PRIME) < range_check_builtin.bound else 1 %}
+        jmp need_felt_comparison if [ap] != 0, ap++;
+        assert [range_check_ptr] = (-a) - 1;
+        ap += 17;
+        tempvar range_check_ptr = range_check_ptr + 1;
+        jmp not_enough_gas;
 
+        need_felt_comparison:
+        assert_le_felt(RC_BOUND, a);
+        jmp not_enough_gas;
+
+        enough_gas:
+        let range_check_ptr = [ap - 1];
         return new model.EVM(
             message=self.message,
             return_data_len=self.return_data_len,
             return_data=self.return_data,
             program_counter=self.program_counter,
             stopped=self.stopped,
-            gas_left=self.gas_left - amount,
+            gas_left=a,
             gas_refund=self.gas_refund,
             reverted=self.reverted,
+        );
+
+        not_enough_gas:
+        let range_check_ptr = [ap - 1];
+        let (revert_reason_len, revert_reason) = Errors.outOfGas(self.gas_left, amount);
+        return new model.EVM(
+            message=self.message,
+            return_data_len=revert_reason_len,
+            return_data=revert_reason,
+            program_counter=self.program_counter,
+            stopped=TRUE,
+            gas_left=0,
+            gas_refund=self.gas_refund,
+            reverted=Errors.EXCEPTIONAL_HALT,
         );
     }
 
