@@ -3,6 +3,7 @@ from types import MethodType
 from unittest.mock import PropertyMock, patch
 
 import pytest
+import pytest_asyncio
 from eth_abi import decode, encode
 from eth_utils import keccak
 from eth_utils.address import to_checksum_address
@@ -24,11 +25,11 @@ OTHER = to_checksum_address(f"0x{0xE1A5:040x}")
 EVM_ADDRESS = 0x42069
 
 
-@pytest.fixture(scope="module")
-def get_contract(cairo_run):
+@pytest_asyncio.fixture(scope="module")
+async def get_contract(cairo_run):
     from kakarot_scripts.utils.kakarot import get_contract as get_solidity_contract
 
-    def _factory(contract_app, contract_name):
+    async def _factory(contract_app, contract_name):
         def _wrap_cairo_run(fun):
             def _wrapper(self, *args, **kwargs):
                 origin = kwargs.pop("origin", 0)
@@ -58,7 +59,7 @@ def get_contract(cairo_run):
 
             return _wrapper
 
-        contract = get_solidity_contract(contract_app, contract_name)
+        contract = await get_solidity_contract(contract_app, contract_name)
         try:
             for fun in contract.functions:
                 setattr(contract, fun, MethodType(_wrap_cairo_run(fun), contract))
@@ -293,13 +294,7 @@ class TestKakarot:
     class TestEthCall:
         @pytest.mark.slow
         @pytest.mark.SolmateERC20
-        @SyscallHandler.patch(
-            "IAccount.is_valid_jumpdest",
-            lambda addr, data: [1],
-        )
-        @SyscallHandler.patch(
-            "IAccount.get_code_hash", lambda sn_addr, data: [0x1, 0x1]
-        )
+        @pytest.mark.asyncio()
         async def test_erc20_transfer(self, get_contract):
             erc20 = await get_contract("Solmate", "ERC20")
             amount = int(1e18)
@@ -314,19 +309,21 @@ class TestKakarot:
                     "nonce": 0,
                 }
             }
-            with SyscallHandler.patch_state(parse_state(initial_state)):
+            with (
+                SyscallHandler.patch_state(parse_state(initial_state)),
+                SyscallHandler.patch(
+                    "IAccount.is_valid_jumpdest", lambda addr, data: [1]
+                ),
+                SyscallHandler.patch(
+                    "IAccount.get_code_hash", lambda sn_addr, data: [0x1, 0x1]
+                ),
+            ):
                 evm, *_ = erc20.transfer(OTHER, amount, origin=int(OWNER, 16))
             assert not evm["reverted"]
 
         @pytest.mark.slow
         @pytest.mark.SolmateERC721
-        @SyscallHandler.patch(
-            "IAccount.is_valid_jumpdest",
-            lambda addr, data: [1],
-        )
-        @SyscallHandler.patch(
-            "IAccount.get_code_hash", lambda sn_addr, data: [0x1, 0x1]
-        )
+        @pytest.mark.asyncio()
         async def test_erc721_transfer(self, get_contract):
             erc721 = await get_contract("Solmate", "ERC721")
             token_id = 1337
@@ -343,7 +340,15 @@ class TestKakarot:
                     "nonce": 0,
                 }
             }
-            with SyscallHandler.patch_state(parse_state(initial_state)):
+            with (
+                SyscallHandler.patch_state(parse_state(initial_state)),
+                SyscallHandler.patch(
+                    "IAccount.is_valid_jumpdest", lambda addr, data: [1]
+                ),
+                SyscallHandler.patch(
+                    "IAccount.get_code_hash", lambda sn_addr, data: [0x1, 0x1]
+                ),
+            ):
                 evm, *_ = erc721.transferFrom(
                     OWNER, OTHER, token_id, origin=int(OWNER, 16)
                 )
@@ -352,6 +357,7 @@ class TestKakarot:
         @pytest.mark.slow
         @pytest.mark.NoCI
         @pytest.mark.EFTests
+        @pytest.mark.asyncio()
         @pytest.mark.parametrize(
             "ef_blockchain_test",
             EF_TESTS_PARSED_DIR.glob("*walletConstruction_d0g1v0_Cancun*.json"),
@@ -394,6 +400,7 @@ class TestKakarot:
             assert gas_used == int(block["blockHeader"]["gasUsed"], 16)
 
         @pytest.mark.skip
+        @pytest.mark.asyncio()
         async def test_failing_contract(self, cairo_run):
             initial_state = {
                 CONTRACT_ADDRESS: {
@@ -418,8 +425,8 @@ class TestKakarot:
     class TestLoopProfiling:
         @pytest.mark.slow
         @pytest.mark.NoCI
+        @pytest.mark.asyncio()
         @pytest.mark.parametrize("steps", [10, 50, 100, 200])
-        @SyscallHandler.patch("IAccount.is_valid_jumpdest", lambda addr, data: [1])
         async def test_loop_profiling(self, get_contract, steps):
             plain_opcodes = await get_contract("PlainOpcodes", "PlainOpcodes")
             initial_state = {
@@ -430,6 +437,14 @@ class TestKakarot:
                     "nonce": 0,
                 }
             }
-            with SyscallHandler.patch_state(parse_state(initial_state)):
+            with (
+                SyscallHandler.patch_state(parse_state(initial_state)),
+                SyscallHandler.patch(
+                    "IAccount.is_valid_jumpdest", lambda addr, data: [1]
+                ),
+                SyscallHandler.patch(
+                    "IAccount.get_code_hash", lambda sn_addr, data: [0x1, 0x1]
+                ),
+            ):
                 res = plain_opcodes.loopProfiling(steps)
             assert res == sum(x for x in range(steps))
