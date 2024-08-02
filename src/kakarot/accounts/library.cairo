@@ -5,7 +5,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.dict_access import DictAccess
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.math import unsigned_div_rem, split_int, split_felt
+from starkware.cairo.common.math import split_int, split_felt
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256, uint256_not, uint256_le
 from starkware.cairo.common.math_cmp import is_nn
@@ -430,7 +430,7 @@ namespace AccountContract {
         let (valid_jumpdests_start, valid_jumpdests) = Helpers.initialize_jumpdests(
             bytecode_len, bytecode
         );
-        let (jumpdests_len, _) = unsigned_div_rem(
+        let (jumpdests_len, _) = Helpers.unsigned_div_rem(
             valid_jumpdests - valid_jumpdests_start, DictAccess.SIZE
         );
         Internals.write_jumpdests(
@@ -582,7 +582,7 @@ namespace Internals {
             return (bytecode=bytecode);
         }
 
-        let (local chunk_counts, local remainder) = unsigned_div_rem(bytecode_len, BYTES_PER_FELT);
+        let (local chunk_counts, local remainder) = Helpers.unsigned_div_rem(bytecode_len, BYTES_PER_FELT);
 
         tempvar remaining_bytes = bytecode_len;
         tempvar range_check_ptr = range_check_ptr;

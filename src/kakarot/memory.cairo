@@ -3,7 +3,6 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.default_dict import default_dict_new, default_dict_finalize
 from starkware.cairo.common.dict import DictAccess, dict_read, dict_write
-from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.uint256 import Uint256
 
 from kakarot.model import model
@@ -47,7 +46,7 @@ namespace Memory {
         let word_dict = memory.word_dict;
 
         // Check alignment of offset to 16B chunks.
-        let (chunk_index, offset_in_chunk) = unsigned_div_rem(offset, 16);
+        let (chunk_index, offset_in_chunk) = Helpers.unsigned_div_rem(offset, 16);
 
         if (offset_in_chunk == 0) {
             // Offset is aligned. This is the simplest and most efficient case,
@@ -69,16 +68,16 @@ namespace Memory {
         let mask_c = 2 ** 128 / mask;
 
         // Split the 2 input 16B chunks at offset_in_chunk.
-        let (el_hh, el_hl) = unsigned_div_rem(element.high, mask_c);
-        let (el_lh, el_ll) = unsigned_div_rem(element.low, mask_c);
+        let (el_hh, el_hl) = Helpers.unsigned_div_rem(element.high, mask_c);
+        let (el_lh, el_ll) = Helpers.unsigned_div_rem(element.low, mask_c);
 
         // Read the words at chunk_index, chunk_index + 2.
         let (w0) = dict_read{dict_ptr=word_dict}(chunk_index);
         let (w2) = dict_read{dict_ptr=word_dict}(chunk_index + 2);
 
         // Compute the new words.
-        let (w0_h, _) = unsigned_div_rem(w0, mask);
-        let (_, w2_l) = unsigned_div_rem(w2, mask);
+        let (w0_h, _) = Helpers.unsigned_div_rem(w0, mask);
+        let (_, w2_l) = Helpers.unsigned_div_rem(w2, mask);
         let new_w0 = w0_h * mask + el_hh;
         let new_w1 = el_hl * mask + el_lh;
         let new_w2 = el_ll * mask + w2_l;
@@ -108,8 +107,8 @@ namespace Memory {
         let word_dict = memory.word_dict;
 
         // Check alignment of offset to 16B chunks.
-        let (chunk_index_i, offset_in_chunk_i) = unsigned_div_rem(offset, 16);
-        let (chunk_index_f, offset_in_chunk_f) = unsigned_div_rem(offset + element_len - 1, 16);
+        let (chunk_index_i, offset_in_chunk_i) = Helpers.unsigned_div_rem(offset, 16);
+        let (chunk_index_f, offset_in_chunk_f) = Helpers.unsigned_div_rem(offset + element_len - 1, 16);
         tempvar offset_in_chunk_f = offset_in_chunk_f + 1;
         let mask_i = Helpers.pow256_rev(offset_in_chunk_i);
         let mask_f = Helpers.pow256_rev(offset_in_chunk_f);
@@ -160,7 +159,7 @@ namespace Memory {
         let word_dict = memory.word_dict;
 
         // Check alignment of offset to 16B chunks.
-        let (chunk_index, offset_in_chunk) = unsigned_div_rem(offset, 16);
+        let (chunk_index, offset_in_chunk) = Helpers.unsigned_div_rem(offset, 16);
 
         if (offset_in_chunk == 0) {
             // Offset is aligned. This is the simplest and most efficient case,
@@ -187,9 +186,9 @@ namespace Memory {
         let (w2) = dict_read{dict_ptr=word_dict}(chunk_index + 2);
 
         // Compute element words.
-        let (_, w0_l) = unsigned_div_rem(w0, mask);
-        let (w1_h, w1_l) = unsigned_div_rem(w1, mask);
-        let (w2_h, _) = unsigned_div_rem(w2, mask);
+        let (_, w0_l) = Helpers.unsigned_div_rem(w0, mask);
+        let (w1_h, w1_l) = Helpers.unsigned_div_rem(w1, mask);
+        let (w2_h, _) = Helpers.unsigned_div_rem(w2, mask);
         let el_h = w0_l * mask_c + w1_h;
         let el_l = w1_l * mask_c + w2_h;
 
@@ -215,8 +214,8 @@ namespace Memory {
         let word_dict = memory.word_dict;
 
         // Check alignment of offset to 16B chunks.
-        let (chunk_index_i, offset_in_chunk_i) = unsigned_div_rem(offset, 16);
-        let (chunk_index_f, offset_in_chunk_f) = unsigned_div_rem(offset + element_len - 1, 16);
+        let (chunk_index_i, offset_in_chunk_i) = Helpers.unsigned_div_rem(offset, 16);
+        let (chunk_index_f, offset_in_chunk_f) = Helpers.unsigned_div_rem(offset + element_len - 1, 16);
         tempvar offset_in_chunk_f = offset_in_chunk_f + 1;
         let mask_i = Helpers.pow256_rev(offset_in_chunk_i);
         let mask_f = Helpers.pow256_rev(offset_in_chunk_f);

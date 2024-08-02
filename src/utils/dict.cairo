@@ -3,8 +3,8 @@ from starkware.cairo.common.default_dict import default_dict_new
 from starkware.cairo.common.dict import dict_write, dict_squash
 from starkware.cairo.common.math_cmp import is_not_zero
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.uint256 import Uint256
+from utils.utils import Helpers
 
 func dict_keys{range_check_ptr}(dict_start: DictAccess*, dict_end: DictAccess*) -> (
     keys_len: felt, keys: felt*
@@ -12,7 +12,7 @@ func dict_keys{range_check_ptr}(dict_start: DictAccess*, dict_end: DictAccess*) 
     alloc_locals;
     let (local keys_start: felt*) = alloc();
     let dict_len = dict_end - dict_start;
-    let (local keys_len, _) = unsigned_div_rem(dict_len, DictAccess.SIZE);
+    let (local keys_len, _) = Helpers.unsigned_div_rem(dict_len, DictAccess.SIZE);
     local range_check_ptr = range_check_ptr;
 
     if (dict_len == 0) {
@@ -48,7 +48,7 @@ func dict_values{range_check_ptr}(dict_start: DictAccess*, dict_end: DictAccess*
     alloc_locals;
     let (local values: Uint256*) = alloc();
     let dict_len = dict_end - dict_start;
-    let (local values_len, _) = unsigned_div_rem(dict_len, DictAccess.SIZE);
+    let (local values_len, _) = Helpers.unsigned_div_rem(dict_len, DictAccess.SIZE);
     local range_check_ptr = range_check_ptr;
 
     if (dict_len == 0) {

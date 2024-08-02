@@ -12,7 +12,6 @@ from starkware.cairo.common.default_dict import default_dict_new
 from starkware.cairo.common.dict import DictAccess
 from starkware.cairo.lang.compiler.lib.registers import get_fp_and_pc, get_ap
 from starkware.cairo.common.uint256 import Uint256, uint256_le
-from starkware.cairo.common.math import unsigned_div_rem
 
 // Internal dependencies
 from kakarot.account import Account
@@ -819,7 +818,7 @@ namespace Interpreter {
         local code_address: model.Address*;
         if (is_deploy_tx != FALSE) {
             let (empty: felt*) = alloc();
-            let (init_code_words, _) = unsigned_div_rem(bytecode_len + 31, 32);
+            let (init_code_words, _) = Helpers.unsigned_div_rem(bytecode_len + 31, 32);
             let init_code_gas = Gas.INIT_CODE_WORD_COST * init_code_words;
             assert bytecode = tmp_calldata;
             assert calldata = empty;
@@ -942,7 +941,7 @@ namespace Interpreter {
         }
 
         let required_gas = gas_limit - evm.gas_left;
-        let (max_refund, _) = unsigned_div_rem(required_gas, 5);
+        let (max_refund, _) = Helpers.unsigned_div_rem(required_gas, 5);
         let is_max_refund_le_gas_refund = is_nn(evm.gas_refund - max_refund);
         tempvar gas_refund = is_max_refund_le_gas_refund * max_refund + (
             1 - is_max_refund_le_gas_refund

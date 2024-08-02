@@ -4,7 +4,6 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_keccak.keccak import finalize_keccak
 from starkware.cairo.common.bool import FALSE
-from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.math_cmp import RC_BOUND
 from starkware.cairo.common.cairo_secp.ec import EcPoint
 from starkware.cairo.common.cairo_secp.bigint import BigInt3
@@ -121,7 +120,7 @@ namespace EcRecoverHelpers {
         );
 
         // The Ethereum address is the 20 least significant bytes of the keccak of the public key.
-        let (high_high, high_low) = unsigned_div_rem(point_hash.high, 2 ** 32);
+        let (high_high, high_low) = Helpers.unsigned_div_rem(point_hash.high, 2 ** 32);
         return (eth_address=point_hash.low + RC_BOUND * high_low);
     }
 }

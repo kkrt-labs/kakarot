@@ -7,7 +7,6 @@ from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.dict_access import DictAccess
 from starkware.cairo.common.uint256 import Uint256
-from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.math_cmp import is_nn
 from starkware.cairo.common.memset import memset
 from starkware.starknet.common.syscalls import (
@@ -36,6 +35,7 @@ from kakarot.storages import (
     Kakarot_block_gas_limit,
     Kakarot_prev_randao,
 )
+from utils.utils import Helpers
 
 namespace Starknet {
     // @notice Commit the current state to the underlying data backend (here, Starknet)
@@ -119,7 +119,7 @@ namespace Starknet {
 
         // No idea why this is required - but trying to pass prev_randao directly causes bugs.
         let prev_randao = Uint256(low=prev_randao.low, high=prev_randao.high);
-        let (_, chain_id) = unsigned_div_rem(tx_info.chain_id, 2 ** 32);
+        let (_, chain_id) = Helpers.unsigned_div_rem(tx_info.chain_id, 2 ** 32);
 
         return new model.Environment(
             origin=origin,

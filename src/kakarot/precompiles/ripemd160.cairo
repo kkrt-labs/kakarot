@@ -6,7 +6,7 @@
 // Starkware dependencies
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin, HashBuiltin
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.math import unsigned_div_rem, assert_nn_le
+from starkware.cairo.common.math import assert_nn_le
 from starkware.cairo.common.math_cmp import is_nn_le, is_nn
 from starkware.cairo.common.bitwise import bitwise_and, bitwise_xor, bitwise_or
 from starkware.cairo.common.dict_access import DictAccess
@@ -92,7 +92,7 @@ func buf2hash{range_check_ptr, dict_ptr: DictAccess*, bitwise_ptr: BitwiseBuilti
         return ();
     }
 
-    let (index_4, _) = unsigned_div_rem(index, 4);
+    let (index_4, _) = Helpers.unsigned_div_rem(index, 4);
     let val_4 = buf[index_4];
     let (pow2_8) = pow2(8);
     let (pow2_16) = pow2(16);
@@ -152,7 +152,7 @@ func absorb_data{range_check_ptr, bitwise_ptr: BitwiseBuiltin*, dict_ptr: DictAc
         return ();
     }
 
-    let (index_4, _) = unsigned_div_rem(index, 4);
+    let (index_4, _) = Helpers.unsigned_div_rem(index, 4);
     let (index_and_3) = uint32_and(index, 3);
     let (factor) = uint32_mul(8, index_and_3);
     let (factor) = pow2(factor);
@@ -201,11 +201,11 @@ func compress{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(
     assert xlen = 16;
 
     // all element is in [0, 2^32).
-    let (_, aa) = unsigned_div_rem([buf + 0], MAX_32_BIT);
-    let (_, bb) = unsigned_div_rem([buf + 1], MAX_32_BIT);
-    let (_, cc) = unsigned_div_rem([buf + 2], MAX_32_BIT);
-    let (_, dd) = unsigned_div_rem([buf + 3], MAX_32_BIT);
-    let (_, ee) = unsigned_div_rem([buf + 4], MAX_32_BIT);
+    let (_, aa) = Helpers.unsigned_div_rem([buf + 0], MAX_32_BIT);
+    let (_, bb) = Helpers.unsigned_div_rem([buf + 1], MAX_32_BIT);
+    let (_, cc) = Helpers.unsigned_div_rem([buf + 2], MAX_32_BIT);
+    let (_, dd) = Helpers.unsigned_div_rem([buf + 3], MAX_32_BIT);
+    let (_, ee) = Helpers.unsigned_div_rem([buf + 4], MAX_32_BIT);
     local aaa = aa;
     local bbb = bb;
     local ccc = cc;
@@ -435,7 +435,7 @@ func finish{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(
     absorb_data{dict_ptr=x}(data, len, 0);
 
     // append the bit m_n == 1.
-    let (index_4, _) = unsigned_div_rem(dsize, 4);
+    let (index_4, _) = Helpers.unsigned_div_rem(dsize, 4);
     let (local index) = uint32_and(index_4, 15);
     let (old_val) = dict_read{dict_ptr=x}(index);
     let (local ba_3) = uint32_and(dsize, 3);
@@ -447,7 +447,7 @@ func finish{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(
     // length goes to next block.
     let (val) = uint32_mul(dsize, 8);
     let (pow2_29) = pow2(29);
-    let (factor, _) = unsigned_div_rem(dsize, pow2_29);
+    let (factor, _) = Helpers.unsigned_div_rem(dsize, pow2_29);
     let len_8 = mswlen * 8;
     let (val_15) = uint32_or(factor, len_8);
 
@@ -479,42 +479,42 @@ func finish{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(
 }
 
 func uint8_div{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(x, y) -> (z: felt) {
-    let (z, _) = unsigned_div_rem(x, y);
-    let (_, z) = unsigned_div_rem(z, MAX_BYTE);
+    let (z, _) = Helpers.unsigned_div_rem(x, y);
+    let (_, z) = Helpers.unsigned_div_rem(z, MAX_BYTE);
     return (z=z);
 }
 
 func uint32_add{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(x, y) -> (z: felt) {
-    let (_, z) = unsigned_div_rem(x + y, MAX_32_BIT);
+    let (_, z) = Helpers.unsigned_div_rem(x + y, MAX_32_BIT);
     return (z=z);
 }
 
 func uint32_mul{range_check_ptr}(x, y) -> (z: felt) {
-    let (_, z) = unsigned_div_rem(x * y, MAX_32_BIT);
+    let (_, z) = Helpers.unsigned_div_rem(x * y, MAX_32_BIT);
     return (z=z);
 }
 
 func uint32_and{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(x, y) -> (z: felt) {
     let (z) = bitwise_and(x, y);
-    let (_, z) = unsigned_div_rem(z, MAX_32_BIT);
+    let (_, z) = Helpers.unsigned_div_rem(z, MAX_32_BIT);
     return (z=z);
 }
 
 func uint32_or{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(x, y) -> (z: felt) {
     let (z) = bitwise_or(x, y);
-    let (_, z) = unsigned_div_rem(z, MAX_32_BIT);
+    let (_, z) = Helpers.unsigned_div_rem(z, MAX_32_BIT);
     return (z=z);
 }
 
 func uint32_not{range_check_ptr}(x: felt) -> (not_x: felt) {
     let not_x = MAX_32_BIT - 1 - x;
-    let (_, not_x) = unsigned_div_rem(not_x, MAX_32_BIT);
+    let (_, not_x) = Helpers.unsigned_div_rem(not_x, MAX_32_BIT);
     return (not_x=not_x);
 }
 
 func uint32_xor{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(x, y) -> (z: felt) {
     let (z) = bitwise_xor(x, y);
-    let (_, z) = unsigned_div_rem(z, MAX_32_BIT);
+    let (_, z) = Helpers.unsigned_div_rem(z, MAX_32_BIT);
     return (z=z);
 }
 
@@ -543,7 +543,7 @@ func ROL{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(x, n) -> (res: felt) {
     let (factor_n) = pow2(n);
     let (factor_diff) = pow2(32 - n);
     let (x_left_shift) = uint32_mul(x, factor_n);
-    let (x_right_shift, _) = unsigned_div_rem(x, factor_diff);
+    let (x_right_shift, _) = Helpers.unsigned_div_rem(x, factor_diff);
     let (res) = uint32_or(x_left_shift, x_right_shift);
     return (res=res);
 }

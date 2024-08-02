@@ -8,9 +8,9 @@ from starkware.cairo.common.uint256 import (
     uint256_lt,
     uint256_not,
 )
-from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.math_cmp import is_nn
+from utils.utils import Helpers
 
 // Adds two integers. Returns the result as a 256-bit integer and the (1-bit) carry.
 // Strictly equivalent and faster version of common.uint256.uint256_add using the same whitelisted hint.
@@ -376,7 +376,7 @@ func uint256_fast_exp{range_check_ptr}(value: Uint256, exponent: Uint256) -> Uin
 // @param x The 256-bit unsigned integer.
 // @return The 160-bit unsigned integer.
 func uint256_to_uint160{range_check_ptr}(x: Uint256) -> felt {
-    let (_, high) = unsigned_div_rem(x.high, 2 ** 32);
+    let (_, high) = Helpers.unsigned_div_rem(x.high, 2 ** 32);
     return x.low + high * 2 ** 128;
 }
 
