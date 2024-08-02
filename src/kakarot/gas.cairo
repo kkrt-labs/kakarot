@@ -73,7 +73,8 @@ namespace Gas {
         return memory_cost;
     }
 
-    // @notice Compute the expansion cost of max_offset for the memory
+    // @notice Compute the expansion cost of max_offset for the memory.
+    // @dev Assumption max_offset < 2**133 necessary for unsigned_div_rem usage.
     // @param words_len The current length of the memory.
     // @param max_offset The target max_offset to be applied to the given memory.
     // @return cost The expansion gas cost: 0 if no expansion is triggered, and the new size of the memory
@@ -81,7 +82,9 @@ namespace Gas {
         words_len: felt, max_offset: felt
     ) -> model.MemoryExpansion {
         alloc_locals;
-        let memory_expansion = is_nn(max_offset - (words_len * 32 - 1));
+        let is_memory_length_not_zero = is_not_zero(words_len);
+        let current_memory_length = (words_len * 32 - 1) * is_memory_length_not_zero;
+        let memory_expansion = is_le_felt(current_memory_length, max_offset);
         if (memory_expansion == FALSE) {
             let expansion = model.MemoryExpansion(cost=0, new_words_len=words_len);
             return expansion;
