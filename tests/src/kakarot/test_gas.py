@@ -60,6 +60,26 @@ class TestGas:
                 ).cost
             )
 
+        @given(
+            offset=integers(min_value=0, max_value=2**256 - 1),
+            size=integers(min_value=0, max_value=2**256 - 1),
+        )
+        def test_memory_expansion_cost_saturated(self, cairo_run, offset, size):
+            output = cairo_run(
+                "test__memory_expansion_cost_saturated",
+                words_len=0,
+                offset=offset,
+                size=size,
+            )
+            if size == 0:
+                cost = 0
+            elif offset + size > 2**128 - 1:
+                cost = 0x200000000000000000000000000018000000000000000000000000000000
+            else:
+                cost = calculate_gas_extend_memory(b"", [(offset, size)]).cost
+
+            assert cost == output
+
     class TestMessageGas:
         @pytest.mark.parametrize(
             "gas_param, gas_left, expected",

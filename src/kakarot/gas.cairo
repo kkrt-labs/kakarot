@@ -114,14 +114,14 @@ namespace Gas {
             return expansion;
         }
 
-        if (offset.high + size.high != 0) {
-            // Hardcoded value of cost(2**128) and size of 2**128 bytes = 2**123 words of 32 bytes
-            // This offset would produce an OOG error in any case
-            let expansion = model.MemoryExpansion(cost=MEMORY_COST_U128, new_words_len=2 ** 123);
-            return expansion;
+        let is_low_part_overflowing = is_le_felt(2 ** 128, offset.low + size.low);
+        if (offset.high == 0 and size.high == 0 and is_low_part_overflowing == 0) {
+            return calculate_gas_extend_memory(words_len, offset.low + size.low);
         }
-
-        return calculate_gas_extend_memory(words_len, offset.low + size.low);
+        // Hardcoded value of cost(2**128) and size of 2**128 bytes = 2**123 words of 32 bytes
+        // This offset would produce an OOG error in any case
+        let expansion = model.MemoryExpansion(cost=MEMORY_COST_U128, new_words_len=2 ** 123);
+        return expansion;
     }
 
     // @notice Given two memory chunks, compute the maximum expansion cost
