@@ -5,7 +5,7 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.math import split_felt, unsigned_div_rem
+from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.math_cmp import is_nn, is_not_zero
 from starkware.cairo.common.uint256 import Uint256, uint256_lt, uint256_le
 from starkware.cairo.common.default_dict import default_dict_new
@@ -30,6 +30,7 @@ from utils.bytes import (
     felt_to_bytes20,
     uint256_to_bytes32,
 )
+from utils.math_utils import MathHelpers
 from utils.uint256 import uint256_to_uint160, uint256_eq
 
 using bool = felt;
@@ -62,7 +63,7 @@ namespace SystemOperations {
         // + init_code_gas
         // + is_create2 * GAS_KECCAK256_WORD * call_data_words
         let memory_expansion = Gas.memory_expansion_cost_saturated(memory.words_len, offset, size);
-        let (calldata_words, _) = unsigned_div_rem(size.low + 31, 32);
+        let (calldata_words, _) = MathHelpers.unsigned_div_rem(size.low + 31, 32);
         let init_code_gas_low = Gas.INIT_CODE_WORD_COST * calldata_words;
         tempvar init_code_gas_high = is_not_zero(size.high) * 2 ** 128;
         let calldata_word_gas = is_create2 * Gas.KECCAK256_WORD * calldata_words;
@@ -104,7 +105,7 @@ namespace SystemOperations {
         let target_account = State.get_account(target_address);
 
         // Get message call gas
-        let (gas_limit, _) = unsigned_div_rem(evm.gas_left, 64);
+        let (gas_limit, _) = MathHelpers.unsigned_div_rem(evm.gas_left, 64);
         let gas_limit = evm.gas_left - gas_limit;
 
         if (evm.message.read_only != FALSE) {
@@ -1012,12 +1013,15 @@ namespace CreateHelper {
             let nonce_len = felt_to_bytes(message + 2 + 20 + 1, nonce);
             assert [message + 2 + 20] = 0x80 + nonce_len;
             assert message_len = 1 + 1 + 20 + 1 + nonce_len;
+            tempvar range_check_ptr = range_check_ptr;
         } else {
             let is_nonce_not_zero = is_not_zero(nonce);
             let encoded_nonce = nonce * is_nonce_not_zero + (1 - is_nonce_not_zero) * 0x80;
             assert [message + 2 + 20] = encoded_nonce;
             assert message_len = 1 + 1 + 20 + 1;
+            tempvar range_check_ptr = range_check_ptr;
         }
+        let range_check_ptr = [ap - 1];
         assert message[0] = message_len + 0xc0 - 1;
 
         let (message_bytes8: felt*) = alloc();

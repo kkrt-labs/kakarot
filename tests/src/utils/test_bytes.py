@@ -1,7 +1,11 @@
 import os
 
 import pytest
+from hypothesis import given, settings
+from hypothesis.strategies import integers
 
+from tests.utils.errors import cairo_error
+from tests.utils.hints import patch_hint
 from tests.utils.uint256 import int_to_uint256
 
 PRIME = 0x800000000000011000000000000000000000000000000000000000000000001
@@ -15,14 +19,65 @@ class TestBytes:
             assert str(n) == bytes(output).decode()
 
     class TestFeltToBytesLittle:
-        @pytest.mark.parametrize("n", [0, 10, 1234, 0xFFFFFF, 2**128, PRIME - 1])
+        @given(n=integers(min_value=0, max_value=2**248 - 1))
         def test_should_return_bytes(self, cairo_run, n):
             output = cairo_run("test__felt_to_bytes_little", n=n)
-            res = bytes(output)
-            assert bytes.fromhex(f"{n:x}".rjust(len(res) * 2, "0"))[::-1] == res
+            expected = (
+                int.to_bytes(n, length=(n.bit_length() + 7) // 8, byteorder="little")
+                if n > 0
+                else b"\x00"
+            )
+            assert expected == bytes(output)
+
+        @given(n=integers(min_value=2**248, max_value=PRIME - 1))
+        def test_should_raise_when_value_sup_31_bytes(self, cairo_run, n):
+            with cairo_error(message="felt_to_bytes_little: value >= 2**248"):
+                cairo_run("test__felt_to_bytes_little", n=n)
+
+        # This test checks the function fails if the % base is removed from the hint
+        # All values up to 256 will have the same decomposition if the it is removed
+        @given(n=integers(min_value=256, max_value=2**248 - 1))
+        def test_should_raise_when_byte_value_not_modulo_base(
+            self, cairo_program, cairo_run, n
+        ):
+            with (
+                patch_hint(
+                    cairo_program,
+                    "memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base\nassert res < ids.bound, f'split_int(): Limb {res} is out of range.'",
+                    "memory[ids.output] = (int(ids.value) % PRIME)\n",
+                ),
+                cairo_error(message="felt_to_bytes_little: byte value is too big"),
+            ):
+                cairo_run("test__felt_to_bytes_little", n=n)
+
+        # This test checks the function fails if the first bytes is replaced by 0
+        # All values that have 0 as first bytes will not raise an error
+        # The value 0 is also excluded as it is treated as a special case in the function
+        # There is a max_examples as without it, it fills up the memory and run forever in CI
+        @given(
+            n=integers(min_value=1, max_value=2**248 - 1).filter(
+                lambda x: int.to_bytes(
+                    x, length=(x.bit_length() + 7) // 8, byteorder="little"
+                )[0]
+                != 0
+            )
+        )
+        @settings(max_examples=50)
+        def test_should_raise_when_bytes_len_is_not_minimal(
+            self, cairo_program, cairo_run, n
+        ):
+            with (
+                patch_hint(
+                    cairo_program,
+                    "memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base\nassert res < ids.bound, f'split_int(): Limb {res} is out of range.'",
+                    f"if ids.value == {n}:\n    memory[ids.output] = 0\nelse:\n    memory[ids.output] = (int(ids.value) % PRIME) % ids.base",
+                ),
+                cairo_error(message="bytes_len is not the minimal possible"),
+            ):
+                cairo_run("test__felt_to_bytes_little", n=n)
 
     class TestFeltToBytes:
-        @pytest.mark.parametrize("n", [0, 10, 1234, 0xFFFFFF, 2**128, PRIME - 1])
+        @given(n=integers(min_value=0, max_value=2**248 - 1))
         def test_should_return_bytes(self, cairo_run, n):
             output = cairo_run("test__felt_to_bytes", n=n)
             res = bytes(output)
