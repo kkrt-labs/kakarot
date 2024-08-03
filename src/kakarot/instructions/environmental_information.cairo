@@ -22,6 +22,7 @@ from kakarot.state import State
 from utils.array import slice
 from utils.bytes import bytes_to_bytes8_little_endian
 from utils.uint256 import uint256_to_uint160, uint256_add, uint256_eq
+from utils.math_utils import MathHelpers
 from utils.utils import Helpers
 
 // @title Environmental information opcodes.
@@ -176,7 +177,7 @@ namespace EnvironmentalInformation {
 
         // Any size upper than 2**128 will cause an OOG error, considering the maximum gas for a transaction.
         let upper_bytes_bound = size.low + 31;
-        let (words, _) = Helpers.unsigned_div_rem(upper_bytes_bound, 32);
+        let (words, _) =  MathHelpers.unsigned_div_rem(upper_bytes_bound, 32);
         let copy_gas_cost_low = words * Gas.COPY;
         tempvar copy_gas_cost_high = is_not_zero(size.high) * 2 ** 128;
 
@@ -257,7 +258,7 @@ namespace EnvironmentalInformation {
 
         // Any size upper than 2**128 will cause an OOG error, considering the maximum gas for a transaction.
         let upper_bytes_bound = size.low + 31;
-        let (words, _) = Helpers.unsigned_div_rem(upper_bytes_bound, 32);
+        let (words, _) =  MathHelpers.unsigned_div_rem(upper_bytes_bound, 32);
         let copy_gas_cost_low = words * Gas.COPY;
         tempvar copy_gas_cost_high = is_not_zero(size.high) * 2 ** 128;
 
@@ -394,7 +395,7 @@ namespace EnvironmentalInformation {
 
         // Any size upper than 2**128 will cause an OOG error, considering the maximum gas for a transaction.
         let upper_bytes_bound = size.low + 31;
-        let (words, _) = Helpers.unsigned_div_rem(upper_bytes_bound, 32);
+        let (words, _) =  MathHelpers.unsigned_div_rem(upper_bytes_bound, 32);
         let copy_gas_cost_low = words * Gas.COPY;
         tempvar copy_gas_cost_high = is_not_zero(size.high) * 2 ** 128;
 

@@ -1,12 +1,12 @@
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.math import unsigned_div_rem, split_int, split_felt
+from starkware.cairo.common.math import split_int, split_felt
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.memset import memset
 from starkware.cairo.common.registers import get_label_location
 
 from utils.array import reverse
-
+from utils.math_utils import MathHelpers
 func felt_to_ascii{range_check_ptr}(dst: felt*, n: felt) -> felt {
     alloc_locals;
     let (local ascii: felt*) = alloc();
@@ -21,7 +21,7 @@ func felt_to_ascii{range_check_ptr}(dst: felt*, n: felt) -> felt {
     let n = [ap - 2];
     let ascii_len = [ap - 1];
 
-    let (n, chunk) = unsigned_div_rem(n, 10);
+    let (n, chunk) = MathHelpers.unsigned_div_rem(n, 10);
     assert [ascii + ascii_len] = chunk + '0';
 
     tempvar range_check_ptr = range_check_ptr;
@@ -90,7 +90,7 @@ func felt_to_bytes20{range_check_ptr}(dst: felt*, value: felt) {
     alloc_locals;
     let (bytes20: felt*) = alloc();
     let (high, low) = split_felt(value);
-    let (_, high) = unsigned_div_rem(high, 2 ** 32);
+    let (_, high) = MathHelpers.unsigned_div_rem(high, 2 ** 32);
     split_int(low, 16, 256, 256, bytes20);
     split_int(high, 4, 256, 256, bytes20 + 16);
     reverse(dst, 20, bytes20);
@@ -109,7 +109,7 @@ func felt_to_bytes32{range_check_ptr}(dst: felt*, value: felt) {
 
 func uint256_to_bytes_little{range_check_ptr}(dst: felt*, n: Uint256) -> felt {
     alloc_locals;
-    let (local highest_byte, safe_high) = unsigned_div_rem(n.high, 2 ** 120);
+    let (local highest_byte, safe_high) = MathHelpers.unsigned_div_rem(n.high, 2 ** 120);
     local range_check_ptr = range_check_ptr;
 
     let value = n.low + safe_high * 2 ** 128;
@@ -162,7 +162,7 @@ func bytes_to_bytes8_little_endian{range_check_ptr}(dst: felt*, bytes_len: felt,
     }
 
     let (local pow256) = get_label_location(pow256_table);
-    let (full_u64_word_count, local last_input_num_bytes) = unsigned_div_rem(bytes_len, 8);
+    let (full_u64_word_count, local last_input_num_bytes) = MathHelpers.unsigned_div_rem(bytes_len, 8);
     local range_check_ptr = range_check_ptr;
 
     tempvar dst_index = 0;

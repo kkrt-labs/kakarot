@@ -16,7 +16,7 @@ from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.state import State
-from utils.utils import Helpers
+from utils.math_utils import MathHelpers
 from utils.uint256 import uint256_unsigned_div_rem, uint256_eq
 
 namespace MemoryOperations {
@@ -108,7 +108,7 @@ namespace MemoryOperations {
 
         // Any size upper than 2**128 will cause an OOG error, considering the maximum gas for a transaction.
         let upper_bytes_bound = size.low + 31;
-        let (words, _) = Helpers.unsigned_div_rem(upper_bytes_bound, 32);
+        let (words, _) =  MathHelpers.unsigned_div_rem(upper_bytes_bound, 32);
         let copy_gas_cost_low = words * Gas.COPY;
         tempvar copy_gas_cost_high = is_not_zero(size.high) * 2 ** 128;
 

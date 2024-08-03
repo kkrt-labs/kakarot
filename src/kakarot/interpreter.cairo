@@ -35,6 +35,7 @@ from kakarot.precompiles.precompiles_helpers import PrecompilesHelpers
 from kakarot.stack import Stack
 from kakarot.state import State
 from kakarot.gas import Gas
+from utils.math_utils import MathHelpers
 from utils.utils import Helpers
 from utils.array import count_not_zero
 from utils.uint256 import uint256_sub, uint256_add
@@ -818,7 +819,7 @@ namespace Interpreter {
         local code_address: model.Address*;
         if (is_deploy_tx != FALSE) {
             let (empty: felt*) = alloc();
-            let (init_code_words, _) = Helpers.unsigned_div_rem(bytecode_len + 31, 32);
+            let (init_code_words, _) =  MathHelpers.unsigned_div_rem(bytecode_len + 31, 32);
             let init_code_gas = Gas.INIT_CODE_WORD_COST * init_code_words;
             assert bytecode = tmp_calldata;
             assert calldata = empty;
@@ -941,7 +942,7 @@ namespace Interpreter {
         }
 
         let required_gas = gas_limit - evm.gas_left;
-        let (max_refund, _) = Helpers.unsigned_div_rem(required_gas, 5);
+        let (max_refund, _) =  MathHelpers.unsigned_div_rem(required_gas, 5);
         let is_max_refund_le_gas_refund = is_nn(evm.gas_refund - max_refund);
         tempvar gas_refund = is_max_refund_le_gas_refund * max_refund + (
             1 - is_max_refund_le_gas_refund

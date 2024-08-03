@@ -12,6 +12,7 @@ from starkware.cairo.common.bool import FALSE
 
 // Internal dependencies
 from kakarot.errors import Errors
+from utils.math_utils import MathHelpers
 from utils.utils import Helpers
 
 // @title Blake2f Precompile related functions.
@@ -356,7 +357,7 @@ namespace Blake2 {
         if (rounds == 0) {
             return (final_h=h);
         }
-        let (_, r) = Helpers.unsigned_div_rem(i, 10);
+        let (_, r) =  MathHelpers.unsigned_div_rem(i, 10);
         let (h_new) = blake_round(h, m, sigma + r * 16);
 
         return blake_rounds(rounds - 1, i + 1, h_new, m, sigma);
@@ -467,7 +468,7 @@ namespace Blake2 {
         alloc_locals;
 
         // a = (a + b + m) % 2**64
-        let (_, a) = Helpers.unsigned_div_rem(a + b + m, MASK_ONES_64);
+        let (_, a) =  MathHelpers.unsigned_div_rem(a + b + m, MASK_ONES_64);
 
         // d = right_rot((d ^ a), 32).
         assert bitwise_ptr[0].x = a;
@@ -481,7 +482,7 @@ namespace Blake2 {
         let bitwise_ptr = bitwise_ptr + 2 * BitwiseBuiltin.SIZE;
 
         // c = (c + d) % 2**64
-        let (_, c) = Helpers.unsigned_div_rem(c + d, MASK_ONES_64);
+        let (_, c) =  MathHelpers.unsigned_div_rem(c + d, MASK_ONES_64);
 
         // b = right_rot((b ^ c), 24).
         assert bitwise_ptr[0].x = b;
@@ -516,7 +517,7 @@ namespace Blake2 {
         alloc_locals;
 
         // a = (a + b + m) % 2**64
-        let (_, a) = Helpers.unsigned_div_rem(a + b + m, MASK_ONES_64);
+        let (_, a) =  MathHelpers.unsigned_div_rem(a + b + m, MASK_ONES_64);
 
         // d = right_rot((d ^ a), 16).
         assert bitwise_ptr[0].x = d;
@@ -530,7 +531,7 @@ namespace Blake2 {
         let bitwise_ptr = bitwise_ptr + 2 * BitwiseBuiltin.SIZE;
 
         // c = (c + d) % 2**64
-        let (_, c) = Helpers.unsigned_div_rem(c + d, MASK_ONES_64);
+        let (_, c) =  MathHelpers.unsigned_div_rem(c + d, MASK_ONES_64);
 
         // b = right_rot((b ^ c), 63).
         assert bitwise_ptr[0].x = b;

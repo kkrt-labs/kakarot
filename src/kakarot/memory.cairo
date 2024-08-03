@@ -6,6 +6,7 @@ from starkware.cairo.common.dict import DictAccess, dict_read, dict_write
 from starkware.cairo.common.uint256 import Uint256
 
 from kakarot.model import model
+from utils.math_utils import MathHelpers
 from utils.utils import Helpers
 
 // @title Memory related functions.
@@ -46,7 +47,7 @@ namespace Memory {
         let word_dict = memory.word_dict;
 
         // Check alignment of offset to 16B chunks.
-        let (chunk_index, offset_in_chunk) = Helpers.unsigned_div_rem(offset, 16);
+        let (chunk_index, offset_in_chunk) =  MathHelpers.unsigned_div_rem(offset, 16);
 
         if (offset_in_chunk == 0) {
             // Offset is aligned. This is the simplest and most efficient case,
@@ -68,16 +69,16 @@ namespace Memory {
         let mask_c = 2 ** 128 / mask;
 
         // Split the 2 input 16B chunks at offset_in_chunk.
-        let (el_hh, el_hl) = Helpers.unsigned_div_rem(element.high, mask_c);
-        let (el_lh, el_ll) = Helpers.unsigned_div_rem(element.low, mask_c);
+        let (el_hh, el_hl) =  MathHelpers.unsigned_div_rem(element.high, mask_c);
+        let (el_lh, el_ll) =  MathHelpers.unsigned_div_rem(element.low, mask_c);
 
         // Read the words at chunk_index, chunk_index + 2.
         let (w0) = dict_read{dict_ptr=word_dict}(chunk_index);
         let (w2) = dict_read{dict_ptr=word_dict}(chunk_index + 2);
 
         // Compute the new words.
-        let (w0_h, _) = Helpers.unsigned_div_rem(w0, mask);
-        let (_, w2_l) = Helpers.unsigned_div_rem(w2, mask);
+        let (w0_h, _) =  MathHelpers.unsigned_div_rem(w0, mask);
+        let (_, w2_l) =  MathHelpers.unsigned_div_rem(w2, mask);
         let new_w0 = w0_h * mask + el_hh;
         let new_w1 = el_hl * mask + el_lh;
         let new_w2 = el_ll * mask + w2_l;
@@ -107,8 +108,8 @@ namespace Memory {
         let word_dict = memory.word_dict;
 
         // Check alignment of offset to 16B chunks.
-        let (chunk_index_i, offset_in_chunk_i) = Helpers.unsigned_div_rem(offset, 16);
-        let (chunk_index_f, offset_in_chunk_f) = Helpers.unsigned_div_rem(offset + element_len - 1, 16);
+        let (chunk_index_i, offset_in_chunk_i) =  MathHelpers.unsigned_div_rem(offset, 16);
+        let (chunk_index_f, offset_in_chunk_f) =  MathHelpers.unsigned_div_rem(offset + element_len - 1, 16);
         tempvar offset_in_chunk_f = offset_in_chunk_f + 1;
         let mask_i = Helpers.pow256_rev(offset_in_chunk_i);
         let mask_f = Helpers.pow256_rev(offset_in_chunk_f);
@@ -117,8 +118,8 @@ namespace Memory {
         if (chunk_index_i == chunk_index_f) {
             let (w) = dict_read{dict_ptr=word_dict}(chunk_index_i);
 
-            let (w_h, w_l) = Helpers.div_rem(w, mask_i);
-            let (_, w_ll) = Helpers.div_rem(w_l, mask_f);
+            let (w_h, w_l) = MathHelpers.div_rem(w, mask_i);
+            let (_, w_ll) = MathHelpers.div_rem(w_l, mask_f);
             let x = Helpers.bytes_to_felt(element_len, element);
             let new_w = w_h * mask_i + x * mask_f + w_ll;
             dict_write{dict_ptr=word_dict}(chunk_index_i, new_w);
@@ -129,13 +130,13 @@ namespace Memory {
         // Otherwise.
         // Fill first word.
         let (w_i) = dict_read{dict_ptr=word_dict}(chunk_index_i);
-        let (w_i_h, _) = Helpers.div_rem(w_i, mask_i);
+        let (w_i_h, _) = MathHelpers.div_rem(w_i, mask_i);
         let x_i = Helpers.bytes_to_felt(16 - offset_in_chunk_i, element);
         dict_write{dict_ptr=word_dict}(chunk_index_i, w_i_h * mask_i + x_i);
 
         // Fill last word.
         let (w_f) = dict_read{dict_ptr=word_dict}(chunk_index_f);
-        let (_, w_f_l) = Helpers.div_rem(w_f, mask_f);
+        let (_, w_f_l) = MathHelpers.div_rem(w_f, mask_f);
         let x_f = Helpers.bytes_to_felt(
             offset_in_chunk_f, element + element_len - offset_in_chunk_f
         );
@@ -159,7 +160,7 @@ namespace Memory {
         let word_dict = memory.word_dict;
 
         // Check alignment of offset to 16B chunks.
-        let (chunk_index, offset_in_chunk) = Helpers.unsigned_div_rem(offset, 16);
+        let (chunk_index, offset_in_chunk) =  MathHelpers.unsigned_div_rem(offset, 16);
 
         if (offset_in_chunk == 0) {
             // Offset is aligned. This is the simplest and most efficient case,
@@ -186,9 +187,9 @@ namespace Memory {
         let (w2) = dict_read{dict_ptr=word_dict}(chunk_index + 2);
 
         // Compute element words.
-        let (_, w0_l) = Helpers.unsigned_div_rem(w0, mask);
-        let (w1_h, w1_l) = Helpers.unsigned_div_rem(w1, mask);
-        let (w2_h, _) = Helpers.unsigned_div_rem(w2, mask);
+        let (_, w0_l) =  MathHelpers.unsigned_div_rem(w0, mask);
+        let (w1_h, w1_l) =  MathHelpers.unsigned_div_rem(w1, mask);
+        let (w2_h, _) =  MathHelpers.unsigned_div_rem(w2, mask);
         let el_h = w0_l * mask_c + w1_h;
         let el_l = w1_l * mask_c + w2_h;
 
@@ -214,8 +215,8 @@ namespace Memory {
         let word_dict = memory.word_dict;
 
         // Check alignment of offset to 16B chunks.
-        let (chunk_index_i, offset_in_chunk_i) = Helpers.unsigned_div_rem(offset, 16);
-        let (chunk_index_f, offset_in_chunk_f) = Helpers.unsigned_div_rem(offset + element_len - 1, 16);
+        let (chunk_index_i, offset_in_chunk_i) =  MathHelpers.unsigned_div_rem(offset, 16);
+        let (chunk_index_f, offset_in_chunk_f) =  MathHelpers.unsigned_div_rem(offset + element_len - 1, 16);
         tempvar offset_in_chunk_f = offset_in_chunk_f + 1;
         let mask_i = Helpers.pow256_rev(offset_in_chunk_i);
         let mask_f = Helpers.pow256_rev(offset_in_chunk_f);
@@ -223,8 +224,8 @@ namespace Memory {
         // Special case: within the same word.
         if (chunk_index_i == chunk_index_f) {
             let (w) = dict_read{dict_ptr=word_dict}(chunk_index_i);
-            let (_, w_l) = Helpers.div_rem(w, mask_i);
-            let (w_lh, _) = Helpers.div_rem(w_l, mask_f);
+            let (_, w_l) = MathHelpers.div_rem(w, mask_i);
+            let (w_lh, _) = MathHelpers.div_rem(w_l, mask_f);
             Helpers.split_word(w_lh, element_len, element);
             tempvar memory = new model.Memory(memory.word_dict_start, word_dict, memory.words_len);
             return ();
@@ -233,12 +234,12 @@ namespace Memory {
         // Otherwise.
         // Get first word.
         let (w_i) = dict_read{dict_ptr=word_dict}(chunk_index_i);
-        let (_, w_i_l) = Helpers.div_rem(w_i, mask_i);
+        let (_, w_i_l) = MathHelpers.div_rem(w_i, mask_i);
         Helpers.split_word(w_i_l, 16 - offset_in_chunk_i, element);
 
         // Get last word.
         let (w_f) = dict_read{dict_ptr=word_dict}(chunk_index_f);
-        let (w_f_h, _) = Helpers.div_rem(w_f, mask_f);
+        let (w_f_h, _) = MathHelpers.div_rem(w_f, mask_f);
         Helpers.split_word(w_f_h, offset_in_chunk_f, element + element_len - offset_in_chunk_f);
 
         // Get blocks.

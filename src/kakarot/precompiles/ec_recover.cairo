@@ -15,6 +15,7 @@ from starkware.cairo.common.uint256 import Uint256, uint256_reverse_endian
 from starkware.cairo.common.cairo_secp.bigint import bigint_to_uint256
 from starkware.cairo.common.keccak_utils.keccak_utils import keccak_add_uint256s
 from starkware.cairo.common.memset import memset
+from utils.math_utils import MathHelpers
 from utils.utils import Helpers
 from utils.array import slice
 from kakarot.errors import Errors
@@ -120,7 +121,7 @@ namespace EcRecoverHelpers {
         );
 
         // The Ethereum address is the 20 least significant bytes of the keccak of the public key.
-        let (high_high, high_low) = Helpers.unsigned_div_rem(point_hash.high, 2 ** 32);
+        let (high_high, high_low) =  MathHelpers.unsigned_div_rem(point_hash.high, 2 ** 32);
         return (eth_address=point_hash.low + RC_BOUND * high_low);
     }
 }

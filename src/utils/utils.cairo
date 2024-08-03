@@ -2,7 +2,7 @@
 
 // StarkWare dependencies
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.math import assert_le, split_felt, assert_nn_le, unsigned_div_rem
+from starkware.cairo.common.math import split_felt, assert_nn_le
 from starkware.cairo.common.math_cmp import is_nn, is_not_zero
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.dict_access import DictAccess
@@ -18,6 +18,7 @@ from starkware.starknet.common.syscalls import get_tx_info
 
 from kakarot.model import model
 from utils.bytes import uint256_to_bytes32, felt_to_bytes32
+from utils.math_utils import MathHelpers
 
 // @title Helper Functions
 // @notice This file contains a selection of helper function that simplify tasks such as type conversion and bit manipulation
@@ -164,7 +165,7 @@ namespace Helpers {
     // @param length: a given bytes length
     // @return res: the minimal number of EVM words
     func minimum_word_count{range_check_ptr}(length: felt) -> (res: felt) {
-        let (quotient, remainder) = unsigned_div_rem(length + 31, 32);
+        let (quotient, remainder) = MathHelpers.unsigned_div_rem(length + 31, 32);
         return (res=quotient);
     }
 
@@ -378,34 +379,6 @@ namespace Helpers {
         }
         felt_to_bytes32(output, [input]);
         return felt_array_to_bytes32_array(input_len - 1, input + 1, output + 32);
-    }
-
-    // @notice Divides a 128-bit number with remainder.
-    // @dev This is almost identical to cairo.common.math.unsigned_dev_rem, but supports the case
-    // @dev of div == 2**128 as well.
-    // @param value: 128bit value to divide.
-    // @param div: divisor.
-    // @return: quotient and remainder.
-    func div_rem{range_check_ptr}(value, div) -> (q: felt, r: felt) {
-        if (div == 2 ** 128) {
-            return (0, value);
-        }
-
-        // Copied from unsigned_div_rem.
-        let r = [range_check_ptr];
-        let q = [range_check_ptr + 1];
-        let range_check_ptr = range_check_ptr + 2;
-        %{
-            from starkware.cairo.common.math_utils import assert_integer
-            assert_integer(ids.div)
-            assert 0 < ids.div <= PRIME // range_check_builtin.bound, \
-                f'div={hex(ids.div)} is out of the valid range.'
-            ids.q, ids.r = divmod(ids.value, ids.div)
-        %}
-        assert_le(r, div - 1);
-
-        assert value = q * div + r;
-        return (q, r);
     }
 
     // @notice Computes 256 ** (16 - i) for 0 <= i <= 16.
@@ -691,63 +664,63 @@ namespace Helpers {
     // @param value The 128-bit value.
     // @return The number of bytes used by the value.
     func bytes_used_128{range_check_ptr}(value: felt) -> felt {
-        let (q, r) = unsigned_div_rem(value, 256 ** 15);
+        let (q, r) = MathHelpers.unsigned_div_rem(value, 256 ** 15);
         if (q != 0) {
             return 16;
         }
-        let (q, r) = unsigned_div_rem(value, 256 ** 14);
+        let (q, r) = MathHelpers.unsigned_div_rem(value, 256 ** 14);
         if (q != 0) {
             return 15;
         }
-        let (q, r) = unsigned_div_rem(value, 256 ** 13);
+        let (q, r) = MathHelpers.unsigned_div_rem(value, 256 ** 13);
         if (q != 0) {
             return 14;
         }
-        let (q, r) = unsigned_div_rem(value, 256 ** 12);
+        let (q, r) = MathHelpers.unsigned_div_rem(value, 256 ** 12);
         if (q != 0) {
             return 13;
         }
-        let (q, r) = unsigned_div_rem(value, 256 ** 11);
+        let (q, r) = MathHelpers.unsigned_div_rem(value, 256 ** 11);
         if (q != 0) {
             return 12;
         }
-        let (q, r) = unsigned_div_rem(value, 256 ** 10);
+        let (q, r) = MathHelpers.unsigned_div_rem(value, 256 ** 10);
         if (q != 0) {
             return 11;
         }
-        let (q, r) = unsigned_div_rem(value, 256 ** 9);
+        let (q, r) = MathHelpers.unsigned_div_rem(value, 256 ** 9);
         if (q != 0) {
             return 10;
         }
-        let (q, r) = unsigned_div_rem(value, 256 ** 8);
+        let (q, r) = MathHelpers.unsigned_div_rem(value, 256 ** 8);
         if (q != 0) {
             return 9;
         }
-        let (q, r) = unsigned_div_rem(value, 256 ** 7);
+        let (q, r) = MathHelpers.unsigned_div_rem(value, 256 ** 7);
         if (q != 0) {
             return 8;
         }
-        let (q, r) = unsigned_div_rem(value, 256 ** 6);
+        let (q, r) = MathHelpers.unsigned_div_rem(value, 256 ** 6);
         if (q != 0) {
             return 7;
         }
-        let (q, r) = unsigned_div_rem(value, 256 ** 5);
+        let (q, r) = MathHelpers.unsigned_div_rem(value, 256 ** 5);
         if (q != 0) {
             return 6;
         }
-        let (q, r) = unsigned_div_rem(value, 256 ** 4);
+        let (q, r) = MathHelpers.unsigned_div_rem(value, 256 ** 4);
         if (q != 0) {
             return 5;
         }
-        let (q, r) = unsigned_div_rem(value, 256 ** 3);
+        let (q, r) = MathHelpers.unsigned_div_rem(value, 256 ** 3);
         if (q != 0) {
             return 4;
         }
-        let (q, r) = unsigned_div_rem(value, 256 ** 2);
+        let (q, r) = MathHelpers.unsigned_div_rem(value, 256 ** 2);
         if (q != 0) {
             return 3;
         }
-        let (q, r) = unsigned_div_rem(value, 256 ** 1);
+        let (q, r) = MathHelpers.unsigned_div_rem(value, 256 ** 1);
         if (q != 0) {
             return 2;
         }
@@ -773,7 +746,7 @@ namespace Helpers {
             return (n_len=n_len, n=n);
         }
 
-        let (_, r) = unsigned_div_rem(data_len, 4);
+        let (_, r) = MathHelpers.unsigned_div_rem(data_len, 4);
         with_attr error_message("data length must be multiple of 4") {
             assert r = 0;
         }
@@ -927,7 +900,7 @@ namespace Helpers {
 
         local bound = 256;
         local base = 256;
-        let (local chunk_counts, local remainder) = unsigned_div_rem(bytes_len, BYTES_PER_FELT);
+        let (local chunk_counts, local remainder) = MathHelpers.unsigned_div_rem(bytes_len, BYTES_PER_FELT);
 
         tempvar remaining_bytes = bytes_len;
         tempvar range_check_ptr = range_check_ptr;
@@ -1035,31 +1008,5 @@ namespace Helpers {
             assert tx_info.nonce = 0;
         }
         return ();
-    }
-
-
-    // Returns q and r such that:
-    //  0 <= q < rc_bound, 0 <= r < div and value = q * div + r.
-    //
-    // Assumption: 0 < div <= PRIME / rc_bound.
-    // Prover assumption: value / div < rc_bound.
-    //
-    // The value of div is restricted to make sure there is no overflow.
-    // q * div + r < (q + 1) * div <= rc_bound * (PRIME / rc_bound) = PRIME.
-    func unsigned_div_rem{range_check_ptr}(value, div) -> (q: felt, r: felt) {
-        let r = [range_check_ptr];
-        let q = [range_check_ptr + 1];
-        let range_check_ptr = range_check_ptr + 2;
-        %{
-            from starkware.cairo.common.math_utils import assert_integer
-            assert_integer(ids.div)
-            assert 0 < ids.div <= PRIME // range_check_builtin.bound, \
-                f'div={hex(ids.div)} is out of the valid range.'
-            ids.q, ids.r = divmod(ids.value, ids.div)
-        %}
-        assert_le(r, div - 1);
-
-        assert value = q * div + r;
-        return (q, r);
     }
 }

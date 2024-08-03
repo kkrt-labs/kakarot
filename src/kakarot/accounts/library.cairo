@@ -31,6 +31,7 @@ from utils.eth_transaction import EthTransaction
 from utils.uint256 import uint256_add
 from utils.bytes import bytes_to_bytes8_little_endian
 from utils.signature import Signature
+from utils.math_utils import MathHelpers
 from utils.utils import Helpers
 
 // @dev: should always be zero for EOAs
@@ -430,7 +431,7 @@ namespace AccountContract {
         let (valid_jumpdests_start, valid_jumpdests) = Helpers.initialize_jumpdests(
             bytecode_len, bytecode
         );
-        let (jumpdests_len, _) = Helpers.unsigned_div_rem(
+        let (jumpdests_len, _) =  MathHelpers.unsigned_div_rem(
             valid_jumpdests - valid_jumpdests_start, DictAccess.SIZE
         );
         Internals.write_jumpdests(
@@ -582,7 +583,7 @@ namespace Internals {
             return (bytecode=bytecode);
         }
 
-        let (local chunk_counts, local remainder) = Helpers.unsigned_div_rem(bytecode_len, BYTES_PER_FELT);
+        let (local chunk_counts, local remainder) =  MathHelpers.unsigned_div_rem(bytecode_len, BYTES_PER_FELT);
 
         tempvar remaining_bytes = bytecode_len;
         tempvar range_check_ptr = range_check_ptr;
