@@ -73,7 +73,8 @@ namespace Gas {
         return memory_cost;
     }
 
-    // @notice Compute the expansion cost of max_offset for the memory
+    // @notice Compute the expansion cost of max_offset for the memory.
+    // @dev Assumption max_offset < 2**133 necessary for unsigned_div_rem usage.
     // @param words_len The current length of the memory.
     // @param max_offset The target max_offset to be applied to the given memory.
     // @return cost The expansion gas cost: 0 if no expansion is triggered, and the new size of the memory
@@ -81,7 +82,9 @@ namespace Gas {
         words_len: felt, max_offset: felt
     ) -> model.MemoryExpansion {
         alloc_locals;
-        let memory_expansion = is_nn(max_offset - (words_len * 32 - 1));
+        let is_memory_length_not_zero = is_not_zero(words_len);
+        let current_memory_length = (words_len * 32 - 1) * is_memory_length_not_zero;
+        let memory_expansion = is_le_felt(current_memory_length, max_offset);
         if (memory_expansion == FALSE) {
             let expansion = model.MemoryExpansion(cost=0, new_words_len=words_len);
             return expansion;
@@ -111,14 +114,14 @@ namespace Gas {
             return expansion;
         }
 
-        if (offset.high + size.high != 0) {
-            // Hardcoded value of cost(2**128) and size of 2**128 bytes = 2**123 words of 32 bytes
-            // This offset would produce an OOG error in any case
-            let expansion = model.MemoryExpansion(cost=MEMORY_COST_U128, new_words_len=2 ** 123);
-            return expansion;
+        let is_low_part_overflowing = is_le_felt(2 ** 128, offset.low + size.low);
+        if (offset.high == 0 and size.high == 0 and is_low_part_overflowing == 0) {
+            return calculate_gas_extend_memory(words_len, offset.low + size.low);
         }
-
-        return calculate_gas_extend_memory(words_len, offset.low + size.low);
+        // Hardcoded value of cost(2**128) and size of 2**128 bytes = 2**123 words of 32 bytes
+        // This offset would produce an OOG error in any case
+        let expansion = model.MemoryExpansion(cost=MEMORY_COST_U128, new_words_len=2 ** 123);
+        return expansion;
     }
 
     // @notice Given two memory chunks, compute the maximum expansion cost

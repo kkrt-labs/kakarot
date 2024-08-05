@@ -46,14 +46,7 @@ class TestEcRecover:
             *s,
         ]
 
-        padded_address, public_key = ecrecover(input_data)
-
-        # Prepare the output of the keccak syscall
-        keccak_result_bytes = keccak256(public_key)
-        int.from_bytes(
-            keccak_result_bytes,
-            "big",
-        )  # output of cairo_keccak is in little endian, but our library reverses it back to big endian
+        padded_address, _ = ecrecover(input_data)
 
         [output] = cairo_run("test__ec_recover", input=input_data)
 
