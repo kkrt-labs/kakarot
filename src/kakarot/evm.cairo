@@ -141,11 +141,13 @@ namespace EVM {
 
     // @notice Subtracts `amount` from `evm.gas_left`.
     // @dev The gas left is decremented by the given amount.
+    // Use code adapted from is_nn.
     // @param self The pointer to the current execution context.
     // @param amount The amount of gas the current operation requires.
     // @return EVM The pointer to the updated execution context.
     func charge_gas{range_check_ptr}(self: model.EVM*, amount: felt) -> model.EVM* {
-        tempvar a = self.gas_left - amount;
+        // This is equivalent to is_nn(self.gas_left - amount)
+        tempvar a = self.gas_left - amount;  // a is necessary for using the whitelisted hint
         %{ memory[ap] = 0 if 0 <= (ids.a % PRIME) < range_check_builtin.bound else 1 %}
         jmp out_of_range if [ap] != 0, ap++;
         [range_check_ptr] = a;
