@@ -293,7 +293,7 @@ namespace MemoryOperations {
         let key = popped;  // Uint256*
         let new_value = popped + Uint256.SIZE;  // Uint256*
 
-        let is_enough_gasleft = is_nn(evm.gas_left - Gas.CALL_STIPEND + 1);
+        let is_enough_gasleft = is_nn(evm.gas_left - (Gas.CALL_STIPEND + 1));
         if (is_enough_gasleft == FALSE) {
             let (revert_reason_len, revert_reason) = Errors.outOfGas(
                 evm.gas_left, Gas.CALL_STIPEND
