@@ -80,7 +80,7 @@ namespace Starknet {
             contract_address_salt=evm_address,
             constructor_calldata_size=constructor_calldata_len,
             constructor_calldata=constructor_calldata,
-            deploy_from_zero=TRUE,
+            deploy_from_zero=FALSE,
         );
         return (account_address=starknet_address);
     }
