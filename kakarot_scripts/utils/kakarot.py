@@ -166,6 +166,34 @@ async def get_contract(
     return contract
 
 
+def get_contract_sync(
+    contract_app: str,
+    contract_name: str,
+    address=None,
+    caller_eoa: Optional[Account] = None,
+) -> Web3Contract:
+
+    artifacts = get_solidity_artifacts(contract_app, contract_name)
+
+    contract = cast(
+        Web3Contract,
+        WEB3.eth.contract(
+            address=to_checksum_address(address) if address is not None else address,
+            abi=artifacts["abi"],
+            bytecode=artifacts["bytecode"]["object"],
+        ),
+    )
+    contract.bytecode_runtime = HexBytes(artifacts["bytecode_runtime"]["object"])
+
+    try:
+        for fun in contract.functions:
+            setattr(contract, fun, MethodType(_wrap_kakarot(fun, caller_eoa), contract))
+    except NoABIFunctionsFound:
+        pass
+    contract.events.parse_events = MethodType(_parse_events, contract.events)
+    return contract
+
+
 @alru_cache()
 async def get_or_deploy_library(library_app: str, library_name: str) -> str:
     """
