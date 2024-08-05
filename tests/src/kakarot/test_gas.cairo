@@ -1,4 +1,5 @@
 %builtins range_check
+from starkware.cairo.common.alloc import alloc
 
 from kakarot.gas import Gas
 from starkware.cairo.common.uint256 import Uint256
@@ -48,6 +49,24 @@ func test__max_memory_expansion_cost{range_check_ptr}() -> felt {
         words_len, &offset_1, &size_1, &offset_2, &size_2
     );
 
+    return memory_expansion.cost;
+}
+
+func test__memory_expansion_cost_saturated{range_check_ptr}() -> felt {
+    alloc_locals;
+    local words_len: felt;
+    let (offset) = alloc();
+    let (size) = alloc();
+    %{
+        from tests.utils.uint256 import int_to_uint256
+        ids.words_len = program_input["words_len"]
+        segments.write_arg(ids.offset, int_to_uint256(program_input["offset"]))
+        segments.write_arg(ids.size, int_to_uint256(program_input["size"]))
+    %}
+
+    let memory_expansion = Gas.memory_expansion_cost_saturated(
+        words_len, [cast(offset, Uint256*)], [cast(size, Uint256*)]
+    );
     return memory_expansion.cost;
 }
 
