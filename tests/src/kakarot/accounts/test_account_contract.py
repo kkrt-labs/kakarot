@@ -7,7 +7,7 @@ import rlp
 from eth_account.account import Account
 from eth_utils import keccak
 from hypothesis import assume, given, settings
-from hypothesis.strategies import binary, composite, integers
+from hypothesis.strategies import binary, composite, integers, sampled_from
 from starkware.cairo.lang.cairo_constants import DEFAULT_PRIME
 from starkware.starknet.public.abi import (
     get_selector_from_name,
@@ -364,6 +364,37 @@ class TestAccountContract:
                     "test__execute_from_outside",
                     tx_data=[1],
                     signature=list(range(5)),
+                    chain_id=CHAIN_ID,
+                )
+
+        @composite
+        def draw_signature_not_in_range(draw):
+            # create 4 signature elements < 2**128 and one > 2 ** 128
+            signature_elements = [
+                draw(integers(min_value=0, max_value=2**128 - 1)) for _ in range(4)
+            ]
+            signature_elements.append(
+                draw(integers(min_value=2**128, max_value=DEFAULT_PRIME - 1))
+            )
+
+            # Draw randomly signature elements
+            # Remove element that was drawn to avoid drawing twice the same one
+            signature_not_in_range = []
+            for _ in range(5):
+                element = draw(sampled_from(signature_elements))
+                signature_not_in_range.append(element)
+                signature_elements.remove(element)
+            return signature_not_in_range
+
+        @given(draw_signature_not_in_range())
+        def test_should_raise_with_signature_values_not_in_range(
+            self, cairo_run, draw_signature_not_in_range
+        ):
+            with cairo_error(message="Signatures values not in range"):
+                cairo_run(
+                    "test__execute_from_outside",
+                    tx_data=[1],
+                    signature=draw_signature_not_in_range,
                     chain_id=CHAIN_ID,
                 )
 
