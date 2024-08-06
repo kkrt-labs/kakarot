@@ -155,6 +155,16 @@ namespace AccountContract {
         with_attr error_message("Incorrect signature length") {
             assert signature_len = 5;
         }
+
+        with_attr error_message("Signatures values not in range") {
+            assert [range_check_ptr] = signature[0];
+            assert [range_check_ptr + 1] = signature[1];
+            assert [range_check_ptr + 2] = signature[2];
+            assert [range_check_ptr + 3] = signature[3];
+            assert [range_check_ptr + 4] = signature[4];
+            let range_check_ptr = range_check_ptr + 5;
+        }
+
         let r = Uint256(signature[0], signature[1]);
         let s = Uint256(signature[2], signature[3]);
         let v = signature[4];
