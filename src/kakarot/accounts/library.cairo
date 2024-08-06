@@ -9,6 +9,7 @@ from starkware.cairo.common.math import unsigned_div_rem, split_int, split_felt
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256, uint256_not, uint256_le
 from starkware.cairo.common.math_cmp import is_nn, is_le_felt
+from starkware.cairo.common.math import assert_le_felt
 from starkware.starknet.common.syscalls import (
     StorageRead,
     StorageWrite,
@@ -235,14 +236,12 @@ namespace AccountContract {
         let (contract_address) = get_contract_address();
         let (balance) = IERC20.balanceOf(native_token_address, contract_address);
 
-        let is_gas_limit_too_high = is_le_felt(2 ** 64, tx.gas_limit);
         with_attr error_message("Gas limit too high") {
-            assert is_gas_limit_too_high = FALSE;
+            assert_le_felt(tx.gas_limit, 2 ** 64 - 1);
         }
 
-        let is_max_fee_per_gas_too_high = is_le_felt(2 ** 128, tx.max_fee_per_gas);
         with_attr error_message("Max fee per gas too high") {
-            assert is_max_fee_per_gas_too_high = FALSE;
+            assert_le_felt(tx.max_fee_per_gas, 2 ** 128 - 1);
         }
 
         let max_gas_fee = tx.gas_limit * tx.max_fee_per_gas;
@@ -266,11 +265,8 @@ namespace AccountContract {
             assert enough_fee = TRUE;
         }
 
-        let max_fee_greater_priority_fee = is_le_felt(
-            tx.max_priority_fee_per_gas, tx.max_fee_per_gas
-        );
         with_attr error_message("Max priority fee greater than max fee per gas") {
-            assert max_fee_greater_priority_fee = TRUE;
+            assert_le_felt(tx.max_priority_fee_per_gas, tx.max_fee_per_gas);
         }
 
         let possible_priority_fee = tx.max_fee_per_gas - block_base_fee;
