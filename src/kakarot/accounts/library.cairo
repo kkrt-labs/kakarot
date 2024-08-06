@@ -241,7 +241,8 @@ namespace AccountContract {
         }
 
         with_attr error_message("Max fee per gas too high") {
-            assert_le_felt(tx.max_fee_per_gas, 2 ** 128 - 1);
+            assert [range_check_ptr] = tx.max_fee_per_gas;
+            let range_check_ptr = range_check_ptr + 1;
         }
 
         let max_gas_fee = tx.gas_limit * tx.max_fee_per_gas;
