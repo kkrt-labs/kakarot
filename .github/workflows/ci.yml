@@ -177,7 +177,8 @@ jobs:
       - name: Checkout ef-tests
         uses: actions/checkout@v4
         with:
-          repository: kkrt-labs/ef-tests
+          repository: obatirou/ef-tests
+          ref: deploy-from-zero-false
       - name: Checkout local skip file
         uses: actions/checkout@v4
         with:
