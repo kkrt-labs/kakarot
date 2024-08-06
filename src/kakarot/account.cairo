@@ -521,7 +521,6 @@ namespace Account {
     ) -> felt {
         alloc_locals;
         let (kakarot_address: felt) = get_contract_address();
-        let deployer_address = 0;  // deploy_from_zero == TRUE
         let (
             uninitialized_account_class_hash: felt
         ) = Kakarot_uninitialized_account_class_hash.read();
@@ -534,7 +533,7 @@ namespace Account {
         );
         // hash deployer
         let (hash_state_ptr) = hash_update_single{hash_ptr=pedersen_ptr}(
-            hash_state_ptr=hash_state_ptr, item=deployer_address
+            hash_state_ptr=hash_state_ptr, item=kakarot_address
         );
         // hash salt
         let (hash_state_ptr) = hash_update_single{hash_ptr=pedersen_ptr}(
