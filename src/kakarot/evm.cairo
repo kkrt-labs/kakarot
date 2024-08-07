@@ -142,6 +142,7 @@ namespace EVM {
     // @notice Subtracts `amount` from `evm.gas_left`.
     // @dev The gas left is decremented by the given amount.
     // Use code adapted from is_nn.
+    // Assumption: gas_left < 2 ** 128
     // @param self The pointer to the current execution context.
     // @param amount The amount of gas the current operation requires.
     // @return EVM The pointer to the updated execution context.
