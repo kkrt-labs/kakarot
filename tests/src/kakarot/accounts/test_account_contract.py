@@ -403,11 +403,7 @@ class TestAccountContract:
             private_key = generate_random_private_key()
             address = int(private_key.public_key.to_checksum_address(), 16)
             signed = Account.sign_transaction(transaction, private_key)
-            signature = [
-                *int_to_uint256(signed.r),
-                *int_to_uint256(signed.s),
-                signed.v,
-            ]
+            signature = [*int_to_uint256(signed.r), *int_to_uint256(signed.s), signed.v]
 
             with (
                 SyscallHandler.patch("Account_evm_address", address),
@@ -439,11 +435,7 @@ class TestAccountContract:
             private_key = generate_random_private_key()
             address = int(private_key.public_key.to_checksum_address(), 16)
             signed = Account.sign_transaction(transaction, private_key)
-            signature = [
-                *int_to_uint256(signed.r),
-                *int_to_uint256(signed.s),
-                signed.v,
-            ]
+            signature = [*int_to_uint256(signed.r), *int_to_uint256(signed.s), signed.v]
 
             with (
                 SyscallHandler.patch("Account_evm_address", address),
@@ -464,11 +456,7 @@ class TestAccountContract:
             private_key = generate_random_private_key()
             address = int(private_key.public_key.to_checksum_address(), 16)
             signed = Account.sign_transaction(transaction, private_key)
-            signature = [
-                *int_to_uint256(signed.r),
-                *int_to_uint256(signed.s),
-                signed.v,
-            ]
+            signature = [*int_to_uint256(signed.r), *int_to_uint256(signed.s), signed.v]
             tx_data = list(rlp_encode_signed_data(transaction))
 
             with (
@@ -489,11 +477,7 @@ class TestAccountContract:
             private_key = generate_random_private_key()
             address = int(private_key.public_key.to_checksum_address(), 16)
             signed = Account.sign_transaction(transaction, private_key)
-            signature = [
-                *int_to_uint256(signed.r),
-                *int_to_uint256(signed.s),
-                signed.v,
-            ]
+            signature = [*int_to_uint256(signed.r), *int_to_uint256(signed.s), signed.v]
             tx_data = list(rlp_encode_signed_data(transaction))
 
             with (
@@ -518,11 +502,7 @@ class TestAccountContract:
             private_key = generate_random_private_key()
             address = int(private_key.public_key.to_checksum_address(), 16)
             signed = Account.sign_transaction(transaction, private_key)
-            signature = [
-                *int_to_uint256(signed.r),
-                *int_to_uint256(signed.s),
-                signed.v,
-            ]
+            signature = [*int_to_uint256(signed.r), *int_to_uint256(signed.s), signed.v]
             tx_data = list(rlp_encode_signed_data(transaction))
 
             with (
@@ -552,11 +532,7 @@ class TestAccountContract:
             private_key = generate_random_private_key()
             address = int(private_key.public_key.to_checksum_address(), 16)
             signed = Account.sign_transaction(transaction, private_key)
-            signature = [
-                *int_to_uint256(signed.r),
-                *int_to_uint256(signed.s),
-                signed.v,
-            ]
+            signature = [*int_to_uint256(signed.r), *int_to_uint256(signed.s), signed.v]
             tx_data = list(rlp_encode_signed_data(transaction))
 
             with (
@@ -593,11 +569,7 @@ class TestAccountContract:
             private_key = generate_random_private_key()
             address = int(private_key.public_key.to_checksum_address(), 16)
             signed = Account.sign_transaction(transaction, private_key)
-            signature = [
-                *int_to_uint256(signed.r),
-                *int_to_uint256(signed.s),
-                signed.v,
-            ]
+            signature = [*int_to_uint256(signed.r), *int_to_uint256(signed.s), signed.v]
 
             with (
                 SyscallHandler.patch("Account_evm_address", address),
@@ -636,11 +608,7 @@ class TestAccountContract:
             private_key = generate_random_private_key()
             address = int(private_key.public_key.to_checksum_address(), 16)
             signed = Account.sign_transaction(transaction, private_key)
-            signature = [
-                *int_to_uint256(signed.r),
-                *int_to_uint256(signed.s),
-                signed.v,
-            ]
+            signature = [*int_to_uint256(signed.r), *int_to_uint256(signed.s), signed.v]
 
             with (
                 SyscallHandler.patch("Account_evm_address", address),
@@ -689,11 +657,7 @@ class TestAccountContract:
             private_key = generate_random_private_key()
             address = int(private_key.public_key.to_checksum_address(), 16)
             signed = Account.sign_transaction(transaction, private_key)
-            signature = [
-                *int_to_uint256(signed.r),
-                *int_to_uint256(signed.s),
-                signed.v,
-            ]
+            signature = [*int_to_uint256(signed.r), *int_to_uint256(signed.s), signed.v]
 
             with (
                 SyscallHandler.patch("Account_evm_address", address),
@@ -780,11 +744,7 @@ class TestAccountContract:
             private_key = generate_random_private_key()
             address = int(private_key.public_key.to_checksum_address(), 16)
             signed = Account.sign_transaction(transaction, private_key)
-            signature = [
-                *int_to_uint256(signed.r),
-                *int_to_uint256(signed.s),
-                signed.v,
-            ]
+            signature = [*int_to_uint256(signed.r), *int_to_uint256(signed.s), signed.v]
             tx_data = list(rlp_encode_signed_data(transaction))
 
             with (
@@ -833,11 +793,7 @@ class TestAccountContract:
             private_key = generate_random_private_key()
             address = int(private_key.public_key.to_checksum_address(), 16)
             signed = Account.sign_transaction(transaction, private_key)
-            signature = [
-                *int_to_uint256(signed.r),
-                *int_to_uint256(signed.s),
-                signed.v,
-            ]
+            signature = [*int_to_uint256(signed.r), *int_to_uint256(signed.s), signed.v]
 
             with (
                 SyscallHandler.patch("Account_evm_address", address),
