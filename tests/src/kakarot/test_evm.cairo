@@ -59,3 +59,16 @@ func test__is_valid_jumpdest{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ran
 
     return result;
 }
+
+func test__charge_gas{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    felt, felt
+) {
+    alloc_locals;
+    local amount;
+
+    %{ ids.amount = program_input["amount"] %}
+    let evm = TestHelpers.init_evm();
+    let result = EVM.charge_gas(evm, amount);
+
+    return (result.gas_left, result.stopped);
+}
