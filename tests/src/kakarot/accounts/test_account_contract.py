@@ -7,7 +7,7 @@ import rlp
 from eth_account.account import Account
 from eth_utils import keccak
 from hypothesis import assume, given, settings
-from hypothesis.strategies import binary, composite, integers, permutations
+from hypothesis.strategies import binary, composite, integers, lists, permutations
 from starkware.cairo.lang.cairo_constants import DEFAULT_PRIME
 from starkware.starknet.public.abi import (
     get_selector_from_name,
@@ -370,9 +370,11 @@ class TestAccountContract:
         @composite
         def draw_signature_not_in_range(draw):
             # create signature with 4 elements < 2 ** 128 and one > 2 ** 128
-            signature = [
-                draw(integers(min_value=0, max_value=2**128 - 1)) for _ in range(4)
-            ]
+            signature = draw(
+                lists(
+                    integers(min_value=0, max_value=2**128 - 1), min_size=4, max_size=4
+                )
+            )
             signature.append(
                 draw(integers(min_value=2**128, max_value=DEFAULT_PRIME - 1))
             )
