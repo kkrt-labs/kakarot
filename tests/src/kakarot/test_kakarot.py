@@ -26,7 +26,7 @@ EVM_ADDRESS = 0x42069
 
 @pytest.fixture(scope="module")
 def get_contract(cairo_run):
-    from kakarot_scripts.utils.kakarot import get_contract as get_solidity_contract
+    from kakarot_scripts.utils.kakarot import get_contract_sync as get_solidity_contract
 
     def _factory(contract_app, contract_name):
         def _wrap_cairo_run(fun):
@@ -293,15 +293,10 @@ class TestKakarot:
     class TestEthCall:
         @pytest.mark.slow
         @pytest.mark.SolmateERC20
-        @SyscallHandler.patch(
-            "IAccount.is_valid_jumpdest",
-            lambda addr, data: [1],
-        )
-        @SyscallHandler.patch(
-            "IAccount.get_code_hash", lambda sn_addr, data: [0x1, 0x1]
-        )
-        async def test_erc20_transfer(self, get_contract):
-            erc20 = await get_contract("Solmate", "ERC20")
+        @SyscallHandler.patch("IAccount.is_valid_jumpdest", lambda addr, data: [1])
+        @SyscallHandler.patch("IAccount.get_code_hash", lambda addr, data: [0x1, 0x1])
+        def test_erc20_transfer(self, get_contract):
+            erc20 = get_contract("Solmate", "ERC20")
             amount = int(1e18)
             initial_state = {
                 CONTRACT_ADDRESS: {
@@ -320,15 +315,10 @@ class TestKakarot:
 
         @pytest.mark.slow
         @pytest.mark.SolmateERC721
-        @SyscallHandler.patch(
-            "IAccount.is_valid_jumpdest",
-            lambda addr, data: [1],
-        )
-        @SyscallHandler.patch(
-            "IAccount.get_code_hash", lambda sn_addr, data: [0x1, 0x1]
-        )
-        async def test_erc721_transfer(self, get_contract):
-            erc721 = await get_contract("Solmate", "ERC721")
+        @SyscallHandler.patch("IAccount.is_valid_jumpdest", lambda addr, data: [1])
+        @SyscallHandler.patch("IAccount.get_code_hash", lambda addr, data: [0x1, 0x1])
+        def test_erc721_transfer(self, get_contract):
+            erc721 = get_contract("Solmate", "ERC721")
             token_id = 1337
             initial_state = {
                 CONTRACT_ADDRESS: {
@@ -356,7 +346,7 @@ class TestKakarot:
             "ef_blockchain_test",
             EF_TESTS_PARSED_DIR.glob("*walletConstruction_d0g1v0_Cancun*.json"),
         )
-        async def test_case(
+        def test_case(
             self,
             cairo_run,
             ef_blockchain_test,
@@ -394,7 +384,7 @@ class TestKakarot:
             assert gas_used == int(block["blockHeader"]["gasUsed"], 16)
 
         @pytest.mark.skip
-        async def test_failing_contract(self, cairo_run):
+        def test_failing_contract(self, cairo_run):
             initial_state = {
                 CONTRACT_ADDRESS: {
                     "code": bytes.fromhex("ADDC0DE1"),
@@ -418,10 +408,11 @@ class TestKakarot:
     class TestLoopProfiling:
         @pytest.mark.slow
         @pytest.mark.NoCI
-        @pytest.mark.parametrize("steps", [10, 50, 100, 200])
         @SyscallHandler.patch("IAccount.is_valid_jumpdest", lambda addr, data: [1])
-        async def test_loop_profiling(self, get_contract, steps):
-            plain_opcodes = await get_contract("PlainOpcodes", "PlainOpcodes")
+        @SyscallHandler.patch("IAccount.get_code_hash", lambda addr, data: [0x1, 0x1])
+        @pytest.mark.parametrize("steps", [10, 50, 100, 200])
+        def test_loop_profiling(self, get_contract, steps):
+            plain_opcodes = get_contract("PlainOpcodes", "PlainOpcodes")
             initial_state = {
                 CONTRACT_ADDRESS: {
                     "code": list(plain_opcodes.bytecode_runtime),
