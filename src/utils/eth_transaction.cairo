@@ -28,30 +28,41 @@ namespace EthTransaction {
     ) -> model.EthTransaction* {
         // see https://github.com/ethereum/EIPs/blob/master/EIPS/eip-155.md
         alloc_locals;
-        let (items: RLP.Item*) = alloc();
-        RLP.decode(items, tx_data_len, tx_data);
+        let (tx_items: RLP.Item*) = alloc();
+        RLP.decode(tx_items, tx_data_len, tx_data);
 
-        // the tx is a list of fields, hence first level RLP decoding
-        // is a single item, which is indeed the sought list
-        assert [items].is_list = TRUE;
-        let sub_items_len = [items].data_len;
-        let sub_items = cast([items].data, RLP.Item*);
+        assert [tx_items].is_list = TRUE;
+        let items_len = [tx_items].data_len;
+        let items = cast([tx_items].data, RLP.Item*);
 
-        let nonce = Helpers.bytes_to_felt(sub_items[0].data_len, sub_items[0].data);
-        let gas_price = Helpers.bytes_to_felt(sub_items[1].data_len, sub_items[1].data);
-        let gas_limit = Helpers.bytes_to_felt(sub_items[2].data_len, sub_items[2].data);
+        // Pre eip-155 txs have 6 fields, post eip-155 txs have 9 fields
+        // We check for both cases here, and do the remaining ones in the next if block
+        assert items[0].is_list = FALSE;
+        assert items[1].is_list = FALSE;
+        assert items[2].is_list = FALSE;
+        assert items[3].is_list = FALSE;
+        assert items[4].is_list = FALSE;
+        assert items[5].is_list = FALSE;
+
+        let nonce = Helpers.bytes_to_felt(items[0].data_len, items[0].data);
+        let gas_price = Helpers.bytes_to_felt(items[1].data_len, items[1].data);
+        let gas_limit = Helpers.bytes_to_felt(items[2].data_len, items[2].data);
         let destination = Helpers.try_parse_destination_from_bytes(
-            sub_items[3].data_len, sub_items[3].data
+            items[3].data_len, items[3].data
         );
-        let amount = Helpers.bytes_to_uint256(sub_items[4].data_len, sub_items[4].data);
-        let payload_len = sub_items[5].data_len;
-        let payload = sub_items[5].data;
+        let amount = Helpers.bytes_to_uint256(items[4].data_len, items[4].data);
+        let payload_len = items[5].data_len;
+        let payload = items[5].data;
 
         // pre eip-155 txs have 6 fields, post eip-155 txs have 9 fields
-        if (sub_items_len == 6) {
+        if (items_len == 6) {
             tempvar chain_id = 0;
         } else {
-            let chain_id = Helpers.bytes_to_felt(sub_items[6].data_len, sub_items[6].data);
+            assert items_len = 9;
+            assert items[6].is_list = FALSE;
+            assert items[7].is_list = FALSE;
+            assert items[8].is_list = FALSE;
+            let chain_id = Helpers.bytes_to_felt(items[6].data_len, items[6].data);
         }
         let chain_id = [ap - 1];
 
@@ -80,25 +91,37 @@ namespace EthTransaction {
     ) -> model.EthTransaction* {
         alloc_locals;
 
-        let (items: RLP.Item*) = alloc();
-        RLP.decode(items, tx_data_len - 1, tx_data + 1);
-        let sub_items_len = [items].data_len;
-        let sub_items = cast([items].data, RLP.Item*);
+        let (tx_items: RLP.Item*) = alloc();
+        RLP.decode(tx_items, tx_data_len - 1, tx_data + 1);
 
-        let chain_id = Helpers.bytes_to_felt(sub_items[0].data_len, sub_items[0].data);
-        let nonce = Helpers.bytes_to_felt(sub_items[1].data_len, sub_items[1].data);
-        let gas_price = Helpers.bytes_to_felt(sub_items[2].data_len, sub_items[2].data);
-        let gas_limit = Helpers.bytes_to_felt(sub_items[3].data_len, sub_items[3].data);
+        assert [tx_items].is_list = TRUE;
+        let items_len = [tx_items].data_len;
+        let items = cast([tx_items].data, RLP.Item*);
+
+        assert items_len = 8;
+        assert items[0].is_list = FALSE;
+        assert items[1].is_list = FALSE;
+        assert items[2].is_list = FALSE;
+        assert items[3].is_list = FALSE;
+        assert items[4].is_list = FALSE;
+        assert items[5].is_list = FALSE;
+        assert items[6].is_list = FALSE;
+        assert items[7].is_list = TRUE;
+
+        let chain_id = Helpers.bytes_to_felt(items[0].data_len, items[0].data);
+        let nonce = Helpers.bytes_to_felt(items[1].data_len, items[1].data);
+        let gas_price = Helpers.bytes_to_felt(items[2].data_len, items[2].data);
+        let gas_limit = Helpers.bytes_to_felt(items[3].data_len, items[3].data);
         let destination = Helpers.try_parse_destination_from_bytes(
-            sub_items[4].data_len, sub_items[4].data
+            items[4].data_len, items[4].data
         );
-        let amount = Helpers.bytes_to_uint256(sub_items[5].data_len, sub_items[5].data);
-        let payload_len = sub_items[6].data_len;
-        let payload = sub_items[6].data;
+        let amount = Helpers.bytes_to_uint256(items[5].data_len, items[5].data);
+        let payload_len = items[6].data_len;
+        let payload = items[6].data;
 
         let (access_list: felt*) = alloc();
         let access_list_len = parse_access_list(
-            access_list, sub_items[7].data_len, cast(sub_items[7].data, RLP.Item*)
+            access_list, items[7].data_len, cast(items[7].data, RLP.Item*)
         );
         tempvar tx = new model.EthTransaction(
             signer_nonce=nonce,
@@ -125,30 +148,38 @@ namespace EthTransaction {
     ) -> model.EthTransaction* {
         alloc_locals;
 
-        let (items: RLP.Item*) = alloc();
-        RLP.decode(items, tx_data_len - 1, tx_data + 1);
-        // the tx is a list of fields, hence first level RLP decoding
-        // is a single item, which is indeed the sought list
-        assert [items].is_list = TRUE;
-        let sub_items_len = [items].data_len;
-        let sub_items = cast([items].data, RLP.Item*);
+        let (tx_items: RLP.Item*) = alloc();
+        RLP.decode(tx_items, tx_data_len - 1, tx_data + 1);
 
-        let chain_id = Helpers.bytes_to_felt(sub_items[0].data_len, sub_items[0].data);
-        let nonce = Helpers.bytes_to_felt(sub_items[1].data_len, sub_items[1].data);
-        let max_priority_fee_per_gas = Helpers.bytes_to_felt(
-            sub_items[2].data_len, sub_items[2].data
-        );
-        let max_fee_per_gas = Helpers.bytes_to_felt(sub_items[3].data_len, sub_items[3].data);
-        let gas_limit = Helpers.bytes_to_felt(sub_items[4].data_len, sub_items[4].data);
+        assert [tx_items].is_list = TRUE;
+        let items_len = [tx_items].data_len;
+        let items = cast([tx_items].data, RLP.Item*);
+
+        assert items_len = 9;
+        assert items[0].is_list = FALSE;
+        assert items[1].is_list = FALSE;
+        assert items[2].is_list = FALSE;
+        assert items[3].is_list = FALSE;
+        assert items[4].is_list = FALSE;
+        assert items[5].is_list = FALSE;
+        assert items[6].is_list = FALSE;
+        assert items[7].is_list = FALSE;
+        assert items[8].is_list = TRUE;
+
+        let chain_id = Helpers.bytes_to_felt(items[0].data_len, items[0].data);
+        let nonce = Helpers.bytes_to_felt(items[1].data_len, items[1].data);
+        let max_priority_fee_per_gas = Helpers.bytes_to_felt(items[2].data_len, items[2].data);
+        let max_fee_per_gas = Helpers.bytes_to_felt(items[3].data_len, items[3].data);
+        let gas_limit = Helpers.bytes_to_felt(items[4].data_len, items[4].data);
         let destination = Helpers.try_parse_destination_from_bytes(
-            sub_items[5].data_len, sub_items[5].data
+            items[5].data_len, items[5].data
         );
-        let amount = Helpers.bytes_to_uint256(sub_items[6].data_len, sub_items[6].data);
-        let payload_len = sub_items[7].data_len;
-        let payload = sub_items[7].data;
+        let amount = Helpers.bytes_to_uint256(items[6].data_len, items[6].data);
+        let payload_len = items[7].data_len;
+        let payload = items[7].data;
         let (access_list: felt*) = alloc();
         let access_list_len = parse_access_list(
-            access_list, sub_items[8].data_len, cast(sub_items[8].data, RLP.Item*)
+            access_list, items[8].data_len, cast(items[8].data, RLP.Item*)
         );
         tempvar tx = new model.EthTransaction(
             signer_nonce=nonce,
