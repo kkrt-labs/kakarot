@@ -261,12 +261,20 @@ class TestPrecompiles:
                     [],
                     True,
                 ),
+                (
+                    0x75002,
+                    encode(["uint256", "bytes"], [2**161, encode(["uint128"], [0x2A])]),
+                    0xC0DE,
+                    [],
+                    True,
+                ),
             ],
             ids=[
                 "ok_32_bytes_data",
                 "ok_1_bytes_data",
                 "ko_data_len_not_matching_actual_length",
                 "ko_input_too_short",
+                "ko_invalid_address",
             ],
         )
         class TestKakarotMessaging:
