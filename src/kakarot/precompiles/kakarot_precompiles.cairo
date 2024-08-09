@@ -148,7 +148,12 @@ namespace KakarotPrecompiles {
         // [to_address: address][data_offset: uint256][data_len: uint256][data: bytes[]]
 
         // Load target EVM address
-        let target_address = Helpers.bytes32_to_felt(input);
+        let invalid_address = Helpers.bytes_to_felt(12, input);
+        if (invalid_address != 0) {
+            let (revert_reason_len, revert_reason) = Errors.precompileInputError();
+            return (revert_reason_len, revert_reason, CAIRO_MESSAGE_GAS, TRUE);
+        }
+        let target_address = Helpers.bytes20_to_felt(input + 12);
 
         let data_bytes_len = Helpers.bytes32_to_felt(input + 2 * 32);
         let data_fits_in_input = is_nn(input_len - 3 * 32 - data_bytes_len);
