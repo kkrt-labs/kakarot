@@ -4,7 +4,6 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_keccak.keccak import finalize_keccak
 from starkware.cairo.common.bool import FALSE
-from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.math_cmp import RC_BOUND
 from starkware.cairo.common.cairo_secp.ec import EcPoint
 from starkware.cairo.common.cairo_secp.bigint import BigInt3
@@ -16,11 +15,12 @@ from starkware.cairo.common.uint256 import Uint256, uint256_reverse_endian
 from starkware.cairo.common.cairo_secp.bigint import bigint_to_uint256
 from starkware.cairo.common.keccak_utils.keccak_utils import keccak_add_uint256s
 from starkware.cairo.common.memset import memset
-from utils.utils import Helpers
-from utils.array import slice
 from kakarot.errors import Errors
 from kakarot.storages import Kakarot_cairo1_helpers_class_hash
 from kakarot.interfaces.interfaces import ICairo1Helpers
+from utils.utils import Helpers
+from utils.array import slice
+from utils.maths import unsigned_div_rem
 
 // @title EcRecover Precompile related functions.
 // @notice This file contains the logic required to run the ec_recover precompile

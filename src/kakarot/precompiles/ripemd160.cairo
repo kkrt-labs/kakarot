@@ -6,7 +6,7 @@
 // Starkware dependencies
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin, HashBuiltin
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.math import unsigned_div_rem, assert_nn_le
+from starkware.cairo.common.math import assert_nn_le
 from starkware.cairo.common.math_cmp import is_nn_le, is_nn
 from starkware.cairo.common.bitwise import bitwise_and, bitwise_xor, bitwise_or
 from starkware.cairo.common.dict_access import DictAccess
@@ -18,9 +18,10 @@ from starkware.cairo.common.memset import memset
 
 // Internal dependencies
 from kakarot.model import model
-from utils.utils import Helpers
 from kakarot.memory import Memory
 from kakarot.evm import EVM
+from utils.utils import Helpers
+from utils.maths import unsigned_div_rem
 
 // @title RIPEMD-160 precompile
 // @custom:precompile

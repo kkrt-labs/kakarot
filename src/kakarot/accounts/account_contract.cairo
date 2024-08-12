@@ -5,7 +5,7 @@
 from openzeppelin.access.ownable.library import Ownable
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin, SignatureBuiltin
-from starkware.cairo.common.math import assert_le, unsigned_div_rem
+from starkware.cairo.common.math import assert_le
 from starkware.cairo.common.math_cmp import is_nn
 from starkware.cairo.common.uint256 import Uint256
 from starkware.starknet.common.syscalls import (
@@ -25,6 +25,7 @@ from kakarot.accounts.model import CallArray, OutsideExecution
 from kakarot.interfaces.interfaces import IKakarot, IAccount
 from kakarot.errors import Errors
 from utils.utils import Helpers
+from utils.maths import unsigned_div_rem
 
 const GET_STARKNET_ADDRESS_SELECTOR = 0x03e5d65a345b3857ca9d72edca702b8e56c1923c118867752345f710d595b3cf;
 

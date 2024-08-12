@@ -5,7 +5,7 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.math import split_felt, unsigned_div_rem
+from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.math_cmp import is_nn, is_not_zero
 from starkware.cairo.common.uint256 import Uint256, uint256_lt, uint256_le
 from starkware.cairo.common.default_dict import default_dict_new
@@ -31,6 +31,7 @@ from utils.bytes import (
     uint256_to_bytes32,
 )
 from utils.uint256 import uint256_to_uint160, uint256_eq
+from utils.maths import unsigned_div_rem
 
 using bool = felt;
 
