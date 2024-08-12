@@ -8,11 +8,12 @@ from starkware.cairo.common.default_dict import default_dict_new, default_dict_f
 from starkware.cairo.common.dict import dict_read, dict_write
 from starkware.cairo.common.dict_access import DictAccess
 from starkware.cairo.common.memcpy import memcpy
-from starkware.cairo.common.registers import get_fp_and_pc
+from starkware.cairo.common.registers import get_fp_and_pc, get_ap
 from starkware.cairo.common.uint256 import Uint256, uint256_le
 from starkware.cairo.common.bool import FALSE, TRUE
 
 from kakarot.account import Account
+from kakarot.constants import Constants
 from kakarot.model import model
 from kakarot.gas import Gas
 from utils.dict import default_dict_copy
@@ -461,12 +462,13 @@ namespace Internals {
         alloc_locals;
         let starknet_address = Account.compute_starknet_address(evm_address);
         tempvar address = new model.Address(starknet=starknet_address, evm=evm_address);
-        let balance = Account.fetch_balance(address);
-        tempvar balance_ptr = new Uint256(balance.low, balance.high);
+        Account.fetch_balance(address);
+        let (ap_val) = get_ap();
+        tempvar balance_ptr = cast(ap_val - 2, Uint256*);
         let (bytecode) = alloc();
         // empty code hash see https://eips.ethereum.org/EIPS/eip-1052
         tempvar code_hash_ptr = new Uint256(
-            304396909071904405792975023732328604784, 262949717399590921288928019264691438528
+            Constants.EMPTY_CODE_HASH_LOW, Constants.EMPTY_CODE_HASH_HIGH
         );
         let account = Account.init(
             address=address,

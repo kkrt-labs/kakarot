@@ -112,8 +112,8 @@ namespace Account {
         evm_address: felt
     ) -> model.Account* {
         alloc_locals;
-        let starknet_address = get_registered_starknet_address(evm_address);
 
+        let starknet_address = get_registered_starknet_address(evm_address);
         local balance_ptr: Uint256*;
 
         // Case touching a non deployed account
@@ -121,11 +121,12 @@ namespace Account {
             let (bytecode: felt*) = alloc();
             let starknet_address = compute_starknet_address(evm_address);
             tempvar address = new model.Address(starknet=starknet_address, evm=evm_address);
-            let balance = fetch_balance(address);
-            assert balance_ptr = new Uint256(balance.low, balance.high);
+            fetch_balance(address);
+            let (ap_val) = get_ap();
+            tempvar balance_ptr = cast(ap_val - 2, Uint256*);
             // empty code hash see https://eips.ethereum.org/EIPS/eip-1052
             tempvar code_hash_ptr = new Uint256(
-                304396909071904405792975023732328604784, 262949717399590921288928019264691438528
+                Constants.EMPTY_CODE_HASH_LOW, Constants.EMPTY_CODE_HASH_HIGH
             );
             let account = Account.init(
                 address=address,
@@ -139,14 +140,15 @@ namespace Account {
         }
 
         tempvar address = new model.Address(starknet=starknet_address, evm=evm_address);
-        let balance = fetch_balance(address);
-        assert balance_ptr = new Uint256(balance.low, balance.high);
+        fetch_balance(address);
+        let (ap_val) = get_ap();
+        tempvar balance_ptr = cast(ap_val - 2, Uint256*);
 
         let (bytecode_len, bytecode) = IAccount.bytecode(contract_address=starknet_address);
         let (nonce) = IAccount.get_nonce(contract_address=starknet_address);
         IAccount.get_code_hash(contract_address=starknet_address);
         let (ap_val) = get_ap();
-        let code_hash = cast(ap_val - 2, Uint256*);
+        let code_hash_ptr = cast(ap_val - 2, Uint256*);
 
         // CAs are instantiated with their actual nonce - EOAs are instantiated with the nonce=1
         // that is set when they're deployed.
@@ -156,7 +158,7 @@ namespace Account {
             address=address,
             code_len=bytecode_len,
             code=bytecode,
-            code_hash=code_hash,
+            code_hash=code_hash_ptr,
             nonce=nonce,
             balance=balance_ptr,
         );
@@ -699,7 +701,7 @@ namespace Account {
         if (code_len == 0) {
             // see https://eips.ethereum.org/EIPS/eip-1052
             let empty_code_hash = Uint256(
-                304396909071904405792975023732328604784, 262949717399590921288928019264691438528
+                Constants.EMPTY_CODE_HASH_LOW, Constants.EMPTY_CODE_HASH_HIGH
             );
             return empty_code_hash;
         }

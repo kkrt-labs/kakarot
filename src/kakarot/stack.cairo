@@ -5,7 +5,7 @@ from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.default_dict import default_dict_new, default_dict_finalize
 from starkware.cairo.common.dict import DictAccess, dict_read, dict_write
 from starkware.cairo.common.math import assert_le, unsigned_div_rem
-from starkware.cairo.lang.compiler.lib.registers import get_fp_and_pc
+from starkware.cairo.lang.compiler.lib.registers import get_fp_and_pc, get_ap
 from starkware.cairo.common.uint256 import Uint256
 
 from kakarot.constants import Constants
@@ -50,8 +50,10 @@ namespace Stack {
     // @param element The element to push.
     // @return stack The new pointer to the stack.
     func push_uint128{stack: model.Stack*}(element: felt) {
-        tempvar item = new Uint256(element, 0);
-        push(item);
+        tempvar item = Uint256(element, 0);
+        let (ap_val) = get_ap();
+        let item_ptr = cast(ap_val - 2, Uint256*);
+        push(item_ptr);
         return ();
     }
 

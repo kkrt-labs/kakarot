@@ -18,6 +18,10 @@ namespace Constants {
     const MAX_CODE_SIZE = 0x6000;
 
     const BURN_ADDRESS = 0xdead;
+
+    // Empty code hash Uint256.
+    const EMPTY_CODE_HASH_LOW = 304396909071904405792975023732328604784;
+    const EMPTY_CODE_HASH_HIGH = 262949717399590921288928019264691438528;
 }
 
 // See model.Opcode:
