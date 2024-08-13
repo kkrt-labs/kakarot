@@ -21,7 +21,7 @@ from kakarot.interfaces.interfaces import IAccount
 from kakarot.model import model
 from utils.utils import Helpers
 
-from kakarot.eth_rpc import eth_get_balance_of
+from kakarot.eth_rpc import eth_get_balance_of, eth_get_transaction_count
 
 // Constructor
 @constructor
