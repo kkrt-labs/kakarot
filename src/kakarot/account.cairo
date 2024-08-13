@@ -114,7 +114,6 @@ namespace Account {
         alloc_locals;
 
         let starknet_address = get_registered_starknet_address(evm_address);
-        local balance_ptr: Uint256*;
 
         // Case touching a non deployed account
         if (starknet_address == 0) {
