@@ -403,3 +403,26 @@ class TestKakarot:
                 )
             ).balance
             assert balance == 50000000000000000000
+
+        async def test_should_return_transaction_count(self, kakarot, new_eoa):
+            eoa = await new_eoa()
+            tx_count = (
+                await kakarot.functions["eth_get_transaction_count"].call(
+                    evm_address=int(eoa.address, 16)
+                )
+            ).tx_count
+            assert tx_count == 0
+
+            await invoke(
+                "kakarot",
+                "write_account_nonce",
+                int(eoa.address, 16),
+                1,
+            )
+
+            tx_count = (
+                await kakarot.functions["eth_get_transaction_count"].call(
+                    evm_address=int(eoa.address, 16)
+                )
+            ).tx_count
+            assert tx_count == 1
