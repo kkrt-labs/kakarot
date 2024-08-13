@@ -393,3 +393,13 @@ class TestKakarot:
             receipt = await RPC_CLIENT.get_transaction_receipt(tx_hash)
             assert receipt.execution_status.name == "REVERTED"
             assert "Only view call" in receipt.revert_reason
+
+    class TestEthRPCEntrypoints:
+        async def test_should_return_native_balance_of(self, kakarot, new_eoa):
+            eoa = await new_eoa()
+            balance = (
+                await kakarot.functions["eth_get_balance_of"].call(
+                    evm_address=int(eoa.address, 16)
+                )
+            ).balance
+            assert balance == 50000000000000000000
