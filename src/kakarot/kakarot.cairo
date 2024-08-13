@@ -21,6 +21,8 @@ from kakarot.interfaces.interfaces import IAccount
 from kakarot.model import model
 from utils.utils import Helpers
 
+from kakarot.eth_rpc import eth_get_balance_of
+
 // Constructor
 @constructor
 func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
