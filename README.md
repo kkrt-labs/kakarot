@@ -69,7 +69,7 @@ The set of Cairo programs in this repository are represented below:
 - ✅ Kakarot can be packaged as a smart contract and deployed on any chain that
   runs the CairoVM (StarknetOS chains, Starknet Appchains, Starknet clients).
 
-- ✅ Kakarot is an EVM implementation.
+- ✅ Kakarot is an EVM-compatible ZK-Rollup that leverages Cairo to spearhead innovations on Ethereum.
 
 - ⚠️ Kakarot Core EVM (the Cairo programs in this repository) is not a
   blockchain by itself. Combined with an underlying CairoVM chain, an RPC layer,
