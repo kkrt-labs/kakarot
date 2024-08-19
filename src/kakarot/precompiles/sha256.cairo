@@ -7,7 +7,7 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.registers import get_fp_and_pc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.math import assert_nn_le, unsigned_div_rem
+from starkware.cairo.common.math import assert_nn_le
 from starkware.cairo.common.math_cmp import is_le_felt
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.memset import memset
@@ -22,6 +22,7 @@ from utils.sha_256.packed_sha256 import (
     get_round_constants,
 )
 from utils.utils import Helpers
+from utils.maths import unsigned_div_rem
 
 // @title SHA2-256 Precompile related functions.
 // @notice This file contains the logic required to run the SHA2-256 precompile

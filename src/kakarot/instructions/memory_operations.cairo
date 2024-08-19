@@ -7,7 +7,6 @@ from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.math_cmp import is_nn, is_not_zero
-from starkware.cairo.common.math import unsigned_div_rem
 
 from kakarot.errors import Errors
 from kakarot.account import Account
@@ -19,6 +18,7 @@ from kakarot.stack import Stack
 from kakarot.state import State
 from utils.utils import Helpers
 from utils.uint256 import uint256_unsigned_div_rem, uint256_eq
+from utils.maths import unsigned_div_rem
 
 namespace MemoryOperations {
     func exec_mload{

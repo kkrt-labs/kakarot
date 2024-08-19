@@ -4,7 +4,7 @@
 
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE
-from starkware.cairo.common.math import split_felt, unsigned_div_rem
+from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.math_cmp import is_not_zero
@@ -17,6 +17,7 @@ from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.storages import Kakarot_cairo1_helpers_class_hash
 from utils.bytes import bytes_to_bytes8_little_endian
+from utils.maths import unsigned_div_rem
 
 namespace Sha3 {
     func exec_sha3{
