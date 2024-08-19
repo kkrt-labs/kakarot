@@ -11,7 +11,6 @@ func reverse(dst: felt*, arr_len: felt, arr: felt*) {
         return ();
     }
 
-    let (local rev: felt*) = alloc();
     tempvar i = arr_len;
 
     body:
@@ -25,7 +24,6 @@ func reverse(dst: felt*, arr_len: felt, arr: felt*) {
 
     jmp body if i != 0;
 
-    let dst = cast([fp], felt*);
     return ();
 }
 

@@ -7,7 +7,6 @@ from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.dict_access import DictAccess
 from starkware.cairo.common.uint256 import Uint256
-from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.math_cmp import is_nn
 from starkware.cairo.common.memset import memset
 from starkware.starknet.common.syscalls import (
@@ -23,7 +22,6 @@ from kakarot.account import Account
 from kakarot.precompiles.precompiles_helpers import PrecompilesHelpers
 from kakarot.constants import Constants
 from kakarot.interfaces.interfaces import IERC20, IAccount
-
 from kakarot.model import model
 from kakarot.state import State
 from kakarot.storages import (
@@ -36,6 +34,7 @@ from kakarot.storages import (
     Kakarot_block_gas_limit,
     Kakarot_prev_randao,
 )
+from utils.maths import unsigned_div_rem
 
 namespace Starknet {
     // @notice Commit the current state to the underlying data backend (here, Starknet)
@@ -80,7 +79,7 @@ namespace Starknet {
             contract_address_salt=evm_address,
             constructor_calldata_size=constructor_calldata_len,
             constructor_calldata=constructor_calldata,
-            deploy_from_zero=TRUE,
+            deploy_from_zero=FALSE,
         );
         return (account_address=starknet_address);
     }
@@ -221,6 +220,7 @@ namespace Internals {
             Internals._save_valid_jumpdests(
                 starknet_address, self.valid_jumpdests_start, self.valid_jumpdests
             );
+            IAccount.set_code_hash(starknet_address, [self.code_hash]);
             return ();
         }
 

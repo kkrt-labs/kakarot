@@ -5,10 +5,11 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.dict_access import DictAccess
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.math import unsigned_div_rem, split_int, split_felt
+from starkware.cairo.common.math import split_int, split_felt
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256, uint256_not, uint256_le
-from starkware.cairo.common.math_cmp import is_nn
+from starkware.cairo.common.math_cmp import is_nn, is_le_felt
+from starkware.cairo.common.math import assert_le_felt
 from starkware.starknet.common.syscalls import (
     StorageRead,
     StorageWrite,
@@ -32,6 +33,7 @@ from utils.uint256 import uint256_add
 from utils.bytes import bytes_to_bytes8_little_endian
 from utils.signature import Signature
 from utils.utils import Helpers
+from utils.maths import unsigned_div_rem
 
 // @dev: should always be zero for EOAs
 @storage_var
@@ -64,6 +66,10 @@ func Account_jumpdests_initialized() -> (initialized: felt) {
 
 @storage_var
 func Account_authorized_message_hashes(hash: Uint256) -> (res: felt) {
+}
+
+@storage_var
+func Account_code_hash() -> (code_hash: Uint256) {
 }
 
 @event
@@ -150,6 +156,16 @@ namespace AccountContract {
         with_attr error_message("Incorrect signature length") {
             assert signature_len = 5;
         }
+
+        with_attr error_message("Signatures values not in range") {
+            assert [range_check_ptr] = signature[0];
+            assert [range_check_ptr + 1] = signature[1];
+            assert [range_check_ptr + 2] = signature[2];
+            assert [range_check_ptr + 3] = signature[3];
+            assert [range_check_ptr + 4] = signature[4];
+            let range_check_ptr = range_check_ptr + 5;
+        }
+
         let r = Uint256(signature[0], signature[1]);
         let s = Uint256(signature[2], signature[3]);
         let v = signature[4];
@@ -231,6 +247,15 @@ namespace AccountContract {
         let (contract_address) = get_contract_address();
         let (balance) = IERC20.balanceOf(native_token_address, contract_address);
 
+        with_attr error_message("Gas limit too high") {
+            assert_le_felt(tx.gas_limit, 2 ** 64 - 1);
+        }
+
+        with_attr error_message("Max fee per gas too high") {
+            assert [range_check_ptr] = tx.max_fee_per_gas;
+            let range_check_ptr = range_check_ptr + 1;
+        }
+
         let max_gas_fee = tx.gas_limit * tx.max_fee_per_gas;
         let (max_fee_high, max_fee_low) = split_felt(max_gas_fee);
         let (tx_cost, carry) = uint256_add(tx.amount, Uint256(low=max_fee_low, high=max_fee_high));
@@ -252,9 +277,8 @@ namespace AccountContract {
             assert enough_fee = TRUE;
         }
 
-        let max_fee_greater_priority_fee = is_nn(tx.max_fee_per_gas - tx.max_priority_fee_per_gas);
         with_attr error_message("Max priority fee greater than max fee per gas") {
-            assert max_fee_greater_priority_fee = TRUE;
+            assert_le_felt(tx.max_priority_fee_per_gas, tx.max_fee_per_gas);
         }
 
         let possible_priority_fee = tx.max_fee_per_gas - block_base_fee;
@@ -435,6 +459,19 @@ namespace AccountContract {
             iteration_size=DictAccess.SIZE,
         );
         return is_valid_jumpdest(index=index);
+    }
+
+    func get_code_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        ) -> Uint256 {
+        let (code_hash) = Account_code_hash.read();
+        return code_hash;
+    }
+
+    func set_code_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        code_hash: Uint256
+    ) {
+        Account_code_hash.write(code_hash);
+        return ();
     }
 }
 

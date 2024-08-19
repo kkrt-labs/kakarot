@@ -1,4 +1,5 @@
 import pytest
+from eth_utils import keccak
 from ethereum.shanghai.transactions import (
     TX_ACCESS_LIST_ADDRESS_COST,
     TX_ACCESS_LIST_STORAGE_KEY_COST,
@@ -33,10 +34,13 @@ class TestState:
         def test_should_return_true_when_existing_account_cached(
             self, cairo_run, nonce, code, balance_low, expected_result
         ):
+            code_hash_bytes = keccak(bytes(code))
+            code_hash = int.from_bytes(code_hash_bytes, "big")
             is_alive = cairo_run(
                 "test__is_account_alive__account_alive_in_state",
                 nonce=nonce,
                 code=code,
+                code_hash=code_hash,
                 balance_low=balance_low,
             )
             assert is_alive == expected_result
@@ -45,6 +49,9 @@ class TestState:
         @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
         @SyscallHandler.patch("IAccount.get_nonce", lambda addr, data: [1])
         @SyscallHandler.patch("Kakarot_evm_to_starknet_address", 0xABDE1, 0x1234)
+        @SyscallHandler.patch(
+            "IAccount.get_code_hash", lambda sn_addr, data: [0x1, 0x1]
+        )
         def test_should_return_true_when_existing_account_not_cached(self, cairo_run):
             cairo_run(
                 "test__is_account_alive__account_alive_not_in_state",

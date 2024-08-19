@@ -2,7 +2,7 @@
 
 from starkware.cairo.common.uint256 import Uint256
 from kakarot.model import model
-from kakarot.accounts.model import CallArray
+from kakarot.accounts.model import CallArray, OutsideExecution
 
 @contract_interface
 namespace IERC20 {
@@ -78,6 +78,23 @@ namespace IAccount {
     func execute_starknet_call(
         to: felt, function_selector: felt, calldata_len: felt, calldata: felt*
     ) -> (retdata_len: felt, retdata: felt*, success: felt) {
+    }
+
+    func get_code_hash() -> (code_hash: Uint256) {
+    }
+
+    func set_code_hash(code_hash: Uint256) {
+    }
+
+    func execute_from_outside(
+        outside_execution: OutsideExecution,
+        call_array_len: felt,
+        call_array: CallArray*,
+        calldata_len: felt,
+        calldata: felt*,
+        signature_len: felt,
+        signature: felt*,
+    ) -> (response_len: felt, response: felt*) {
     }
 }
 

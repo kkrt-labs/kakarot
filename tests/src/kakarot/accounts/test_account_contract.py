@@ -6,8 +6,9 @@ import pytest
 import rlp
 from eth_account.account import Account
 from eth_utils import keccak
-from hypothesis import given, settings
-from hypothesis.strategies import binary
+from hypothesis import assume, given, settings
+from hypothesis.strategies import binary, composite, integers, lists, permutations
+from starkware.cairo.lang.cairo_constants import DEFAULT_PRIME
 from starkware.starknet.public.abi import (
     get_selector_from_name,
     get_storage_var_address,
@@ -258,6 +259,28 @@ class TestAccountContract:
                     SyscallHandler.mock_storage.assert_has_calls(expected_read_calls)
                     SyscallHandler.mock_storage.assert_has_calls(expected_write_calls)
 
+    class TestCodeHash:
+        @given(code_hash=integers(min_value=0, max_value=2**256 - 1))
+        @SyscallHandler.patch("Ownable_owner", 0xDEAD)
+        def test_should_assert_only_owner(self, cairo_run, code_hash):
+            with cairo_error(message="Ownable: caller is not the owner"):
+                cairo_run("test__set_code_hash", code_hash=int_to_uint256(code_hash))
+
+        @given(code_hash=integers(min_value=0, max_value=2**256 - 1))
+        @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
+        def test__should_set_code_hash(self, cairo_run, code_hash):
+            with patch.object(SyscallHandler, "mock_storage") as mock_storage:
+                low, high = int_to_uint256(code_hash)
+                cairo_run("test__set_code_hash", code_hash=(low, high))
+                code_hash_address = get_storage_var_address("Account_code_hash")
+                ownable_address = get_storage_var_address("Ownable_owner")
+                calls = [
+                    call(address=ownable_address),
+                    call(address=code_hash_address, value=low),
+                    call(address=code_hash_address + 1, value=high),
+                ]
+                mock_storage.assert_has_calls(calls)
+
     class TestSetAuthorizedPreEIP155Transactions:
         def test_should_assert_only_owner(self, cairo_run):
             with cairo_error(message="Ownable: caller is not the owner"):
@@ -344,6 +367,32 @@ class TestAccountContract:
                     chain_id=CHAIN_ID,
                 )
 
+        @composite
+        def draw_signature_not_in_range(draw):
+            # create signature with 4 elements < 2 ** 128 and one > 2 ** 128
+            signature = draw(
+                lists(
+                    integers(min_value=0, max_value=2**128 - 1), min_size=4, max_size=4
+                )
+            )
+            signature.append(
+                draw(integers(min_value=2**128, max_value=DEFAULT_PRIME - 1))
+            )
+            # Draw randomly signature elements
+            return draw(permutations(signature))
+
+        @given(draw_signature_not_in_range())
+        def test_should_raise_with_signature_values_not_in_range(
+            self, cairo_run, draw_signature_not_in_range
+        ):
+            with cairo_error(message="Signatures values not in range"):
+                cairo_run(
+                    "test__execute_from_outside",
+                    tx_data=[1],
+                    signature=draw_signature_not_in_range,
+                    chain_id=CHAIN_ID,
+                )
+
         @SyscallHandler.patch("Account_evm_address", int(ARACHNID_PROXY_DEPLOYER, 16))
         def test_should_raise_unauthorized_pre_eip155_tx(self, cairo_run):
             rlp_decoded = rlp.decode(ARACHNID_PROXY_SIGNED_TX)
@@ -354,8 +403,7 @@ class TestAccountContract:
                 int.from_bytes(v, "big"),
             ]
             unsigned_tx_data = rlp_decoded[:-3]
-            encoded_unsigned_tx = rlp.encode(unsigned_tx_data)
-            tx_data = list(encoded_unsigned_tx)
+            tx_data = list(rlp.encode(unsigned_tx_data))
 
             with cairo_error(message="Unauthorized pre-eip155 transaction"):
                 cairo_run(
@@ -377,20 +425,15 @@ class TestAccountContract:
                 "chainId": CHAIN_ID,
                 "data": b"",
             }
-            encoded_unsigned_tx = rlp_encode_signed_data(transaction)
-            tx_data = list(encoded_unsigned_tx)
+            tx_data = list(rlp_encode_signed_data(transaction))
             private_key = generate_random_private_key()
             address = int(private_key.public_key.to_checksum_address(), 16)
             signed = Account.sign_transaction(transaction, private_key)
-            signature = [
-                *int_to_uint256(signed.r),
-                *int_to_uint256(signed.s),
-                signed.v,
-            ]
+            signature = [*int_to_uint256(signed.r), *int_to_uint256(signed.s), signed.v]
 
             with (
-                cairo_error(message="Invalid signature."),
                 SyscallHandler.patch("Account_evm_address", address),
+                cairo_error(message="Invalid signature."),
             ):
                 cairo_run(
                     "test__execute_from_outside",
@@ -414,20 +457,15 @@ class TestAccountContract:
                 "accessList": [],
                 "chainId": CHAIN_ID,
             }
-            encoded_unsigned_tx = rlp_encode_signed_data(transaction)
-            tx_data = list(encoded_unsigned_tx)
+            tx_data = list(rlp_encode_signed_data(transaction))
             private_key = generate_random_private_key()
             address = int(private_key.public_key.to_checksum_address(), 16)
             signed = Account.sign_transaction(transaction, private_key)
-            signature = [
-                *int_to_uint256(signed.r),
-                *int_to_uint256(signed.s),
-                signed.v,
-            ]
+            signature = [*int_to_uint256(signed.r), *int_to_uint256(signed.s), signed.v]
 
             with (
-                cairo_error(message="Invalid chain id"),
                 SyscallHandler.patch("Account_evm_address", address),
+                cairo_error(message="Invalid chain id"),
             ):
                 cairo_run(
                     "test__execute_from_outside",
@@ -444,17 +482,12 @@ class TestAccountContract:
             private_key = generate_random_private_key()
             address = int(private_key.public_key.to_checksum_address(), 16)
             signed = Account.sign_transaction(transaction, private_key)
-            signature = [
-                *int_to_uint256(signed.r),
-                *int_to_uint256(signed.s),
-                signed.v,
-            ]
-            encoded_unsigned_tx = rlp_encode_signed_data(transaction)
-            tx_data = list(encoded_unsigned_tx)
+            signature = [*int_to_uint256(signed.r), *int_to_uint256(signed.s), signed.v]
+            tx_data = list(rlp_encode_signed_data(transaction))
 
             with (
-                cairo_error(message="Invalid nonce"),
                 SyscallHandler.patch("Account_evm_address", address),
+                cairo_error(message="Invalid nonce"),
             ):
                 cairo_run(
                     "test__execute_from_outside",
@@ -470,18 +503,13 @@ class TestAccountContract:
             private_key = generate_random_private_key()
             address = int(private_key.public_key.to_checksum_address(), 16)
             signed = Account.sign_transaction(transaction, private_key)
-            signature = [
-                *int_to_uint256(signed.r),
-                *int_to_uint256(signed.s),
-                signed.v,
-            ]
-            encoded_unsigned_tx = rlp_encode_signed_data(transaction)
-            tx_data = list(encoded_unsigned_tx)
+            signature = [*int_to_uint256(signed.r), *int_to_uint256(signed.s), signed.v]
+            tx_data = list(rlp_encode_signed_data(transaction))
 
             with (
-                cairo_error(message="Not enough ETH to pay msg.value + max gas fees"),
                 SyscallHandler.patch("Account_evm_address", address),
                 SyscallHandler.patch("Account_nonce", transaction.get("nonce", 0)),
+                cairo_error(message="Not enough ETH to pay msg.value + max gas fees"),
             ):
                 cairo_run(
                     "test__execute_from_outside",
@@ -500,18 +528,13 @@ class TestAccountContract:
             private_key = generate_random_private_key()
             address = int(private_key.public_key.to_checksum_address(), 16)
             signed = Account.sign_transaction(transaction, private_key)
-            signature = [
-                *int_to_uint256(signed.r),
-                *int_to_uint256(signed.s),
-                signed.v,
-            ]
-            encoded_unsigned_tx = rlp_encode_signed_data(transaction)
-            tx_data = list(encoded_unsigned_tx)
+            signature = [*int_to_uint256(signed.r), *int_to_uint256(signed.s), signed.v]
+            tx_data = list(rlp_encode_signed_data(transaction))
 
             with (
-                cairo_error(message="Transaction gas_limit > Block gas_limit"),
                 SyscallHandler.patch("Account_evm_address", address),
                 SyscallHandler.patch("Account_nonce", transaction.get("nonce", 0)),
+                cairo_error(message="Transaction gas_limit > Block gas_limit"),
             ):
                 cairo_run(
                     "test__execute_from_outside",
@@ -535,18 +558,13 @@ class TestAccountContract:
             private_key = generate_random_private_key()
             address = int(private_key.public_key.to_checksum_address(), 16)
             signed = Account.sign_transaction(transaction, private_key)
-            signature = [
-                *int_to_uint256(signed.r),
-                *int_to_uint256(signed.s),
-                signed.v,
-            ]
-            encoded_unsigned_tx = rlp_encode_signed_data(transaction)
-            tx_data = list(encoded_unsigned_tx)
+            signature = [*int_to_uint256(signed.r), *int_to_uint256(signed.s), signed.v]
+            tx_data = list(rlp_encode_signed_data(transaction))
 
             with (
-                cairo_error(message="Max fee per gas too low"),
                 SyscallHandler.patch("Account_evm_address", address),
                 SyscallHandler.patch("Account_nonce", transaction.get("nonce", 0)),
+                cairo_error(message="Max fee per gas too low"),
             ):
                 cairo_run(
                     "test__execute_from_outside",
@@ -559,14 +577,11 @@ class TestAccountContract:
         @SyscallHandler.patch(
             "IERC20.balanceOf", lambda addr, data: int_to_uint256(10**128)
         )
-        @SyscallHandler.patch(
-            "IKakarot.get_block_gas_limit", lambda addr, data: [TRANSACTION_GAS_LIMIT]
-        )
-        @SyscallHandler.patch("IKakarot.get_base_fee", lambda addr, data: [0])
-        def test_raise_max_priority_fee_too_high(self, cairo_run):
+        @given(gas_limit=integers(min_value=2**64, max_value=DEFAULT_PRIME - 1))
+        def test_raise_gas_limit_too_high(self, cairo_run, gas_limit):
             transaction = {
                 "type": 2,
-                "gas": 100_000,
+                "gas": gas_limit,
                 "maxFeePerGas": 2_000_000_000,
                 "maxPriorityFeePerGas": 3_000_000_000,
                 "data": "0x616263646566",
@@ -576,21 +591,104 @@ class TestAccountContract:
                 "accessList": [],
                 "chainId": CHAIN_ID,
             }
-            encoded_unsigned_tx = rlp_encode_signed_data(transaction)
-            tx_data = list(encoded_unsigned_tx)
+            tx_data = list(rlp_encode_signed_data(transaction))
             private_key = generate_random_private_key()
             address = int(private_key.public_key.to_checksum_address(), 16)
             signed = Account.sign_transaction(transaction, private_key)
-            signature = [
-                *int_to_uint256(signed.r),
-                *int_to_uint256(signed.s),
-                signed.v,
-            ]
+            signature = [*int_to_uint256(signed.r), *int_to_uint256(signed.s), signed.v]
 
             with (
-                cairo_error(message="Max priority fee greater than max fee per gas"),
                 SyscallHandler.patch("Account_evm_address", address),
                 SyscallHandler.patch("Account_nonce", transaction["nonce"]),
+                cairo_error(message="Gas limit too high"),
+            ):
+                cairo_run(
+                    "test__execute_from_outside",
+                    tx_data=tx_data,
+                    signature=signature,
+                    chain_id=transaction["chainId"],
+                )
+
+        @SyscallHandler.patch("IKakarot.get_native_token", lambda addr, data: [0xDEAD])
+        @SyscallHandler.patch(
+            "IERC20.balanceOf", lambda addr, data: int_to_uint256(10**128)
+        )
+        @SyscallHandler.patch(
+            "IKakarot.get_block_gas_limit", lambda addr, data: [TRANSACTION_GAS_LIMIT]
+        )
+        @given(maxFeePerGas=integers(min_value=2**128, max_value=DEFAULT_PRIME - 1))
+        def test_raise_max_fee_per_gas_too_high(self, cairo_run, maxFeePerGas):
+            transaction = {
+                "type": 2,
+                "gas": 100_000,
+                "maxFeePerGas": maxFeePerGas,
+                "maxPriorityFeePerGas": 3_000_000_000,
+                "data": "0x616263646566",
+                "nonce": 34,
+                "to": "0x09616C3d61b3331fc4109a9E41a8BDB7d9776609",
+                "value": 0x5AF3107A4000,
+                "accessList": [],
+                "chainId": CHAIN_ID,
+            }
+            tx_data = list(rlp_encode_signed_data(transaction))
+            private_key = generate_random_private_key()
+            address = int(private_key.public_key.to_checksum_address(), 16)
+            signed = Account.sign_transaction(transaction, private_key)
+            signature = [*int_to_uint256(signed.r), *int_to_uint256(signed.s), signed.v]
+
+            with (
+                SyscallHandler.patch("Account_evm_address", address),
+                SyscallHandler.patch("Account_nonce", transaction["nonce"]),
+                cairo_error(message="Max fee per gas too high"),
+            ):
+                cairo_run(
+                    "test__execute_from_outside",
+                    tx_data=tx_data,
+                    signature=signature,
+                    chain_id=transaction["chainId"],
+                )
+
+        @composite
+        def max_priority_fee_too_high(draw):
+            maxFeePerGas = draw(integers(min_value=0, max_value=2**128 - 1))
+            maxPriorityFeePerGas = draw(integers(min_value=0, max_value=2**128 - 1))
+            assume(maxFeePerGas < maxPriorityFeePerGas)
+            return (maxFeePerGas, maxPriorityFeePerGas)
+
+        @SyscallHandler.patch("IKakarot.get_native_token", lambda addr, data: [0xDEAD])
+        @SyscallHandler.patch(
+            "IERC20.balanceOf", lambda addr, data: int_to_uint256(10**128)
+        )
+        @SyscallHandler.patch(
+            "IKakarot.get_block_gas_limit", lambda addr, data: [TRANSACTION_GAS_LIMIT]
+        )
+        @SyscallHandler.patch("IKakarot.get_base_fee", lambda addr, data: [0])
+        @given(max_priority_fee_too_high())
+        def test_raise_max_priority_fee_too_high(
+            self, cairo_run, max_priority_fee_too_high
+        ):
+            transaction = {
+                "type": 2,
+                "gas": 100_000,
+                "maxFeePerGas": max_priority_fee_too_high[0],
+                "maxPriorityFeePerGas": max_priority_fee_too_high[1],
+                "data": "0x616263646566",
+                "nonce": 34,
+                "to": "0x09616C3d61b3331fc4109a9E41a8BDB7d9776609",
+                "value": 0x5AF3107A4000,
+                "accessList": [],
+                "chainId": CHAIN_ID,
+            }
+            tx_data = list(rlp_encode_signed_data(transaction))
+            private_key = generate_random_private_key()
+            address = int(private_key.public_key.to_checksum_address(), 16)
+            signed = Account.sign_transaction(transaction, private_key)
+            signature = [*int_to_uint256(signed.r), *int_to_uint256(signed.s), signed.v]
+
+            with (
+                SyscallHandler.patch("Account_evm_address", address),
+                SyscallHandler.patch("Account_nonce", transaction["nonce"]),
+                cairo_error(message="Max priority fee greater than max fee per gas"),
             ):
                 cairo_run(
                     "test__execute_from_outside",
@@ -631,10 +729,7 @@ class TestAccountContract:
                     "Account_evm_address", int(ARACHNID_PROXY_DEPLOYER, 16)
                 ),
                 SyscallHandler.patch(
-                    "Account_authorized_message_hashes",
-                    tx_hash_low,
-                    tx_hash_high,
-                    0x1,
+                    "Account_authorized_message_hashes", tx_hash_low, tx_hash_high, 0x1
                 ),
                 SyscallHandler.patch("Account_nonce", 0),
             ):
@@ -675,13 +770,8 @@ class TestAccountContract:
             private_key = generate_random_private_key()
             address = int(private_key.public_key.to_checksum_address(), 16)
             signed = Account.sign_transaction(transaction, private_key)
-            signature = [
-                *int_to_uint256(signed.r),
-                *int_to_uint256(signed.s),
-                signed.v,
-            ]
-            encoded_unsigned_tx = rlp_encode_signed_data(transaction)
-            tx_data = list(encoded_unsigned_tx)
+            signature = [*int_to_uint256(signed.r), *int_to_uint256(signed.s), signed.v]
+            tx_data = list(rlp_encode_signed_data(transaction))
 
             with (
                 SyscallHandler.patch("Account_evm_address", address),
@@ -724,17 +814,12 @@ class TestAccountContract:
                 "chainId": CHAIN_ID,
                 "data": bytecode,
             }
-            encoded_unsigned_tx = rlp_encode_signed_data(transaction)
-            tx_data = list(encoded_unsigned_tx)
+            tx_data = list(rlp_encode_signed_data(transaction))
 
             private_key = generate_random_private_key()
             address = int(private_key.public_key.to_checksum_address(), 16)
             signed = Account.sign_transaction(transaction, private_key)
-            signature = [
-                *int_to_uint256(signed.r),
-                *int_to_uint256(signed.s),
-                signed.v,
-            ]
+            signature = [*int_to_uint256(signed.r), *int_to_uint256(signed.s), signed.v]
 
             with (
                 SyscallHandler.patch("Account_evm_address", address),

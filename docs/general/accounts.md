@@ -40,6 +40,7 @@ Account contracts store the following information:
 - `is_initialized`: A boolean indicating whether the account has been
   initialized, used to prevent reinitializing an already initialized account.
 - `evm_address`: The Ethereum address associated with this Starknet account.
+- `code_hash`: The hash of the EVM contract account bytecode.
 
 ## Account entrypoints
 

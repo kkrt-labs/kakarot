@@ -2,7 +2,7 @@
 
 // StarkWare dependencies
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.math import assert_le, split_felt, assert_nn_le, unsigned_div_rem
+from starkware.cairo.common.math import assert_le, split_felt, assert_nn_le
 from starkware.cairo.common.math_cmp import is_nn, is_not_zero
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.dict_access import DictAccess
@@ -18,6 +18,7 @@ from starkware.starknet.common.syscalls import get_tx_info
 
 from kakarot.model import model
 from utils.bytes import uint256_to_bytes32, felt_to_bytes32
+from utils.maths import unsigned_div_rem
 
 // @title Helper Functions
 // @notice This file contains a selection of helper function that simplify tasks such as type conversion and bit manipulation
@@ -382,7 +383,7 @@ namespace Helpers {
 
     // @notice Divides a 128-bit number with remainder.
     // @dev This is almost identical to cairo.common.math.unsigned_dev_rem, but supports the case
-    // @dev of div == 2**128 as well.
+    // @dev of div == 2**128 as well. assert_le is also inlined.
     // @param value: 128bit value to divide.
     // @param div: divisor.
     // @return: quotient and remainder.
@@ -402,7 +403,16 @@ namespace Helpers {
                 f'div={hex(ids.div)} is out of the valid range.'
             ids.q, ids.r = divmod(ids.value, ids.div)
         %}
-        assert_le(r, div - 1);
+
+        // equivalent to assert_le(r, div - 1);
+        tempvar a = div - 1 - r;
+        %{
+            from starkware.cairo.common.math_utils import assert_integer
+            assert_integer(ids.a)
+            assert 0 <= ids.a % PRIME < range_check_builtin.bound, f'a = {ids.a} is out of range.'
+        %}
+        a = [range_check_ptr];
+        let range_check_ptr = range_check_ptr + 1;
 
         assert value = q * div + r;
         return (q, r);
@@ -436,9 +446,15 @@ namespace Helpers {
     // @notice Splits a felt into `len` bytes, big-endian, and outputs to `dst`.
     func split_word{range_check_ptr}(value: felt, len: felt, dst: felt*) {
         if (len == 0) {
-            assert value = 0;
+            with_attr error_message("value not empty") {
+                assert value = 0;
+            }
             return ();
         }
+        with_attr error_message("len must be < 32") {
+            assert is_nn(31 - len) = TRUE;
+        }
+
         tempvar len = len - 1;
         let output = &dst[len];
         let base = 256;
@@ -455,8 +471,13 @@ namespace Helpers {
     // @notice Splits a felt into `len` bytes, little-endian, and outputs to `dst`.
     func split_word_little{range_check_ptr}(value: felt, len: felt, dst: felt*) {
         if (len == 0) {
-            assert value = 0;
+            with_attr error_message("value not empty") {
+                assert value = 0;
+            }
             return ();
+        }
+        with_attr error_message("len must be < 32") {
+            assert is_nn(31 - len) = TRUE;
         }
         let output = &dst[0];
         let base = 256;

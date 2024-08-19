@@ -69,6 +69,7 @@ namespace model {
         address: model.Address*,
         code_len: felt,
         code: felt*,
+        code_hash: Uint256*,
         storage_start: DictAccess*,
         storage: DictAccess*,
         transient_storage_start: DictAccess*,

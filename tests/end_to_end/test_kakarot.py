@@ -174,7 +174,9 @@ class TestKakarot:
             async def test_should_set_account_bytecode(self, new_eoa):
                 counter_artifacts = get_solidity_artifacts("PlainOpcodes", "Counter")
                 eoa = await new_eoa()
-                bytecode = list(bytes.fromhex(counter_artifacts["bytecode"][2:]))
+                bytecode = list(
+                    bytes.fromhex(counter_artifacts["bytecode"]["object"][2:])
+                )
 
                 await invoke(
                     "kakarot", "write_account_bytecode", int(eoa.address, 16), bytecode
@@ -192,7 +194,9 @@ class TestKakarot:
             async def test_should_fail_not_owner(self, new_eoa, other):
                 counter_artifacts = get_solidity_artifacts("PlainOpcodes", "Counter")
                 eoa = await new_eoa()
-                bytecode = list(bytes.fromhex(counter_artifacts["bytecode"][2:]))
+                bytecode = list(
+                    bytes.fromhex(counter_artifacts["bytecode"]["object"][2:])
+                )
 
                 tx_hash = await invoke(
                     "kakarot",

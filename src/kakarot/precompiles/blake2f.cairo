@@ -6,7 +6,6 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
-from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.registers import get_fp_and_pc, get_label_location
 from starkware.cairo.common.math_cmp import is_nn
 from starkware.cairo.common.bool import FALSE
@@ -14,6 +13,7 @@ from starkware.cairo.common.bool import FALSE
 // Internal dependencies
 from kakarot.errors import Errors
 from utils.utils import Helpers
+from utils.maths import unsigned_div_rem
 
 // @title Blake2f Precompile related functions.
 // @notice This file contains the logic required to run the blake2f precompile

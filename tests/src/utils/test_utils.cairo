@@ -194,3 +194,29 @@ func test__load_packed_bytes{range_check_ptr}() -> felt* {
 
     return output;
 }
+
+func test__split_word{range_check_ptr}() -> felt* {
+    alloc_locals;
+    local value: felt;
+    local len: felt;
+    %{
+        ids.value = program_input["value"]
+        ids.len = program_input["length"]
+    %}
+    let (dst) = alloc();
+    Helpers.split_word(value, len, dst);
+    return dst;
+}
+
+func test__split_word_little{range_check_ptr}() -> felt* {
+    alloc_locals;
+    local value: felt;
+    local len: felt;
+    %{
+        ids.value = program_input["value"]
+        ids.len = program_input["length"]
+    %}
+    let (dst) = alloc();
+    Helpers.split_word_little(value, len, dst);
+    return dst;
+}
