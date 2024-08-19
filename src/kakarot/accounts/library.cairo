@@ -82,9 +82,6 @@ const BYTES_PER_FELT = 31;
 // @notice This file contains the EVM account representation logic.
 // @dev: Both EOAs and Contract Accounts are represented by this contract. Owner is expected to be Kakarot.
 namespace AccountContract {
-    // 000.001.000
-    const VERSION = 000001000;
-
     // @notice This function is used to initialize the smart contract account.
     // @dev The `evm_address` and `kakarot_address` were set during the uninitialized_account creation.
     // Reading them from state ensures that they always match the ones the account was created for.

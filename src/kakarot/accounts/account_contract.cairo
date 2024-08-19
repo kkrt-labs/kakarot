@@ -50,17 +50,6 @@ func initialize{
     return AccountContract.initialize(evm_address);
 }
 
-// @notice Returns the version of the account class.
-// @dev The version is a packed integer with the following format: XXX.YYY.ZZZ where XXX is the
-// major version, YYY is the minor version and ZZZ is the patch version.
-@view
-func version{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() -> (version: felt) {
-    let version = AccountContract.VERSION;
-    return (version=version);
-}
-
 // @notice Gets the evm address associated with the account.
 // @return address The EVM address of the account.
 @view
