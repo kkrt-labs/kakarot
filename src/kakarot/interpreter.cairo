@@ -12,7 +12,6 @@ from starkware.cairo.common.default_dict import default_dict_new
 from starkware.cairo.common.dict import DictAccess
 from starkware.cairo.lang.compiler.lib.registers import get_fp_and_pc, get_ap
 from starkware.cairo.common.uint256 import Uint256, uint256_le
-from starkware.cairo.common.math import unsigned_div_rem
 
 // Internal dependencies
 from kakarot.account import Account
@@ -39,6 +38,7 @@ from kakarot.gas import Gas
 from utils.utils import Helpers
 from utils.array import count_not_zero
 from utils.uint256 import uint256_sub, uint256_add
+from utils.maths import unsigned_div_rem
 
 // @title EVM instructions processing.
 // @notice This file contains functions related to the processing of EVM instructions.

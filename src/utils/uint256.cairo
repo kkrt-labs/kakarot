@@ -8,9 +8,9 @@ from starkware.cairo.common.uint256 import (
     uint256_lt,
     uint256_not,
 )
-from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.math_cmp import is_nn
+from utils.maths import unsigned_div_rem
 
 // Adds two integers. Returns the result as a 256-bit integer and the (1-bit) carry.
 // Strictly equivalent and faster version of common.uint256.uint256_add using the same whitelisted hint.
