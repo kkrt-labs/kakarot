@@ -21,7 +21,7 @@ from starkware.cairo.common.hash_state import (
 )
 from starkware.starknet.common.storage import normalize_address
 from starkware.starknet.common.syscalls import get_contract_address
-from starkware.cairo.lang.compiler.lib.registers import get_ap
+from starkware.cairo.lang.compiler.lib.registers import get_ap, get_fp_and_pc
 from kakarot.constants import Constants
 from kakarot.storages import (
     Kakarot_uninitialized_account_class_hash,
@@ -124,14 +124,15 @@ namespace Account {
             let (ap_val) = get_ap();
             tempvar balance_ptr = cast(ap_val - 2, Uint256*);
             // empty code hash see https://eips.ethereum.org/EIPS/eip-1052
-            tempvar code_hash_ptr = new Uint256(
+            local code_hash: Uint256 = Uint256(
                 Constants.EMPTY_CODE_HASH_LOW, Constants.EMPTY_CODE_HASH_HIGH
             );
+            let (__fp__, _) = get_fp_and_pc();
             let account = Account.init(
                 address=address,
                 code_len=0,
                 code=bytecode,
-                code_hash=code_hash_ptr,
+                code_hash=&code_hash,
                 nonce=0,
                 balance=balance_ptr,
             );
@@ -141,7 +142,7 @@ namespace Account {
         tempvar address = new model.Address(starknet=starknet_address, evm=evm_address);
         fetch_balance(address);
         let (ap_val) = get_ap();
-        tempvar balance_ptr = cast(ap_val - 2, Uint256*);
+        let balance_ptr = cast(ap_val - 2, Uint256*);
 
         let (bytecode_len, bytecode) = IAccount.bytecode(contract_address=starknet_address);
         let (nonce) = IAccount.get_nonce(contract_address=starknet_address);

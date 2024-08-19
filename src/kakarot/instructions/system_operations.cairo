@@ -10,6 +10,7 @@ from starkware.cairo.common.math_cmp import is_nn, is_not_zero
 from starkware.cairo.common.uint256 import Uint256, uint256_lt, uint256_le
 from starkware.cairo.common.default_dict import default_dict_new
 from starkware.cairo.common.dict_access import DictAccess
+from starkware.cairo.lang.compiler.lib.registers import get_fp_and_pc
 
 from kakarot.account import Account
 from kakarot.interfaces.interfaces import ICairo1Helpers
@@ -525,12 +526,13 @@ namespace SystemOperations {
             return evm;
         }
 
-        tempvar zero = new Uint256(0, 0);
+        local zero: Uint256 = Uint256(0, 0);
+        let (__fp__, _) = get_fp_and_pc();
         // Operation
         let child_evm = CallHelper.generic_call(
             evm,
             gas,
-            value=zero,
+            value=&zero,
             caller=call_sender,
             to=to,
             code_address=to,
@@ -1154,8 +1156,9 @@ namespace CreateHelper {
             let gas_refund = evm.message.parent.evm.gas_refund + (1 - is_exceptional_revert) *
                 evm.gas_refund;
 
-            tempvar stack_code = new Uint256(low=0, high=0);
-            Stack.push(stack_code);
+            local stack_code: Uint256 = Uint256(low=0, high=0);
+            let (__fp__, _) = get_fp_and_pc();
+            Stack.push(&stack_code);
 
             tempvar state = evm.message.parent.state;
 
@@ -1188,8 +1191,9 @@ namespace CreateHelper {
 
         // Stack output: the address of the deployed contract, 0 if the deployment failed.
         let (address_high, address_low) = split_felt(evm.message.address.evm * success);
-        tempvar address = new Uint256(low=address_low, high=address_high);
-        Stack.push(address);
+        local address: Uint256 = Uint256(low=address_low, high=address_high);
+        let (__fp__, _) = get_fp_and_pc();
+        Stack.push(&address);
 
         if (success == FALSE) {
             tempvar state = evm.message.parent.state;

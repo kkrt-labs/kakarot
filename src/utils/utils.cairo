@@ -15,6 +15,7 @@ from starkware.cairo.common.cairo_secp.bigint import BigInt3, bigint_to_uint256,
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.hash_state import hash_finalize, hash_init, hash_update
 from starkware.starknet.common.syscalls import get_tx_info
+from starkware.cairo.lang.compiler.lib.registers import get_fp_and_pc
 
 from kakarot.model import model
 from utils.bytes import uint256_to_bytes32, felt_to_bytes32
@@ -43,9 +44,11 @@ namespace Helpers {
     }
 
     func to_uint256{range_check_ptr}(val: felt) -> Uint256* {
+        alloc_locals;
         let (high, low) = split_felt(val);
-        tempvar res = new Uint256(low, high);
-        return res;
+        local res: Uint256 = Uint256(low, high);
+        let (__fp__, _) = get_fp_and_pc();
+        return &res;
     }
 
     // @notice This helper converts a felt straight to BigInt3
