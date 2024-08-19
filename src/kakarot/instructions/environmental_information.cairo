@@ -6,7 +6,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.memset import memset
-from starkware.cairo.common.math import unsigned_div_rem, split_felt
+from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.math_cmp import is_not_zero, is_nn
 from starkware.cairo.common.uint256 import Uint256, uint256_le
 
@@ -23,6 +23,7 @@ from utils.array import slice
 from utils.bytes import bytes_to_bytes8_little_endian
 from utils.uint256 import uint256_to_uint160, uint256_add, uint256_eq
 from utils.utils import Helpers
+from utils.maths import unsigned_div_rem
 
 // @title Environmental information opcodes.
 // @notice This file contains the functions to execute for environmental information opcodes.

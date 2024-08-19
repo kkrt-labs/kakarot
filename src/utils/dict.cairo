@@ -3,8 +3,8 @@ from starkware.cairo.common.default_dict import default_dict_new
 from starkware.cairo.common.dict import dict_write, dict_squash
 from starkware.cairo.common.math_cmp import is_not_zero
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.uint256 import Uint256
+from utils.maths import unsigned_div_rem
 
 func dict_keys{range_check_ptr}(dict_start: DictAccess*, dict_end: DictAccess*) -> (
     keys_len: felt, keys: felt*
