@@ -42,9 +42,6 @@ namespace IAccount {
     func set_implementation(implementation: felt) {
     }
 
-    func version() -> (version: felt) {
-    }
-
     func bytecode_len() -> (len: felt) {
     }
 

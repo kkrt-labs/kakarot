@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// ! A fixture of the Account Contract class, used to test the upgradeability flow, where version = 001.000.000
+// ! A fixture of the Account Contract class, used to test the upgradeability flow
 %lang starknet
 
 from kakarot.accounts.uninitialized_account import (
