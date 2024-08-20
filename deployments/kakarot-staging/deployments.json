@@ -5,13 +5,13 @@
     "artifact": "build/kakarot.json"
   },
   "EVM": {
-    "address": "0x2c387d16dd5a3bf484f0b1e975a07be856a20109a47e4b7a3cd8dd3c1bd1105",
-    "tx": "0x5c0fb688b75affad8939e20065e18071385e83455d33f43b5e624ba33ca1877",
+    "address": "0x353af95c41e8788d23e393e13c6b73ffd172188f27e5b169d792b5c80be087e",
+    "tx": "0x68229e926981041efc89f808547bba75269d4871f15e7926d1c2c1d02dcb509",
     "artifact": "build/fixtures/EVM.json"
   },
   "Counter": {
-    "address": "0x3735b9c1dfd45b40149c0227b9981b6dbd14168d5f0f9a1c7a7b3faad9cd630",
-    "tx": "0x4b135a5df36ac6446be7a8b6bed8ba991377db19c9b375c19434ff6c25ef1f1",
+    "address": "0x53ed7428188383b6cbf361ca62cb4ef7b897c9d4b4ff0fe6edd0fde19225d8b",
+    "tx": "0x739edaf9a1c5a7e6b48768158771673da6b98c0dbec31f1d3c113fe04d90b51",
     "artifact": "build/fixtures/Counter.json"
   },
   "MockPragmaOracle": {
