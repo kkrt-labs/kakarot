@@ -6,7 +6,7 @@ If there are any vulnerabilities in **Kakarot**, don't hesitate to _report
 them_.
 
 1. Reach out in DM to the
-   [Kakarot twitter account](https://twitter.com/KakarotZkEvm) or to any of the
+   [Kakarot x (twitter) account](https://x.com/KakarotZkEvm) or to any of the
    code owners listed [here](https://github.com/orgs/kkrt-labs/people)
 
 1. Describe the vulnerability. If you have a fix, that is most welcome -- please
