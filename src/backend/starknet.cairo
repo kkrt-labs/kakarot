@@ -21,7 +21,7 @@ from starkware.starknet.common.syscalls import (
 from kakarot.account import Account
 from kakarot.precompiles.precompiles_helpers import PrecompilesHelpers
 from kakarot.constants import Constants
-from kakarot.interfaces.interfaces import IERC20, IAccount
+from kakarot.interfaces.interfaces import IERC20, IAccount, IKakarot
 from kakarot.model import model
 from kakarot.state import State
 from kakarot.storages import (
@@ -110,7 +110,6 @@ namespace Starknet {
         alloc_locals;
         let (block_number) = get_block_number();
         let (block_timestamp) = get_block_timestamp();
-        let (tx_info) = get_tx_info();
         let (coinbase) = Kakarot_coinbase.read();
         let (base_fee) = Kakarot_base_fee.read();
         let (block_gas_limit) = Kakarot_block_gas_limit.read();
@@ -118,7 +117,8 @@ namespace Starknet {
 
         // No idea why this is required - but trying to pass prev_randao directly causes bugs.
         let prev_randao = Uint256(low=prev_randao.low, high=prev_randao.high);
-        let (_, chain_id) = unsigned_div_rem(tx_info.chain_id, 2 ** 32);
+        let (contract_address) = get_contract_address();
+        let (chain_id) = IKakarot.eth_chain_id(contract_address=contract_address);
 
         return new model.Environment(
             origin=origin,
