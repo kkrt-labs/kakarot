@@ -61,10 +61,6 @@ func Account_valid_jumpdests() -> (is_valid: felt) {
 }
 
 @storage_var
-func Account_jumpdests_initialized() -> (initialized: felt) {
-}
-
-@storage_var
 func Account_authorized_message_hashes(hash: Uint256) -> (res: felt) {
 }
 
@@ -433,32 +429,7 @@ namespace AccountContract {
         tempvar syscall_ptr = syscall_ptr + StorageRead.SIZE;
         tempvar value = response.value;
 
-        if (value != 0) {
-            return value;
-        }
-
-        // Jumpdest is invalid - we verify that the jumpdests have been stored, and if not,
-        // we store them. call the appropriate function check & store
-        let (initialized) = Account_jumpdests_initialized.read();
-
-        if (initialized != FALSE) {
-            return value;
-        }
-
-        let (bytecode_len) = Account_bytecode_len.read();
-        let (bytecode) = Internals.load_bytecode(bytecode_len);
-        let (valid_jumpdests_start, valid_jumpdests) = Helpers.initialize_jumpdests(
-            bytecode_len, bytecode
-        );
-        let (jumpdests_len, _) = unsigned_div_rem(
-            valid_jumpdests - valid_jumpdests_start, DictAccess.SIZE
-        );
-        Internals.write_jumpdests(
-            jumpdests_len=jumpdests_len,
-            jumpdests=cast(valid_jumpdests_start, felt*),
-            iteration_size=DictAccess.SIZE,
-        );
-        return is_valid_jumpdest(index=index);
+        return value;
     }
 
     func get_code_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
@@ -581,7 +552,6 @@ namespace Internals {
 
         jmp body if remaining != 0;
 
-        Account_jumpdests_initialized.write(1);
         return ();
     }
 
