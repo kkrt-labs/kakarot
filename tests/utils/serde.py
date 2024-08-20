@@ -1,4 +1,8 @@
+from collections import defaultdict
+from typing import Dict, List, Tuple
+
 from eth_utils.address import to_checksum_address
+from starkware.cairo.common.dict import DictManager, DictTracker
 from starkware.cairo.lang.compiler.ast.cairo_types import (
     TypeFelt,
     TypePointer,
@@ -7,6 +11,7 @@ from starkware.cairo.lang.compiler.ast.cairo_types import (
 )
 from starkware.cairo.lang.compiler.identifier_definition import StructDefinition
 from starkware.cairo.lang.compiler.identifier_manager import MissingIdentifierError
+from starkware.cairo.lang.vm.relocatable import RelocatableValue
 
 
 class Serde:
@@ -107,6 +112,15 @@ class Serde:
     def serialize_uint256(self, ptr):
         raw = self.serialize_pointers("Uint256", ptr)
         return hex(raw["low"] + raw["high"] * 2**128)
+
+    def serialize_nibbles(self, ptr):
+        raw = self.serialize_pointers("Nibbles", ptr)
+        return self.serialize_list(raw["nibbles"], list_len=raw["nibbles_len"])
+
+    def serialize_bytes(self, ptr):
+        raw = self.serialize_pointers("Bytes", ptr)
+        data_len = raw["data_len"]
+        return self.serialize_list(raw["data"], list_len=data_len)
 
     def serialize_account(self, ptr):
         raw = self.serialize_pointers("model.Account", ptr)
@@ -228,6 +242,10 @@ class Serde:
             return self.serialize_message(scope_ptr)
         if scope.path[-1] == "EVM":
             return self.serialize_evm(scope_ptr)
+        if scope.path[-1] == "Nibbles":
+            return self.serialize_nibbles(scope_ptr)
+        if scope.path[-1] == "Bytes":
+            return self.serialize_bytes(scope_ptr)
         try:
             return self.serialize_struct(str(scope), scope_ptr)
         except MissingIdentifierError:
@@ -275,3 +293,80 @@ class Serde:
     def serialize(self, cairo_type):
         shift = self.get_offset(cairo_type)
         return self._serialize(cairo_type, self.runner.vm.run_context.ap - shift, shift)
+
+    def deserialize_dict(
+        self, obj: Dict, __dict_manager: DictManager, default_value=0, initial_dict=None
+    ) -> Tuple[RelocatableValue, RelocatableValue]:
+        """
+        Deserialize a python dict into a Cairo dict.
+
+        Args:
+        ----
+            obj: The python dict.
+            __dict_manager: The dict manager, global variable of the execution.
+            default_value: An optional default value for the dict defaulted to 0.
+            initial_dict: An optional initial dict.
+
+        """
+        DictAccess = self.get_identifier("DictAccess", StructDefinition)
+        dict_ptr = base = self.runner.segments.add()
+        assert base.segment_index not in __dict_manager.trackers
+        dict_tracker = __dict_manager.trackers[base.segment_index] = DictTracker(
+            data=defaultdict(lambda: default_value, initial_dict or {}),
+            current_ptr=base,
+        )
+
+        # Manually handling cases where the dict contains sequence (list or bytes) that cannot be passed to defaultdict
+        for key in obj:
+            if isinstance(key, list) or isinstance(key, bytes):
+                key_data = self.runner.segments.add()
+                self.runner.segments.write_arg(key_data, key)
+
+                cairo_key = self.runner.segments.add()
+                self.runner.segments.write_arg(cairo_key, [len(key)])
+                self.runner.segments.write_arg(cairo_key + 1, [key_data])
+            else:
+                cairo_key = key
+
+            # If the value is a list, we need to serialize it.
+            if isinstance(obj[key], list) or isinstance(obj[key], bytes):
+                value_data = self.runner.segments.add()
+                self.runner.segments.write_arg(value_data, obj[key])
+
+                cairo_value = self.runner.segments.add()
+                self.runner.segments.write_arg(cairo_value, [len(obj[key])])
+                self.runner.segments.write_arg(cairo_value + 1, [value_data])
+            else:
+                cairo_value = obj[key]
+
+            dict_tracker.current_ptr += DictAccess.size
+            self.runner.memory[dict_ptr + 1] = dict_tracker.data[cairo_key]
+            dict_tracker.data[cairo_key] = cairo_value
+            self.runner.memory[dict_ptr] = cairo_key
+            self.runner.memory[dict_ptr + 2] = cairo_value
+            dict_ptr = dict_ptr + DictAccess.size
+
+        return base, dict_ptr
+
+    def deserialize_bytes_list(self, bytes_list: List[bytes]) -> List[RelocatableValue]:
+        """
+        Deserialize a list of python bytes into a list of Cairo Bytes.
+        """
+        Bytes = self.get_identifier("Bytes", StructDefinition)
+        bytes_ptr = base = self.runner.segments.add()
+        for elem in bytes_list:
+            bytes_len, bytes_data = self.deserialize_bytes(elem)
+            self.runner.memory[bytes_ptr] = bytes_len
+            self.runner.memory[bytes_ptr + 1] = bytes_data
+            bytes_ptr += Bytes.size
+
+        return len(bytes_list), base
+
+    def deserialize_bytes(self, input_bytes: bytes) -> RelocatableValue:
+        """
+        Deserialize python bytes into a Cairo Bytes.
+        """
+        bytes_len = len(input_bytes)
+        bytes_data = self.runner.segments.add()
+        self.runner.segments.write_arg(bytes_data, input_bytes)
+        return bytes_len, bytes_data
