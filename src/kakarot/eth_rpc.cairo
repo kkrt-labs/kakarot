@@ -34,7 +34,7 @@ func eth_get_balance{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
 //         see https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_gettransactioncount
 //         This is a view only function, meaning that it doesn't make any state change.
 // @param address The address to get the transaction count from
-// @return Transaction count of the address
+// @return tx_count Transaction count of the address
 @view
 func eth_get_transaction_count{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     address: felt
@@ -47,7 +47,7 @@ func eth_get_transaction_count{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, r
 // @notice The eth_chainId function as described in the spec
 //         see https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_chainid
 //         This is a view only function, meaning that it doesn't make any state change.
-// @return Transaction count of the address
+// @return chain_id Chaind id of the chain
 @view
 func eth_chain_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
     chain_id: felt
