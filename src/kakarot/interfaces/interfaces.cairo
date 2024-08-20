@@ -181,10 +181,10 @@ namespace IKakarot {
     ) -> (return_data_len: felt, return_data: felt*, success: felt, gas_used: felt) {
     }
 
-    func eth_get_balance_of(evm_address: felt) -> (balance: Uint256) {
+    func eth_get_balance(address: felt) -> (balance: Uint256) {
     }
 
-    func eth_get_transaction_count(evm_address: felt) -> (tx_count: felt) {
+    func eth_get_transaction_count(address: felt) -> (tx_count: felt) {
     }
 
     func eth_chain_id() -> (chain_id: felt) {

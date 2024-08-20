@@ -25,7 +25,6 @@ from tests.utils.helpers import (
     generate_random_evm_address,
     hex_string_to_bytes_array,
 )
-from tests.utils.syscall_handler import SyscallHandler
 
 params_execute = [pytest.param(case.pop("params"), **case) for case in test_cases]
 
@@ -362,7 +361,6 @@ class TestKakarot:
             assert prev_owner != other.address
             assert prev_owner == new_owner
 
-        @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
         async def test_should_transfer_ownership(self, kakarot, other):
             prev_owner = (await kakarot.functions["get_owner"].call()).owner
             await invoke("kakarot", "transfer_ownership", other.address)
@@ -395,38 +393,27 @@ class TestKakarot:
             assert "Only view call" in receipt.revert_reason
 
     class TestEthRPCEntrypoints:
-        async def test_should_return_native_balance_of(self, kakarot, new_eoa):
+        async def test_should_return_native_balance_of(self, new_eoa):
             eoa = await new_eoa()
             balance = (
-                await kakarot.functions["eth_get_balance_of"].call(
-                    evm_address=int(eoa.address, 16)
-                )
+                await call("kakarot", "eth_get_balance", int(eoa.address, 16))
             ).balance
             assert balance == 50000000000000000000
 
-        async def test_should_return_transaction_count(self, kakarot, new_eoa):
+        async def test_should_return_transaction_count(self, new_eoa):
             eoa = await new_eoa()
             tx_count = (
-                await kakarot.functions["eth_get_transaction_count"].call(
-                    evm_address=int(eoa.address, 16)
-                )
+                await call("kakarot", "eth_get_transaction_count", int(eoa.address, 16))
             ).tx_count
             assert tx_count == 0
 
-            await invoke(
-                "kakarot",
-                "write_account_nonce",
-                int(eoa.address, 16),
-                1,
-            )
+            await invoke("kakarot", "write_account_nonce", int(eoa.address, 16), 1)
 
             tx_count = (
-                await kakarot.functions["eth_get_transaction_count"].call(
-                    evm_address=int(eoa.address, 16)
-                )
+                await call("kakarot", "eth_get_transaction_count", int(eoa.address, 16))
             ).tx_count
             assert tx_count == 1
 
-        async def test_should_return_chain_id(self, kakarot):
-            chain_id = (await kakarot.functions["eth_chain_id"].call()).chain_id
+        async def test_should_return_chain_id(self):
+            chain_id = (await call("kakarot", "eth_chain_id")).chain_id
             assert chain_id == NETWORK["chain_id"].chain_id

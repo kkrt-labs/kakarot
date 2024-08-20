@@ -2,7 +2,7 @@
 
 %lang starknet
 
-from openzeppelin.access.ownable.library import Ownable
+from openzeppelin.access.ownable.library import Ownable, Ownable_owner
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin, SignatureBuiltin
 from starkware.cairo.common.math import assert_le
@@ -121,7 +121,8 @@ func execute_from_outside{
     );
 
     // Cast Starknet chain id to u32
-    let (_, chain_id) = unsigned_div_rem(tx_info.chain_id, 2 ** 32);
+    let (kakarot_address) = Ownable_owner.read();
+    let (chain_id) = IKakarot.eth_chain_id(contract_address=kakarot_address);
 
     let (response_len, response) = AccountContract.execute_from_outside(
         tx_data_len, tx_data, signature_len, signature, chain_id

@@ -21,7 +21,7 @@ from starkware.starknet.common.syscalls import (
 from kakarot.account import Account
 from kakarot.precompiles.precompiles_helpers import PrecompilesHelpers
 from kakarot.constants import Constants
-from kakarot.interfaces.interfaces import IERC20, IAccount, IKakarot
+from kakarot.interfaces.interfaces import IERC20, IAccount
 from kakarot.model import model
 from kakarot.state import State
 from kakarot.storages import (
@@ -34,7 +34,6 @@ from kakarot.storages import (
     Kakarot_block_gas_limit,
     Kakarot_prev_randao,
 )
-from utils.maths import unsigned_div_rem
 
 namespace Starknet {
     // @notice Commit the current state to the underlying data backend (here, Starknet)
@@ -105,7 +104,7 @@ namespace Starknet {
 
     // @notice Populate a Environment with Starknet syscalls
     func get_env{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        origin: felt, gas_price: felt
+        origin: felt, gas_price: felt, chain_id: felt
     ) -> model.Environment* {
         alloc_locals;
         let (block_number) = get_block_number();
@@ -117,9 +116,6 @@ namespace Starknet {
 
         // No idea why this is required - but trying to pass prev_randao directly causes bugs.
         let prev_randao = Uint256(low=prev_randao.low, high=prev_randao.high);
-        let (contract_address) = get_contract_address();
-        let (chain_id) = IKakarot.eth_chain_id(contract_address=contract_address);
-
         return new model.Environment(
             origin=origin,
             gas_price=gas_price,

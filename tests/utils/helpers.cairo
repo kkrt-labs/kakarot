@@ -16,6 +16,7 @@ from backend.starknet import Starknet
 from kakarot.account import Account
 from kakarot.constants import Constants
 from kakarot.evm import EVM
+from kakarot.library import Kakarot
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
@@ -31,8 +32,8 @@ namespace TestHelpers {
         calldata: felt*,
     ) -> model.EVM* {
         alloc_locals;
-
-        let env = Starknet.get_env(0, 0);
+        let (chain_id) = Kakarot.eth_chain_id();
+        let env = Starknet.get_env(0, 0, chain_id);
         tempvar address = new model.Address(
             starknet=starknet_contract_address, evm=evm_contract_address
         );
