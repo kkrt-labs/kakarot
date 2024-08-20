@@ -4,7 +4,7 @@ import pytest
 import pytest_asyncio
 from starknet_py.contract import Contract
 
-from kakarot_scripts.constants import RPC_CLIENT
+from kakarot_scripts.constants import NETWORK, RPC_CLIENT
 from kakarot_scripts.utils.kakarot import (
     compute_starknet_address,
     get_eoa,
@@ -426,3 +426,7 @@ class TestKakarot:
                 )
             ).tx_count
             assert tx_count == 1
+
+        async def test_should_return_chain_id(self, kakarot):
+            chain_id = (await kakarot.functions["eth_chain_id"].call()).chain_id
+            assert chain_id == NETWORK["chain_id"].chain_id

@@ -186,6 +186,9 @@ namespace IKakarot {
 
     func eth_get_transaction_count(evm_address: felt) -> (tx_count: felt) {
     }
+
+    func eth_chain_id() -> (chain_id: felt) {
+    }
 }
 
 @contract_interface
