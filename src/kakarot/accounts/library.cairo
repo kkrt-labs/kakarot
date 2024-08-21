@@ -163,6 +163,11 @@ namespace AccountContract {
         let s = Uint256(signature[2], signature[3]);
         let v = signature[4];
 
+        with_attr error_message("tx_data_len not in range: {tx_data_len}") {
+            assert [range_check_ptr] = tx_data_len;
+            let range_check_ptr = range_check_ptr + 1;
+        }
+
         let tx_type = EthTransaction.get_tx_type(tx_data);
         local y_parity: felt;
         local pre_eip155_tx: felt;
