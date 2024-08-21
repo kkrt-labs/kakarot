@@ -101,6 +101,9 @@ async def main():
         starknet_deployments["UniversalLibraryCaller"] = await upgrade(
             "UniversalLibraryCaller"
         )
+        starknet_deployments["BenchmarkCairoCalls"] = await deploy_starknet(
+            "BenchmarkCairoCalls"
+        )
 
     dump_deployments(starknet_deployments)
 

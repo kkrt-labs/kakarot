@@ -261,20 +261,20 @@ COMPILED_CONTRACTS = [
     {"contract_name": "UniversalLibraryCaller", "is_account_contract": False},
 ]
 DECLARED_CONTRACTS = [
-    "account_contract",
-    "Cairo1Helpers",
-    "Cairo1HelpersFixture",
-    "Counter",
-    "ERC20",
-    "EVM",
     "kakarot",
-    "MockPragmaOracle",
-    "OpenzeppelinAccount",
-    "replace_class",
-    "StarknetToken",
+    "account_contract",
     "uninitialized_account_fixture",
     "uninitialized_account",
-    "UniversalLibraryCaller",
+    "EVM",
+    "OpenzeppelinAccount",
+    "Cairo1Helpers",
+    "Cairo1HelpersFixture",
+    "replace_class",
+    "Counter",
+    "MockPragmaOracle",
+    "StarknetToken",
+    "BenchmarkCairoCalls",
+    "ERC20",
 ]
 
 # PRE-EIP155 TX
