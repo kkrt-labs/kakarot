@@ -117,6 +117,9 @@ async def main():
         starknet_deployments["MockPragmaOracle"] = await deploy_starknet(
             "MockPragmaOracle"
         )
+        starknet_deployments["BenchmarkCairoCalls"] = await deploy_starknet(
+            "BenchmarkCairoCalls"
+        )
 
     dump_deployments(starknet_deployments)
 
