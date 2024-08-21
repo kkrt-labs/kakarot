@@ -189,6 +189,11 @@ namespace IKakarot {
 
     func eth_chain_id() -> (chain_id: felt) {
     }
+
+    func eth_send_raw_transaction(tx_data_len: felt, tx_data: felt*) -> (
+        return_data_len: felt, return_data: felt*, success: felt, gas_used: felt
+    ) {
+    }
 }
 
 @contract_interface
