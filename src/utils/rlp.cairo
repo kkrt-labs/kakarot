@@ -1,5 +1,6 @@
 from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.math_cmp import is_nn
+from starkware.cairo.common.math import assert_not_zero
 from starkware.cairo.common.alloc import alloc
 
 from utils.utils import Helpers
@@ -24,6 +25,10 @@ namespace RLP {
     //  original array and data_size is the size of the data.
     func decode_type{range_check_ptr}(data_len: felt, data: felt*) -> (felt, felt, felt) {
         alloc_locals;
+
+        with_attr error_message("RLP data is empty") {
+            assert_not_zero(data_len);
+        }
 
         let prefix = [data];
 

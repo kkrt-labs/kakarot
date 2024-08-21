@@ -26,6 +26,10 @@ class TestRLP:
 
             assert output == [expected_type, expected_offset, expected_len]
 
+        def test_should_raise_when_data_len_is_zero(self, cairo_run):
+            with cairo_error("RLP data is empty"):
+                cairo_run("test__decode_type", data=[])
+
     class TestDecode:
         @given(data=recursive(binary(), lists))
         async def test_should_match_decode_reference_implementation(
