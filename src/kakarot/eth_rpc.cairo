@@ -59,6 +59,7 @@ func eth_chain_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
 // @notice The eth_call function as described in the spec,
 //         see https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_call
 //         This is a view only function, meaning that it doesn't make any state change.
+// @param nonce The nonce of the account the transaction is sent from.
 // @param origin The address the transaction is sent from.
 // @param to The address the transaction is directed to.
 // @param gas_limit Integer of the gas provided for the transaction execution
@@ -66,6 +67,8 @@ func eth_chain_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
 // @param value Integer of the value sent with this transaction
 // @param data_len The length of the data
 // @param data Hash of the method signature and encoded parameters. For details see Ethereum Contract ABI in the Solidity documentation
+// @param access_list_len The length of the access list
+// @param access_list The access list passed in the transaction
 // @return return_data_len The length of the return_data
 // @return return_data An array of returned felts
 // @return success An boolean, TRUE if the transaction succeeded, FALSE otherwise
@@ -110,6 +113,7 @@ func eth_call{
 // @notice The eth_estimateGas function as described in the spec,
 //         see https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_call
 //         This is a view only function, meaning that it doesn't make any state change.
+// @param nonce The nonce of the account the transaction is sent from.
 // @param origin The address the transaction is sent from.
 // @param to The address the transaction is directed to.
 // @param gas_limit Integer of the gas provided for the transaction execution
@@ -117,6 +121,8 @@ func eth_call{
 // @param value Integer of the value sent with this transaction
 // @param data_len The length of the data
 // @param data Hash of the method signature and encoded parameters. For details see Ethereum Contract ABI in the Solidity documentation
+// @param access_list_len The length of the access list
+// @param access_list The access list passed in the transaction
 // @return return_data_len The length of the return_data
 // @return return_data An array of returned felts
 // @return success An boolean, TRUE if the transaction succeeded, FALSE otherwise

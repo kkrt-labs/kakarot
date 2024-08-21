@@ -120,7 +120,7 @@ func execute_from_outside{
         packed_tx_data_len - 1, packed_tx_data + 1, tx_data_len
     );
 
-    // Cast Starknet chain id to u32
+    // Get the chain id
     let (kakarot_address) = Ownable_owner.read();
     let (chain_id) = IKakarot.eth_chain_id(contract_address=kakarot_address);
 
