@@ -124,7 +124,7 @@ func test__execute_from_outside{
     tempvar chain_id: felt;
 
     %{
-        ids.tx_data_len = len(program_input["tx_data"])
+        ids.tx_data_len = program_input.get("tx_data_len", len(program_input["tx_data"]))
         segments.write_arg(ids.tx_data, program_input["tx_data"])
         ids.signature_len = len(program_input["signature"])
         segments.write_arg(ids.signature, program_input["signature"])

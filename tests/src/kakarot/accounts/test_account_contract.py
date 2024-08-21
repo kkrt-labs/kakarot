@@ -298,6 +298,16 @@ class TestAccountContract:
                     chain_id=CHAIN_ID,
                 )
 
+        def test_should_raise_when_tx_data_len_not_in_range(self, cairo_run):
+            with cairo_error(message=f"tx_data_len not in range: {2**128}"):
+                cairo_run(
+                    "test__execute_from_outside",
+                    tx_data_len=2**128,
+                    tx_data=[],
+                    signature=list(range(5)),
+                    chain_id=CHAIN_ID,
+                )
+
         def test_should_raise_with_wrong_signature(self, cairo_run):
             with cairo_error(message="Invalid signature."):
                 cairo_run(
