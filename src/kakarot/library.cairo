@@ -5,7 +5,7 @@
 from openzeppelin.access.ownable.library import Ownable
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.starknet.common.syscalls import get_caller_address
+from starkware.starknet.common.syscalls import get_caller_address, get_tx_info
 from starkware.cairo.common.math_cmp import is_not_zero
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.uint256 import Uint256
@@ -31,6 +31,7 @@ from kakarot.interpreter import Interpreter
 from kakarot.instructions.system_operations import CreateHelper
 from kakarot.interfaces.interfaces import IAccount, IERC20
 from kakarot.model import model
+from utils.maths import unsigned_div_rem
 
 // @title Kakarot main library file.
 // @notice This file contains the core EVM execution logic.
@@ -100,10 +101,9 @@ namespace Kakarot {
         tempvar address = new model.Address(
             starknet=starknet_contract_address, evm=evm_contract_address
         );
-
         let (bytecode_len, bytecode) = Starknet.get_bytecode(address.evm);
-
-        let env = Starknet.get_env(origin, gas_price);
+        let (chain_id) = eth_chain_id();
+        let env = Starknet.get_env(origin, gas_price, chain_id);
 
         let (evm, stack, memory, state, gas_used, required_gas) = Interpreter.execute(
             env,
@@ -119,6 +119,14 @@ namespace Kakarot {
             access_list,
         );
         return (evm, state, gas_used, required_gas);
+    }
+
+    func eth_chain_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+        chain_id: felt
+    ) {
+        let (tx_info) = get_tx_info();
+        let (_, chain_id) = unsigned_div_rem(tx_info.chain_id, 2 ** 32);
+        return (chain_id=chain_id);
     }
 
     // @notice Set the native Starknet ERC20 token used by kakarot.

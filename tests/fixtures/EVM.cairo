@@ -117,8 +117,8 @@ func evm_call{
     alloc_locals;
     let fp_and_pc = get_fp_and_pc();
     local __fp__: felt* = fp_and_pc.fp_val;
-
-    let env = Starknet.get_env(origin, 0);
+    let (chain_id) = Kakarot.eth_chain_id();
+    let env = Starknet.get_env(origin, 0, chain_id);
     let (evm, stack, memory, state, _) = execute(
         env, &value, bytecode_len, bytecode, calldata_len, calldata, access_list_len, access_list
     );
@@ -173,8 +173,8 @@ func evm_execute{
     alloc_locals;
     let fp_and_pc = get_fp_and_pc();
     local __fp__: felt* = fp_and_pc.fp_val;
-
-    let env = Starknet.get_env(origin, 0);
+    let (chain_id) = Kakarot.eth_chain_id();
+    let env = Starknet.get_env(origin, 0, chain_id);
     let (evm, stack, memory, state, _) = execute(
         env, &value, bytecode_len, bytecode, calldata_len, calldata, access_list_len, access_list
     );

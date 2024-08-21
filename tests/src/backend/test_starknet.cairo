@@ -6,6 +6,7 @@ from starkware.cairo.common.dict_access import DictAccess
 
 from backend.starknet import Starknet, Internals as StarknetInternals
 from kakarot.model import model
+from kakarot.library import Kakarot
 
 func test__get_env{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     ) -> model.Environment* {
@@ -16,7 +17,8 @@ func test__get_env{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
         ids.origin = program_input["origin"]
         ids.gas_price = program_input["gas_price"]
     %}
-    let env = Starknet.get_env(origin, gas_price);
+    let (chain_id) = Kakarot.eth_chain_id();
+    let env = Starknet.get_env(origin, gas_price, chain_id);
     return env;
 }
 

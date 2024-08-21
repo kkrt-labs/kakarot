@@ -34,7 +34,6 @@ from kakarot.storages import (
     Kakarot_block_gas_limit,
     Kakarot_prev_randao,
 )
-from utils.maths import unsigned_div_rem
 
 namespace Starknet {
     // @notice Commit the current state to the underlying data backend (here, Starknet)
@@ -105,12 +104,11 @@ namespace Starknet {
 
     // @notice Populate a Environment with Starknet syscalls
     func get_env{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        origin: felt, gas_price: felt
+        origin: felt, gas_price: felt, chain_id: felt
     ) -> model.Environment* {
         alloc_locals;
         let (block_number) = get_block_number();
         let (block_timestamp) = get_block_timestamp();
-        let (tx_info) = get_tx_info();
         let (coinbase) = Kakarot_coinbase.read();
         let (base_fee) = Kakarot_base_fee.read();
         let (block_gas_limit) = Kakarot_block_gas_limit.read();
@@ -118,8 +116,6 @@ namespace Starknet {
 
         // No idea why this is required - but trying to pass prev_randao directly causes bugs.
         let prev_randao = Uint256(low=prev_randao.low, high=prev_randao.high);
-        let (_, chain_id) = unsigned_div_rem(tx_info.chain_id, 2 ** 32);
-
         return new model.Environment(
             origin=origin,
             gas_price=gas_price,
