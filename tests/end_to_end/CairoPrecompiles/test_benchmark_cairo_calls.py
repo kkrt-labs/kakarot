@@ -39,6 +39,7 @@ async def cairo_contract_caller(owner, cairo_contract):
 
 
 @pytest.mark.asyncio(scope="module")
+@pytest.mark.skip(reason="Use only for benchmarking")
 class TestBenchmarkCairoCalls:
     async def test_benchmark_fixed_tx_cost(
         self, cairo_contract_caller, benchmark_results
