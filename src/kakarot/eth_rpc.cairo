@@ -1,9 +1,12 @@
 %lang starknet
 
+from openzeppelin.access.ownable.library import Ownable_owner
+from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.math_cmp import is_not_zero
+from starkware.cairo.common.math import assert_le_felt, assert_nn, split_felt
+from starkware.cairo.common.math_cmp import is_not_zero, is_nn
 from starkware.cairo.common.registers import get_fp_and_pc
-from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.uint256 import Uint256, uint256_add, uint256_le
 from starkware.starknet.common.syscalls import get_caller_address, get_tx_info
 
 from backend.starknet import Starknet
@@ -12,6 +15,7 @@ from kakarot.interfaces.interfaces import IAccount, IERC20
 from kakarot.library import Kakarot
 from kakarot.model import model
 from kakarot.storages import Kakarot_native_token_address
+from utils.eth_transaction import EthTransaction
 from utils.maths import unsigned_div_rem
 from utils.utils import Helpers
 
@@ -180,7 +184,6 @@ func eth_estimate_gas{
 // @return return_data An array of returned felts
 // @return success An boolean, TRUE if the transaction succeeded, FALSE otherwise
 // @return gas_used The amount of gas used by the transaction
-@external
 func eth_send_transaction{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(
@@ -220,4 +223,88 @@ func eth_send_transaction{
     let result = (evm.return_data_len, evm.return_data, 1 - is_reverted, gas_used);
 
     return result;
+}
+
+@external
+func eth_send_raw_transaction{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(tx_data_len: felt, tx_data: felt*) -> (
+    return_data_len: felt, return_data: felt*, success: felt, gas_used: felt
+) {
+    let tx = EthTransaction.decode(tx_data_len, tx_data);
+
+    // Whitelisting pre-eip155 or validate chain_id for post eip155
+    let (chain_id) = Kakarot.eth_chain_id();
+    tempvar is_tx_post_eip155 = is_not_zero(tx.chain_id.is_some);
+    if (tx.chain_id.is_some != FALSE) {
+        with_attr error_message("Invalid chain id") {
+            assert tx.chain_id.value = chain_id;
+        }
+    }
+
+    // Get the caller address
+    let (caller_address) = get_caller_address();
+
+    // Validate nonce
+    let (account_nonce) = IAccount.get_nonce(contract_address=caller_address);
+    with_attr error_message("Invalid nonce") {
+        assert tx.signer_nonce = account_nonce;
+    }
+
+    // Validate gas
+    with_attr error_message("Gas limit too high") {
+        assert_le_felt(tx.gas_limit, 2 ** 64 - 1);
+    }
+
+    with_attr error_message("Max fee per gas too high") {
+        assert [range_check_ptr] = tx.max_fee_per_gas;
+        let range_check_ptr = range_check_ptr + 1;
+    }
+
+    let (block_gas_limit) = Kakarot.get_block_gas_limit();
+    with_attr error_message("Transaction gas_limit > Block gas_limit") {
+        assert_nn(block_gas_limit - tx.gas_limit);
+    }
+
+    let (block_base_fee) = Kakarot.get_base_fee();
+    with_attr error_message("Max fee per gas too low") {
+        assert_nn(tx.max_fee_per_gas - block_base_fee);
+    }
+
+    with_attr error_message("Max priority fee greater than max fee per gas") {
+        assert_le_felt(tx.max_priority_fee_per_gas, tx.max_fee_per_gas);
+    }
+
+    let (native_token_address) = Kakarot_native_token_address.read();
+    let (balance) = IERC20.balanceOf(native_token_address, caller_address);
+    let max_gas_fee = tx.gas_limit * tx.max_fee_per_gas;
+    let (max_fee_high, max_fee_low) = split_felt(max_gas_fee);
+    let (tx_cost, carry) = uint256_add(tx.amount, Uint256(low=max_fee_low, high=max_fee_high));
+    assert carry = 0;
+    let (is_balance_enough) = uint256_le(tx_cost, balance);
+    with_attr error_message("Not enough ETH to pay msg.value + max gas fees") {
+        assert is_balance_enough = TRUE;
+    }
+
+    let possible_priority_fee = tx.max_fee_per_gas - block_base_fee;
+    let priority_fee_is_max_priority_fee = is_nn(
+        possible_priority_fee - tx.max_priority_fee_per_gas
+    );
+    let priority_fee_per_gas = priority_fee_is_max_priority_fee * tx.max_priority_fee_per_gas + (
+        1 - priority_fee_is_max_priority_fee
+    ) * possible_priority_fee;
+    let effective_gas_price = priority_fee_per_gas + block_base_fee;
+
+    let (return_data_len, return_data, success, gas_used) = eth_send_transaction(
+        to=tx.destination,
+        gas_limit=tx.gas_limit,
+        gas_price=effective_gas_price,
+        value=tx.amount,
+        data_len=tx.payload_len,
+        data=tx.payload,
+        access_list_len=tx.access_list_len,
+        access_list=tx.access_list,
+    );
+
+    return (return_data_len, return_data, success, gas_used);
 }

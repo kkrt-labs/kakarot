@@ -217,6 +217,6 @@ namespace model {
         payload: felt*,
         access_list_len: felt,
         access_list: felt*,
-        chain_id: felt,
+        chain_id: Option,
     }
 }
