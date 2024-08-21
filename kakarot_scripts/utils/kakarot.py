@@ -559,7 +559,7 @@ async def eth_send_transaction(
 
     payload = {
         "type": 0x2,
-        "chainId": NETWORK["chain_id"],
+        "chainId": NETWORK["chain_id"] % 2**32,
         "nonce": nonce,
         "gas": gas,
         "maxPriorityFeePerGas": 1,

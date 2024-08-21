@@ -41,9 +41,9 @@ NETWORKS = {
     "sepolia": {
         "name": "starknet-sepolia",
         "explorer_url": "https://sepolia.starkscan.co/",
-        "rpc_url": "https://starknet-sepolia.public.blastapi.io/rpc/v0_6",
+        "rpc_url": os.getenv("STARKNET_SEPOLIA_RPC_URL"),
         "l1_rpc_url": f"https://sepolia.infura.io/v3/{os.getenv('INFURA_KEY')}",
-        "type": NetworkType.PROD,
+        "type": NetworkType.STAGING,
         "chain_id": StarknetChainId.SEPOLIA,
         "check_interval": 5,
         "max_wait": 30,
@@ -215,7 +215,6 @@ COMPILED_CONTRACTS = [
     {"contract_name": "Counter", "is_account_contract": False},
 ]
 DECLARED_CONTRACTS = [
-    {"contract_name": "kakarot", "cairo_version": ArtifactType.cairo0},
     {"contract_name": "account_contract", "cairo_version": ArtifactType.cairo0},
     {
         "contract_name": "uninitialized_account_fixture",
@@ -231,6 +230,7 @@ DECLARED_CONTRACTS = [
     {"contract_name": "MockPragmaOracle", "cairo_version": ArtifactType.cairo1},
     {"contract_name": "StarknetToken", "cairo_version": ArtifactType.cairo1},
     {"contract_name": "ERC20", "cairo_version": ArtifactType.cairo0},
+    {"contract_name": "kakarot", "cairo_version": ArtifactType.cairo0},
 ]
 
 # PRE-EIP155 TX

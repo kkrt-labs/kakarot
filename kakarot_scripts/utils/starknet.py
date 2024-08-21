@@ -85,7 +85,7 @@ async def get_starknet_account(
     key_pair = KeyPair.from_private_key(int(private_key, 16))
 
     public_key = None
-    for selector in ["get_public_key", "getPublicKey", "getSigner"]:
+    for selector in ["get_public_key", "getPublicKey", "getSigner", "get_owner"]:
         try:
             call = Call(
                 to_addr=address,
@@ -105,6 +105,7 @@ async def get_starknet_account(
                 or "Invalid message selector." in message
                 or "StarknetErrorCode.ENTRY_POINT_NOT_FOUND_IN_CONTRACT" in message
                 or ("code 40" in message and "not found in contract" in message)
+                or "{'error': 'Invalid message selector'}" in message
             ):
                 continue
             else:
