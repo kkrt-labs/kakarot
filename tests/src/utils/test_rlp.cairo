@@ -5,6 +5,23 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.memcpy import memcpy
 
+func test__decode_raw{range_check_ptr}() -> RLP.Item* {
+    alloc_locals;
+    // Given
+    tempvar data_len: felt;
+    let (data) = alloc();
+    %{
+        ids.data_len = len(program_input["data"])
+        segments.write_arg(ids.data, program_input["data"])
+    %}
+
+    // When
+    let (local items: RLP.Item*) = alloc();
+    RLP.decode_raw(items, data_len, data);
+
+    return items;
+}
+
 func test__decode{range_check_ptr}() -> RLP.Item* {
     alloc_locals;
     // Given
