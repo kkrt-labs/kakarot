@@ -28,12 +28,6 @@ from kakarot.storages import (
     Kakarot_block_gas_limit,
     Kakarot_evm_to_starknet_address,
 )
-from kakarot.kakarot import (
-    constructor,
-    get_account_contract_class_hash,
-    get_cairo1_helpers_class_hash,
-    get_native_token,
-)
 from backend.starknet import Starknet, Internals as StarknetInternals
 from utils.dict import dict_keys, dict_values
 from utils.utils import Helpers

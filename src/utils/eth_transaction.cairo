@@ -57,14 +57,21 @@ namespace EthTransaction {
 
         // pre eip-155 txs have 6 fields, post eip-155 txs have 9 fields
         if (items_len == 6) {
+            tempvar is_some = 0;
             tempvar chain_id = 0;
         } else {
             assert items_len = 9;
             assert items[6].is_list = FALSE;
             assert items[7].is_list = FALSE;
             assert items[8].is_list = FALSE;
+            tempvar is_some = 1;
             let chain_id = Helpers.bytes_to_felt(items[6].data_len, items[6].data);
+            tempvar chain_id = chain_id;
+
+            tempvar is_some = 1;
+            tempvar chain_id = chain_id;
         }
+        let is_some = [ap - 2];
         let chain_id = [ap - 1];
 
         tempvar tx = new model.EthTransaction(
@@ -78,7 +85,7 @@ namespace EthTransaction {
             payload=payload,
             access_list_len=0,
             access_list=cast(0, felt*),
-            chain_id=chain_id,
+            chain_id=model.Option(is_some=is_some, value=chain_id),
         );
         return tx;
     }
@@ -135,7 +142,7 @@ namespace EthTransaction {
             payload=payload,
             access_list_len=access_list_len,
             access_list=access_list,
-            chain_id=chain_id,
+            chain_id=model.Option(is_some=1, value=chain_id),
         );
         return tx;
     }
@@ -193,7 +200,7 @@ namespace EthTransaction {
             payload=payload,
             access_list_len=access_list_len,
             access_list=access_list,
-            chain_id=chain_id,
+            chain_id=model.Option(is_some=1, value=chain_id),
         );
         return tx;
     }
