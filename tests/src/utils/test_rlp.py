@@ -30,11 +30,21 @@ class TestRLP:
             with cairo_error("RLP data is empty"):
                 cairo_run("test__decode_type", data=[])
 
+        @pytest.mark.parametrize("prefix", [0xB8, 0xF8])
+        def test_should_raise_when_prefix_encoded_lenght_is_greater_than_actual(
+            self, cairo_run, prefix
+        ):
+            with cairo_error("RLP data too short for declared length"):
+                cairo_run("test__decode_type", data=[prefix])
+
+    class TestDecodeRaw:
+        def test_should_raise_when_parsed_len_greater_than_data(self, cairo_run):
+            with cairo_error("RLP data too short for declared length"):
+                cairo_run("test__decode_raw", data=[0xB8, 0x01])
+
     class TestDecode:
         @given(data=recursive(binary(), lists))
-        async def test_should_match_decode_reference_implementation(
-            self, cairo_run, data
-        ):
+        def test_should_match_decode_reference_implementation(self, cairo_run, data):
             encoded_data = encode(data)
 
             items = cairo_run("test__decode", data=list(encoded_data))
@@ -44,7 +54,7 @@ class TestRLP:
             data=recursive(binary(), lists),
             extra_data=binary(min_size=1, max_size=255),
         )
-        async def test_raise_when_data_contains_extra_bytes(
+        def test_raise_when_data_contains_extra_bytes(
             self, cairo_run, data, extra_data
         ):
             encoded_data = encode(data)
