@@ -298,16 +298,6 @@ class TestAccountContract:
                     chain_id=CHAIN_ID,
                 )
 
-        def test_should_raise_when_tx_data_len_not_in_range(self, cairo_run):
-            with cairo_error(message=f"tx_data_len not in range: {2**128}"):
-                cairo_run(
-                    "test__execute_from_outside",
-                    tx_data_len=2**128,
-                    tx_data=[],
-                    signature=list(range(5)),
-                    chain_id=CHAIN_ID,
-                )
-
         def test_should_raise_with_wrong_signature(self, cairo_run):
             with cairo_error(message="Invalid signature."):
                 cairo_run(
@@ -789,3 +779,169 @@ class TestAccountContract:
 
             assert output_len == 1
             assert output[0] == 0x68656C6C6F
+
+    class TestExecuteFromOutsideEntrypoint:
+
+        def test_should_raise_when_caller_is_not_any_caller_nor_actual_caller(
+            self, cairo_run
+        ):
+            with cairo_error(message="Execute from outside: invalid caller"):
+                cairo_run(
+                    "test__execute_from_outside_entrypoint",
+                    outside_execution={
+                        "caller": SyscallHandler.caller_address + 1,
+                        "nonce": 0,
+                        "execute_after": 0,
+                        "execute_before": 0,
+                    },
+                    call_array=[],
+                    calldata=[],
+                    signature=[],
+                )
+
+        def test_should_raise_when_call_is_too_early(self, cairo_run):
+            with cairo_error(message="Execute from outside: too early"):
+                cairo_run(
+                    "test__execute_from_outside_entrypoint",
+                    outside_execution={
+                        "caller": SyscallHandler.caller_address,
+                        "nonce": 0,
+                        "execute_after": SyscallHandler.block_timestamp + 1,
+                        "execute_before": 0,
+                    },
+                    call_array=[],
+                    calldata=[],
+                    signature=[],
+                )
+
+        def test_should_raise_when_call_is_too_late(self, cairo_run):
+            with cairo_error(message="Execute from outside: too late"):
+                cairo_run(
+                    "test__execute_from_outside_entrypoint",
+                    outside_execution={
+                        "caller": SyscallHandler.caller_address,
+                        "nonce": 0,
+                        "execute_after": 0,
+                        "execute_before": SyscallHandler.block_timestamp - 1,
+                    },
+                    call_array=[],
+                    calldata=[],
+                    signature=[],
+                )
+
+        def test_should_raise_when_call_array_is_empty(self, cairo_run):
+            with cairo_error(message="Execute from outside: multicall not supported"):
+                cairo_run(
+                    "test__execute_from_outside_entrypoint",
+                    outside_execution={
+                        "caller": SyscallHandler.caller_address,
+                        "nonce": 0,
+                        "execute_after": 0,
+                        "execute_before": SyscallHandler.block_timestamp + 1,
+                    },
+                    call_array=[],
+                    calldata=[],
+                    signature=[],
+                )
+
+        def test_should_raise_when_call_array_has_more_than_one_call(self, cairo_run):
+            with cairo_error(message="Execute from outside: multicall not supported"):
+                cairo_run(
+                    "test__execute_from_outside_entrypoint",
+                    outside_execution={
+                        "caller": SyscallHandler.caller_address,
+                        "nonce": 0,
+                        "execute_after": 0,
+                        "execute_before": SyscallHandler.block_timestamp + 1,
+                    },
+                    call_array=[{}, {}],
+                    calldata=[],
+                    signature=[],
+                )
+
+        @patch.dict(SyscallHandler.tx_info, {"version": 0})
+        def test_should_raise_when_tx_version_is_zero(self, cairo_run):
+            with cairo_error(message="Deprecated tx version: 0"):
+                cairo_run(
+                    "test__execute_from_outside_entrypoint",
+                    outside_execution={
+                        "caller": SyscallHandler.caller_address,
+                        "nonce": 0,
+                        "execute_after": 0,
+                        "execute_before": SyscallHandler.block_timestamp + 1,
+                    },
+                    call_array=[
+                        {"to": 0, "selector": 0, "data_offset": 0, "data_len": 0},
+                    ],
+                    calldata=[],
+                    signature=[],
+                )
+
+        @SyscallHandler.patch("Account_bytecode_len", 1)
+        def test_should_raise_when_eoa_has_code(self, cairo_run):
+            with cairo_error(message="EOAs cannot have code"):
+                cairo_run(
+                    "test__execute_from_outside_entrypoint",
+                    outside_execution={
+                        "caller": SyscallHandler.caller_address,
+                        "nonce": 0,
+                        "execute_after": 0,
+                        "execute_before": SyscallHandler.block_timestamp + 1,
+                    },
+                    call_array=[
+                        {"to": 0, "selector": 0, "data_offset": 0, "data_len": 0},
+                    ],
+                    calldata=[],
+                    signature=[],
+                )
+
+        @pytest.mark.parametrize("data_len", [0, 2**128])
+        def test_should_raise_when_packed_data_len_is_zero_or_out_of_range(
+            self, cairo_run, data_len
+        ):
+            with cairo_error(
+                message="Execute from outside: packed_tx_data_len is zero or out of range"
+            ):
+                cairo_run(
+                    "test__execute_from_outside_entrypoint",
+                    outside_execution={
+                        "caller": SyscallHandler.caller_address,
+                        "nonce": 0,
+                        "execute_after": 0,
+                        "execute_before": SyscallHandler.block_timestamp + 1,
+                    },
+                    call_array=[
+                        {
+                            "to": 0,
+                            "selector": 0,
+                            "data_offset": 0,
+                            "data_len": data_len,
+                        },
+                    ],
+                    calldata=[],
+                    signature=[],
+                )
+
+        def test_should_raise_when_tx_data_len_is_out_of_range(self, cairo_run):
+            with cairo_error(
+                message="Execute from outside: tx_data_len is out of range"
+            ):
+                cairo_run(
+                    "test__execute_from_outside_entrypoint",
+                    outside_execution={
+                        "caller": SyscallHandler.caller_address,
+                        "nonce": 0,
+                        "execute_after": 0,
+                        "execute_before": SyscallHandler.block_timestamp + 1,
+                    },
+                    call_array=[
+                        {
+                            "to": 0,
+                            "selector": 0,
+                            "data_offset": 0,
+                            "data_len": 1,
+                        },
+                    ],
+                    calldata=[2**128],
+                    signature=[],
+                )
