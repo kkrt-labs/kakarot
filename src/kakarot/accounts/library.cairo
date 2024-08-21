@@ -168,7 +168,7 @@ namespace AccountContract {
             let range_check_ptr = range_check_ptr + 1;
         }
 
-        let tx_type = EthTransaction.get_tx_type(tx_data);
+        let tx_type = EthTransaction.get_tx_type(tx_data_len, tx_data);
         local y_parity: felt;
         local pre_eip155_tx: felt;
         if (tx_type == 0) {

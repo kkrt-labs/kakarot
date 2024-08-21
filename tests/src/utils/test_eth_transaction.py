@@ -91,3 +91,7 @@ class TestEthTransaction:
             encoded_unsigned_tx = rlp_encode_signed_data(transaction)
             tx_type = cairo_run("test__get_tx_type", data=list(encoded_unsigned_tx))
             assert tx_type == transaction.get("type", 0)
+
+        def test_should_raise_when_data_len_is_zero(self, cairo_run):
+            with cairo_error("tx_data_len is zero"):
+                cairo_run("test__get_tx_type", data_len=0, data=[1, 2, 3])
