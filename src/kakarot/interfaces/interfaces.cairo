@@ -69,6 +69,9 @@ namespace IAccount {
     func write_jumpdests(jumpdests_len: felt, jumpdests: felt*) {
     }
 
+    func get_authorized_pre_eip155_tx() -> (is_authorized: felt) {
+    }
+
     func set_authorized_pre_eip155_tx(msg_hash: Uint256) {
     }
 
@@ -188,6 +191,11 @@ namespace IKakarot {
     }
 
     func eth_chain_id() -> (chain_id: felt) {
+    }
+
+    func eth_send_raw_transaction(tx_data_len: felt, tx_data: felt*) -> (
+        return_data_len: felt, return_data: felt*, success: felt, gas_used: felt
+    ) {
     }
 }
 

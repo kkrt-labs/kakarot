@@ -6,16 +6,20 @@ import pytest
 from eth_abi import decode, encode
 from eth_utils import keccak
 from eth_utils.address import to_checksum_address
+from hypothesis import given
+from hypothesis.strategies import integers
+from starkware.cairo.lang.cairo_constants import DEFAULT_PRIME
 from starkware.starknet.public.abi import get_storage_var_address
 from web3._utils.abi import map_abi_data
 from web3._utils.normalizers import BASE_RETURN_NORMALIZERS
 from web3.exceptions import NoABIFunctionsFound
 
 from kakarot_scripts.ef_tests.fetch import EF_TESTS_PARSED_DIR
-from tests.utils.constants import TRANSACTION_GAS_LIMIT
+from tests.utils.constants import CHAIN_ID, TRANSACTION_GAS_LIMIT, TRANSACTIONS
 from tests.utils.errors import cairo_error
-from tests.utils.helpers import felt_to_signed_int
+from tests.utils.helpers import felt_to_signed_int, rlp_encode_signed_data
 from tests.utils.syscall_handler import SyscallHandler, parse_state
+from tests.utils.uint256 import int_to_uint256
 
 CONTRACT_ADDRESS = 1234
 OWNER = to_checksum_address(f"0x{0xABDE1:040x}")
@@ -404,6 +408,138 @@ class TestKakarot:
                     data="0xADD_DATA",
                 )
             assert not evm["reverted"]
+
+    class TestEthSendRawTransaction:
+        def test_should_raise_invalid_chain_id_tx_type_different_from_0(
+            self, cairo_run
+        ):
+            transaction = {
+                "type": 2,
+                "gas": 100_000,
+                "maxFeePerGas": 2_000_000_000,
+                "maxPriorityFeePerGas": 2_000_000_000,
+                "data": "0x616263646566",
+                "nonce": 34,
+                "to": "",
+                "value": 0x00,
+                "accessList": [],
+                "chainId": 9999,
+            }
+            tx_data = list(rlp_encode_signed_data(transaction))
+
+            with cairo_error(message="Invalid chain id"):
+                cairo_run(
+                    "test__eth_send_raw_transaction",
+                    tx_data_len=len(tx_data),
+                    tx_data=tx_data,
+                )
+
+        @SyscallHandler.patch("IAccount.get_nonce", lambda addr, data: [1])
+        @pytest.mark.parametrize("tx", TRANSACTIONS)
+        def test_should_raise_invalid_nonce(self, cairo_run, tx):
+            # explicitly set the nonce in transaction to be different from the patch
+            tx = {**tx, "nonce": 0}
+            tx_data = list(rlp_encode_signed_data(tx))
+            with cairo_error(message="Invalid nonce"):
+                cairo_run(
+                    "test__eth_send_raw_transaction",
+                    tx_data_len=len(tx_data),
+                    tx_data=tx_data,
+                )
+
+        @SyscallHandler.patch("IKakarot.get_native_token", lambda _, __: [0xDEAD])
+        @SyscallHandler.patch("IERC20.balanceOf", lambda _, __: int_to_uint256(10**128))
+        @given(gas_limit=integers(min_value=2**64, max_value=DEFAULT_PRIME - 1))
+        def test_raise_gas_limit_too_high(self, cairo_run, gas_limit):
+            tx = {
+                "type": 2,
+                "gas": gas_limit,
+                "maxFeePerGas": 2_000_000_000,
+                "maxPriorityFeePerGas": 3_000_000_000,
+                "data": "0x616263646566",
+                "nonce": 34,
+                "to": "0x09616C3d61b3331fc4109a9E41a8BDB7d9776609",
+                "value": 0x5AF3107A4000,
+                "accessList": [],
+                "chainId": CHAIN_ID,
+            }
+            tx_data = list(rlp_encode_signed_data(tx))
+
+            with (
+                SyscallHandler.patch("IAccount.get_nonce", lambda _, __: [tx["nonce"]]),
+                cairo_error(message="Gas limit too high"),
+            ):
+                cairo_run(
+                    "test__eth_send_raw_transaction",
+                    tx_data_len=len(tx_data),
+                    tx_data=tx_data,
+                )
+
+        @SyscallHandler.patch("IKakarot.get_native_token", lambda _, __: [0xDEAD])
+        @SyscallHandler.patch("IERC20.balanceOf", lambda _, __: int_to_uint256(10**128))
+        @SyscallHandler.patch(
+            "IKakarot.get_block_gas_limit", lambda _, __: [TRANSACTION_GAS_LIMIT]
+        )
+        @given(maxFeePerGas=integers(min_value=2**128, max_value=DEFAULT_PRIME - 1))
+        def test_raise_max_fee_per_gas_too_high(self, cairo_run, maxFeePerGas):
+            tx = {
+                "type": 2,
+                "gas": 100_000,
+                "maxFeePerGas": maxFeePerGas,
+                "maxPriorityFeePerGas": 3_000_000_000,
+                "data": "0x616263646566",
+                "nonce": 34,
+                "to": "0x09616C3d61b3331fc4109a9E41a8BDB7d9776609",
+                "value": 0x5AF3107A4000,
+                "accessList": [],
+                "chainId": CHAIN_ID,
+            }
+            tx_data = list(rlp_encode_signed_data(tx))
+
+            with (
+                SyscallHandler.patch("IAccount.get_nonce", lambda _, __: [tx["nonce"]]),
+                cairo_error(message="Max fee per gas too high"),
+            ):
+                cairo_run(
+                    "test__eth_send_raw_transaction",
+                    tx_data_len=len(tx_data),
+                    tx_data=tx_data,
+                )
+
+        @SyscallHandler.patch("IKakarot.get_native_token", lambda _, __: [0xDEAD])
+        @SyscallHandler.patch("IERC20.balanceOf", lambda _, __: int_to_uint256(10**128))
+        @SyscallHandler.patch("Kakarot_block_gas_limit", 0)
+        @pytest.mark.parametrize("tx", TRANSACTIONS)
+        def test_raise_transaction_gas_limit_too_high(self, cairo_run, tx):
+            tx_data = list(rlp_encode_signed_data(tx))
+
+            with (
+                SyscallHandler.patch("IAccount.get_nonce", lambda _, __: [tx["nonce"]]),
+                cairo_error(message="Transaction gas_limit > Block gas_limit"),
+            ):
+                cairo_run(
+                    "test__eth_send_raw_transaction",
+                    tx_data_len=len(tx_data),
+                    tx_data=tx_data,
+                )
+
+        @SyscallHandler.patch("IKakarot.get_native_token", lambda _, __: [0xDEAD])
+        @SyscallHandler.patch("IERC20.balanceOf", lambda _, __: int_to_uint256(10**128))
+        @SyscallHandler.patch("Kakarot_block_gas_limit", [TRANSACTION_GAS_LIMIT])
+        @SyscallHandler.patch("Kakarot_base_fee", TRANSACTION_GAS_LIMIT * 10**10)
+        @pytest.mark.parametrize("tx", TRANSACTIONS)
+        def test_raise_max_fee_per_gas_too_low(self, cairo_run, tx):
+            tx_data = list(rlp_encode_signed_data(tx))
+
+            with (
+                SyscallHandler.patch("IAccount.get_nonce", lambda _, __: [tx["nonce"]]),
+                cairo_error(message="Max fee per gas too low"),
+            ):
+                cairo_run(
+                    "test__eth_send_raw_transaction",
+                    tx_data_len=len(tx_data),
+                    tx_data=tx_data,
+                )
 
     class TestLoopProfiling:
         @pytest.mark.slow

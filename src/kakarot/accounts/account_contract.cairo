@@ -295,6 +295,14 @@ func set_code_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
     return ();
 }
 
+@external
+func get_authorized_pre_eip155_tx{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    message_hash: Uint256
+) -> (is_authorized: felt) {
+    let (is_authorized) = Account_authorized_message_hashes.read(message_hash);
+    return (is_authorized=is_authorized);
+}
+
 // @notice Authorizes a pre-eip155 transaction by message hash.
 // @param message_hash The hash of the message.
 @external

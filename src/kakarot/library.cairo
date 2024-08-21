@@ -218,7 +218,7 @@ namespace Kakarot {
         block_gas_limit: felt
     ) {
         let (block_gas_limit) = Kakarot_block_gas_limit.read();
-        return (block_gas_limit,);
+        return (block_gas_limit=block_gas_limit);
     }
 
     // @notice Deploy a new externally owned account.

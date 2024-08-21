@@ -895,9 +895,17 @@ namespace Interpreter {
             return (evm, stack, memory, state, 0, 0);
         }
 
-        // Charge the gas fee to the user without setting up a transfer.
-        // Transfers with the exact amounts will be performed post-execution.
-        // Note: balance > effective_fee was verified in AccountContract.execute_from_outside()
+        // // Charge the gas fee to the user without setting up a transfer.
+        // // Transfers with the exact amounts will be performed post-execution.
+        // // Note: balance > effective_fee was verified in AccountContract.execute_from_outside()
+        // let max_gas_fee = gas_limit * tx.max_fee_per_gas;
+        // let (max_fee_high, max_fee_low) = split_felt(max_gas_fee);
+        // let (tx_cost, carry) = uint256_add(tx.amount, Uint256(low=max_fee_low, high=max_fee_high));
+        // assert carry = 0;
+        // let (is_balance_enough) = uint256_le(tx_cost, balance);
+        // with_attr error_message("Not enough ETH to pay msg.value + max gas fees") {
+        //     assert is_balance_enough = TRUE;
+        // }
         let max_fee = gas_limit * env.gas_price;
         let (fee_high, fee_low) = split_felt(max_fee);
         let max_fee_u256 = Uint256(low=fee_low, high=fee_high);
