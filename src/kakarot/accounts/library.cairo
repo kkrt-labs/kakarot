@@ -204,22 +204,12 @@ namespace AccountContract {
         );
 
         // Whitelisting pre-eip155
+        let (is_authorized) = Account_authorized_message_hashes.read(msg_hash);
         if (pre_eip155_tx != FALSE) {
-            let (is_authorized) = Account_authorized_message_hashes.read(msg_hash);
             with_attr error_message("Unauthorized pre-eip155 transaction") {
                 assert is_authorized = TRUE;
             }
-            tempvar syscall_ptr = syscall_ptr;
-            tempvar pedersen_ptr = pedersen_ptr;
-            tempvar range_check_ptr = range_check_ptr;
-        } else {
-            tempvar syscall_ptr = syscall_ptr;
-            tempvar pedersen_ptr = pedersen_ptr;
-            tempvar range_check_ptr = range_check_ptr;
         }
-        let syscall_ptr = cast([ap - 3], felt*);
-        let pedersen_ptr = cast([ap - 2], HashBuiltin*);
-        let range_check_ptr = [ap - 1];
 
         // Send tx to Kakarot
         let (return_data_len, return_data, success, gas_used) = IKakarot.eth_send_raw_transaction(
