@@ -64,7 +64,6 @@ namespace EthTransaction {
             assert items[6].is_list = FALSE;
             assert items[7].is_list = FALSE;
             assert items[8].is_list = FALSE;
-            tempvar is_some = 1;
             let chain_id = Helpers.bytes_to_felt(items[6].data_len, items[6].data);
             tempvar chain_id = chain_id;
 
