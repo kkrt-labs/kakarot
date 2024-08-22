@@ -46,6 +46,6 @@ class TestBlockInformation:
             }
         ),
     )
-    def test__exec_chain_id__should_return_mod_64(self, cairo_run):
+    def test__exec_chain_id__should_return_mod_53(self, cairo_run):
         output = cairo_run("test__exec_block_information", opcode=Opcodes.CHAINID)
-        assert output == hex(BIG_CHAIN_ID % 2**32)
+        assert output == hex(BIG_CHAIN_ID % 2**53)
