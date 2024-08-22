@@ -11,7 +11,7 @@ func test__decode_raw{range_check_ptr}() -> RLP.Item* {
     tempvar data_len: felt;
     let (data) = alloc();
     %{
-        ids.data_len = len(program_input["data"])
+        ids.data_len = program_input.get("data_len", len(program_input["data"]))
         segments.write_arg(ids.data, program_input["data"])
     %}
 
@@ -42,15 +42,11 @@ func test__decode{range_check_ptr}() -> RLP.Item* {
 func test__decode_type{range_check_ptr}() -> (felt, felt, felt) {
     alloc_locals;
     // Given
-    tempvar data_len: felt;
     let (data) = alloc();
-    %{
-        ids.data_len = len(program_input["data"])
-        segments.write_arg(ids.data, program_input["data"])
-    %}
+    %{ segments.write_arg(ids.data, program_input["data"]) %}
 
     // When
-    let (type, offset, len) = RLP.decode_type(data_len, data);
+    let (type, offset, len) = RLP.decode_type(data);
 
     // Then
     return (type, offset, len);

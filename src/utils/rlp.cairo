@@ -22,18 +22,15 @@ namespace RLP {
         is_list: felt,
     }
 
-    // Decodes the type of an RLP item.
-    // @dev type=0 means the item is a byte array, type=1 means the item is a list.
-    // @returns (type, data_offset, data_size) where data_offset is the offset of the data in the
-    //  original array and data_size is the size of the data.
-    func decode_type{range_check_ptr}(data_len: felt, data: felt*) -> (
-        rlp_type: felt, offset: felt, len: felt
-    ) {
+    // @notive Decode the type of an RLP item.
+    // @dev Unsafe function, does not check if the data is long enough (can be exploited by a malicious prover).
+    //      Always check afterwards that outputs are compatible with the associated data_len.
+    // @param data The RLP encoded data.
+    // @return rlp_type The type of the RLP data (string or list).
+    // @return offset The offset of the data in the RLP encoded data.
+    // @return len The length of the data.
+    func decode_type{range_check_ptr}(data: felt*) -> (rlp_type: felt, offset: felt, len: felt) {
         alloc_locals;
-
-        with_attr error_message("RLP data is empty") {
-            assert_not_zero(data_len);
-        }
 
         let prefix = [data];
 
@@ -51,9 +48,6 @@ namespace RLP {
         let is_le_191 = is_nn(0xbf - prefix);  // string longer than 55 bytes
         if (is_le_191 != FALSE) {
             local len_bytes_count = prefix - 0xb7;
-            with_attr error_message("RLP data too short for declared length") {
-                assert_nn(data_len - len_bytes_count - 1);
-            }
             let string_len = Helpers.bytes_to_felt(len_bytes_count, data + 1);
             return (TYPE_STRING, 1 + len_bytes_count, string_len);
         }
@@ -65,9 +59,6 @@ namespace RLP {
         }
 
         local len_bytes_count = prefix - 0xf7;
-        with_attr error_message("RLP data too short for declared length") {
-            assert_nn(data_len - len_bytes_count - 1);
-        }
         let list_len = Helpers.bytes_to_felt(len_bytes_count, data + 1);
         return (TYPE_LIST, 1 + len_bytes_count, list_len);
     }
@@ -91,22 +82,17 @@ namespace RLP {
             return 0;
         }
 
-        let (rlp_type, offset, len) = decode_type(data_len=data_len, data=data);
+        let (rlp_type, offset, len) = decode_type(data);
         with_attr error_message("RLP data too short for declared length") {
             assert_nn(data_len - offset - len);
         }
 
         if (rlp_type == TYPE_LIST) {
-            // Case list
             let (sub_items: Item*) = alloc();
             let sub_items_len = decode_raw(items=sub_items, data_len=len, data=data + offset);
-            assert [items] = Item(
-                data_len=sub_items_len, data=cast(sub_items, felt*), is_list=TRUE
-            );
+            assert [items] = Item(sub_items_len, cast(sub_items, felt*), TRUE);
             tempvar range_check_ptr = range_check_ptr;
         } else {
-            // Case string or empty list. If the list or string is empty,
-            // the data_len is 0 so not passing an empty data segment is fine.
             assert [items] = Item(data_len=len, data=data + offset, is_list=FALSE);
             tempvar range_check_ptr = range_check_ptr;
         }
@@ -121,7 +107,7 @@ namespace RLP {
 
     func decode{range_check_ptr}(items: Item*, data_len: felt, data: felt*) {
         alloc_locals;
-        let (rlp_type, offset, len) = decode_type(data_len=data_len, data=data);
+        let (rlp_type, offset, len) = decode_type(data);
         local extra_bytes = data_len - offset - len;
         with_attr error_message("RLP string ends with {extra_bytes} superfluous bytes") {
             assert extra_bytes = 0;
