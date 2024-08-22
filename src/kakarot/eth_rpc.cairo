@@ -233,9 +233,8 @@ func eth_send_raw_transaction{
 ) {
     let tx = EthTransaction.decode(tx_data_len, tx_data);
 
-    // Whitelisting pre-eip155 or validate chain_id for post eip155
+    // Validate chain_id for post eip155
     let (chain_id) = Kakarot.eth_chain_id();
-    tempvar is_tx_post_eip155 = is_not_zero(tx.chain_id.is_some);
     if (tx.chain_id.is_some != FALSE) {
         with_attr error_message("Invalid chain id") {
             assert tx.chain_id.value = chain_id;
