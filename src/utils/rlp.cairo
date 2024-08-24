@@ -83,8 +83,9 @@ namespace RLP {
         }
 
         let (rlp_type, offset, len) = decode_type(data);
+        local remaining_data_len = data_len - len - offset;
         with_attr error_message("RLP data too short for declared length") {
-            assert_nn(data_len - offset - len);
+            assert_nn(remaining_data_len);
         }
 
         if (rlp_type == TYPE_LIST) {
@@ -98,7 +99,6 @@ namespace RLP {
         }
         tempvar items = items + Item.SIZE;
 
-        let remaining_data_len = data_len - len - offset;
         let items_len = decode_raw(
             items=items, data_len=remaining_data_len, data=data + offset + len
         );
