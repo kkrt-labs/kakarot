@@ -104,7 +104,7 @@ func execute_from_outside{
     }
     let (tx_info) = get_tx_info();
     let version = tx_info.version;
-    with_attr error_message("Deprecated tx version: {version}") {
+    with_attr error_message("Deprecated tx version: 0") {
         assert_le(1, version);
     }
 
