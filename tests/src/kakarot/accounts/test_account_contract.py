@@ -895,7 +895,7 @@ class TestAccountContract:
                     signature=[],
                 )
 
-        @pytest.mark.parametrize("data_len", [0, 2**128])
+        @given(data_len=integers(min_value=2**128, max_value=DEFAULT_PRIME))
         def test_should_raise_when_packed_data_len_is_zero_or_out_of_range(
             self, cairo_run, data_len
         ):
@@ -915,7 +915,7 @@ class TestAccountContract:
                             "to": 0,
                             "selector": 0,
                             "data_offset": 0,
-                            "data_len": data_len,
+                            "data_len": data_len % DEFAULT_PRIME,
                         },
                     ],
                     calldata=[],
