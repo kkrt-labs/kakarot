@@ -472,7 +472,6 @@ class TestKakarot:
                     tx_data=tx_data,
                 )
 
-        @SyscallHandler.patch("Kakarot_block_gas_limit", 0)
         @given(maxFeePerGas=integers(min_value=2**128, max_value=DEFAULT_PRIME - 1))
         def test_raise_max_fee_per_gas_too_high(self, cairo_run, maxFeePerGas):
             tx = {
@@ -499,7 +498,6 @@ class TestKakarot:
                     tx_data=tx_data,
                 )
 
-        @SyscallHandler.patch("Kakarot_block_gas_limit", 0)
         @pytest.mark.parametrize("tx", TRANSACTIONS)
         def test_raise_transaction_gas_limit_too_high(self, cairo_run, tx):
             tx_data = list(rlp_encode_signed_data(tx))
@@ -538,7 +536,6 @@ class TestKakarot:
             return (maxFeePerGas, maxPriorityFeePerGas)
 
         @SyscallHandler.patch("Kakarot_block_gas_limit", TRANSACTION_GAS_LIMIT)
-        @SyscallHandler.patch("Kakarot_base_fee", 0)
         @given(max_priority_fee_too_high())
         def test_raise_max_priority_fee_too_high(
             self, cairo_run, max_priority_fee_too_high
@@ -569,7 +566,6 @@ class TestKakarot:
 
         @SyscallHandler.patch("IERC20.balanceOf", lambda _, __: [0, 0])
         @SyscallHandler.patch("Kakarot_block_gas_limit", TRANSACTION_GAS_LIMIT)
-        @SyscallHandler.patch("Kakarot_base_fee", 0)
         @pytest.mark.parametrize("tx", TRANSACTIONS)
         def test_raise_not_enough_ETH_balance(self, cairo_run, tx):
             tx_data = list(rlp_encode_signed_data(tx))
