@@ -75,6 +75,7 @@ lint:
         - resources*
         - tests/ef_tests/test_data
         - .katana/messaging_config.json
+        - deployments
     - linters: [solidity]
       paths:
         - solidity_contracts/src/UniswapV2/**/*.sol
