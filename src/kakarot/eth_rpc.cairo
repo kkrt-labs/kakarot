@@ -3,7 +3,7 @@
 from openzeppelin.access.ownable.library import Ownable_owner
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.math import assert_le_felt, assert_le, assert_nn, split_felt
+from starkware.cairo.common.math import assert_le, assert_nn, split_felt
 from starkware.cairo.common.math_cmp import is_not_zero, is_nn
 from starkware.cairo.common.registers import get_fp_and_pc
 from starkware.cairo.common.uint256 import Uint256, uint256_add, uint256_le
@@ -262,7 +262,9 @@ func eth_send_raw_unsigned_tx{
 
     // Validate gas
     with_attr error_message("Gas limit too high") {
-        assert_le_felt(tx.gas_limit, 2 ** 64 - 1);
+        assert [range_check_ptr] = tx.gas_limit;
+        let range_check_ptr = range_check_ptr + 1;
+        assert_le(tx.gas_limit, 2 ** 64 - 1);
     }
 
     with_attr error_message("Max fee per gas too high") {
