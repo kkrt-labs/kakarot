@@ -212,7 +212,7 @@ namespace AccountContract {
         }
 
         // Send tx to Kakarot
-        let (return_data_len, return_data, success, gas_used) = IKakarot.eth_send_raw_transaction(
+        let (return_data_len, return_data, success, gas_used) = IKakarot.eth_send_raw_unsigned_tx(
             contract_address=kakarot_address, tx_data_len=tx_data_len, tx_data=tx_data
         );
 
