@@ -432,6 +432,7 @@ def _wrap_kakarot(fun: str, caller_eoa: Optional[Account] = None):
             data=calldata,
             caller_eoa=caller_eoa_ if caller_eoa_ else None,
             max_fee=max_fee,
+            gas_price=gas_price,
         )
         if success == 0:
             logger.error(f"❌ {self.address}.{fun} failed")
@@ -456,7 +457,7 @@ async def _contract_exists(address: int) -> bool:
         return False
 
 
-async def get_eoa(private_key=None, amount=10) -> Account:
+async def get_eoa(private_key=None, amount=0) -> Account:
     private_key = private_key or keys.PrivateKey(bytes.fromhex(EVM_PRIVATE_KEY[2:]))
     starknet_address = await deploy_and_fund_evm_address(
         private_key.public_key.to_checksum_address(), amount
@@ -541,6 +542,7 @@ async def eth_send_transaction(
     value: Union[int, str] = 0,
     caller_eoa: Optional[Account] = None,
     max_fee: Optional[int] = None,
+    gas_price=DEFAULT_GAS_PRICE,
 ):
     """Execute the data at the EVM contract to on Kakarot."""
     evm_account = caller_eoa or await get_eoa()
@@ -558,12 +560,11 @@ async def eth_send_transaction(
         ).nonce
 
     payload = {
-        "type": 0x2,
+        "type": 0x1,
         "chainId": NETWORK["chain_id"] % 2**32,
         "nonce": nonce,
         "gas": gas,
-        "maxPriorityFeePerGas": 1,
-        "maxFeePerGas": DEFAULT_GAS_PRICE,
+        "gasPrice": gas_price,
         "to": to_checksum_address(to) if to else None,
         "value": value,
         "data": data,
