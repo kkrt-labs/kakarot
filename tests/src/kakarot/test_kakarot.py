@@ -574,6 +574,7 @@ class TestKakarot:
 
         @SyscallHandler.patch("IERC20.balanceOf", lambda _, __: [0, 0])
         @SyscallHandler.patch("Kakarot_block_gas_limit", TRANSACTION_GAS_LIMIT)
+        @SyscallHandler.patch("IAccount.get_evm_address", lambda _, __: [0xABDE1])
         @pytest.mark.parametrize("tx", TRANSACTIONS)
         def test_raise_not_enough_ETH_balance(self, cairo_run, tx):
             tx_data = list(rlp_encode_signed_data(tx))
