@@ -225,8 +225,17 @@ func eth_send_transaction{
     return result;
 }
 
+// @notice The eth_send_raw_unsigned_tx. Modified version of eth_sendRawTransaction function described in the spec.
+//         See https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_sendrawtransaction
+// @dev This function takes the transaction data unsigned. Signature validation should be done before calling this function.
+// @param tx_data_len The length of the unsigned transaction data
+// @param tx_data The unsigned transaction data
+// @return return_data_len The length of the return_data
+// @return return_data An array of returned felts
+// @return success An boolean, TRUE if the transaction succeeded, FALSE otherwise
+// @return gas_used The amount of gas used by the transaction
 @external
-func eth_send_raw_transaction{
+func eth_send_raw_unsigned_tx{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(tx_data_len: felt, tx_data: felt*) -> (
     return_data_len: felt, return_data: felt*, success: felt, gas_used: felt

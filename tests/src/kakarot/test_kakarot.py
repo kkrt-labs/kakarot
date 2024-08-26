@@ -428,7 +428,7 @@ class TestKakarot:
 
             with cairo_error(message="Invalid chain id"):
                 cairo_run(
-                    "test__eth_send_raw_transaction",
+                    "test__eth_send_raw_unsigned_tx",
                     tx_data_len=len(tx_data),
                     tx_data=tx_data,
                 )
@@ -441,7 +441,7 @@ class TestKakarot:
             tx_data = list(rlp_encode_signed_data(tx))
             with cairo_error(message="Invalid nonce"):
                 cairo_run(
-                    "test__eth_send_raw_transaction",
+                    "test__eth_send_raw_unsigned_tx",
                     tx_data_len=len(tx_data),
                     tx_data=tx_data,
                 )
@@ -467,7 +467,7 @@ class TestKakarot:
                 cairo_error(message="Gas limit too high"),
             ):
                 cairo_run(
-                    "test__eth_send_raw_transaction",
+                    "test__eth_send_raw_unsigned_tx",
                     tx_data_len=len(tx_data),
                     tx_data=tx_data,
                 )
@@ -494,7 +494,7 @@ class TestKakarot:
                 cairo_error(message="Max fee per gas too high"),
             ):
                 cairo_run(
-                    "test__eth_send_raw_transaction",
+                    "test__eth_send_raw_unsigned_tx",
                     tx_data_len=len(tx_data),
                     tx_data=tx_data,
                 )
@@ -509,7 +509,7 @@ class TestKakarot:
                 cairo_error(message="Transaction gas_limit > Block gas_limit"),
             ):
                 cairo_run(
-                    "test__eth_send_raw_transaction",
+                    "test__eth_send_raw_unsigned_tx",
                     tx_data_len=len(tx_data),
                     tx_data=tx_data,
                 )
@@ -525,7 +525,7 @@ class TestKakarot:
                 cairo_error(message="Max fee per gas too low"),
             ):
                 cairo_run(
-                    "test__eth_send_raw_transaction",
+                    "test__eth_send_raw_unsigned_tx",
                     tx_data_len=len(tx_data),
                     tx_data=tx_data,
                 )
@@ -562,7 +562,7 @@ class TestKakarot:
                 cairo_error(message="Max priority fee greater than max fee per gas"),
             ):
                 cairo_run(
-                    "test__eth_send_raw_transaction",
+                    "test__eth_send_raw_unsigned_tx",
                     tx_data_len=len(tx_data),
                     tx_data=tx_data,
                 )
@@ -579,7 +579,7 @@ class TestKakarot:
                 cairo_error(message="Not enough ETH to pay msg.value + max gas fees"),
             ):
                 cairo_run(
-                    "test__eth_send_raw_transaction",
+                    "test__eth_send_raw_unsigned_tx",
                     tx_data_len=len(tx_data),
                     tx_data=tx_data,
                 )

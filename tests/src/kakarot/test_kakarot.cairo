@@ -6,7 +6,7 @@ from starkware.cairo.common.uint256 import Uint256
 
 from kakarot.library import Kakarot
 from kakarot.kakarot import (
-    eth_send_raw_transaction,
+    eth_send_raw_unsigned_tx,
     register_account,
     set_native_token,
     set_base_fee,
@@ -68,7 +68,7 @@ func eth_call{
     return (evm, state, gas_used, required_gas);
 }
 
-func test__eth_send_raw_transaction{
+func test__eth_send_raw_unsigned_tx{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() -> (felt, felt*, felt, felt) {
     tempvar tx_data_len: felt;
@@ -79,7 +79,7 @@ func test__eth_send_raw_transaction{
         ids.tx_data_len = len(program_input["tx_data"])
     %}
 
-    let (return_data_len, return_data, success, gas_used) = eth_send_raw_transaction(
+    let (return_data_len, return_data, success, gas_used) = eth_send_raw_unsigned_tx(
         tx_data_len=tx_data_len, tx_data=tx_data
     );
 

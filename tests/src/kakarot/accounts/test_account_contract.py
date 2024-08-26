@@ -385,7 +385,7 @@ class TestAccountContract:
         @SyscallHandler.patch("IKakarot.get_native_token", lambda _, __: [0xDEAD])
         @SyscallHandler.patch("IERC20.balanceOf", lambda _, __: int_to_uint256(10**128))
         @SyscallHandler.patch(
-            "IKakarot.eth_send_raw_transaction",
+            "IKakarot.eth_send_raw_unsigned_tx",
             lambda _, __: [1, 0x68656C6C6F, 1, 1],  # hello
         )
         def test_pass_authorized_pre_eip155_transaction(self, cairo_run):
@@ -429,7 +429,7 @@ class TestAccountContract:
 
         @SyscallHandler.patch("IERC20.balanceOf", lambda _, __: int_to_uint256(10**128))
         @SyscallHandler.patch(
-            "IKakarot.eth_send_raw_transaction",
+            "IKakarot.eth_send_raw_unsigned_tx",
             lambda _, __: [1, 0x68656C6C6F, 1, 1],  # hello
         )
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
@@ -466,7 +466,7 @@ class TestAccountContract:
 
         @SyscallHandler.patch("IERC20.balanceOf", lambda _, __: int_to_uint256(10**128))
         @SyscallHandler.patch(
-            "IKakarot.eth_send_raw_transaction",
+            "IKakarot.eth_send_raw_unsigned_tx",
             lambda _, __: [1, 0x68656C6C6F, 1, 1],  # hello
         )
         def test_should_pass_all_data_len(self, cairo_run, bytecode):
