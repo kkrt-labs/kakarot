@@ -8,7 +8,6 @@ from eth_utils import keccak
 from eth_utils.address import to_checksum_address
 from hypothesis import given
 from hypothesis.strategies import integers
-from starkware.cairo.lang.cairo_constants import DEFAULT_PRIME
 from starkware.starknet.public.abi import get_storage_var_address
 from web3._utils.abi import map_abi_data
 from web3._utils.normalizers import BASE_RETURN_NORMALIZERS
@@ -409,7 +408,7 @@ class TestKakarot:
             assert not evm["reverted"]
 
     class TestEthChainIdEntrypoint:
-        @given(chain_id=integers(min_value=0, max_value=DEFAULT_PRIME - 1))
+        @given(chain_id=integers(min_value=0, max_value=2**64 - 1))
         def test_should_return_chain_id_modulo_53(self, cairo_run, chain_id):
             with patch.dict(SyscallHandler.tx_info, {"chain_id": chain_id}):
                 res = cairo_run("test__eth_chain_id")
