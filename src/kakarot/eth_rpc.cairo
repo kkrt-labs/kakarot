@@ -240,6 +240,7 @@ func eth_send_raw_unsigned_tx{
 }(tx_data_len: felt, tx_data: felt*) -> (
     return_data_len: felt, return_data: felt*, success: felt, gas_used: felt
 ) {
+    alloc_locals;
     let tx = EthTransaction.decode(tx_data_len, tx_data);
 
     // Validate chain_id for post eip155
@@ -285,8 +286,7 @@ func eth_send_raw_unsigned_tx{
         assert_le(tx.max_priority_fee_per_gas, tx.max_fee_per_gas);
     }
 
-    let (native_token_address) = Kakarot_native_token_address.read();
-    let (balance) = IERC20.balanceOf(native_token_address, caller_address);
+    let (balance) = eth_get_balance(caller_address);
     let max_gas_fee = tx.gas_limit * tx.max_fee_per_gas;
     let (max_fee_high, max_fee_low) = split_felt(max_gas_fee);
     let (tx_cost, carry) = uint256_add(tx.amount, Uint256(low=max_fee_low, high=max_fee_high));
