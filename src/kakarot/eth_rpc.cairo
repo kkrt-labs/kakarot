@@ -3,7 +3,7 @@
 from openzeppelin.access.ownable.library import Ownable_owner
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.math import assert_le_felt, assert_nn, split_felt
+from starkware.cairo.common.math import assert_le_felt, assert_le, assert_nn, split_felt
 from starkware.cairo.common.math_cmp import is_not_zero, is_nn
 from starkware.cairo.common.registers import get_fp_and_pc
 from starkware.cairo.common.uint256 import Uint256, uint256_add, uint256_le
@@ -280,7 +280,9 @@ func eth_send_raw_unsigned_tx{
     }
 
     with_attr error_message("Max priority fee greater than max fee per gas") {
-        assert_le_felt(tx.max_priority_fee_per_gas, tx.max_fee_per_gas);
+        assert [range_check_ptr] = tx.max_priority_fee_per_gas;
+        let range_check_ptr = range_check_ptr + 1;
+        assert_le(tx.max_priority_fee_per_gas, tx.max_fee_per_gas);
     }
 
     let (native_token_address) = Kakarot_native_token_address.read();
