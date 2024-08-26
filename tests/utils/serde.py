@@ -165,7 +165,7 @@ class Serde:
                 else []
             ),
             "chain_id": (
-                raw["chain_id"]["value"] if raw["chain_id"]["is_some"] == 1 else 0
+                raw["chain_id"]["value"] if raw["chain_id"]["is_some"] == 1 else None
             ),
         }
 
