@@ -40,8 +40,8 @@ jobs:
         with:
           virtualenvs-create: true
           virtualenvs-in-project: true
+          virtualenvs-path: .venv
           installer-parallel: true
-      - run: poetry config installer.modern-installation false
       - name: Load cached venv
         id: cached-poetry-dependencies
         uses: actions/cache@v4
@@ -85,8 +85,8 @@ jobs:
         with:
           virtualenvs-create: true
           virtualenvs-in-project: true
+          virtualenvs-path: .venv
           installer-parallel: true
-      - run: poetry config installer.modern-installation false
       - name: Load cached venv
         id: cached-poetry-dependencies
         uses: actions/cache@v4
@@ -138,8 +138,8 @@ jobs:
         with:
           virtualenvs-create: true
           virtualenvs-in-project: true
+          virtualenvs-path: .venv
           installer-parallel: true
-      - run: poetry config installer.modern-installation false
       - name: Load cached venv
         id: cached-poetry-dependencies
         uses: actions/cache@v4
@@ -243,8 +243,8 @@ jobs:
         with:
           virtualenvs-create: true
           virtualenvs-in-project: true
+          virtualenvs-path: .venv
           installer-parallel: true
-      - run: poetry config installer.modern-installation false
       - name: Load cached venv
         id: cached-poetry-dependencies
         uses: actions/cache@v4
