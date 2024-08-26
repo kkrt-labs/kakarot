@@ -5,7 +5,7 @@
 from openzeppelin.access.ownable.library import Ownable, Ownable_owner
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin, SignatureBuiltin
-from starkware.cairo.common.math import assert_le
+from starkware.cairo.common.math import assert_le, assert_not_zero
 from starkware.cairo.common.math_cmp import is_nn
 from starkware.cairo.common.uint256 import Uint256
 from starkware.starknet.common.syscalls import (
@@ -86,7 +86,9 @@ func execute_from_outside{
 
     // Starknet validation
     if (outside_execution.caller != 'ANY_CALLER') {
-        assert caller = outside_execution.caller;
+        with_attr error_message("Execute from outside: invalid caller") {
+            assert caller = outside_execution.caller;
+        }
     }
     let (block_timestamp) = get_block_timestamp();
     let too_early = is_nn(outside_execution.execute_after - block_timestamp);
@@ -102,7 +104,7 @@ func execute_from_outside{
     }
     let (tx_info) = get_tx_info();
     let version = tx_info.version;
-    with_attr error_message("Deprecated tx version: {version}") {
+    with_attr error_message("Deprecated tx version: 0") {
         assert_le(1, version);
     }
 
@@ -114,8 +116,17 @@ func execute_from_outside{
 
     // Unpack the tx data
     let packed_tx_data_len = [call_array].data_len;
+    with_attr error_message("Execute from outside: packed_tx_data_len is zero or out of range") {
+        assert_not_zero(packed_tx_data_len);
+        assert [range_check_ptr] = packed_tx_data_len;
+        let range_check_ptr = range_check_ptr + 1;
+    }
     let packed_tx_data = calldata + [call_array].data_offset;
     let tx_data_len = [packed_tx_data];
+    with_attr error_message("Execute from outside: tx_data_len is out of range") {
+        assert [range_check_ptr] = tx_data_len;
+        let range_check_ptr = range_check_ptr + 1;
+    }
     let (tx_data) = Helpers.load_packed_bytes(
         packed_tx_data_len - 1, packed_tx_data + 1, tx_data_len
     );

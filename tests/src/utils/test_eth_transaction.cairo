@@ -53,11 +53,15 @@ func test__parse_access_list{range_check_ptr}(output_ptr: felt*) {
 func test__get_tx_type{range_check_ptr}() -> felt {
     alloc_locals;
     // Given
+    tempvar data_len: felt;
     let (data) = alloc();
-    %{ segments.write_arg(ids.data, program_input["data"]) %}
+    %{
+        ids.data_len = program_input.get("data_len", len(program_input["data"]))
+        segments.write_arg(ids.data, program_input["data"])
+    %}
 
     // When
-    let tx_type = EthTransaction.get_tx_type(data);
+    let tx_type = EthTransaction.get_tx_type(data_len, data);
 
     return tx_type;
 }

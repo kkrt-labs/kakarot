@@ -163,7 +163,7 @@ namespace AccountContract {
         let s = Uint256(signature[2], signature[3]);
         let v = signature[4];
 
-        let tx_type = EthTransaction.get_tx_type(tx_data);
+        let tx_type = EthTransaction.get_tx_type(tx_data_len, tx_data);
         local y_parity: felt;
         local pre_eip155_tx: felt;
         if (tx_type == 0) {
