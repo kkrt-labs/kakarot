@@ -537,10 +537,11 @@ class TestKakarot:
 
         @composite
         def max_priority_fee_too_high(draw):
-            maxFeePerGas = draw(integers(min_value=0, max_value=2**128 - 1))
-            maxPriorityFeePerGas = draw(integers(min_value=0, max_value=2**128 - 1))
-            assume(maxFeePerGas < maxPriorityFeePerGas)
-            return (maxFeePerGas, maxPriorityFeePerGas)
+            max_fee_per_gas = draw(integers(min_value=0, max_value=2**128 - 1))
+            max_priority_fee_per_gas = draw(
+                integers(min_value=max_fee_per_gas + 1, max_value=2**128 - 1)
+            )
+            return (max_fee_per_gas, max_priority_fee_per_gas)
 
         @SyscallHandler.patch("Kakarot_block_gas_limit", TRANSACTION_GAS_LIMIT)
         @given(max_priority_fee_too_high())
