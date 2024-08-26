@@ -410,9 +410,9 @@ class TestKakarot:
 
     class TestEthChainIdEntrypoint:
         @given(chain_id=integers(min_value=0, max_value=DEFAULT_PRIME - 1))
-        def test_should_return_chain_id(self, cairo_run, chain_id):
+        def test_should_return_chain_id_modulo_53(self, cairo_run, chain_id):
             with patch.dict(SyscallHandler.tx_info, {"chain_id": chain_id}):
-                res = cairo_run("test__chain_id")
+                res = cairo_run("test__eth_chain_id")
                 assert res == chain_id % 2**53
 
     class TestLoopProfiling:
