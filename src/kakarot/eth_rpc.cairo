@@ -288,7 +288,8 @@ func eth_send_raw_unsigned_tx{
         assert_le(tx.max_priority_fee_per_gas, tx.max_fee_per_gas);
     }
 
-    let (balance) = eth_get_balance(caller_address);
+    let (evm_address) = IAccount.get_evm_address(caller_address);
+    let (balance) = eth_get_balance(evm_address);
     let max_gas_fee = tx.gas_limit * tx.max_fee_per_gas;
     let (max_fee_high, max_fee_low) = split_felt(max_gas_fee);
     let (tx_cost, carry) = uint256_add(tx.amount, Uint256(low=max_fee_low, high=max_fee_high));
