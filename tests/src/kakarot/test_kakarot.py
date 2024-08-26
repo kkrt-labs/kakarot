@@ -6,7 +6,7 @@ import pytest
 from eth_abi import decode, encode
 from eth_utils import keccak
 from eth_utils.address import to_checksum_address
-from hypothesis import assume, given
+from hypothesis import given
 from hypothesis.strategies import composite, integers
 from starkware.cairo.lang.cairo_constants import DEFAULT_PRIME
 from starkware.starknet.public.abi import get_storage_var_address
