@@ -194,3 +194,8 @@ func test__set_cairo1_helpers_class_hash{
     set_cairo1_helpers_class_hash(value);
     return ();
 }
+
+func test__chain_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> felt {
+    let (chain_id) = Kakarot.eth_chain_id();
+    return chain_id;
+}
