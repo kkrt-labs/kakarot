@@ -530,9 +530,9 @@ class TestKakarot:
 
         @composite
         def max_priority_fee_too_high(draw):
-            max_fee_per_gas = draw(integers(min_value=0, max_value=2**128 - 1))
+            max_fee_per_gas = draw(integers(min_value=0, max_value=2**128 - 2))
             max_priority_fee_per_gas = draw(
-                integers(min_value=max_fee_per_gas + 1, max_value=2**128 - 1)
+                integers(min_value=max_fee_per_gas + 1, max_value=DEFAULT_PRIME - 1)
             )
             return (max_fee_per_gas, max_priority_fee_per_gas)
 
