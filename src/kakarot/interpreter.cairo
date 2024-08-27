@@ -897,7 +897,7 @@ namespace Interpreter {
 
         // Charge the gas fee to the user without setting up a transfer.
         // Transfers with the exact amounts will be performed post-execution.
-        // Note: balance > effective_fee was verified in AccountContract.execute_from_outside()
+        // Note: balance > effective_fee was verified in eth_send_raw_unsigned_tx()
         let max_fee = gas_limit * env.gas_price;
         let (fee_high, fee_low) = split_felt(max_fee);
         let max_fee_u256 = Uint256(low=fee_low, high=fee_high);

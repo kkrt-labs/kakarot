@@ -5,11 +5,10 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.dict_access import DictAccess
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.math import split_int, split_felt
+from starkware.cairo.common.math import split_int
 from starkware.cairo.common.memcpy import memcpy
-from starkware.cairo.common.uint256 import Uint256, uint256_not, uint256_le
+from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.math_cmp import is_nn, is_le_felt
-from starkware.cairo.common.math import assert_le_felt
 from starkware.starknet.common.syscalls import (
     StorageRead,
     StorageWrite,
@@ -29,7 +28,6 @@ from kakarot.accounts.model import CallArray
 from kakarot.errors import Errors
 from kakarot.constants import Constants
 from utils.eth_transaction import EthTransaction
-from utils.uint256 import uint256_add
 from utils.bytes import bytes_to_bytes8_little_endian
 from utils.signature import Signature
 from utils.utils import Helpers
@@ -205,94 +203,17 @@ namespace AccountContract {
             helpers_class=helpers_class,
         );
 
-        let tx = EthTransaction.decode(tx_data_len, tx_data);
-
-        // Whitelisting pre-eip155 or validate chain_id for post eip155
+        // Whitelisting pre-eip155
+        let (is_authorized) = Account_authorized_message_hashes.read(msg_hash);
         if (pre_eip155_tx != FALSE) {
-            let (is_authorized) = Account_authorized_message_hashes.read(msg_hash);
             with_attr error_message("Unauthorized pre-eip155 transaction") {
                 assert is_authorized = TRUE;
             }
-            tempvar syscall_ptr = syscall_ptr;
-            tempvar pedersen_ptr = pedersen_ptr;
-            tempvar range_check_ptr = range_check_ptr;
-        } else {
-            with_attr error_message("Invalid chain id") {
-                assert tx.chain_id = chain_id;
-            }
-            tempvar syscall_ptr = syscall_ptr;
-            tempvar pedersen_ptr = pedersen_ptr;
-            tempvar range_check_ptr = range_check_ptr;
         }
-        let syscall_ptr = cast([ap - 3], felt*);
-        let pedersen_ptr = cast([ap - 2], HashBuiltin*);
-        let range_check_ptr = [ap - 1];
-
-        // Validate nonce
-        let (account_nonce) = Account_nonce.read();
-        with_attr error_message("Invalid nonce") {
-            assert tx.signer_nonce = account_nonce;
-        }
-
-        // Validate gas and value
-        let (kakarot_address) = Ownable_owner.read();
-        let (native_token_address) = IKakarot.get_native_token(kakarot_address);
-        let (contract_address) = get_contract_address();
-        let (balance) = IERC20.balanceOf(native_token_address, contract_address);
-
-        with_attr error_message("Gas limit too high") {
-            assert_le_felt(tx.gas_limit, 2 ** 64 - 1);
-        }
-
-        with_attr error_message("Max fee per gas too high") {
-            assert [range_check_ptr] = tx.max_fee_per_gas;
-            let range_check_ptr = range_check_ptr + 1;
-        }
-
-        let max_gas_fee = tx.gas_limit * tx.max_fee_per_gas;
-        let (max_fee_high, max_fee_low) = split_felt(max_gas_fee);
-        let (tx_cost, carry) = uint256_add(tx.amount, Uint256(low=max_fee_low, high=max_fee_high));
-        assert carry = 0;
-        let (is_balance_enough) = uint256_le(tx_cost, balance);
-        with_attr error_message("Not enough ETH to pay msg.value + max gas fees") {
-            assert is_balance_enough = TRUE;
-        }
-
-        let (block_gas_limit) = IKakarot.get_block_gas_limit(kakarot_address);
-        let tx_gas_fits_in_block = is_nn(block_gas_limit - tx.gas_limit);
-        with_attr error_message("Transaction gas_limit > Block gas_limit") {
-            assert tx_gas_fits_in_block = TRUE;
-        }
-
-        let (block_base_fee) = IKakarot.get_base_fee(kakarot_address);
-        let enough_fee = is_nn(tx.max_fee_per_gas - block_base_fee);
-        with_attr error_message("Max fee per gas too low") {
-            assert enough_fee = TRUE;
-        }
-
-        with_attr error_message("Max priority fee greater than max fee per gas") {
-            assert_le_felt(tx.max_priority_fee_per_gas, tx.max_fee_per_gas);
-        }
-
-        let possible_priority_fee = tx.max_fee_per_gas - block_base_fee;
-        let priority_fee_is_max_priority_fee = is_nn(
-            possible_priority_fee - tx.max_priority_fee_per_gas
-        );
-        let priority_fee_per_gas = priority_fee_is_max_priority_fee * tx.max_priority_fee_per_gas +
-            (1 - priority_fee_is_max_priority_fee) * possible_priority_fee;
-        let effective_gas_price = priority_fee_per_gas + block_base_fee;
 
         // Send tx to Kakarot
-        let (return_data_len, return_data, success, gas_used) = IKakarot.eth_send_transaction(
-            contract_address=kakarot_address,
-            to=tx.destination,
-            gas_limit=tx.gas_limit,
-            gas_price=effective_gas_price,
-            value=tx.amount,
-            data_len=tx.payload_len,
-            data=tx.payload,
-            access_list_len=tx.access_list_len,
-            access_list=tx.access_list,
+        let (return_data_len, return_data, success, gas_used) = IKakarot.eth_send_raw_unsigned_tx(
+            contract_address=kakarot_address, tx_data_len=tx_data_len, tx_data=tx_data
         );
 
         // See Argent account

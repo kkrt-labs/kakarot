@@ -25,6 +25,7 @@ from kakarot.eth_rpc import (
     eth_call,
     eth_estimate_gas,
     eth_send_transaction,
+    eth_send_raw_unsigned_tx,
 )
 
 // Constructor
