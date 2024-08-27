@@ -49,7 +49,7 @@ class TestEthTransaction:
             assert expected_to == decoded_tx["destination"]
             assert transaction["value"] == int(decoded_tx["amount"], 16)
             # pre-eip155 txs have an internal chain_id set to 0 in the decoded tx
-            assert transaction.get("chainId", None) == decoded_tx["chain_id"]
+            assert transaction.get("chainId") == decoded_tx["chain_id"]
             assert expected_data == decoded_tx["payload"]
             assert expected_access_list == decoded_tx["access_list"]
 
