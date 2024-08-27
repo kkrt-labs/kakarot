@@ -155,6 +155,10 @@ async def main():
 
     if NETWORK["type"] is (NetworkType.DEV or NetworkType.STAGING):
         bridge = await deploy_evm("CairoPrecompiles", "EthStarknetBridge")
+        evm_deployments["Bridge"] = {
+            "address": int(bridge.address, 16),
+            "starknet_address": bridge.starknet_address,
+        }
         await invoke(
             "kakarot",
             "set_authorized_cairo_precompile_caller",
@@ -162,10 +166,6 @@ async def main():
             1,
         )
         await invoke("kakarot", "set_coinbase", int(bridge.address, 16))
-        evm_deployments["bridge"] = {
-            "address": int(bridge.address, 16),
-            "starknet_address": bridge.starknet_address,
-        }
         await invoke("kakarot", "set_base_fee", 1)
 
     dump_evm_deployments(evm_deployments)

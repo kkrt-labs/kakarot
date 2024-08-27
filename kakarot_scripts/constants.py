@@ -231,6 +231,7 @@ DECLARED_CONTRACTS = [
     {"contract_name": "StarknetToken", "cairo_version": ArtifactType.cairo1},
     {"contract_name": "ERC20", "cairo_version": ArtifactType.cairo0},
     {"contract_name": "kakarot", "cairo_version": ArtifactType.cairo0},
+    {"contract_name": "UniversalLibraryCaller", "cairo_version": ArtifactType.cairo1},
 ]
 
 # PRE-EIP155 TX

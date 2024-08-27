@@ -43,8 +43,6 @@ contract EthStarknetBridge {
         transferCallData[1] = uint256(amountLow);
         transferCallData[2] = uint256(amountHigh);
 
-        // TODO: fine tune the 100_000 gas limit
-        require(gasleft() > 100_000, "Not enough gas to call Eth Cairo contract");
         starknetEth.delegatecallCairo(TRANSFER_SELECTOR, transferCallData);
     }
 }

@@ -18,5 +18,10 @@
     "address": "0x17e64c92b06da9a331da9fd333a683a33019ae2a393254caf332d4158edc74d",
     "tx": "0x3d6b91602c1e290bc65c6f85751f5ea156cf982d01c6bf1ea694d7398a9d5a5",
     "artifact": "build/ssj/contracts_MockPragmaOracle"
+  },
+  "UniversalLibraryCaller": {
+    "address": "0x01e12ea32baf68b1e11c1ce32595d3a61a22ccdcbc67f94c77268b6ce99fa6d4",
+    "tx": "0x3d6b91602c1e290bc65c6f85751f5ea156cf982d01c6bf1ea694d7398a9d5a5",
+    "artifact": "cairo1_contracts/utils/target/dev/library_call_UniversalLibraryCaller"
   }
 }

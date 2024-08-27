@@ -254,6 +254,9 @@ def get_artifact(contract_name, cairo_version=None):
     if cairo_version is None:
         cairo_version = get_artifact_version(contract_name)
     if cairo_version == ArtifactType.cairo1:
+        if artifacts := list(Path("cairo1_contracts").glob(f"**/*{contract_name}*")):
+            return artifacts[0].with_suffix("").with_suffix(""), ArtifactType.cairo1
+
         return (BUILD_DIR_SSJ / f"contracts_{contract_name}", ArtifactType.cairo1)
 
     return (
@@ -286,7 +289,9 @@ def is_fixture_contract(contract_name):
 def get_artifact_version(contract_name):
     cairo_0 = contract_name in set(CONTRACTS_FIXTURES).union(set(CONTRACTS))
     cairo_1 = any(
-        contract_name in str(artifact) for artifact in BUILD_DIR_SSJ.glob("*.json")
+        contract_name in str(artifact)
+        for artifact in list(BUILD_DIR_SSJ.glob("*.json"))
+        + list(Path("cairo1_contracts").glob("**/*.json"))
     )
     if cairo_0 and cairo_1:
         raise ValueError(f"Contract {contract_name} is ambiguous")

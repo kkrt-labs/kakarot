@@ -77,8 +77,7 @@ async def new_eoa(deployer) -> Wallet:
         "CairoPrecompiles", "EthStarknetBridge", address=bridge_address
     )
     gas_price = (await call("kakarot", "get_base_fee")).base_fee
-    # Hard coded gas limit according to the require(gasleft > 100k) in the bridge contract
-    gas_limit = 150000
+    gas_limit = 40_000
     tx_cost = gas_limit * gas_price
     for wallet in deployed:
         balance = await eth_balance_of(wallet.address)

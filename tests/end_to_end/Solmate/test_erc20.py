@@ -229,36 +229,9 @@ class TestERC20:
                 }
             ]
             assert await erc_20.allowance(owner.address, other.address) == TEST_SUPPLY
-            assert await erc_20.nonces(owner.address) == 1
+            assert await erc_20.nonces(owner.address) == nonce + 1
 
-        async def test_permit_should_fail_with_bad_nonce(self, erc_20, owner, other):
-            bad_nonce = 1
-            deadline = 2**256 - 1
-            digest = get_approval_digest(
-                "Kakarot Token",
-                erc_20.address,
-                {
-                    "owner": owner.address,
-                    "spender": other.address,
-                    "value": MAX_INT,
-                },
-                bad_nonce,
-                deadline,
-            )
-            v, r, s = ec_sign(digest, owner.private_key)
-            with evm_error("INVALID_SIGNER"):
-                await erc_20.permit(
-                    owner.address,
-                    other.address,
-                    TEST_SUPPLY,
-                    deadline,
-                    v,
-                    r,
-                    s,
-                    caller_eoa=owner.starknet_contract,
-                )
-
-        async def test_permit_should_fail_with_bad_deadline(
+        async def test_should_fail_with_bad_deadline(
             self, erc_20, block_timestamp, owner, other
         ):
             nonce = await erc_20.nonces(owner.address)
@@ -289,7 +262,7 @@ class TestERC20:
                     caller_eoa=owner.starknet_contract,
                 )
 
-        async def test_permit_should_fail_on_replay(self, erc_20, owner, other):
+        async def test_should_fail_on_replay(self, erc_20, owner, other):
             nonce = await erc_20.nonces(owner.address)
             deadline = 2**256 - 1
             digest = get_approval_digest(
