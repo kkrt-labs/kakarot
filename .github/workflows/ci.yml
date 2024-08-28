@@ -51,7 +51,7 @@ jobs:
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: make setup
-
+      - uses: software-mansion/setup-scarb@v1
       # Build artifacts
       - name: Compile all the cairo files
         run: make build
