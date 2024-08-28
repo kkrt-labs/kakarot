@@ -89,6 +89,37 @@ namespace Interpreter {
                 let evm_reverted = is_not_zero(evm.reverted);
                 let success = (1 - precompile_reverted) * (1 - evm_reverted);
                 let evm = EVM.stop(evm, output_len, output, 1 - success);
+                let is_cairo_precompile_called = PrecompilesHelpers.is_kakarot_precompile(
+                    evm.message.code_address.evm
+                );
+                tempvar message = new model.Message(
+                    bytecode=evm.message.bytecode,
+                    bytecode_len=evm.message.bytecode_len,
+                    valid_jumpdests_start=evm.message.valid_jumpdests_start,
+                    valid_jumpdests=evm.message.valid_jumpdests,
+                    calldata=evm.message.calldata,
+                    calldata_len=evm.message.calldata_len,
+                    value=evm.message.value,
+                    caller=evm.message.caller,
+                    parent=evm.message.parent,
+                    address=evm.message.address,
+                    code_address=evm.message.code_address,
+                    read_only=evm.message.read_only,
+                    is_create=evm.message.is_create,
+                    depth=evm.message.depth,
+                    env=evm.message.env,
+                    cairo_precompile_called=is_cairo_precompile_called,
+                );
+                tempvar evm = new model.EVM(
+                    message=message,
+                    return_data_len=evm.return_data_len,
+                    return_data=evm.return_data,
+                    program_counter=evm.program_counter,
+                    stopped=evm.stopped,
+                    gas_left=evm.gas_left,
+                    gas_refund=evm.gas_refund,
+                    reverted=evm.reverted,
+                );
                 return evm;
             } else {
                 let (return_data: felt*) = alloc();
@@ -862,6 +893,7 @@ namespace Interpreter {
             is_create=is_deploy_tx,
             depth=0,
             env=env,
+            cairo_precompile_called=FALSE,
         );
 
         let stack = Stack.init();
@@ -954,6 +986,9 @@ namespace Interpreter {
         // Only the gas fee paid will be committed.
         State.finalize{state=state}();
         if (evm.reverted != 0) {
+            with_attr error_message("Tx reverting due to cairo precompile") {
+                assert evm.message.cairo_precompile_called = FALSE;
+            }
             tempvar state = State.init();
         } else {
             tempvar state = state;

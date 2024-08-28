@@ -59,6 +59,10 @@ class EvmTransactionError(Exception):
     pass
 
 
+class StarknetTransactionError(Exception):
+    pass
+
+
 @functools.lru_cache()
 def get_solidity_artifacts(
     contract_app: str,
@@ -654,6 +658,8 @@ async def send_starknet_transaction(
         if event.from_address == evm_account.address
         and event.keys[0] == starknet_keccak(b"transaction_executed")
     ]
+    if receipt.execution_status.name == "REVERTED":
+        raise StarknetTransactionError(f"Starknet tx reverted: {receipt.revert_reason}")
     if len(transaction_events) != 1:
         raise ValueError("Cannot locate the single event giving the actual tx status")
     (

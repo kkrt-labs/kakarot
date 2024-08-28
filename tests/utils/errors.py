@@ -2,6 +2,7 @@ import re
 from contextlib import contextmanager
 
 import pytest
+from starknet_py.net.client_errors import ClientError
 from web3 import Web3
 
 
@@ -33,7 +34,10 @@ def cairo_error(message=None):
             yield e
         if message is None:
             return
-        error = re.search(r"Error message: (.*)", str(e.value))
+        if type(e.value) == ClientError:
+            error = re.search(r"Error message: (.*)", str(e.value.data["revert_error"]))
+        else:
+            error = re.search(r"Error message: (.*)", str(e.value))
         error = error.group(1) if error else str(e.value)
         assert message == error, f"Expected {message}, got {error}"
     finally:

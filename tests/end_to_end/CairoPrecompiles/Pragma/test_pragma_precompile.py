@@ -5,7 +5,7 @@ import pytest_asyncio
 
 from kakarot_scripts.utils.kakarot import deploy
 from kakarot_scripts.utils.starknet import get_contract, get_deployments, invoke
-from tests.utils.errors import evm_error
+from tests.utils.errors import cairo_error
 
 ENTRY_TYPE_INDEX = {"SpotEntry": 0, "FutureEntry": 1, "GenericEntry": 2}
 
@@ -150,5 +150,5 @@ class TestPragmaPrecompile:
         )
         solidity_input = serialize_data_type(data_type)
 
-        with evm_error("CairoLib: call_contract failed"):
+        with cairo_error("Tx reverting due to cairo precompile"):
             await pragma_caller.getDataMedianSpot(solidity_input)
