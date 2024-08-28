@@ -38,7 +38,7 @@ fetch-ssj-artifacts:
 setup: fetch-ssj-artifacts
 	poetry install
 
-test: build-sol deploy
+test: deploy
 	poetry run pytest tests/src -m "not NoCI" --log-cli-level=INFO -n logical --seed 42
 	poetry run pytest tests/end_to_end --seed 42
 
@@ -46,7 +46,7 @@ test-unit: build-sol
 	poetry run pytest tests/src -m "not NoCI" -n logical --seed 42
 
 # run make run-nodes in other terminal
-test-end-to-end: build-sol deploy
+test-end-to-end: deploy
 	poetry run pytest tests/end_to_end --seed 42
 
 deploy: build build-sol

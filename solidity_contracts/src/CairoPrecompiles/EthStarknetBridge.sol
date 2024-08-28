@@ -6,8 +6,12 @@ import {CairoLib} from "kakarot-lib/CairoLib.sol";
 using CairoLib for uint256;
 
 contract EthStarknetBridge {
+    /// @dev The cairo contract to call
+    uint256 constant starknetEth = 0x49D36570D4E46F48E99674BD3FCC84644DDD6B96F7C741B1562B82F9E004DC7;
+    uint256 constant TRANSFER_SELECTOR = uint256(keccak256("transfer")) % 2 ** 250;
+
     // State variable to store the owner of the contract
-    address public owner;
+    address immutable owner;
 
     // Constructor sets the owner of the contract
     constructor() {
@@ -19,10 +23,6 @@ contract EthStarknetBridge {
         require(msg.sender == owner, "Not the contract owner");
         _;
     }
-
-    /// @dev The cairo contract to call
-    uint256 constant starknetEth = 0x49D36570D4E46F48E99674BD3FCC84644DDD6B96F7C741B1562B82F9E004DC7;
-    uint256 constant TRANSFER_SELECTOR = uint256(keccak256("transfer")) % 2 ** 250;
 
     /// @notice Withdraws ETH from the contract to a Starknet address
     function withdraw(uint256 toStarknetAddress) external onlyOwner {
