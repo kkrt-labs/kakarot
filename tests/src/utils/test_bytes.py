@@ -4,9 +4,9 @@ import pytest
 from hypothesis import given
 from hypothesis.strategies import integers
 
+from kakarot_scripts.utils.uint256 import int_to_uint256
 from tests.utils.errors import cairo_error
 from tests.utils.hints import patch_hint
-from tests.utils.uint256 import int_to_uint256
 
 PRIME = 0x800000000000011000000000000000000000000000000000000000000000001
 

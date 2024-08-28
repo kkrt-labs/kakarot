@@ -24,7 +24,7 @@ func test__init__should_return_account_with_default_dict_as_storage{
     local nonce: felt;
     local balance_low: felt;
     %{
-        from tests.utils.uint256 import int_to_uint256
+        from kakarot_scripts.utils.uint256 import int_to_uint256
 
         ids.evm_address = program_input["evm_address"]
         ids.code_len = len(program_input["code"])
@@ -68,7 +68,7 @@ func test__copy__should_return_new_account_with_same_attributes{
     local nonce: felt;
     local balance_low: felt;
     %{
-        from tests.utils.uint256 import int_to_uint256
+        from kakarot_scripts.utils.uint256 import int_to_uint256
 
         ids.evm_address = program_input["evm_address"]
         ids.code_len = len(program_input["code"])
@@ -196,7 +196,7 @@ func test__has_code_or_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ran
     let (code_hash_ptr) = alloc();
     local nonce: felt;
     %{
-        from tests.utils.uint256 import int_to_uint256
+        from kakarot_scripts.utils.uint256 import int_to_uint256
 
         ids.code_len = len(program_input["code"])
         segments.write_arg(ids.code, program_input["code"])

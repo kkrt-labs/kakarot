@@ -3,8 +3,8 @@ from eth_utils import keccak
 from hypothesis import given
 from hypothesis.strategies import binary
 
+from kakarot_scripts.utils.uint256 import int_to_uint256
 from tests.utils.syscall_handler import SyscallHandler
-from tests.utils.uint256 import int_to_uint256
 
 
 class TestAccount:

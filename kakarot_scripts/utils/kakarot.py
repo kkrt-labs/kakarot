@@ -46,9 +46,9 @@ from kakarot_scripts.utils.starknet import get_deployments as _get_starknet_depl
 from kakarot_scripts.utils.starknet import get_starknet_account
 from kakarot_scripts.utils.starknet import invoke as _invoke_starknet
 from kakarot_scripts.utils.starknet import wait_for_transaction
+from kakarot_scripts.utils.uint256 import int_to_uint256
 from tests.utils.constants import TRANSACTION_GAS_LIMIT
 from tests.utils.helpers import pack_calldata, rlp_encode_signed_data
-from tests.utils.uint256 import int_to_uint256
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -316,7 +316,16 @@ def dump_deployments(deployments):
 
 def get_deployments():
     try:
-        return json.load(open(DEPLOYMENTS_DIR / "kakarot_deployments.json", "r"))
+        return {
+            name: {
+                **value,
+                "address": int(value["address"], 16),
+                "starknet_address": int(value["starknet_address"], 16),
+            }
+            for name, value in json.load(
+                open(DEPLOYMENTS_DIR / "kakarot_deployments.json", "r")
+            ).items()
+        }
     except FileNotFoundError:
         return {}
 
@@ -561,7 +570,7 @@ async def eth_send_transaction(
 
     payload = {
         "type": 0x1,
-        "chainId": NETWORK["chain_id"] % 2**32,
+        "chainId": NETWORK["chain_id"],
         "nonce": nonce,
         "gas": gas,
         "gasPrice": gas_price,

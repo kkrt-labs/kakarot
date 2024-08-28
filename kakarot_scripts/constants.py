@@ -155,7 +155,7 @@ try:
     if WEB3.is_connected():
         chain_id = WEB3.eth.chain_id
     else:
-        chain_id = starknet_chain_id
+        chain_id = starknet_chain_id % 2**53
 except (
     requests.exceptions.ConnectionError,
     requests.exceptions.MissingSchema,
@@ -164,8 +164,8 @@ except (
     logger.info(
         f"⚠️  Could not get chain Id from {NETWORK['rpc_url']}: {e}, defaulting to KKRT"
     )
-    chain_id = int.from_bytes(b"KKRT", "big")
     starknet_chain_id = int.from_bytes(b"KKRT", "big")
+    chain_id = starknet_chain_id % 2**53
 
 
 class ChainId(IntEnum):
@@ -181,57 +181,59 @@ COINBASE = int(
     or "0x20eB005C0b9c906691F885eca5895338E15c36De",
     16,
 )
-SOURCE_DIR = Path("src")
-SOURCE_DIR_FIXTURES = Path("tests/fixtures")
-CONTRACTS = {p.stem: p for p in list(SOURCE_DIR.glob("**/*.cairo"))}
-CONTRACTS_FIXTURES = {p.stem: p for p in list(SOURCE_DIR_FIXTURES.glob("**/*.cairo"))}
+CAIRO_ZERO_DIR = Path("src")
+CAIRO_DIR = Path("cairo1_contracts")
+TESTS_DIR = Path("tests")
+
+CONTRACTS = {
+    p.stem: p
+    for p in (
+        list(CAIRO_ZERO_DIR.glob("**/*.cairo"))
+        + list(TESTS_DIR.glob("**/*.cairo"))
+        + list(CAIRO_DIR.glob("**/*.cairo"))
+    )
+}
 
 BUILD_DIR = Path("build")
-BUILD_DIR_FIXTURES = BUILD_DIR / "fixtures"
 BUILD_DIR.mkdir(exist_ok=True, parents=True)
-BUILD_DIR_FIXTURES.mkdir(exist_ok=True, parents=True)
 BUILD_DIR_SSJ = BUILD_DIR / "ssj"
 
 DATA_DIR = Path("kakarot_scripts") / "data"
-
-
-class ArtifactType(Enum):
-    cairo0 = 0
-    cairo1 = 1
 
 
 DEPLOYMENTS_DIR = Path("deployments") / NETWORK["name"]
 DEPLOYMENTS_DIR.mkdir(exist_ok=True, parents=True)
 
 COMPILED_CONTRACTS = [
-    {"contract_name": "kakarot", "is_account_contract": False},
     {"contract_name": "account_contract", "is_account_contract": True},
+    {"contract_name": "BalanceSender", "is_account_contract": False},
+    {"contract_name": "Counter", "is_account_contract": False},
+    {"contract_name": "ERC20", "is_account_contract": False},
+    {"contract_name": "EVM", "is_account_contract": False},
+    {"contract_name": "kakarot", "is_account_contract": False},
+    {"contract_name": "MockPragmaOracle", "is_account_contract": False},
+    {"contract_name": "OpenzeppelinAccount", "is_account_contract": True},
+    {"contract_name": "replace_class", "is_account_contract": False},
+    {"contract_name": "StarknetToken", "is_account_contract": False},
     {"contract_name": "uninitialized_account_fixture", "is_account_contract": False},
     {"contract_name": "uninitialized_account", "is_account_contract": False},
-    {"contract_name": "EVM", "is_account_contract": False},
-    {"contract_name": "OpenzeppelinAccount", "is_account_contract": True},
-    {"contract_name": "ERC20", "is_account_contract": False},
-    {"contract_name": "replace_class", "is_account_contract": False},
-    {"contract_name": "Counter", "is_account_contract": False},
+    {"contract_name": "UniversalLibraryCaller", "is_account_contract": False},
 ]
 DECLARED_CONTRACTS = [
-    {"contract_name": "account_contract", "cairo_version": ArtifactType.cairo0},
-    {
-        "contract_name": "uninitialized_account_fixture",
-        "cairo_version": ArtifactType.cairo0,
-    },
-    {"contract_name": "uninitialized_account", "cairo_version": ArtifactType.cairo0},
-    {"contract_name": "EVM", "cairo_version": ArtifactType.cairo0},
-    {"contract_name": "OpenzeppelinAccount", "cairo_version": ArtifactType.cairo0},
-    {"contract_name": "Cairo1Helpers", "cairo_version": ArtifactType.cairo1},
-    {"contract_name": "Cairo1HelpersFixture", "cairo_version": ArtifactType.cairo1},
-    {"contract_name": "replace_class", "cairo_version": ArtifactType.cairo0},
-    {"contract_name": "Counter", "cairo_version": ArtifactType.cairo0},
-    {"contract_name": "MockPragmaOracle", "cairo_version": ArtifactType.cairo1},
-    {"contract_name": "StarknetToken", "cairo_version": ArtifactType.cairo1},
-    {"contract_name": "ERC20", "cairo_version": ArtifactType.cairo0},
-    {"contract_name": "kakarot", "cairo_version": ArtifactType.cairo0},
-    {"contract_name": "UniversalLibraryCaller", "cairo_version": ArtifactType.cairo1},
+    "account_contract",
+    "Cairo1Helpers",
+    "Cairo1HelpersFixture",
+    "Counter",
+    "ERC20",
+    "EVM",
+    "kakarot",
+    "MockPragmaOracle",
+    "OpenzeppelinAccount",
+    "replace_class",
+    "StarknetToken",
+    "uninitialized_account_fixture",
+    "uninitialized_account",
+    "UniversalLibraryCaller",
 ]
 
 # PRE-EIP155 TX

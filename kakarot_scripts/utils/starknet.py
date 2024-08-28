@@ -2,7 +2,9 @@ import functools
 import json
 import logging
 import random
+import re
 import subprocess
+from collections import namedtuple
 from copy import deepcopy
 from datetime import datetime
 from functools import cache
@@ -35,16 +37,14 @@ from starkware.starknet.public.abi import get_selector_from_name
 
 from kakarot_scripts.constants import (
     BUILD_DIR,
-    BUILD_DIR_FIXTURES,
     BUILD_DIR_SSJ,
+    CAIRO_DIR,
+    CAIRO_ZERO_DIR,
     CONTRACTS,
-    CONTRACTS_FIXTURES,
     DEPLOYMENTS_DIR,
     ETH_TOKEN_ADDRESS,
     NETWORK,
     RPC_CLIENT,
-    SOURCE_DIR,
-    ArtifactType,
     ChainId,
     NetworkType,
 )
@@ -58,12 +58,7 @@ logger.setLevel(logging.INFO)
 # to have at least 0.1 ETH
 _max_fee = int(1e17)
 
-
-def int_to_uint256(value):
-    value = int(value)
-    low = value & ((1 << 128) - 1)
-    high = value >> 128
-    return {"low": low, "high": high}
+Artifact = namedtuple("Artifact", ["sierra", "casm"])
 
 
 @alru_cache
@@ -134,21 +129,19 @@ async def get_starknet_account(
 async def get_eth_contract(provider=None) -> Contract:
     return Contract(
         ETH_TOKEN_ADDRESS,
-        get_abi("ERC20", cairo_version=ArtifactType.cairo0),
+        get_abi("ERC20"),
         provider or await get_starknet_account(),
-        cairo_version=ArtifactType.cairo0,
+        cairo_version=0,
     )
 
 
 @cache
-def get_contract(
-    contract_name, address=None, provider=None, cairo_version=None
-) -> Contract:
+def get_contract(contract_name, address=None, provider=None) -> Contract:
     return Contract(
         address or get_deployments()[contract_name]["address"],
-        get_abi(contract_name, cairo_version),
+        get_abi(contract_name),
         provider or RPC_CLIENT,
-        cairo_version=get_artifact_version(contract_name).value,
+        cairo_version=get_cairo_version(contract_name),
     )
 
 
@@ -159,7 +152,7 @@ async def fund_address(
     Fund a given starknet address with {amount} ETH.
     """
     address = int(address, 16) if isinstance(address, str) else address
-    amount = amount * 1e18
+    amount = int(amount * 1e18)
     if NETWORK["name"] == "starknet-devnet":
         response = requests.post(
             "http://127.0.0.1:5050/mint",
@@ -177,9 +170,7 @@ async def fund_address(
             raise ValueError(
                 f"Cannot send {amount / 1e18} ETH from default account with current balance {balance / 1e18} ETH"
             )
-        prepared = eth_contract.functions["transfer"].prepare_invoke_v1(
-            address, int_to_uint256(amount)
-        )
+        prepared = eth_contract.functions["transfer"].prepare_invoke_v1(address, amount)
         tx = await prepared.invoke(max_fee=_max_fee)
 
         status = await wait_for_transaction(tx.hash)
@@ -250,89 +241,78 @@ def get_deployments():
 
 
 @cache
-def get_artifact(contract_name, cairo_version=None):
-    if cairo_version is None:
-        cairo_version = get_artifact_version(contract_name)
-    if cairo_version == ArtifactType.cairo1:
-        if artifacts := list(Path("cairo1_contracts").glob(f"**/*{contract_name}*")):
-            return artifacts[0].with_suffix("").with_suffix(""), ArtifactType.cairo1
-
-        return (BUILD_DIR_SSJ / f"contracts_{contract_name}", ArtifactType.cairo1)
-
-    return (
-        (
-            BUILD_DIR / f"{contract_name}.json"
-            if not is_fixture_contract(contract_name)
-            else BUILD_DIR_FIXTURES / f"{contract_name}.json"
-        ),
-        ArtifactType.cairo0,
+def get_artifact(contract_name):
+    artifacts = list(CAIRO_DIR.glob(f"**/*{contract_name}.*.json")) or list(
+        BUILD_DIR_SSJ.glob(f"**/*{contract_name}.*.json")
     )
+    if artifacts:
+        sierra, casm = (
+            artifacts
+            if "sierra.json" in artifacts[0].name
+            or ".contract_class.json" in artifacts[0].name
+            else artifacts[::-1]
+        )
+        return Artifact(sierra=sierra, casm=casm)
+
+    artifacts = list(BUILD_DIR.glob(f"**/*{contract_name}*.json"))
+    if not artifacts:
+        raise FileNotFoundError(f"No artifact found for {contract_name}")
+    return Artifact(sierra=None, casm=artifacts[0])
 
 
 @cache
-def get_abi(contract_name, cairo_version=None):
-    artifact, cairo_version = get_artifact(contract_name, cairo_version)
-    if cairo_version == ArtifactType.cairo1:
-        artifact = artifact.with_suffix(".contract_class.json")
+def get_abi(contract_name):
+    artifact = get_artifact(contract_name)
+    return json.loads(
+        (artifact.sierra if artifact.sierra else artifact.casm).read_text()
+    )["abi"]
 
-    return json.loads(artifact.read_text())["abi"]
+
+@cache
+def get_cairo_version(contract_name):
+    return get_artifact(contract_name).sierra is not None
 
 
+@cache
 def get_tx_url(tx_hash: int) -> str:
     return f"{NETWORK['explorer_url']}/tx/0x{tx_hash:064x}"
-
-
-def is_fixture_contract(contract_name):
-    return CONTRACTS_FIXTURES.get(contract_name) is not None
-
-
-def get_artifact_version(contract_name):
-    cairo_0 = contract_name in set(CONTRACTS_FIXTURES).union(set(CONTRACTS))
-    cairo_1 = any(
-        contract_name in str(artifact)
-        for artifact in list(BUILD_DIR_SSJ.glob("*.json"))
-        + list(Path("cairo1_contracts").glob("**/*.json"))
-    )
-    if cairo_0 and cairo_1:
-        raise ValueError(f"Contract {contract_name} is ambiguous")
-    if cairo_0:
-        return ArtifactType.cairo0
-    if cairo_1:
-        return ArtifactType.cairo1
-    raise ValueError(f"Cannot find artifact for contract {contract_name}")
 
 
 def compile_contract(contract):
     logger.info(f"⏳ Compiling {contract['contract_name']}")
     start = datetime.now()
-    is_fixture = is_fixture_contract(contract["contract_name"])
-    artifact, cairo_version = get_artifact(contract["contract_name"])
-
-    if cairo_version == ArtifactType.cairo1:
-        raise NotImplementedError("SSJ compilation not implemented yet")
-
-    output = subprocess.run(
-        [
-            "starknet-compile-deprecated",
-            (
-                CONTRACTS[contract["contract_name"]]
-                if not is_fixture
-                else CONTRACTS_FIXTURES[contract["contract_name"]]
-            ),
-            "--output",
-            artifact,
-            "--cairo_path",
-            str(SOURCE_DIR),
-            *(["--no_debug_info"] if NETWORK["type"] is not NetworkType.DEV else []),
-            *(["--account_contract"] if contract["is_account_contract"] else []),
-            *(
-                ["--disable_hint_validation"]
-                if NETWORK["type"] is NetworkType.DEV
-                else []
-            ),
-        ],
-        capture_output=True,
+    contract_path = CONTRACTS.get(contract["contract_name"]) or CONTRACTS.get(
+        re.sub("(?!^)([A-Z]+)", r"_\1", contract["contract_name"]).lower()
     )
+
+    if contract_path.is_relative_to(CAIRO_DIR):
+        output = subprocess.run(
+            "scarb build", shell=True, cwd=contract_path.parent, capture_output=True
+        )
+    else:
+        output = subprocess.run(
+            [
+                "starknet-compile-deprecated",
+                contract_path,
+                "--output",
+                BUILD_DIR / f"{contract['contract_name']}.json",
+                "--cairo_path",
+                str(CAIRO_ZERO_DIR),
+                *(
+                    ["--no_debug_info"]
+                    if NETWORK["type"] is not NetworkType.DEV
+                    else []
+                ),
+                *(["--account_contract"] if contract["is_account_contract"] else []),
+                *(
+                    ["--disable_hint_validation"]
+                    if NETWORK["type"] is NetworkType.DEV
+                    else []
+                ),
+            ],
+            capture_output=True,
+        )
+
     if output.returncode != 0:
         raise RuntimeError(output.stderr)
 
@@ -380,18 +360,14 @@ async def deploy_starknet_account(class_hash=None, private_key=None, amount=1):
     }
 
 
-async def declare(contract):
-    logger.info(f"ℹ️  Declaring {contract['contract_name']}")
-    artifact, cairo_version = get_artifact(**contract)
+async def declare(contract_name):
+    logger.info(f"ℹ️  Declaring {contract_name}")
+    artifact = get_artifact(contract_name)
     account = await get_starknet_account()
 
-    if cairo_version == ArtifactType.cairo1:
-        casm_compiled_contract = artifact.with_suffix(
-            ".compiled_contract_class.json"
-        ).read_text()
-        sierra_compiled_contract = artifact.with_suffix(
-            ".contract_class.json"
-        ).read_text()
+    if artifact.sierra is not None:
+        casm_compiled_contract = artifact.casm.read_text()
+        sierra_compiled_contract = artifact.sierra.read_text()
 
         casm_class = create_casm_class(casm_compiled_contract)
         class_hash = compute_casm_class_hash(casm_class)
@@ -414,7 +390,7 @@ async def declare(contract):
         resp = await account.client.declare(transaction=declare_v2_transaction)
     else:
         contract_class = create_compiled_contract(
-            compiled_contract=artifact.read_text()
+            compiled_contract=artifact.casm.read_text()
         )
         class_hash = compute_class_hash(contract_class=deepcopy(contract_class))
         try:
@@ -459,24 +435,14 @@ async def declare(contract):
 
     status = await wait_for_transaction(resp.transaction_hash)
 
-    logger.info(
-        f"{status} {contract['contract_name']} class hash: {hex(resp.class_hash)}"
-    )
+    logger.info(f"{status} {contract_name} class hash: {hex(resp.class_hash)}")
     return deployed_class_hash
 
 
 async def deploy(contract_name, *args):
     logger.info(f"ℹ️  Deploying {contract_name}")
-    artifact, cairo_version = get_artifact(contract_name)
+    abi = get_abi(contract_name)
     declarations = get_declarations()
-    if cairo_version == ArtifactType.cairo0:
-        compiled_contract = Path(artifact).read_text()
-        abi = json.loads(compiled_contract)["abi"]
-    else:
-        sierra_compiled_contract = artifact.with_suffix(
-            ".contract_class.json"
-        ).read_text()
-        abi = json.loads(sierra_compiled_contract)["abi"]
 
     account = await get_starknet_account()
     deploy_result = await Contract.deploy_contract_v1(
@@ -485,7 +451,7 @@ async def deploy(contract_name, *args):
         abi=abi,
         constructor_args=list(args),
         max_fee=_max_fee,
-        cairo_version=cairo_version.value,
+        cairo_version=get_cairo_version(contract_name),
     )
     status = await wait_for_transaction(deploy_result.hash)
     logger.info(
