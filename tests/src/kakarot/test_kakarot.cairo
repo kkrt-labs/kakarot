@@ -37,7 +37,7 @@ func eth_call{
     let (access_list) = alloc();
 
     %{
-        from tests.utils.uint256 import int_to_uint256
+        from kakarot_scripts.utils.uint256 import int_to_uint256
 
         ids.origin = program_input.get("origin", 0)
         ids.to.is_some = int(bool(program_input.get("to") is not None))

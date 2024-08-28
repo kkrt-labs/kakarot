@@ -394,11 +394,11 @@ class TestKakarot:
 
     class TestEthRPCEntrypoints:
         async def test_should_return_native_balance_of(self, new_eoa):
-            eoa = await new_eoa()
+            eoa = await new_eoa(0x1234 / 1e18)
             balance = (
                 await call("kakarot", "eth_get_balance", int(eoa.address, 16))
             ).balance
-            assert balance == 50000000000000000000
+            assert balance == 0x1234
 
         async def test_should_return_transaction_count(self, new_eoa):
             eoa = await new_eoa()

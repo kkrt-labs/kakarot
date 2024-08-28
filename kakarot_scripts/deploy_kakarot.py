@@ -44,10 +44,7 @@ async def main():
     account = await get_starknet_account()
     logger.info(f"ℹ️  Using account 0x{account.address:064x} as deployer")
 
-    class_hash = {
-        contract["contract_name"]: await declare(contract)
-        for contract in DECLARED_CONTRACTS
-    }
+    class_hash = {contract: await declare(contract) for contract in DECLARED_CONTRACTS}
     dump_declarations(class_hash)
 
     # %% Deployments
@@ -88,7 +85,7 @@ async def main():
         )
         freshly_deployed = True
 
-    if NETWORK["type"] is NetworkType.STAGING:
+    if NETWORK["type"] is NetworkType.STAGING or NETWORK["type"] is NetworkType.DEV:
         starknet_deployments["EVM"] = await upgrade(
             "EVM",
             account.address,  # owner
@@ -101,21 +98,8 @@ async def main():
         )
         starknet_deployments["Counter"] = await upgrade("Counter")
         starknet_deployments["MockPragmaOracle"] = await upgrade("MockPragmaOracle")
-
-    if NETWORK["type"] is NetworkType.DEV:
-        starknet_deployments["EVM"] = await deploy_starknet(
-            "EVM",
-            account.address,  # owner
-            ETH_TOKEN_ADDRESS,  # native_token_address_
-            class_hash["account_contract"],  # account_contract_class_hash_
-            class_hash["uninitialized_account"],  # uninitialized_account_class_hash_
-            class_hash["Cairo1Helpers"],
-            COINBASE,
-            BLOCK_GAS_LIMIT,
-        )
-        starknet_deployments["Counter"] = await deploy_starknet("Counter")
-        starknet_deployments["MockPragmaOracle"] = await deploy_starknet(
-            "MockPragmaOracle"
+        starknet_deployments["UniversalLibraryCaller"] = await upgrade(
+            "UniversalLibraryCaller"
         )
 
     dump_deployments(starknet_deployments)
@@ -124,11 +108,7 @@ async def main():
         logger.info(f"ℹ️  Found default EVM address {EVM_ADDRESS}")
         from kakarot_scripts.utils.kakarot import get_eoa
 
-        amount = (
-            0.02
-            if NETWORK["type"] is not (NetworkType.DEV or NetworkType.STAGING)
-            else 100
-        )
+        amount = 100 if NETWORK["type"] is NetworkType.DEV else 0.01
         await get_eoa(amount=amount)
 
     # Set the base fee if freshly deployed
@@ -152,6 +132,22 @@ async def main():
     evm_deployments["CreateX"] = await deploy_with_presigned_tx(
         CREATEX_DEPLOYER, CREATEX_SIGNED_TX, amount=0.3, name="CreateX"
     )
+
+    if NETWORK["type"] is NetworkType.STAGING or NETWORK["type"] is NetworkType.DEV:
+        bridge = await deploy_evm("CairoPrecompiles", "EthStarknetBridge")
+        evm_deployments["Bridge"] = {
+            "address": int(bridge.address, 16),
+            "starknet_address": bridge.starknet_address,
+        }
+        await invoke(
+            "kakarot",
+            "set_authorized_cairo_precompile_caller",
+            int(bridge.address, 16),
+            1,
+        )
+        await invoke("kakarot", "set_coinbase", int(bridge.address, 16))
+        await invoke("kakarot", "set_base_fee", 1)
+
     dump_evm_deployments(evm_deployments)
 
 

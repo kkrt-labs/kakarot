@@ -15,12 +15,12 @@ from starkware.starknet.public.abi import (
 )
 
 from kakarot_scripts.constants import ARACHNID_PROXY_DEPLOYER, ARACHNID_PROXY_SIGNED_TX
+from kakarot_scripts.utils.uint256 import int_to_uint256
 from tests.utils.constants import CHAIN_ID, TRANSACTIONS
 from tests.utils.errors import cairo_error
 from tests.utils.helpers import generate_random_private_key, rlp_encode_signed_data
 from tests.utils.hints import patch_hint
 from tests.utils.syscall_handler import SyscallHandler
-from tests.utils.uint256 import int_to_uint256
 
 CHAIN_ID_OFFSET = 35
 V_OFFSET = 27
