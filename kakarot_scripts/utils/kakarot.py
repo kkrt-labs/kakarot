@@ -460,7 +460,6 @@ def _wrap_kakarot(fun: str, caller_eoa: Optional[Account] = None):
 async def _contract_exists(address: int) -> bool:
     try:
         await RPC_CLIENT.get_class_hash_at(address)
-        logger.info(f"ℹ️  Contract at address {hex(address)} already exists")
         return True
     except ClientError:
         return False

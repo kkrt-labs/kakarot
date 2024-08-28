@@ -155,7 +155,9 @@ try:
     if WEB3.is_connected():
         chain_id = WEB3.eth.chain_id
     else:
-        chain_id = starknet_chain_id % 2**53
+        chain_id = starknet_chain_id % (
+            2**53 if NETWORK["name"] != "starknet-sepolia" else 2**32
+        )
 except (
     requests.exceptions.ConnectionError,
     requests.exceptions.MissingSchema,
@@ -165,7 +167,12 @@ except (
         f"⚠️  Could not get chain Id from {NETWORK['rpc_url']}: {e}, defaulting to KKRT"
     )
     starknet_chain_id = int.from_bytes(b"KKRT", "big")
-    chain_id = starknet_chain_id % 2**53
+    chain_id = starknet_chain_id % (
+        # TODO: remove once Kakarot is redeployed on sepolia
+        2**53
+        if NETWORK["name"] != "starknet-sepolia"
+        else 2**32
+    )
 
 
 class ChainId(IntEnum):
