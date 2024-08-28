@@ -51,7 +51,8 @@ jobs:
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: make setup
-      - uses: software-mansion/setup-scarb@v1
+      - uses: asdf-vm/actions/install@v3
+      - run: asdf install
       # Build artifacts
       - name: Compile all the cairo files
         run: make build
@@ -153,7 +154,7 @@ jobs:
         uses: foundry-rs/foundry-toolchain@v1
         with:
           version: nightly
-      - name: Install asdf & tools # For multiple versions of scarb - reads from .tool-versions and installs them
+      - name: Install asdf & tools #
         uses: asdf-vm/actions/install@v3
       - name: Load cached katana
         id: cached-katana

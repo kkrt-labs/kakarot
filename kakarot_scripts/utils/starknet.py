@@ -314,7 +314,9 @@ def compile_contract(contract):
         )
 
     if output.returncode != 0:
-        raise RuntimeError(output.stderr)
+        raise RuntimeError(
+            f"❌ {contract['contract_name']} raised:\n{output.stderr}.\nOutput:\n{output.stdout}"
+        )
 
     elapsed = datetime.now() - start
     logger.info(
