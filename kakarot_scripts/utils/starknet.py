@@ -28,6 +28,7 @@ from starknet_py.hash.sierra_class_hash import compute_sierra_class_hash
 from starknet_py.hash.transaction import TransactionHashPrefix, compute_transaction_hash
 from starknet_py.hash.utils import message_signature
 from starknet_py.net.account.account import Account
+from starknet_py.net.client_errors import ClientError
 from starknet_py.net.client_models import Call, DeclareTransactionResponse
 from starknet_py.net.full_node_client import _create_broadcasted_txn
 from starknet_py.net.models.transaction import DeclareV1
@@ -473,10 +474,15 @@ async def upgrade(contract_name, *args):
 
     logger.info(f"ℹ️  {contract_name} already deployed, checking version.")
     class_hash = get_declarations()
+    try:
+        deployed_class_hash = await RPC_CLIENT.get_class_hash_at(
+            deployments[contract_name]["address"]
+        )
+    except ClientError as e:
+        if "Contract not found" in str(e):
+            logger.info(f"ℹ️  deploying {contract_name}.")
+            return await deploy(contract_name, *args)
 
-    deployed_class_hash = await RPC_CLIENT.get_class_hash_at(
-        deployments[contract_name]["address"]
-    )
     if deployed_class_hash != class_hash[contract_name]:
         logger.info(f"ℹ️  redeploying {contract_name}.")
         return await deploy(contract_name, *args)
