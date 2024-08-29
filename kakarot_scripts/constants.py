@@ -2,7 +2,6 @@ import json
 import logging
 import os
 from enum import Enum, IntEnum
-from math import ceil, log
 from pathlib import Path
 
 import requests
@@ -265,7 +264,7 @@ EVM_ADDRESS = (
     ).public_key.to_checksum_address()
 )
 
-if NETWORK.get("chain_id"):
-    logger.info(
-        f"ℹ️  Connected to CHAIN_ID {NETWORK['chain_id'].value.to_bytes(ceil(log(NETWORK['chain_id'].value, 256)), 'big')}"
-    )
+logger.info(
+    f"ℹ️  Connected to Starknet chain id {bytes.fromhex(f'{ChainId.starknet_chain_id.value:x}')} "
+    f"and Kakarot chain id {bytes.fromhex(f'{ChainId.chain_id.value:x}')}"
+)
