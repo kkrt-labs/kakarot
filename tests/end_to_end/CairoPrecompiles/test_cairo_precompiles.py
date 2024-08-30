@@ -3,7 +3,7 @@ import pytest_asyncio
 
 from kakarot_scripts.utils.kakarot import deploy, get_eoa
 from kakarot_scripts.utils.starknet import get_contract, invoke, wait_for_transaction
-from tests.utils.errors import evm_error
+from tests.utils.errors import cairo_error
 
 
 @pytest_asyncio.fixture()
@@ -69,7 +69,9 @@ class TestCairoPrecompiles:
             cairo_counter_caller = await deploy(
                 "CairoPrecompiles", "CairoCounterCaller", cairo_counter.address
             )
-            with evm_error("CairoLib: call_contract failed"):
+            with cairo_error(
+                "EVM tx reverted, reverting SN tx because of previous calls to cairo precompiles"
+            ):
                 await cairo_counter_caller.incrementCairoCounter()
 
         async def test_last_caller_address_should_be_eoa(self, cairo_counter_caller):

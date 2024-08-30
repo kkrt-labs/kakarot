@@ -176,6 +176,7 @@ namespace SystemOperations {
             is_create=TRUE,
             depth=evm.message.depth + 1,
             env=evm.message.env,
+            cairo_precompile_called=evm.message.cairo_precompile_called,
         );
         let child_evm = EVM.init(message, gas_limit);
         let stack = Stack.init();
@@ -900,6 +901,7 @@ namespace CallHelper {
             is_create=FALSE,
             depth=evm.message.depth + 1,
             env=evm.message.env,
+            cairo_precompile_called=evm.message.cairo_precompile_called,
         );
 
         let child_evm = EVM.init(message, gas);
@@ -945,12 +947,29 @@ namespace CallHelper {
             code_account, evm.message.valid_jumpdests_start, evm.message.valid_jumpdests
         );
         State.update_account(code_account);
-
+        tempvar message = new model.Message(
+            bytecode=evm.message.parent.evm.message.bytecode,
+            bytecode_len=evm.message.parent.evm.message.bytecode_len,
+            valid_jumpdests_start=evm.message.parent.evm.message.valid_jumpdests_start,
+            valid_jumpdests=evm.message.parent.evm.message.valid_jumpdests,
+            calldata=evm.message.parent.evm.message.calldata,
+            calldata_len=evm.message.parent.evm.message.calldata_len,
+            value=evm.message.parent.evm.message.value,
+            caller=evm.message.parent.evm.message.caller,
+            parent=evm.message.parent.evm.message.parent,
+            address=evm.message.parent.evm.message.address,
+            code_address=evm.message.parent.evm.message.code_address,
+            read_only=evm.message.parent.evm.message.read_only,
+            is_create=evm.message.parent.evm.message.is_create,
+            depth=evm.message.parent.evm.message.depth,
+            env=evm.message.parent.evm.message.env,
+            cairo_precompile_called=evm.message.cairo_precompile_called,
+        );
         if (evm.reverted == Errors.EXCEPTIONAL_HALT) {
             // If the call has halted exceptionnaly, the return_data is empty
             // and nothing is copied to memory, and the gas is not returned;
             tempvar evm = new model.EVM(
-                message=evm.message.parent.evm.message,
+                message=message,
                 return_data_len=0,
                 return_data=evm.return_data,
                 program_counter=evm.message.parent.evm.program_counter + 1,
@@ -969,7 +988,7 @@ namespace CallHelper {
         Memory.store_n(actual_output_size, evm.return_data, ret_offset.low);
 
         tempvar evm = new model.EVM(
-            message=evm.message.parent.evm.message,
+            message=message,
             return_data_len=evm.return_data_len,
             return_data=evm.return_data,
             program_counter=evm.message.parent.evm.program_counter + 1,
@@ -1146,6 +1165,24 @@ namespace CreateHelper {
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
+        tempvar message = new model.Message(
+            bytecode=evm.message.parent.evm.message.bytecode,
+            bytecode_len=evm.message.parent.evm.message.bytecode_len,
+            valid_jumpdests_start=evm.message.parent.evm.message.valid_jumpdests_start,
+            valid_jumpdests=evm.message.parent.evm.message.valid_jumpdests,
+            calldata=evm.message.parent.evm.message.calldata,
+            calldata_len=evm.message.parent.evm.message.calldata_len,
+            value=evm.message.parent.evm.message.value,
+            caller=evm.message.parent.evm.message.caller,
+            parent=evm.message.parent.evm.message.parent,
+            address=evm.message.parent.evm.message.address,
+            code_address=evm.message.parent.evm.message.code_address,
+            read_only=evm.message.parent.evm.message.read_only,
+            is_create=evm.message.parent.evm.message.is_create,
+            depth=evm.message.parent.evm.message.depth,
+            env=evm.message.parent.evm.message.env,
+            cairo_precompile_called=evm.message.cairo_precompile_called,
+        );
         // Reverted during execution - either REVERT or exceptional
         if (evm.reverted != FALSE) {
             let is_exceptional_revert = is_not_zero(Errors.REVERT - evm.reverted);
@@ -1161,7 +1198,7 @@ namespace CreateHelper {
             tempvar state = evm.message.parent.state;
 
             tempvar evm = new model.EVM(
-                message=evm.message.parent.evm.message,
+                message=message,
                 return_data_len=return_data_len,
                 return_data=evm.return_data,
                 program_counter=evm.message.parent.evm.program_counter + 1,
@@ -1196,7 +1233,7 @@ namespace CreateHelper {
             tempvar state = evm.message.parent.state;
 
             tempvar evm = new model.EVM(
-                message=evm.message.parent.evm.message,
+                message=message,
                 return_data_len=0,
                 return_data=evm.return_data,
                 program_counter=evm.message.parent.evm.program_counter + 1,
