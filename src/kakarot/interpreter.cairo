@@ -986,7 +986,8 @@ namespace Interpreter {
         // Only the gas fee paid will be committed.
         State.finalize{state=state}();
         if (evm.reverted != 0) {
-            with_attr error_message("Tx reverting due to cairo precompile") {
+            with_attr error_message(
+                    "EVM tx reverted, reverting SN tx because of previous calls to cairo precompiles") {
                 assert evm.message.cairo_precompile_called = FALSE;
             }
             tempvar state = State.init();

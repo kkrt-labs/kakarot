@@ -69,7 +69,9 @@ class TestCairoPrecompiles:
             cairo_counter_caller = await deploy(
                 "CairoPrecompiles", "CairoCounterCaller", cairo_counter.address
             )
-            with cairo_error("Tx reverting due to cairo precompile"):
+            with cairo_error(
+                "EVM tx reverted, reverting SN tx because of previous calls to cairo precompiles"
+            ):
                 await cairo_counter_caller.incrementCairoCounter()
 
         async def test_last_caller_address_should_be_eoa(self, cairo_counter_caller):

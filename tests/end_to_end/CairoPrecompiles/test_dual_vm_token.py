@@ -120,7 +120,9 @@ class TestDualVmToken:
         async def test_should_revert_tx_cairo_precompiles(
             self, starknet_token, dual_vm_token, owner, other
         ):
-            with cairo_error("Tx reverting due to cairo precompile"):
+            with cairo_error(
+                "EVM tx reverted, reverting SN tx because of previous calls to cairo precompiles"
+            ):
                 await dual_vm_token.transfer(
                     other.address, 1, gas_limit=45_000
                 )  # fails with out of gas

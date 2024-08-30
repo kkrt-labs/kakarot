@@ -150,5 +150,7 @@ class TestPragmaPrecompile:
         )
         solidity_input = serialize_data_type(data_type)
 
-        with cairo_error("Tx reverting due to cairo precompile"):
+        with cairo_error(
+            "EVM tx reverted, reverting SN tx because of previous calls to cairo precompiles"
+        ):
             await pragma_caller.getDataMedianSpot(solidity_input)
