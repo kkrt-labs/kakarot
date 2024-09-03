@@ -28,3 +28,12 @@ class TestMemoryOperations:
             cairo_run(
                 "test__exec_mload_should_load_a_value_from_memory_with_offset_larger_than_msize"
             )
+
+    class TestMcopy:
+        def test_should_copy_a_value_from_memory(self, cairo_run):
+            cairo_run("test__exec_mcopy_should_copy_a_value_from_memory")
+
+        def test_should_fail_if_memory_expansion_to_large(self, cairo_run):
+            evm = cairo_run("test__exec_mcopy_should_fail_if_memory_expansion_to_large")
+            assert evm["reverted"] == 2
+            assert b"Kakarot: outOfGas left" in bytes(evm["return_data"])

@@ -144,7 +144,6 @@ func test__exec_mload_should_load_a_value_from_memory_with_offset_larger_than_ms
     let (bytecode) = alloc();
     let evm = TestHelpers.init_evm_with_bytecode(0, bytecode);
     let test_offset = 684;
-    // Given
     let stack = Stack.init();
     let state = State.init();
     let memory = Memory.init();
@@ -168,4 +167,74 @@ func test__exec_mload_should_load_a_value_from_memory_with_offset_larger_than_ms
     assert_uint256_eq([index0], Uint256(0, 0));
     assert memory.words_len = 23;
     return ();
+}
+
+func test__exec_mcopy_should_copy_a_value_from_memory{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    alloc_locals;
+    let evm = TestHelpers.init_evm();
+    let stack = Stack.init();
+    let state = State.init();
+    let memory = Memory.init();
+    // Stack items for mcopy
+    tempvar size_mcopy = new Uint256(0x20, 0);
+    tempvar offset_mcopy = new Uint256(0, 0);
+    tempvar dst_offset_mcopy = new Uint256(0x20, 0);
+    // Stack items for mstore
+    tempvar value_mstore = new Uint256(0x1, 0);
+    tempvar dst_offset_mstore = new Uint256(0, 0);
+
+    with stack, memory, state {
+        // store 1 at offset 0
+        Stack.push(value_mstore);
+        Stack.push(dst_offset_mstore);
+        let evm = MemoryOperations.exec_mstore(evm);
+
+        // copy 1 from offset 0 to offset 0x20
+        Stack.push(size_mcopy);
+        Stack.push(offset_mcopy);
+        Stack.push(dst_offset_mcopy);
+        let evm = MemoryOperations.exec_mcopy(evm);
+
+        // load from offset 0x20
+        Stack.push(dst_offset_mcopy);
+        let evm = MemoryOperations.exec_mload(evm);
+
+        let (index0) = Stack.peek(0);
+    }
+    assert stack.size = 1;
+    assert_uint256_eq([index0], Uint256(0x1, 0));
+    return ();
+}
+
+func test__exec_mcopy_should_fail_if_memory_expansion_to_large{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() -> model.EVM* {
+    alloc_locals;
+    let evm = TestHelpers.init_evm();
+    let stack = Stack.init();
+    let state = State.init();
+    let memory = Memory.init();
+    // Stack items for mcopy
+    tempvar size_mcopy = new Uint256(0x20, 0);
+    tempvar offset_mcopy = new Uint256(0, 0);
+    tempvar dst_offset_mcopy = new Uint256(0, 1);
+    // Stack items for mstore
+    tempvar value_mstore = new Uint256(0x1, 0);
+    tempvar dst_offset_mstore = new Uint256(0, 0);
+
+    with stack, memory, state {
+        // store 1 at offset 0
+        Stack.push(value_mstore);
+        Stack.push(dst_offset_mstore);
+        let evm = MemoryOperations.exec_mstore(evm);
+
+        // copy 1 from offset 0 to offset 0x20
+        Stack.push(size_mcopy);
+        Stack.push(offset_mcopy);
+        Stack.push(dst_offset_mcopy);
+        let evm = MemoryOperations.exec_mcopy(evm);
+    }
+    return evm;
 }

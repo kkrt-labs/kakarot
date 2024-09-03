@@ -5,7 +5,7 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.uint256 import Uint256, felt_to_uint256, uint256_add
 from starkware.cairo.common.math_cmp import is_nn, is_not_zero
 
 from kakarot.errors import Errors
@@ -110,12 +110,18 @@ namespace MemoryOperations {
         // Any size upper than 2**128 will cause an OOG error, considering the maximum gas for a transaction.
         let upper_bytes_bound = size.low + 31;
         let (words, _) = unsigned_div_rem(upper_bytes_bound, 32);
-        let copy_gas_cost_low = words * Gas.COPY;
-        tempvar copy_gas_cost_high = is_not_zero(size.high) * 2 ** 128;
+        let copy_gas_cost = words * Gas.COPY;
 
-        let evm = EVM.charge_gas(
-            evm, memory_expansion.cost + copy_gas_cost_low + copy_gas_cost_high
-        );
+        let size_high_is_zero = Helpers.is_zero(size.high);
+        local gas_to_charge: felt;
+        if (size_high_is_zero != FALSE) {
+            assert gas_to_charge = memory_expansion.cost + copy_gas_cost;
+        } else {
+            assert gas_to_charge = Gas.MEMORY_COST_U128;
+        }
+
+        let evm = EVM.charge_gas(evm, gas_to_charge);
+
         if (evm.reverted != FALSE) {
             return evm;
         }
