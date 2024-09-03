@@ -4,12 +4,15 @@ import os
 from enum import Enum, IntEnum
 from math import ceil, log
 from pathlib import Path
+from typing import Dict, List
 
 import requests
 from dotenv import load_dotenv
 from eth_keys import keys
+from starknet_py.net.account.account import Account
 from starknet_py.net.full_node_client import FullNodeClient
 from starknet_py.net.models.chains import StarknetChainId
+from starknet_py.net.signer.stark_curve_signer import KeyPair
 from web3 import Web3
 
 logging.basicConfig()
@@ -65,6 +68,48 @@ NETWORKS = {
         "type": NetworkType.DEV,
         "check_interval": 0.01,
         "max_wait": 3,
+        "relayers": [
+            {
+                "address": 0xB3FF441A68610B30FD5E2ABBF3A1548EB6BA6F3559F2862BF2DC757E5828CA,
+                "private_key": 0x2BBF4F9FD0BBB2E60B0316C1FE0B76CF7A4D0198BD493CED9B8DF2A3A24D68A,
+            },
+            {
+                "address": 0xE29882A1FCBA1E7E10CAD46212257FEA5C752A4F9B1B1EC683C503A2CF5C8A,
+                "private_key": 0x14D6672DCB4B77CA36A887E9A11CD9D637D5012468175829E9C6E770C61642,
+            },
+            {
+                "address": 0x29873C310FBEFDE666DC32A1554FEA6BB45EECC84F680F8A2B0A8FBB8CB89AF,
+                "private_key": 0xC5B2FCAB997346F3EA1C00B002ECF6F382C5F9C9659A3894EB783C5320F912,
+            },
+            {
+                "address": 0x2D71E9C974539BB3FFB4B115E66A23D0F62A641EA66C4016E903454C8753BBC,
+                "private_key": 0x33003003001800009900180300D206308B0070DB00121318D17B5E6262150B,
+            },
+            {
+                "address": 0x3EBB4767AAE1262F8EB28D9368DB5388CFE367F50552A8244123506F0B0BCCA,
+                "private_key": 0x3E3979C1ED728490308054FE357A9F49CF67F80F9721F44CC57235129E090F4,
+            },
+            {
+                "address": 0x541DA8F7F3AB8247329D22B3987D1FFB181BC8DC7F9611A6ECCEC3B0749A585,
+                "private_key": 0x736ADBBCDAC7CC600F89051DB1ABBC16B9996B46F6B58A9752A11C1028A8EC8,
+            },
+            {
+                "address": 0x56C155B624FDF6BFC94F7B37CF1DBEBB5E186EF2E4AB2762367CD07C8F892A1,
+                "private_key": 0x6BF3604BCB41FED6C42BCCA5436EEB65083A982FF65DB0DC123F65358008B51,
+            },
+            {
+                "address": 0x6162896D1D7AB204C7CCAC6DD5F8E9E7C25ECD5AE4FCB4AD32E57786BB46E03,
+                "private_key": 0x1800000000300000180000000000030000000000003006001800006600,
+            },
+            {
+                "address": 0x66EFB28AC62686966AE85095FF3A772E014E7FBF56D4C5F6FAC5606D4DDE23A,
+                "private_key": 0x283D1E73776CD4AC1AC5F0B879F561BDED25ECEB2CC589C674AF0CEC41DF441,
+            },
+            {
+                "address": 0x6B86E40118F29EBE393A75469B4D926C7A44C2E2681B6D319520B7C1156D114,
+                "private_key": 0x1C9053C053EDF324AEC366A34C6901B1095B07AF69495BFFEC7D7FE21EFFB1B,
+            },
+        ],
     },
     "madara": {
         "name": "madara",
@@ -122,18 +167,6 @@ elif os.getenv("RPC_URL") is not None:
     }
 else:
     NETWORK = NETWORKS["katana"]
-
-prefix = NETWORK["name"].upper().replace("-", "_")
-NETWORK["account_address"] = os.environ.get(f"{prefix}_ACCOUNT_ADDRESS")
-if NETWORK["account_address"] is None:
-    logger.warning(
-        f"⚠️  {prefix}_ACCOUNT_ADDRESS not set, defaulting to ACCOUNT_ADDRESS"
-    )
-    NETWORK["account_address"] = os.getenv("ACCOUNT_ADDRESS")
-NETWORK["private_key"] = os.environ.get(f"{prefix}_PRIVATE_KEY")
-if NETWORK["private_key"] is None:
-    logger.warning(f"⚠️  {prefix}_PRIVATE_KEY not set, defaulting to PRIVATE_KEY")
-    NETWORK["private_key"] = os.getenv("PRIVATE_KEY")
 
 RPC_CLIENT = FullNodeClient(node_url=NETWORK["rpc_url"])
 L1_RPC_PROVIDER = Web3(Web3.HTTPProvider(NETWORK["l1_rpc_url"]))
@@ -263,6 +296,55 @@ EVM_ADDRESS = (
     and keys.PrivateKey(
         bytes.fromhex(EVM_PRIVATE_KEY[2:])
     ).public_key.to_checksum_address()
+)
+
+prefix = NETWORK["name"].upper().replace("-", "_")
+NETWORK["account_address"] = os.environ.get(f"{prefix}_ACCOUNT_ADDRESS")
+if NETWORK["account_address"] is None:
+    logger.warning(
+        f"⚠️  {prefix}_ACCOUNT_ADDRESS not set, defaulting to ACCOUNT_ADDRESS"
+    )
+    NETWORK["account_address"] = os.getenv("ACCOUNT_ADDRESS")
+NETWORK["private_key"] = os.environ.get(f"{prefix}_PRIVATE_KEY")
+if NETWORK["private_key"] is None:
+    logger.warning(f"⚠️  {prefix}_PRIVATE_KEY not set, defaulting to PRIVATE_KEY")
+    NETWORK["private_key"] = os.getenv("PRIVATE_KEY")
+
+
+class RelayerPool:
+    def __init__(self, relayers: List[Dict[str, int]]):
+        self.relayer_accounts = [
+            Account(
+                address=relayer["address"],
+                client=RPC_CLIENT,
+                chain=ChainId.starknet_chain_id,
+                key_pair=KeyPair.from_private_key(relayer["private_key"]),
+            )
+            for relayer in relayers
+        ]
+        self._index = 0
+
+    def __next__(self) -> Account:
+        relayer = self.relayer_accounts[self._index]
+        self._index = (self._index + 1) % len(self.relayer_accounts)
+        return relayer
+
+
+NETWORK["relayers"] = RelayerPool(
+    NETWORK.get(
+        "relayers",
+        (
+            [
+                {
+                    "address": int(NETWORK["account_address"], 16),
+                    "private_key": int(NETWORK["private_key"], 16),
+                }
+            ]
+            if NETWORK["account_address"] is not None
+            and NETWORK["private_key"] is not None
+            else []
+        ),
+    )
 )
 
 if NETWORK.get("chain_id"):
