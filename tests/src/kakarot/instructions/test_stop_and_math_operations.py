@@ -1,7 +1,7 @@
 import pytest
 
+from kakarot_scripts.utils.uint256 import int_to_uint256
 from tests.utils.constants import Opcodes
-from tests.utils.uint256 import int_to_uint256
 
 
 class TestStopMathOperations:

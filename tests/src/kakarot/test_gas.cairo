@@ -58,7 +58,7 @@ func test__memory_expansion_cost_saturated{range_check_ptr}() -> felt {
     let (offset) = alloc();
     let (size) = alloc();
     %{
-        from tests.utils.uint256 import int_to_uint256
+        from kakarot_scripts.utils.uint256 import int_to_uint256
         ids.words_len = program_input["words_len"]
         segments.write_arg(ids.offset, int_to_uint256(program_input["offset"]))
         segments.write_arg(ids.size, int_to_uint256(program_input["size"]))

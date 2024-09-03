@@ -26,11 +26,23 @@ class TestRLP:
 
             assert output == [expected_type, expected_offset, expected_len]
 
+    class TestDecodeRaw:
+        def test_should_raise_when_parsed_len_greater_than_data(self, cairo_run):
+            with cairo_error("RLP data too short for declared length"):
+                cairo_run("test__decode_raw", data=[0xB8, 0x01])
+
+        @given(data=lists(binary(min_size=2), min_size=2) | binary(min_size=2))
+        def test_should_raise_when_malicious_prover_fills_data(self, cairo_run, data):
+            with cairo_error("RLP data too short for declared length"):
+                cairo_run(
+                    "test__decode_raw",
+                    data_len=len(encode(data)) - 1,
+                    data=list(encode(data)),
+                )
+
     class TestDecode:
         @given(data=recursive(binary(), lists))
-        async def test_should_match_decode_reference_implementation(
-            self, cairo_run, data
-        ):
+        def test_should_match_decode_reference_implementation(self, cairo_run, data):
             encoded_data = encode(data)
 
             items = cairo_run("test__decode", data=list(encoded_data))
@@ -40,7 +52,7 @@ class TestRLP:
             data=recursive(binary(), lists),
             extra_data=binary(min_size=1, max_size=255),
         )
-        async def test_raise_when_data_contains_extra_bytes(
+        def test_raise_when_data_contains_extra_bytes(
             self, cairo_run, data, extra_data
         ):
             encoded_data = encode(data)

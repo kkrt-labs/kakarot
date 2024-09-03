@@ -164,7 +164,9 @@ class Serde:
                 if raw["access_list"] is not None
                 else []
             ),
-            "chain_id": raw["chain_id"],
+            "chain_id": (
+                raw["chain_id"]["value"] if raw["chain_id"]["is_some"] == 1 else None
+            ),
         }
 
     def serialize_message(self, ptr):

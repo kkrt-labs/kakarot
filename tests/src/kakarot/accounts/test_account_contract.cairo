@@ -17,7 +17,9 @@ from kakarot.accounts.account_contract import (
     set_authorized_pre_eip155_tx,
     execute_starknet_call,
     set_code_hash,
+    execute_from_outside,
 )
+from kakarot.accounts.model import OutsideExecution, CallArray
 
 func test__initialize{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
@@ -124,7 +126,7 @@ func test__execute_from_outside{
     tempvar chain_id: felt;
 
     %{
-        ids.tx_data_len = len(program_input["tx_data"])
+        ids.tx_data_len = program_input.get("tx_data_len", len(program_input["tx_data"]))
         segments.write_arg(ids.tx_data, program_input["tx_data"])
         ids.signature_len = len(program_input["signature"])
         segments.write_arg(ids.signature, program_input["signature"])
@@ -134,6 +136,50 @@ func test__execute_from_outside{
     // When
     let (return_data_len, return_data) = AccountContract.execute_from_outside(
         tx_data_len, tx_data, signature_len, signature, chain_id
+    );
+
+    return (return_data_len, return_data);
+}
+
+func test__execute_from_outside_entrypoint{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, bitwise_ptr: BitwiseBuiltin*, range_check_ptr
+}() -> (felt, felt*) {
+    // Given
+
+    let (outside_execution: OutsideExecution*) = alloc();
+    tempvar call_array_len: felt;
+    let (call_array: CallArray*) = alloc();
+    tempvar calldata_len: felt;
+    let (calldata) = alloc();
+    tempvar signature_len: felt;
+    let (signature) = alloc();
+
+    %{
+        from itertools import chain
+
+        segments.write_arg(ids.outside_execution.address_, program_input["outside_execution"].values())
+        ids.call_array_len = len(program_input["call_array"])
+        segments.write_arg(
+            ids.call_array.address_,
+            list(chain.from_iterable([
+                call_.values() for call_ in program_input["call_array"]
+            ])),
+        )
+        ids.calldata_len = len(program_input["calldata"])
+        segments.write_arg(ids.calldata, program_input["calldata"])
+        ids.signature_len = len(program_input["signature"])
+        segments.write_arg(ids.signature, program_input["signature"])
+    %}
+
+    // When
+    let (return_data_len, return_data) = execute_from_outside(
+        [outside_execution],
+        call_array_len,
+        call_array,
+        calldata_len,
+        calldata,
+        signature_len,
+        signature,
     );
 
     return (return_data_len, return_data);

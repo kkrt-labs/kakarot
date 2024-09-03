@@ -16,12 +16,12 @@ from starkware.starknet.public.abi import (
     get_storage_var_address,
 )
 
+from kakarot_scripts.utils.uint256 import int_to_uint256, uint256_to_int
 from tests.utils.constants import (
     ACCOUNT_CLASS_IMPLEMENTATION,
     CAIRO1_HELPERS_CLASS_HASH,
     CHAIN_ID,
 )
-from tests.utils.uint256 import int_to_uint256, uint256_to_int
 
 
 def cairo_keccak(class_hash, calldata):

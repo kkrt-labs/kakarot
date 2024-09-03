@@ -1,7 +1,27 @@
 {
   "kakarot": {
-    "address": "0x464f7e37179d2f93ea208795bdb2d0912e8257f6fb5f67ae2559251523aee19",
-    "tx": "0x209a134f8c8f3a9b9e98c2e4789476d4432aceeb252ecfb3dba069cec5ec974",
+    "address": "0x6f625bb0bd82401b268c1ba9fa0973bb9cdf732c6a6f21fe14dfd4c82a28e89",
+    "tx": "0x36c51e168146d9c104a4323a2dddf873a9a54d52b02f5cbc83d8cb957426f60",
     "artifact": "build/kakarot.json"
+  },
+  "EVM": {
+    "address": "0x41c4025537b9677034f3b58f6e722e19c40a7b77a82e3851fdc6b7adf5ad414",
+    "tx": "0xa0b92fd60470ac35b5a64236bacbe86d6b5aaea30997aced328123cba74024",
+    "artifact": "build/fixtures/EVM.json"
+  },
+  "Counter": {
+    "address": "0x2d6741b182475b7cfc62ec1000fbcba553ea08f2e603fa2840d0288cd2d1e3c",
+    "tx": "0xd1781094a55ac09c3177e6799f9d484c5477baa6d120923c942da5c2fdbfea",
+    "artifact": "build/fixtures/Counter.json"
+  },
+  "MockPragmaOracle": {
+    "address": "0x17e64c92b06da9a331da9fd333a683a33019ae2a393254caf332d4158edc74d",
+    "tx": "0x3d6b91602c1e290bc65c6f85751f5ea156cf982d01c6bf1ea694d7398a9d5a5",
+    "artifact": "build/ssj/contracts_MockPragmaOracle"
+  },
+  "UniversalLibraryCaller": {
+    "address": "0x01e12ea32baf68b1e11c1ce32595d3a61a22ccdcbc67f94c77268b6ce99fa6d4",
+    "tx": "0x3d6b91602c1e290bc65c6f85751f5ea156cf982d01c6bf1ea694d7398a9d5a5",
+    "artifact": "cairo1_contracts/utils/target/dev/library_call_UniversalLibraryCaller"
   }
 }

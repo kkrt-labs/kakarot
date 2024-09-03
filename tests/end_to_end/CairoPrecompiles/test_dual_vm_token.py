@@ -5,6 +5,7 @@ from kakarot_scripts.utils.kakarot import deploy as deploy_kakarot
 from kakarot_scripts.utils.starknet import deploy as deploy_starknet
 from kakarot_scripts.utils.starknet import get_contract as get_contract_starknet
 from kakarot_scripts.utils.starknet import invoke
+from tests.utils.errors import cairo_error
 
 
 @pytest_asyncio.fixture()
@@ -115,3 +116,13 @@ class TestDualVmToken:
 
             assert balance_owner_before - amount == balance_owner_after
             assert balance_other_before + amount == balance_other_after
+
+        async def test_should_revert_tx_cairo_precompiles(
+            self, starknet_token, dual_vm_token, owner, other
+        ):
+            with cairo_error(
+                "EVM tx reverted, reverting SN tx because of previous calls to cairo precompiles"
+            ):
+                await dual_vm_token.transfer(
+                    other.address, 1, gas_limit=45_000
+                )  # fails with out of gas

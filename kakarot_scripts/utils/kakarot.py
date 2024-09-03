@@ -43,12 +43,11 @@ from kakarot_scripts.utils.starknet import fund_address as _fund_starknet_addres
 from kakarot_scripts.utils.starknet import get_balance
 from kakarot_scripts.utils.starknet import get_contract as _get_starknet_contract
 from kakarot_scripts.utils.starknet import get_deployments as _get_starknet_deployments
-from kakarot_scripts.utils.starknet import get_starknet_account
 from kakarot_scripts.utils.starknet import invoke as _invoke_starknet
 from kakarot_scripts.utils.starknet import wait_for_transaction
+from kakarot_scripts.utils.uint256 import int_to_uint256
 from tests.utils.constants import TRANSACTION_GAS_LIMIT
 from tests.utils.helpers import pack_calldata, rlp_encode_signed_data
-from tests.utils.uint256 import int_to_uint256
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -56,6 +55,10 @@ logger.setLevel(logging.INFO)
 
 
 class EvmTransactionError(Exception):
+    pass
+
+
+class StarknetTransactionError(Exception):
     pass
 
 
@@ -316,7 +319,16 @@ def dump_deployments(deployments):
 
 def get_deployments():
     try:
-        return json.load(open(DEPLOYMENTS_DIR / "kakarot_deployments.json", "r"))
+        return {
+            name: {
+                **value,
+                "address": int(value["address"], 16),
+                "starknet_address": int(value["starknet_address"], 16),
+            }
+            for name, value in json.load(
+                open(DEPLOYMENTS_DIR / "kakarot_deployments.json", "r")
+            ).items()
+        }
     except FileNotFoundError:
         return {}
 
@@ -432,6 +444,7 @@ def _wrap_kakarot(fun: str, caller_eoa: Optional[Account] = None):
             data=calldata,
             caller_eoa=caller_eoa_ if caller_eoa_ else None,
             max_fee=max_fee,
+            gas_price=gas_price,
         )
         if success == 0:
             logger.error(f"❌ {self.address}.{fun} failed")
@@ -450,13 +463,12 @@ def _wrap_kakarot(fun: str, caller_eoa: Optional[Account] = None):
 async def _contract_exists(address: int) -> bool:
     try:
         await RPC_CLIENT.get_class_hash_at(address)
-        logger.info(f"ℹ️  Contract at address {hex(address)} already exists")
         return True
     except ClientError:
         return False
 
 
-async def get_eoa(private_key=None, amount=10) -> Account:
+async def get_eoa(private_key=None, amount=0) -> Account:
     private_key = private_key or keys.PrivateKey(bytes.fromhex(EVM_PRIVATE_KEY[2:]))
     starknet_address = await deploy_and_fund_evm_address(
         private_key.public_key.to_checksum_address(), amount
@@ -541,6 +553,7 @@ async def eth_send_transaction(
     value: Union[int, str] = 0,
     caller_eoa: Optional[Account] = None,
     max_fee: Optional[int] = None,
+    gas_price=DEFAULT_GAS_PRICE,
 ):
     """Execute the data at the EVM contract to on Kakarot."""
     evm_account = caller_eoa or await get_eoa()
@@ -558,12 +571,11 @@ async def eth_send_transaction(
         ).nonce
 
     payload = {
-        "type": 0x2,
+        "type": 0x1,
         "chainId": NETWORK["chain_id"],
         "nonce": nonce,
         "gas": gas,
-        "maxPriorityFeePerGas": 1,
-        "maxFeePerGas": DEFAULT_GAS_PRICE,
+        "gasPrice": gas_price,
         "to": to_checksum_address(to) if to else None,
         "value": value,
         "data": data,
@@ -603,7 +615,7 @@ async def send_starknet_transaction(
     packed_encoded_unsigned_tx: List[int],
     max_fee: Optional[int] = None,
 ):
-    relayer = await get_starknet_account()
+    relayer = next(NETWORK["relayers"])
     current_timestamp = (await RPC_CLIENT.get_block("latest")).timestamp
     outside_execution = {
         "caller": int.from_bytes(b"ANY_CALLER", "big"),
@@ -645,6 +657,8 @@ async def send_starknet_transaction(
         if event.from_address == evm_account.address
         and event.keys[0] == starknet_keccak(b"transaction_executed")
     ]
+    if receipt.execution_status.name == "REVERTED":
+        raise StarknetTransactionError(f"Starknet tx reverted: {receipt.revert_reason}")
     if len(transaction_events) != 1:
         raise ValueError("Cannot locate the single event giving the actual tx status")
     (

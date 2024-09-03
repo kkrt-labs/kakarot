@@ -4,6 +4,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin, HashBuiltin
 from starkware.cairo.common.math_cmp import is_not_zero, is_nn
+from starkware.cairo.common.math import assert_not_zero
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256
 
@@ -56,6 +57,7 @@ namespace EthTransaction {
 
         // pre eip-155 txs have 6 fields, post eip-155 txs have 9 fields
         if (items_len == 6) {
+            tempvar is_some = 0;
             tempvar chain_id = 0;
         } else {
             assert items_len = 9;
@@ -63,7 +65,11 @@ namespace EthTransaction {
             assert items[7].is_list = FALSE;
             assert items[8].is_list = FALSE;
             let chain_id = Helpers.bytes_to_felt(items[6].data_len, items[6].data);
+
+            tempvar is_some = 1;
+            tempvar chain_id = chain_id;
         }
+        let is_some = [ap - 2];
         let chain_id = [ap - 1];
 
         tempvar tx = new model.EthTransaction(
@@ -77,7 +83,7 @@ namespace EthTransaction {
             payload=payload,
             access_list_len=0,
             access_list=cast(0, felt*),
-            chain_id=chain_id,
+            chain_id=model.Option(is_some=is_some, value=chain_id),
         );
         return tx;
     }
@@ -134,7 +140,7 @@ namespace EthTransaction {
             payload=payload,
             access_list_len=access_list_len,
             access_list=access_list,
-            chain_id=chain_id,
+            chain_id=model.Option(is_some=1, value=chain_id),
         );
         return tx;
     }
@@ -192,7 +198,7 @@ namespace EthTransaction {
             payload=payload,
             access_list_len=access_list_len,
             access_list=access_list,
-            chain_id=chain_id,
+            chain_id=model.Option(is_some=1, value=chain_id),
         );
         return tx;
     }
@@ -201,8 +207,13 @@ namespace EthTransaction {
     // @dev This function checks if a raw transaction is a legacy Ethereum transaction by checking the transaction type
     // according to EIP-2718. If the transaction type is greater than or equal to 0xc0, it's a legacy transaction.
     // See https://eips.ethereum.org/EIPS/eip-2718#transactiontype-only-goes-up-to-0x7f
+    // @param tx_data_len The len of the raw transaction data
     // @param tx_data The raw transaction data
-    func get_tx_type{range_check_ptr}(tx_data: felt*) -> felt {
+    func get_tx_type{range_check_ptr}(tx_data_len: felt, tx_data: felt*) -> felt {
+        with_attr error_message("tx_data_len is zero") {
+            assert_not_zero(tx_data_len);
+        }
+
         let type = [tx_data];
         let is_legacy = is_nn(type - 0xc0);
         if (is_legacy != FALSE) {
@@ -217,7 +228,7 @@ namespace EthTransaction {
     func decode{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(
         tx_data_len: felt, tx_data: felt*
     ) -> model.EthTransaction* {
-        let tx_type = get_tx_type(tx_data);
+        let tx_type = get_tx_type(tx_data_len, tx_data);
         let is_supported = is_nn(2 - tx_type);
         with_attr error_message("Kakarot: transaction type not supported") {
             assert is_supported = TRUE;

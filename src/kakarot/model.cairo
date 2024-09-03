@@ -138,6 +138,7 @@ namespace model {
         is_create: felt,
         depth: felt,
         env: Environment*,
+        cairo_precompile_called: felt,
     }
 
     // @dev Stores all data relevant to the current execution context.
@@ -217,6 +218,6 @@ namespace model {
         payload: felt*,
         access_list_len: felt,
         access_list: felt*,
-        chain_id: felt,
+        chain_id: Option,
     }
 }

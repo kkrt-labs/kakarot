@@ -113,7 +113,7 @@ func test__is_account_alive__account_alive_in_state{
     let (code) = alloc();
     let (code_hash_ptr) = alloc();
     %{
-        from tests.utils.uint256 import int_to_uint256
+        from kakarot_scripts.utils.uint256 import int_to_uint256
 
         ids.nonce = program_input["nonce"]
         ids.balance_low = program_input["balance_low"]

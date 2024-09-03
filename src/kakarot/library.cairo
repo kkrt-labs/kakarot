@@ -125,7 +125,7 @@ namespace Kakarot {
         chain_id: felt
     ) {
         let (tx_info) = get_tx_info();
-        let (_, chain_id) = unsigned_div_rem(tx_info.chain_id, 2 ** 32);
+        let (_, chain_id) = unsigned_div_rem(tx_info.chain_id, 2 ** 53);
         return (chain_id=chain_id);
     }
 
@@ -218,7 +218,7 @@ namespace Kakarot {
         block_gas_limit: felt
     ) {
         let (block_gas_limit) = Kakarot_block_gas_limit.read();
-        return (block_gas_limit,);
+        return (block_gas_limit=block_gas_limit);
     }
 
     // @notice Deploy a new externally owned account.

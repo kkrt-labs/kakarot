@@ -6,7 +6,7 @@ import pytest
 import rlp
 from eth_account.account import Account
 from eth_utils import keccak
-from hypothesis import assume, given, settings
+from hypothesis import given, settings
 from hypothesis.strategies import binary, composite, integers, lists, permutations
 from starkware.cairo.lang.cairo_constants import DEFAULT_PRIME
 from starkware.starknet.public.abi import (
@@ -15,12 +15,12 @@ from starkware.starknet.public.abi import (
 )
 
 from kakarot_scripts.constants import ARACHNID_PROXY_DEPLOYER, ARACHNID_PROXY_SIGNED_TX
-from tests.utils.constants import CHAIN_ID, TRANSACTION_GAS_LIMIT, TRANSACTIONS
+from kakarot_scripts.utils.uint256 import int_to_uint256
+from tests.utils.constants import CHAIN_ID, TRANSACTIONS
 from tests.utils.errors import cairo_error
 from tests.utils.helpers import generate_random_private_key, rlp_encode_signed_data
 from tests.utils.hints import patch_hint
 from tests.utils.syscall_handler import SyscallHandler
-from tests.utils.uint256 import int_to_uint256
 
 CHAIN_ID_OFFSET = 35
 V_OFFSET = 27
@@ -382,272 +382,11 @@ class TestAccountContract:
                     chain_id=CHAIN_ID + 1,
                 )
 
-        def test_should_raise_invalid_chain_id_tx_type_different_from_0(
-            self, cairo_run
-        ):
-            transaction = {
-                "type": 2,
-                "gas": 100_000,
-                "maxFeePerGas": 2_000_000_000,
-                "maxPriorityFeePerGas": 2_000_000_000,
-                "data": "0x616263646566",
-                "nonce": 34,
-                "to": "",
-                "value": 0x00,
-                "accessList": [],
-                "chainId": CHAIN_ID,
-            }
-            tx_data = list(rlp_encode_signed_data(transaction))
-            private_key = generate_random_private_key()
-            address = int(private_key.public_key.to_checksum_address(), 16)
-            signed = Account.sign_transaction(transaction, private_key)
-            signature = [*int_to_uint256(signed.r), *int_to_uint256(signed.s), signed.v]
-
-            with (
-                SyscallHandler.patch("Account_evm_address", address),
-                cairo_error(message="Invalid chain id"),
-            ):
-                cairo_run(
-                    "test__execute_from_outside",
-                    tx_data=tx_data,
-                    signature=signature,
-                    chain_id=CHAIN_ID + 1,
-                )
-
-        @SyscallHandler.patch("Account_nonce", 1)
-        @pytest.mark.parametrize("transaction", TRANSACTIONS)
-        def test_should_raise_invalid_nonce(self, cairo_run, transaction):
-            # explicitly set the nonce in transaction to be different from the patch
-            transaction = {**transaction, "nonce": 0}
-            private_key = generate_random_private_key()
-            address = int(private_key.public_key.to_checksum_address(), 16)
-            signed = Account.sign_transaction(transaction, private_key)
-            signature = [*int_to_uint256(signed.r), *int_to_uint256(signed.s), signed.v]
-            tx_data = list(rlp_encode_signed_data(transaction))
-
-            with (
-                SyscallHandler.patch("Account_evm_address", address),
-                cairo_error(message="Invalid nonce"),
-            ):
-                cairo_run(
-                    "test__execute_from_outside",
-                    tx_data=tx_data,
-                    signature=signature,
-                    chain_id=transaction.get("chainId") or CHAIN_ID,
-                )
-
-        @SyscallHandler.patch("IKakarot.get_native_token", lambda addr, data: [0xDEAD])
-        @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 0])
-        @pytest.mark.parametrize("transaction", TRANSACTIONS)
-        def test_raise_not_enough_ETH_balance(self, cairo_run, transaction):
-            private_key = generate_random_private_key()
-            address = int(private_key.public_key.to_checksum_address(), 16)
-            signed = Account.sign_transaction(transaction, private_key)
-            signature = [*int_to_uint256(signed.r), *int_to_uint256(signed.s), signed.v]
-            tx_data = list(rlp_encode_signed_data(transaction))
-
-            with (
-                SyscallHandler.patch("Account_evm_address", address),
-                SyscallHandler.patch("Account_nonce", transaction.get("nonce", 0)),
-                cairo_error(message="Not enough ETH to pay msg.value + max gas fees"),
-            ):
-                cairo_run(
-                    "test__execute_from_outside",
-                    tx_data=tx_data,
-                    signature=signature,
-                    chain_id=transaction.get("chainId") or CHAIN_ID,
-                )
-
-        @SyscallHandler.patch("IKakarot.get_native_token", lambda addr, data: [0xDEAD])
+        @SyscallHandler.patch("IKakarot.get_native_token", lambda _, __: [0xDEAD])
+        @SyscallHandler.patch("IERC20.balanceOf", lambda _, __: int_to_uint256(10**128))
         @SyscallHandler.patch(
-            "IERC20.balanceOf", lambda addr, data: int_to_uint256(10**128)
-        )
-        @SyscallHandler.patch("IKakarot.get_block_gas_limit", lambda addr, data: [0])
-        @pytest.mark.parametrize("transaction", TRANSACTIONS)
-        def test_raise_transaction_gas_limit_too_high(self, cairo_run, transaction):
-            private_key = generate_random_private_key()
-            address = int(private_key.public_key.to_checksum_address(), 16)
-            signed = Account.sign_transaction(transaction, private_key)
-            signature = [*int_to_uint256(signed.r), *int_to_uint256(signed.s), signed.v]
-            tx_data = list(rlp_encode_signed_data(transaction))
-
-            with (
-                SyscallHandler.patch("Account_evm_address", address),
-                SyscallHandler.patch("Account_nonce", transaction.get("nonce", 0)),
-                cairo_error(message="Transaction gas_limit > Block gas_limit"),
-            ):
-                cairo_run(
-                    "test__execute_from_outside",
-                    tx_data=tx_data,
-                    signature=signature,
-                    chain_id=transaction.get("chainId") or CHAIN_ID,
-                )
-
-        @SyscallHandler.patch("IKakarot.get_native_token", lambda addr, data: [0xDEAD])
-        @SyscallHandler.patch(
-            "IERC20.balanceOf", lambda addr, data: int_to_uint256(10**128)
-        )
-        @SyscallHandler.patch(
-            "IKakarot.get_block_gas_limit", lambda addr, data: [TRANSACTION_GAS_LIMIT]
-        )
-        @SyscallHandler.patch(
-            "IKakarot.get_base_fee", lambda addr, data: [TRANSACTION_GAS_LIMIT * 10**10]
-        )
-        @pytest.mark.parametrize("transaction", TRANSACTIONS)
-        def test_raise_max_fee_per_gas_too_low(self, cairo_run, transaction):
-            private_key = generate_random_private_key()
-            address = int(private_key.public_key.to_checksum_address(), 16)
-            signed = Account.sign_transaction(transaction, private_key)
-            signature = [*int_to_uint256(signed.r), *int_to_uint256(signed.s), signed.v]
-            tx_data = list(rlp_encode_signed_data(transaction))
-
-            with (
-                SyscallHandler.patch("Account_evm_address", address),
-                SyscallHandler.patch("Account_nonce", transaction.get("nonce", 0)),
-                cairo_error(message="Max fee per gas too low"),
-            ):
-                cairo_run(
-                    "test__execute_from_outside",
-                    tx_data=tx_data,
-                    signature=signature,
-                    chain_id=transaction.get("chainId") or CHAIN_ID,
-                )
-
-        @SyscallHandler.patch("IKakarot.get_native_token", lambda addr, data: [0xDEAD])
-        @SyscallHandler.patch(
-            "IERC20.balanceOf", lambda addr, data: int_to_uint256(10**128)
-        )
-        @given(gas_limit=integers(min_value=2**64, max_value=DEFAULT_PRIME - 1))
-        def test_raise_gas_limit_too_high(self, cairo_run, gas_limit):
-            transaction = {
-                "type": 2,
-                "gas": gas_limit,
-                "maxFeePerGas": 2_000_000_000,
-                "maxPriorityFeePerGas": 3_000_000_000,
-                "data": "0x616263646566",
-                "nonce": 34,
-                "to": "0x09616C3d61b3331fc4109a9E41a8BDB7d9776609",
-                "value": 0x5AF3107A4000,
-                "accessList": [],
-                "chainId": CHAIN_ID,
-            }
-            tx_data = list(rlp_encode_signed_data(transaction))
-            private_key = generate_random_private_key()
-            address = int(private_key.public_key.to_checksum_address(), 16)
-            signed = Account.sign_transaction(transaction, private_key)
-            signature = [*int_to_uint256(signed.r), *int_to_uint256(signed.s), signed.v]
-
-            with (
-                SyscallHandler.patch("Account_evm_address", address),
-                SyscallHandler.patch("Account_nonce", transaction["nonce"]),
-                cairo_error(message="Gas limit too high"),
-            ):
-                cairo_run(
-                    "test__execute_from_outside",
-                    tx_data=tx_data,
-                    signature=signature,
-                    chain_id=transaction["chainId"],
-                )
-
-        @SyscallHandler.patch("IKakarot.get_native_token", lambda addr, data: [0xDEAD])
-        @SyscallHandler.patch(
-            "IERC20.balanceOf", lambda addr, data: int_to_uint256(10**128)
-        )
-        @SyscallHandler.patch(
-            "IKakarot.get_block_gas_limit", lambda addr, data: [TRANSACTION_GAS_LIMIT]
-        )
-        @given(maxFeePerGas=integers(min_value=2**128, max_value=DEFAULT_PRIME - 1))
-        def test_raise_max_fee_per_gas_too_high(self, cairo_run, maxFeePerGas):
-            transaction = {
-                "type": 2,
-                "gas": 100_000,
-                "maxFeePerGas": maxFeePerGas,
-                "maxPriorityFeePerGas": 3_000_000_000,
-                "data": "0x616263646566",
-                "nonce": 34,
-                "to": "0x09616C3d61b3331fc4109a9E41a8BDB7d9776609",
-                "value": 0x5AF3107A4000,
-                "accessList": [],
-                "chainId": CHAIN_ID,
-            }
-            tx_data = list(rlp_encode_signed_data(transaction))
-            private_key = generate_random_private_key()
-            address = int(private_key.public_key.to_checksum_address(), 16)
-            signed = Account.sign_transaction(transaction, private_key)
-            signature = [*int_to_uint256(signed.r), *int_to_uint256(signed.s), signed.v]
-
-            with (
-                SyscallHandler.patch("Account_evm_address", address),
-                SyscallHandler.patch("Account_nonce", transaction["nonce"]),
-                cairo_error(message="Max fee per gas too high"),
-            ):
-                cairo_run(
-                    "test__execute_from_outside",
-                    tx_data=tx_data,
-                    signature=signature,
-                    chain_id=transaction["chainId"],
-                )
-
-        @composite
-        def max_priority_fee_too_high(draw):
-            maxFeePerGas = draw(integers(min_value=0, max_value=2**128 - 1))
-            maxPriorityFeePerGas = draw(integers(min_value=0, max_value=2**128 - 1))
-            assume(maxFeePerGas < maxPriorityFeePerGas)
-            return (maxFeePerGas, maxPriorityFeePerGas)
-
-        @SyscallHandler.patch("IKakarot.get_native_token", lambda addr, data: [0xDEAD])
-        @SyscallHandler.patch(
-            "IERC20.balanceOf", lambda addr, data: int_to_uint256(10**128)
-        )
-        @SyscallHandler.patch(
-            "IKakarot.get_block_gas_limit", lambda addr, data: [TRANSACTION_GAS_LIMIT]
-        )
-        @SyscallHandler.patch("IKakarot.get_base_fee", lambda addr, data: [0])
-        @given(max_priority_fee_too_high())
-        def test_raise_max_priority_fee_too_high(
-            self, cairo_run, max_priority_fee_too_high
-        ):
-            transaction = {
-                "type": 2,
-                "gas": 100_000,
-                "maxFeePerGas": max_priority_fee_too_high[0],
-                "maxPriorityFeePerGas": max_priority_fee_too_high[1],
-                "data": "0x616263646566",
-                "nonce": 34,
-                "to": "0x09616C3d61b3331fc4109a9E41a8BDB7d9776609",
-                "value": 0x5AF3107A4000,
-                "accessList": [],
-                "chainId": CHAIN_ID,
-            }
-            tx_data = list(rlp_encode_signed_data(transaction))
-            private_key = generate_random_private_key()
-            address = int(private_key.public_key.to_checksum_address(), 16)
-            signed = Account.sign_transaction(transaction, private_key)
-            signature = [*int_to_uint256(signed.r), *int_to_uint256(signed.s), signed.v]
-
-            with (
-                SyscallHandler.patch("Account_evm_address", address),
-                SyscallHandler.patch("Account_nonce", transaction["nonce"]),
-                cairo_error(message="Max priority fee greater than max fee per gas"),
-            ):
-                cairo_run(
-                    "test__execute_from_outside",
-                    tx_data=tx_data,
-                    signature=signature,
-                    chain_id=transaction["chainId"],
-                )
-
-        @SyscallHandler.patch("IKakarot.get_native_token", lambda addr, data: [0xDEAD])
-        @SyscallHandler.patch(
-            "IERC20.balanceOf", lambda addr, data: int_to_uint256(10**128)
-        )
-        @SyscallHandler.patch(
-            "IKakarot.get_block_gas_limit", lambda addr, data: [TRANSACTION_GAS_LIMIT]
-        )
-        @SyscallHandler.patch("IKakarot.get_base_fee", lambda addr, data: [0])
-        @SyscallHandler.patch(
-            "IKakarot.eth_send_transaction",
-            lambda addr, data: [1, 0x68656C6C6F, 1, 1],  # hello
+            "IKakarot.eth_send_raw_unsigned_tx",
+            lambda _, __: [1, 0x68656C6C6F, 1, 1],  # hello
         )
         def test_pass_authorized_pre_eip155_transaction(self, cairo_run):
             rlp_decoded = rlp.decode(ARACHNID_PROXY_SIGNED_TX)
@@ -688,17 +427,10 @@ class TestAccountContract:
             assert output_len == 1
             assert output[0] == 0x68656C6C6F
 
-        @SyscallHandler.patch("IKakarot.get_native_token", lambda addr, data: [0xDEAD])
+        @SyscallHandler.patch("IERC20.balanceOf", lambda _, __: int_to_uint256(10**128))
         @SyscallHandler.patch(
-            "IERC20.balanceOf", lambda addr, data: int_to_uint256(10**128)
-        )
-        @SyscallHandler.patch(
-            "IKakarot.get_block_gas_limit", lambda addr, data: [TRANSACTION_GAS_LIMIT]
-        )
-        @SyscallHandler.patch("IKakarot.get_base_fee", lambda addr, data: [0])
-        @SyscallHandler.patch(
-            "IKakarot.eth_send_transaction",
-            lambda addr, data: [1, 0x68656C6C6F, 1, 1],  # hello
+            "IKakarot.eth_send_raw_unsigned_tx",
+            lambda _, __: [1, 0x68656C6C6F, 1, 1],  # hello
         )
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
         def test_pass_all_transactions_types(self, cairo_run, seed, transaction):
@@ -732,17 +464,10 @@ class TestAccountContract:
             assert output_len == 1
             assert output[0] == 0x68656C6C6F
 
-        @SyscallHandler.patch("IKakarot.get_native_token", lambda addr, data: [0xDEAD])
+        @SyscallHandler.patch("IERC20.balanceOf", lambda _, __: int_to_uint256(10**128))
         @SyscallHandler.patch(
-            "IERC20.balanceOf", lambda addr, data: int_to_uint256(10**128)
-        )
-        @SyscallHandler.patch(
-            "IKakarot.get_block_gas_limit", lambda addr, data: [TRANSACTION_GAS_LIMIT]
-        )
-        @SyscallHandler.patch("IKakarot.get_base_fee", lambda addr, data: [0])
-        @SyscallHandler.patch(
-            "IKakarot.eth_send_transaction",
-            lambda addr, data: [1, 0x68656C6C6F, 1, 1],  # hello
+            "IKakarot.eth_send_raw_unsigned_tx",
+            lambda _, __: [1, 0x68656C6C6F, 1, 1],  # hello
         )
         def test_should_pass_all_data_len(self, cairo_run, bytecode):
             transaction = {
@@ -779,3 +504,169 @@ class TestAccountContract:
 
             assert output_len == 1
             assert output[0] == 0x68656C6C6F
+
+    class TestExecuteFromOutsideEntrypoint:
+
+        def test_should_raise_when_caller_is_not_any_caller_nor_actual_caller(
+            self, cairo_run
+        ):
+            with cairo_error(message="Execute from outside: invalid caller"):
+                cairo_run(
+                    "test__execute_from_outside_entrypoint",
+                    outside_execution={
+                        "caller": SyscallHandler.caller_address + 1,
+                        "nonce": 0,
+                        "execute_after": 0,
+                        "execute_before": 0,
+                    },
+                    call_array=[],
+                    calldata=[],
+                    signature=[],
+                )
+
+        def test_should_raise_when_call_is_too_early(self, cairo_run):
+            with cairo_error(message="Execute from outside: too early"):
+                cairo_run(
+                    "test__execute_from_outside_entrypoint",
+                    outside_execution={
+                        "caller": SyscallHandler.caller_address,
+                        "nonce": 0,
+                        "execute_after": SyscallHandler.block_timestamp + 1,
+                        "execute_before": 0,
+                    },
+                    call_array=[],
+                    calldata=[],
+                    signature=[],
+                )
+
+        def test_should_raise_when_call_is_too_late(self, cairo_run):
+            with cairo_error(message="Execute from outside: too late"):
+                cairo_run(
+                    "test__execute_from_outside_entrypoint",
+                    outside_execution={
+                        "caller": SyscallHandler.caller_address,
+                        "nonce": 0,
+                        "execute_after": 0,
+                        "execute_before": SyscallHandler.block_timestamp - 1,
+                    },
+                    call_array=[],
+                    calldata=[],
+                    signature=[],
+                )
+
+        def test_should_raise_when_call_array_is_empty(self, cairo_run):
+            with cairo_error(message="Execute from outside: multicall not supported"):
+                cairo_run(
+                    "test__execute_from_outside_entrypoint",
+                    outside_execution={
+                        "caller": SyscallHandler.caller_address,
+                        "nonce": 0,
+                        "execute_after": 0,
+                        "execute_before": SyscallHandler.block_timestamp + 1,
+                    },
+                    call_array=[],
+                    calldata=[],
+                    signature=[],
+                )
+
+        def test_should_raise_when_call_array_has_more_than_one_call(self, cairo_run):
+            with cairo_error(message="Execute from outside: multicall not supported"):
+                cairo_run(
+                    "test__execute_from_outside_entrypoint",
+                    outside_execution={
+                        "caller": SyscallHandler.caller_address,
+                        "nonce": 0,
+                        "execute_after": 0,
+                        "execute_before": SyscallHandler.block_timestamp + 1,
+                    },
+                    call_array=[{}, {}],
+                    calldata=[],
+                    signature=[],
+                )
+
+        @patch.dict(SyscallHandler.tx_info, {"version": 0})
+        def test_should_raise_when_tx_version_is_zero(self, cairo_run):
+            with cairo_error(message="Deprecated tx version: 0"):
+                cairo_run(
+                    "test__execute_from_outside_entrypoint",
+                    outside_execution={
+                        "caller": SyscallHandler.caller_address,
+                        "nonce": 0,
+                        "execute_after": 0,
+                        "execute_before": SyscallHandler.block_timestamp + 1,
+                    },
+                    call_array=[
+                        {"to": 0, "selector": 0, "data_offset": 0, "data_len": 0},
+                    ],
+                    calldata=[],
+                    signature=[],
+                )
+
+        @SyscallHandler.patch("Account_bytecode_len", 1)
+        def test_should_raise_when_eoa_has_code(self, cairo_run):
+            with cairo_error(message="EOAs cannot have code"):
+                cairo_run(
+                    "test__execute_from_outside_entrypoint",
+                    outside_execution={
+                        "caller": SyscallHandler.caller_address,
+                        "nonce": 0,
+                        "execute_after": 0,
+                        "execute_before": SyscallHandler.block_timestamp + 1,
+                    },
+                    call_array=[
+                        {"to": 0, "selector": 0, "data_offset": 0, "data_len": 0},
+                    ],
+                    calldata=[],
+                    signature=[],
+                )
+
+        @given(data_len=integers(min_value=2**128, max_value=DEFAULT_PRIME))
+        def test_should_raise_when_packed_data_len_is_zero_or_out_of_range(
+            self, cairo_run, data_len
+        ):
+            with cairo_error(
+                message="Execute from outside: packed_tx_data_len is zero or out of range"
+            ):
+                cairo_run(
+                    "test__execute_from_outside_entrypoint",
+                    outside_execution={
+                        "caller": SyscallHandler.caller_address,
+                        "nonce": 0,
+                        "execute_after": 0,
+                        "execute_before": SyscallHandler.block_timestamp + 1,
+                    },
+                    call_array=[
+                        {
+                            "to": 0,
+                            "selector": 0,
+                            "data_offset": 0,
+                            "data_len": data_len % DEFAULT_PRIME,
+                        },
+                    ],
+                    calldata=[],
+                    signature=[],
+                )
+
+        def test_should_raise_when_tx_data_len_is_out_of_range(self, cairo_run):
+            with cairo_error(
+                message="Execute from outside: tx_data_len is out of range"
+            ):
+                cairo_run(
+                    "test__execute_from_outside_entrypoint",
+                    outside_execution={
+                        "caller": SyscallHandler.caller_address,
+                        "nonce": 0,
+                        "execute_after": 0,
+                        "execute_before": SyscallHandler.block_timestamp + 1,
+                    },
+                    call_array=[
+                        {
+                            "to": 0,
+                            "selector": 0,
+                            "data_offset": 0,
+                            "data_len": 1,
+                        },
+                    ],
+                    calldata=[2**128],
+                    signature=[],
+                )

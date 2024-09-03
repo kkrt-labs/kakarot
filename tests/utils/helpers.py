@@ -13,7 +13,7 @@ from starkware.cairo.lang.cairo_constants import DEFAULT_PRIME
 from starkware.starknet.public.abi import get_storage_var_address
 
 from kakarot_scripts.constants import NETWORK
-from tests.utils.uint256 import int_to_uint256
+from kakarot_scripts.utils.uint256 import int_to_uint256
 
 PERMIT_TYPEHASH = keccak(
     text="Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"

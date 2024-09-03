@@ -6,6 +6,7 @@ from starkware.cairo.common.uint256 import Uint256
 
 from kakarot.library import Kakarot
 from kakarot.kakarot import (
+    eth_send_raw_unsigned_tx,
     register_account,
     set_native_token,
     set_base_fee,
@@ -24,8 +25,6 @@ from kakarot.account import Account
 func eth_call{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() -> (model.EVM*, model.State*, felt, felt) {
-    // Given
-
     tempvar origin;
     tempvar to: model.Option;
     tempvar gas_limit;
@@ -38,8 +37,7 @@ func eth_call{
     let (access_list) = alloc();
 
     %{
-        from tests.utils.uint256 import int_to_uint256
-
+        from kakarot_scripts.utils.uint256 import int_to_uint256
 
         ids.origin = program_input.get("origin", 0)
         ids.to.is_some = int(bool(program_input.get("to") is not None))
@@ -68,6 +66,24 @@ func eth_call{
     );
 
     return (evm, state, gas_used, required_gas);
+}
+
+func test__eth_send_raw_unsigned_tx{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() -> (felt, felt*, felt, felt) {
+    tempvar tx_data_len: felt;
+    let (tx_data) = alloc();
+
+    %{
+        segments.write_arg(ids.tx_data, program_input["tx_data"])
+        ids.tx_data_len = len(program_input["tx_data"])
+    %}
+
+    let (return_data_len, return_data, success, gas_used) = eth_send_raw_unsigned_tx(
+        tx_data_len=tx_data_len, tx_data=tx_data
+    );
+
+    return (return_data_len, return_data, success, gas_used);
 }
 
 func compute_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
@@ -193,4 +209,9 @@ func test__set_cairo1_helpers_class_hash{
 
     set_cairo1_helpers_class_hash(value);
     return ();
+}
+
+func test__eth_chain_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> felt {
+    let (chain_id) = Kakarot.eth_chain_id();
+    return chain_id;
 }
