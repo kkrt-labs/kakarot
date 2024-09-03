@@ -17,12 +17,13 @@ async def cairo_counter(max_fee, deployer_starknet):
 
 
 @pytest_asyncio.fixture()
-async def cairo_counter_caller(deployer_kakarot, cairo_counter):
+async def cairo_counter_caller(cairo_counter, new_eoa):
+    deployer = await new_eoa(0.1)
     caller_contract = await deploy(
         "CairoPrecompiles",
         "CairoCounterCaller",
         cairo_counter.address,
-        caller_eoa=deployer_kakarot.starknet_contract,
+        caller_eoa=deployer.starknet_contract,
     )
 
     await invoke(

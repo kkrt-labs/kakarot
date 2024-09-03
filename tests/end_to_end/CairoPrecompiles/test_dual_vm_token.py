@@ -19,13 +19,14 @@ async def starknet_token(owner):
 
 
 @pytest_asyncio.fixture()
-async def dual_vm_token(kakarot, starknet_token, owner):
+async def dual_vm_token(kakarot, starknet_token, new_eoa):
+    deployer = await new_eoa(0.5)
     dual_vm_token = await deploy_kakarot(
         "CairoPrecompiles",
         "DualVmToken",
         kakarot.address,
         starknet_token.address,
-        caller_eoa=owner.starknet_contract,
+        caller_eoa=deployer.starknet_contract,
     )
 
     await invoke(
@@ -75,39 +76,39 @@ class TestDualVmToken:
             assert balance_owner_starknet == balance_owner_evm
 
     class TestActions:
-        async def test_should_transfer(
-            self, starknet_token, dual_vm_token, owner, other
-        ):
+        async def test_should_transfer(self, dual_vm_token, owner, other):
             amount = 1
             balance_owner_before = await dual_vm_token.balanceOf(owner.address)
             balance_other_before = await dual_vm_token.balanceOf(other.address)
-            await dual_vm_token.transfer(other.address, amount)
+            await dual_vm_token.transfer(
+                other.address, amount, caller_eoa=owner.starknet_contract
+            )
             balance_owner_after = await dual_vm_token.balanceOf(owner.address)
             balance_other_after = await dual_vm_token.balanceOf(other.address)
 
             assert balance_owner_before - amount == balance_owner_after
             assert balance_other_before + amount == balance_other_after
 
-        async def test_should_approve(
-            self, starknet_token, dual_vm_token, owner, other
-        ):
+        async def test_should_approve(self, dual_vm_token, owner, other):
             amount = 1
             allowance_before = await dual_vm_token.allowance(
                 owner.address, other.address
             )
-            await dual_vm_token.approve(other.address, amount)
+            await dual_vm_token.approve(
+                other.address, amount, caller_eoa=owner.starknet_contract
+            )
             allowance_after = await dual_vm_token.allowance(
                 owner.address, other.address
             )
             assert allowance_after == allowance_before + amount
 
-        async def test_should_transfer_from(
-            self, starknet_token, dual_vm_token, owner, other
-        ):
+        async def test_should_transfer_from(self, dual_vm_token, owner, other):
             amount = 1
             balance_owner_before = await dual_vm_token.balanceOf(owner.address)
             balance_other_before = await dual_vm_token.balanceOf(other.address)
-            await dual_vm_token.approve(other.address, amount)
+            await dual_vm_token.approve(
+                other.address, amount, caller_eoa=owner.starknet_contract
+            )
             await dual_vm_token.transferFrom(
                 owner.address, other.address, amount, caller_eoa=other.starknet_contract
             )
@@ -118,11 +119,15 @@ class TestDualVmToken:
             assert balance_other_before + amount == balance_other_after
 
         async def test_should_revert_tx_cairo_precompiles(
-            self, starknet_token, dual_vm_token, owner, other
+            self, dual_vm_token, other, owner
         ):
             with cairo_error(
                 "EVM tx reverted, reverting SN tx because of previous calls to cairo precompiles"
             ):
+                # fails with out of gas
                 await dual_vm_token.transfer(
-                    other.address, 1, gas_limit=45_000
-                )  # fails with out of gas
+                    other.address,
+                    1,
+                    gas_limit=45_000,
+                    caller_eoa=owner.starknet_contract,
+                )

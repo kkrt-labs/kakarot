@@ -52,9 +52,10 @@ async def l1_kakarot_messaging(sn_messaging_local, kakarot):
 
 
 @pytest_asyncio.fixture(scope="session")
-async def message_app_l2(deployer_kakarot):
+async def message_app_l2(new_eoa):
+    deployer = await new_eoa(0.1)
     return await deploy(
-        "L1L2Messaging", "MessageAppL2", caller_eoa=deployer_kakarot.starknet_contract
+        "L1L2Messaging", "MessageAppL2", caller_eoa=deployer.starknet_contract
     )
 
 

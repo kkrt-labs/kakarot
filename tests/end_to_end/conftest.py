@@ -115,7 +115,7 @@ async def owner(new_eoa):
     """
     Return the main caller of all tests.
     """
-    return await new_eoa(0.1)
+    return await new_eoa(0.5)
 
 
 @pytest_asyncio.fixture(scope="module")

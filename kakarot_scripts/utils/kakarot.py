@@ -390,7 +390,9 @@ def _get_matching_logs_for_event(event_abi, log_receipts) -> List[dict]:
     return logs
 
 
-def _wrap_kakarot(fun: str, caller_eoa: Optional[Account] = None):
+def _wrap_kakarot(
+    fun: str, caller_eoa: Optional[Account] = None, relayer: Optional[Account] = None
+):
     """Wrap a contract function call with the Kakarot contract."""
 
     async def _wrapper(self, *args, **kwargs):
@@ -399,6 +401,7 @@ def _wrap_kakarot(fun: str, caller_eoa: Optional[Account] = None):
         gas_limit = kwargs.pop("gas_limit", TRANSACTION_GAS_LIMIT)
         value = kwargs.pop("value", 0)
         caller_eoa_ = kwargs.pop("caller_eoa", caller_eoa)
+        kwargs.pop("relayer", relayer)
         max_fee = kwargs.pop("max_fee", None)
         calldata = self.get_function_by_name(fun)(
             *args, **kwargs
@@ -555,6 +558,7 @@ async def eth_send_transaction(
     caller_eoa: Optional[Account] = None,
     max_fee: Optional[int] = None,
     gas_price=DEFAULT_GAS_PRICE,
+    relayer=None,
 ):
     """Execute the data at the EVM contract to on Kakarot."""
     evm_account = caller_eoa or await get_eoa()
@@ -599,7 +603,13 @@ async def eth_send_transaction(
     encoded_unsigned_tx = rlp_encode_signed_data(typed_transaction.as_dict())
     packed_encoded_unsigned_tx = pack_calldata(bytes(encoded_unsigned_tx))
     return await send_starknet_transaction(
-        evm_account, evm_tx.r, evm_tx.s, evm_tx.v, packed_encoded_unsigned_tx, max_fee
+        evm_account,
+        evm_tx.r,
+        evm_tx.s,
+        evm_tx.v,
+        packed_encoded_unsigned_tx,
+        max_fee,
+        relayer,
     )
 
 
@@ -610,8 +620,9 @@ async def send_starknet_transaction(
     signature_v: int,
     packed_encoded_unsigned_tx: List[int],
     max_fee: Optional[int] = None,
+    relayer=None,
 ):
-    relayer = await get_starknet_account()
+    relayer = relayer or await get_starknet_account()
     current_timestamp = (await RPC_CLIENT.get_block("latest")).timestamp
     outside_execution = {
         "caller": int.from_bytes(b"ANY_CALLER", "big"),

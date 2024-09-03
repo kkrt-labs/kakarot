@@ -42,13 +42,14 @@ def serialize_data_type(data_type: dict) -> Tuple:
 
 
 @pytest_asyncio.fixture(scope="module")
-async def pragma_caller(owner):
+async def pragma_caller(new_eoa):
+    deployer = await new_eoa(0.1)
     pragma_oracle_address = get_deployments()["MockPragmaOracle"]["address"]
     return await deploy(
         "CairoPrecompiles",
         "PragmaCaller",
         pragma_oracle_address,
-        caller_eoa=owner.starknet_contract,
+        caller_eoa=deployer.starknet_contract,
     )
 
 
