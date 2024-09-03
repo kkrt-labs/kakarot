@@ -34,3 +34,10 @@ async def revert_on_fallbacks(deployer_kakarot):
         "ContractRevertOnFallbackAndReceive",
         caller_eoa=deployer_kakarot.starknet_contract,
     )
+
+
+@pytest_asyncio.fixture(scope="package")
+async def safe(deployer_kakarot):
+    return await deploy(
+        "PlainOpcodes", "Safe", caller_eoa=deployer_kakarot.starknet_contract
+    )

@@ -1,16 +1,8 @@
 import pytest
-import pytest_asyncio
 
 from kakarot_scripts.constants import DEFAULT_GAS_PRICE
 from kakarot_scripts.utils.kakarot import deploy, eth_balance_of
 from tests.utils.constants import ACCOUNT_BALANCE
-
-
-@pytest_asyncio.fixture(scope="module")
-async def safe(deployer_kakarot):
-    return await deploy(
-        "PlainOpcodes", "Safe", caller_eoa=deployer_kakarot.starknet_contract
-    )
 
 
 @pytest.mark.asyncio(scope="package")

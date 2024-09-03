@@ -7,11 +7,11 @@ from kakarot_scripts.utils.kakarot import deploy
 
 
 @pytest_asyncio.fixture(scope="package")
-async def p256_verify_invoker(owner):
+async def p256_verify_invoker(deployer_kakarot):
     return await deploy(
         "RIP7212",
         "RIP7212Invoker",
-        caller_eoa=owner.starknet_contract,
+        caller_eoa=deployer_kakarot.starknet_contract,
     )
 
 
