@@ -1,7 +1,6 @@
 import json
 import logging
 import math
-import shutil
 from hashlib import md5
 from pathlib import Path
 from time import perf_counter, time_ns
@@ -24,9 +23,9 @@ from starkware.cairo.lang.vm.utils import RunResources
 from starkware.starknet.compiler.starknet_pass_manager import starknet_pass_manager
 
 from tests.utils.constants import Opcodes
-from tests.utils.coverage import VmWithCoverage, report_runs
+from tests.utils.coverage import VmWithCoverage
 from tests.utils.hints import debug_info
-from tests.utils.reporting import dump_coverage, profile_from_tracer_data
+from tests.utils.reporting import profile_from_tracer_data
 from tests.utils.serde import Serde
 from tests.utils.syscall_handler import SyscallHandler
 
@@ -36,23 +35,6 @@ pd.set_option("display.width", 1000)
 
 logging.getLogger("asyncio").setLevel(logging.INFO)
 logger = logging.getLogger()
-
-
-@pytest.fixture(scope="session", autouse=True)
-async def coverage(worker_id, request):
-
-    output_dir = Path("coverage")
-    shutil.rmtree(output_dir, ignore_errors=True)
-
-    yield
-
-    output_dir.mkdir(exist_ok=True, parents=True)
-    files = report_runs(excluded_file={"site-packages", "tests"})
-
-    if worker_id == "master":
-        dump_coverage(output_dir, files)
-    else:
-        dump_coverage(output_dir / worker_id, files)
 
 
 def cairo_compile(path):

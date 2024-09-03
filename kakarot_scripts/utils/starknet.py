@@ -164,8 +164,8 @@ async def fund_address(
         else:
             logger.info(f"{amount / 1e18} ETH minted to {hex(address)}")
     else:
-        account = funding_account or await get_starknet_account()
-        eth_contract = token_contract or await get_eth_contract()
+        account = funding_account or next(NETWORK["relayers"])
+        eth_contract = token_contract or await get_eth_contract(account)
         balance = await get_balance(account.address, eth_contract)
         if balance < amount:
             raise ValueError(
