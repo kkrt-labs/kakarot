@@ -599,12 +599,7 @@ async def eth_send_transaction(
     encoded_unsigned_tx = rlp_encode_signed_data(typed_transaction.as_dict())
     packed_encoded_unsigned_tx = pack_calldata(bytes(encoded_unsigned_tx))
     return await send_starknet_transaction(
-        evm_account,
-        evm_tx.r,
-        evm_tx.s,
-        evm_tx.v,
-        packed_encoded_unsigned_tx,
-        max_fee,
+        evm_account, evm_tx.r, evm_tx.s, evm_tx.v, packed_encoded_unsigned_tx, max_fee
     )
 
 
