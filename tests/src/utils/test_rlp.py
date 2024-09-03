@@ -2,6 +2,7 @@ import pytest
 from hypothesis import given
 from hypothesis.strategies import binary, lists, recursive
 from rlp import codec, decode, encode
+from starkware.cairo.lang.cairo_constants import DEFAULT_PRIME
 
 from tests.utils.constants import TRANSACTIONS
 from tests.utils.errors import cairo_error
@@ -39,6 +40,12 @@ class TestRLP:
                     data_len=len(encode(data)) - 1,
                     data=list(encode(data)),
                 )
+
+        def test_should_raise_when_decoded_params_overflow(self, cairo_run):
+            size = bytes.fromhex(f"{DEFAULT_PRIME - 1:064x}")
+            data = [len(size) + 0xF7] + list(size)
+            with cairo_error("RLP data too short for declared length"):
+                cairo_run("test__decode_raw", data=data)
 
     class TestDecode:
         @given(data=recursive(binary(), lists))

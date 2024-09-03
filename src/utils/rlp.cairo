@@ -85,6 +85,10 @@ namespace RLP {
         let (rlp_type, offset, len) = decode_type(data);
         local remaining_data_len = data_len - len - offset;
         with_attr error_message("RLP data too short for declared length") {
+            assert [range_check_ptr] = offset;
+            assert [range_check_ptr + 1] = len;
+            assert [range_check_ptr + 2] = offset + len;
+            let range_check_ptr = range_check_ptr + 3;
             assert_nn(remaining_data_len);
         }
 
