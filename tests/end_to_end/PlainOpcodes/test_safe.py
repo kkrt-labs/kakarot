@@ -6,7 +6,7 @@ from kakarot_scripts.utils.kakarot import deploy, eth_balance_of
 from tests.utils.constants import ACCOUNT_BALANCE
 
 
-@pytest_asyncio.fixture(scope="package")
+@pytest_asyncio.fixture(scope="module")
 async def safe():
     return await deploy("PlainOpcodes", "Safe")
 

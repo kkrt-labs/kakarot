@@ -52,6 +52,15 @@ def max_fee():
 
 
 @pytest_asyncio.fixture(scope="session")
+async def deployer() -> Account:
+    """
+    Return a cached version of the deployer contract.
+    """
+
+    return await get_starknet_account()
+
+
+@pytest_asyncio.fixture(scope="session")
 async def new_eoa(deployer) -> Wallet:
     """
     Return a factory to create a new EOA with enough ETH to pass ~100 tx by default.
@@ -93,7 +102,7 @@ async def new_eoa(deployer) -> Wallet:
         )
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture(scope="module")
 async def owner(new_eoa):
     """
     Return the main caller of all tests.
@@ -107,15 +116,6 @@ async def other(new_eoa):
     Just another EOA.
     """
     return await new_eoa(0.1)
-
-
-@pytest_asyncio.fixture(scope="session")
-async def deployer() -> Account:
-    """
-    Return a cached version of the deployer contract.
-    """
-
-    return await get_starknet_account()
 
 
 @pytest_asyncio.fixture(scope="session")
