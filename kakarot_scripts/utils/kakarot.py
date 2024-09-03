@@ -43,7 +43,6 @@ from kakarot_scripts.utils.starknet import fund_address as _fund_starknet_addres
 from kakarot_scripts.utils.starknet import get_balance
 from kakarot_scripts.utils.starknet import get_contract as _get_starknet_contract
 from kakarot_scripts.utils.starknet import get_deployments as _get_starknet_deployments
-from kakarot_scripts.utils.starknet import get_starknet_account
 from kakarot_scripts.utils.starknet import invoke as _invoke_starknet
 from kakarot_scripts.utils.starknet import wait_for_transaction
 from kakarot_scripts.utils.uint256 import int_to_uint256
@@ -616,7 +615,7 @@ async def send_starknet_transaction(
     packed_encoded_unsigned_tx: List[int],
     max_fee: Optional[int] = None,
 ):
-    relayer = await get_starknet_account()
+    relayer = next(NETWORK["relayers"])
     current_timestamp = (await RPC_CLIENT.get_block("latest")).timestamp
     outside_execution = {
         "caller": int.from_bytes(b"ANY_CALLER", "big"),
