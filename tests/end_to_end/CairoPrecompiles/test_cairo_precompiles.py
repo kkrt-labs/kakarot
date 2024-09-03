@@ -6,7 +6,7 @@ from kakarot_scripts.utils.starknet import get_contract, invoke, wait_for_transa
 from tests.utils.errors import cairo_error
 
 
-@pytest_asyncio.fixture()
+@pytest_asyncio.fixture(scope="module")
 async def cairo_counter(max_fee, deployer):
     cairo_counter = get_contract("Counter", provider=deployer)
 
@@ -16,7 +16,7 @@ async def cairo_counter(max_fee, deployer):
     await wait_for_transaction(tx.hash)
 
 
-@pytest_asyncio.fixture()
+@pytest_asyncio.fixture(scope="module")
 async def cairo_counter_caller(owner, cairo_counter):
     caller_contract = await deploy(
         "CairoPrecompiles",
@@ -32,6 +32,17 @@ async def cairo_counter_caller(owner, cairo_counter):
         True,
     )
     return caller_contract
+
+
+@pytest_asyncio.fixture(scope="module")
+async def sub_context_precompile(owner, cairo_counter_caller):
+    sub_context_precompile = await deploy(
+        "CairoPrecompiles",
+        "SubContextPrecompile",
+        cairo_counter_caller.address,
+        caller_eoa=owner.starknet_contract,
+    )
+    return sub_context_precompile
 
 
 @pytest.mark.asyncio(scope="module")
@@ -79,3 +90,19 @@ class TestCairoPrecompiles:
             await cairo_counter_caller.incrementCairoCounter(caller_eoa=eoa)
             last_caller_address = await cairo_counter_caller.getLastCaller()
             assert last_caller_address == eoa.address
+
+        async def test_should_fail_when_precompiles_called_and_low_level_call_fails(
+            self, sub_context_precompile
+        ):
+            with cairo_error(
+                "EVM tx reverted, reverting SN tx because of previous calls to cairo precompiles"
+            ):
+                await sub_context_precompile.exploitLowLevelCall()
+
+        async def test_should_fail_when_precompiles_called_and_child_context_fails(
+            self, sub_context_precompile
+        ):
+            with cairo_error(
+                "EVM tx reverted, reverting SN tx because of previous calls to cairo precompiles"
+            ):
+                await sub_context_precompile.exploitChildContext()
