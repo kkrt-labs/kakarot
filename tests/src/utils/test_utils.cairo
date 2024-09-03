@@ -220,3 +220,14 @@ func test__split_word_little{range_check_ptr}() -> felt* {
     Helpers.split_word_little(value, len, dst);
     return dst;
 }
+
+func test__bytes_to_felt() -> felt {
+    tempvar len;
+    let (ptr) = alloc();
+    %{
+        ids.len = len(program_input["data"])
+        segments.write_arg(ids.ptr, program_input["data"])
+    %}
+    let res = Helpers.bytes_to_felt(len, ptr);
+    return res;
+}
