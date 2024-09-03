@@ -2,7 +2,6 @@ import json
 import logging
 import os
 from enum import Enum, IntEnum
-from math import ceil, log
 from pathlib import Path
 from typing import Dict, List
 
@@ -34,22 +33,24 @@ class NetworkType(Enum):
 
 NETWORKS = {
     "mainnet": {
-        "name": "mainnet",
+        "name": "starknet-mainnet",
         "explorer_url": "https://starkscan.co",
-        "rpc_url": f"https://starknet-mainnet.infura.io/v3/{os.getenv('INFURA_KEY')}",
+        "rpc_url": f"https://rpc.nethermind.io/mainnet-juno/?apikey={os.getenv('NETHERMIND_API_KEY')}",
         "l1_rpc_url": f"https://mainnet.infura.io/v3/{os.getenv('INFURA_KEY')}",
         "type": NetworkType.PROD,
         "chain_id": StarknetChainId.MAINNET,
+        "check_interval": 1,
+        "max_wait": 10,
     },
     "sepolia": {
         "name": "starknet-sepolia",
         "explorer_url": "https://sepolia.starkscan.co/",
-        "rpc_url": os.getenv("STARKNET_SEPOLIA_RPC_URL"),
+        "rpc_url": f"https://rpc.nethermind.io/sepolia-juno/?apikey={os.getenv('NETHERMIND_API_KEY')}",
         "l1_rpc_url": f"https://sepolia.infura.io/v3/{os.getenv('INFURA_KEY')}",
         "type": NetworkType.STAGING,
         "chain_id": StarknetChainId.SEPOLIA,
-        "check_interval": 5,
-        "max_wait": 30,
+        "check_interval": 1,
+        "max_wait": 10,
     },
     "starknet-devnet": {
         "name": "starknet-devnet",
@@ -347,7 +348,7 @@ NETWORK["relayers"] = RelayerPool(
     )
 )
 
-if NETWORK.get("chain_id"):
-    logger.info(
-        f"ℹ️  Connected to CHAIN_ID {NETWORK['chain_id'].value.to_bytes(ceil(log(NETWORK['chain_id'].value, 256)), 'big')}"
-    )
+logger.info(
+    f"ℹ️  Connected to Starknet chain id {bytes.fromhex(f'{ChainId.starknet_chain_id.value:x}')} "
+    f"and Kakarot chain id {bytes.fromhex(f'{ChainId.chain_id.value:x}')}"
+)
