@@ -49,6 +49,8 @@ namespace RLP {
         if (is_le_191 != FALSE) {
             local len_bytes_count = prefix - 0xb7;
             let string_len = Helpers.bytes_to_felt(len_bytes_count, data + 1);
+            assert [range_check_ptr] = string_len;
+            let range_check_ptr = range_check_ptr + 1;
             return (TYPE_STRING, 1 + len_bytes_count, string_len);
         }
 
@@ -60,7 +62,11 @@ namespace RLP {
 
         local len_bytes_count = prefix - 0xf7;
         let list_len = Helpers.bytes_to_felt(len_bytes_count, data + 1);
-        return (TYPE_LIST, 1 + len_bytes_count, list_len);
+        tempvar offset = 1 + len_bytes_count;
+        assert [range_check_ptr] = offset;
+        assert [range_check_ptr + 1] = list_len;
+        let range_check_ptr = range_check_ptr + 2;
+        return (TYPE_LIST, offset, list_len);
     }
 
     // @notice Decodes a Recursive Length Prefix (RLP) encoded data.
@@ -82,13 +88,11 @@ namespace RLP {
             return 0;
         }
 
-        let (rlp_type, offset, len) = decode_type(data);
-        local remaining_data_len = data_len - len - offset;
         with_attr error_message("RLP data too short for declared length") {
-            assert [range_check_ptr] = offset;
-            assert [range_check_ptr + 1] = len;
-            assert [range_check_ptr + 2] = offset + len;
-            let range_check_ptr = range_check_ptr + 3;
+            let (rlp_type, offset, len) = decode_type(data);
+            assert [range_check_ptr] = offset + len;
+            local remaining_data_len = data_len - [range_check_ptr];
+            let range_check_ptr = range_check_ptr + 1;
             assert_nn(remaining_data_len);
         }
 
