@@ -107,7 +107,7 @@ async def deployer_kakarot(new_eoa):
     """
     Return the main caller of all tests.
     """
-    return await new_eoa(0.5)
+    return await new_eoa(1)
 
 
 @pytest_asyncio.fixture(scope="module")

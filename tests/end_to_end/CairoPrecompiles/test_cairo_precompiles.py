@@ -1,7 +1,7 @@
 import pytest
 import pytest_asyncio
 
-from kakarot_scripts.utils.kakarot import deploy, get_eoa
+from kakarot_scripts.utils.kakarot import deploy
 from kakarot_scripts.utils.starknet import get_contract, invoke, wait_for_transaction
 from tests.utils.errors import cairo_error
 
@@ -17,12 +17,12 @@ async def cairo_counter(max_fee, deployer_starknet):
 
 
 @pytest_asyncio.fixture()
-async def cairo_counter_caller(owner, cairo_counter):
+async def cairo_counter_caller(deployer_kakarot, cairo_counter):
     caller_contract = await deploy(
         "CairoPrecompiles",
         "CairoCounterCaller",
         cairo_counter.address,
-        caller_eoa=owner.starknet_contract,
+        caller_eoa=deployer_kakarot.starknet_contract,
     )
 
     await invoke(
@@ -47,7 +47,7 @@ class TestCairoPrecompiles:
             assert evm_count == cairo_count == 1
 
         async def test_should_increase_cairo_counter(
-            self, cairo_counter, cairo_counter_caller, max_fee
+            self, cairo_counter, cairo_counter_caller
         ):
             prev_count = (await cairo_counter.functions["get"].call()).count
             await cairo_counter_caller.incrementCairoCounter()
@@ -56,7 +56,7 @@ class TestCairoPrecompiles:
 
         @pytest.mark.parametrize("count", [0, 1, 2**128 - 1, 2**128, 2**256 - 1])
         async def test_should_set_cairo_counter(
-            self, cairo_counter, cairo_counter_caller, owner, count
+            self, cairo_counter, cairo_counter_caller, count
         ):
             await cairo_counter_caller.setCairoCounter(count)
             new_count = (await cairo_counter.functions["get"].call()).count
@@ -64,18 +64,24 @@ class TestCairoPrecompiles:
             assert new_count == count
 
         async def test_should_fail_precompile_caller_not_whitelisted(
-            self, cairo_counter, max_fee
+            self, cairo_counter, deployer_kakarot
         ):
             cairo_counter_caller = await deploy(
-                "CairoPrecompiles", "CairoCounterCaller", cairo_counter.address
+                "CairoPrecompiles",
+                "CairoCounterCaller",
+                cairo_counter.address,
+                caller_eoa=deployer_kakarot.starknet_contract,
             )
             with cairo_error(
                 "EVM tx reverted, reverting SN tx because of previous calls to cairo precompiles"
             ):
                 await cairo_counter_caller.incrementCairoCounter()
 
-        async def test_last_caller_address_should_be_eoa(self, cairo_counter_caller):
-            eoa = await get_eoa()
-            await cairo_counter_caller.incrementCairoCounter(caller_eoa=eoa)
+        async def test_last_caller_address_should_be_eoa(
+            self, cairo_counter_caller, deployer_kakarot
+        ):
+            await cairo_counter_caller.incrementCairoCounter(
+                caller_eoa=deployer_kakarot.starknet_contract
+            )
             last_caller_address = await cairo_counter_caller.getLastCaller()
-            assert last_caller_address == eoa.address
+            assert last_caller_address == deployer_kakarot.starknet_contract.address
