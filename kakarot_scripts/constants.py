@@ -304,11 +304,11 @@ if NETWORK["account_address"] is None:
     logger.warning(
         f"⚠️  {prefix}_ACCOUNT_ADDRESS not set, defaulting to ACCOUNT_ADDRESS"
     )
-    NETWORK["account_address"] = os.environ["ACCOUNT_ADDRESS"]
+    NETWORK["account_address"] = os.getenv("ACCOUNT_ADDRESS")
 NETWORK["private_key"] = os.environ.get(f"{prefix}_PRIVATE_KEY")
 if NETWORK["private_key"] is None:
     logger.warning(f"⚠️  {prefix}_PRIVATE_KEY not set, defaulting to PRIVATE_KEY")
-    NETWORK["private_key"] = os.environ["PRIVATE_KEY"]
+    NETWORK["private_key"] = os.getenv("PRIVATE_KEY")
 
 
 class RelayerPool:
@@ -333,12 +333,17 @@ class RelayerPool:
 NETWORK["relayers"] = RelayerPool(
     NETWORK.get(
         "relayers",
-        [
-            {
-                "address": int(NETWORK["account_address"], 16),
-                "private_key": int(NETWORK["private_key"], 16),
-            }
-        ],
+        (
+            [
+                {
+                    "address": int(NETWORK["account_address"], 16),
+                    "private_key": int(NETWORK["private_key"], 16),
+                }
+            ]
+            if NETWORK["account_address"] is not None
+            and NETWORK["private_key"] is not None
+            else []
+        ),
     )
 )
 
