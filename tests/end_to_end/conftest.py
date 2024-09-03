@@ -123,12 +123,12 @@ async def eth(deployer) -> Contract:
     return await get_eth_contract(provider=deployer)
 
 
-@pytest_asyncio.fixture(scope="session")
-async def cairo_counter(deployer) -> Contract:
+@pytest.fixture(scope="session")
+def cairo_counter(deployer) -> Contract:
     """
     Return a cached version of the cairo_counter contract.
     """
-    return await get_contract("Counter", provider=deployer)
+    return get_contract("Counter", provider=deployer)
 
 
 @pytest.fixture(scope="session")
