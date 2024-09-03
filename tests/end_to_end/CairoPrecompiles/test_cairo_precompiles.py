@@ -7,8 +7,8 @@ from tests.utils.errors import cairo_error
 
 
 @pytest_asyncio.fixture()
-async def cairo_counter(max_fee, deployer):
-    cairo_counter = get_contract("Counter", provider=deployer)
+async def cairo_counter(max_fee, deployer_starknet):
+    cairo_counter = get_contract("Counter", provider=deployer_starknet)
 
     yield cairo_counter
 

@@ -7,8 +7,10 @@ from tests.utils.constants import ACCOUNT_BALANCE
 
 
 @pytest_asyncio.fixture(scope="module")
-async def safe():
-    return await deploy("PlainOpcodes", "Safe")
+async def safe(deployer_kakarot):
+    return await deploy(
+        "PlainOpcodes", "Safe", caller_eoa=deployer_kakarot.starknet_contract
+    )
 
 
 @pytest.mark.asyncio(scope="package")

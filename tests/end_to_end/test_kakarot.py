@@ -34,11 +34,11 @@ logger.setLevel(logging.INFO)
 
 
 @pytest.fixture(scope="session")
-def evm(deployer):
+def evm(deployer_starknet):
     """
     Return a cached EVM contract.
     """
-    return get_contract("EVM", provider=deployer)
+    return get_contract("EVM", provider=deployer_starknet)
 
 
 @pytest_asyncio.fixture(scope="session")

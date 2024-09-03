@@ -55,9 +55,9 @@ async def l1_kakarot_messaging(sn_messaging_local, kakarot):
 
 
 @pytest_asyncio.fixture(scope="session")
-async def message_app_l2(owner):
+async def message_app_l2(deployer_kakarot):
     return await deploy(
-        "L1L2Messaging", "MessageAppL2", caller_eoa=owner.starknet_contract
+        "L1L2Messaging", "MessageAppL2", caller_eoa=deployer_kakarot.starknet_contract
     )
 
 

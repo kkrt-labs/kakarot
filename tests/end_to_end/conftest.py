@@ -52,16 +52,16 @@ def max_fee():
 
 
 @pytest_asyncio.fixture(scope="session")
-async def deployer() -> Account:
+async def deployer_starknet() -> Account:
     """
-    Return a cached version of the deployer contract.
+    Return a cached version of the deployer_starknet contract.
     """
 
     return await get_starknet_account()
 
 
 @pytest_asyncio.fixture(scope="session")
-async def new_eoa(deployer) -> Wallet:
+async def new_eoa(deployer_starknet) -> Wallet:
     """
     Return a factory to create a new EOA with enough ETH to pass ~100 tx by default.
     """
@@ -94,12 +94,20 @@ async def new_eoa(deployer) -> Wallet:
             continue
 
         await bridge.transfer(
-            deployer.address,
+            deployer_starknet.address,
             balance - tx_cost,
             caller_eoa=wallet.starknet_contract,
             gas_limit=gas_limit,
             gas_price=gas_price,
         )
+
+
+@pytest_asyncio.fixture(scope="session")
+async def deployer_kakarot(new_eoa):
+    """
+    Return the main caller of all tests.
+    """
+    return await new_eoa(0.5)
 
 
 @pytest_asyncio.fixture(scope="module")
@@ -119,24 +127,24 @@ async def other(new_eoa):
 
 
 @pytest_asyncio.fixture(scope="session")
-async def eth(deployer) -> Contract:
-    return await get_eth_contract(provider=deployer)
+async def eth(deployer_starknet) -> Contract:
+    return await get_eth_contract(provider=deployer_starknet)
 
 
 @pytest_asyncio.fixture(scope="session")
-async def cairo_counter(deployer) -> Contract:
+async def cairo_counter(deployer_starknet) -> Contract:
     """
     Return a cached version of the cairo_counter contract.
     """
-    return await get_contract("Counter", provider=deployer)
+    return await get_contract("Counter", provider=deployer_starknet)
 
 
 @pytest.fixture(scope="session")
-def kakarot(deployer) -> Contract:
+def kakarot(deployer_starknet) -> Contract:
     """
-    Return a cached deployer for the whole session.
+    Return a cached deployer_starknet for the whole session.
     """
-    return get_contract("kakarot", provider=deployer)
+    return get_contract("kakarot", provider=deployer_starknet)
 
 
 @pytest.fixture
