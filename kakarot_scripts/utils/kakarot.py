@@ -651,7 +651,10 @@ async def send_starknet_transaction(
     )
 
     await wait_for_transaction(tx_hash=response.hash)
-    receipt = await RPC_CLIENT.get_transaction_receipt(response.hash)
+    try:
+        receipt = await RPC_CLIENT.get_transaction_receipt(response.hash)
+    except ClientError as e:
+        raise StarknetTransactionError(f"0x{response.hash:064x}:\n{e}") from e
     transaction_events = [
         event
         for event in receipt.events
