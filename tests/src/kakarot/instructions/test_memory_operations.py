@@ -60,10 +60,12 @@ class TestMemoryOperations:
                 dst_offset_mcopy=int_to_uint256(dst_offset_mcopy),
             )
             memory_init_state_expansion = memory_init_state + [0] * (
-                dst_offset_mcopy + size_mcopy - len(memory_init_state)
+                max(src_offset_mcopy, dst_offset_mcopy)
+                + size_mcopy
+                - len(memory_init_state)
             )
             segment_to_copy = memory_init_state_expansion[
-                dst_offset_mcopy : dst_offset_mcopy + size_mcopy
+                src_offset_mcopy : src_offset_mcopy + size_mcopy
             ]
             expected_memory_state = (
                 memory_init_state_expansion[:dst_offset_mcopy]
