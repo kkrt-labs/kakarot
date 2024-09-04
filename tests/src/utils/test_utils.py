@@ -94,12 +94,16 @@ def test_should_return_bytes_used_in_128_word(cairo_run, word):
             b"\x01" * 20,
             [1, 0x0101010101010101010101010101010101010101],
         ),  # An address of 20 bytes
-        (b"\x01" * 40, [0, 0]),  # and invalid address
     ],
 )
 def test_should_parse_destination_from_bytes(cairo_run, bytes, expected):
     result = cairo_run("test__try_parse_destination_from_bytes", bytes=list(bytes))
     assert result == expected
+
+
+def test_should_panic_incorrect_address_encoding(cairo_run):
+    with cairo_error(message="Bytes has length 40, expected 0 or 20"):
+        cairo_run("test__try_parse_destination_from_bytes", bytes=list(b"\x01" * 40))
 
 
 @pytest.mark.parametrize(

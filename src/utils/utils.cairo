@@ -226,6 +226,9 @@ namespace Helpers {
 
     func try_parse_destination_from_bytes(bytes_len: felt, bytes: felt*) -> model.Option {
         if (bytes_len != 20) {
+            with_attr error_message("Bytes has length {bytes_len}, expected 0 or 20") {
+                assert bytes_len = 0;
+            }
             let res = model.Option(is_some=0, value=0);
             return res;
         }
