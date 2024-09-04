@@ -8,7 +8,7 @@ from eth_keys.datatypes import PrivateKey
 from starknet_py.contract import Contract
 from starknet_py.net.account.account import Account
 
-from kakarot_scripts.constants import RPC_CLIENT, NetworkType
+from kakarot_scripts.constants import NETWORK, RPC_CLIENT, NetworkType
 from kakarot_scripts.utils.kakarot import eth_balance_of
 from kakarot_scripts.utils.kakarot import get_contract as get_solidity_contract
 from kakarot_scripts.utils.kakarot import get_eoa
@@ -182,3 +182,16 @@ def block_hash():
         ).block_hash
 
     return _factory
+
+
+@pytest.fixture(autouse=True, scope="session")
+def relayers(worker_id):
+    """
+    Override NETWORK["relayers"] to use the worker_id as the index and avoid nonce issues.
+    """
+    try:
+        logger.info(f"Setting relayer index to {int(worker_id[2:])}")
+        NETWORK["relayers"].index = int(worker_id[2:])
+    except ValueError:
+        logger.info(f"Error while setting relayer index to {worker_id}")
+    return

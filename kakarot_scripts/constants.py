@@ -323,11 +323,11 @@ class RelayerPool:
             )
             for relayer in relayers
         ]
-        self._index = 0
+        self.index = 0
 
     def __next__(self) -> Account:
-        relayer = self.relayer_accounts[self._index]
-        self._index = (self._index + 1) % len(self.relayer_accounts)
+        relayer = self.relayer_accounts[self.index]
+        self.index = (self.index + 1) % len(self.relayer_accounts)
         return relayer
 
 

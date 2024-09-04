@@ -709,7 +709,10 @@ async def deploy_and_fund_evm_address(evm_address: str, amount: float):
         await fund_address(evm_address, amount - account_balance)
     if not await _contract_exists(starknet_address):
         await _invoke_starknet(
-            "kakarot", "deploy_externally_owned_account", int(evm_address, 16)
+            "kakarot",
+            "deploy_externally_owned_account",
+            int(evm_address, 16),
+            account=next(NETWORK["relayers"]),
         )
     return starknet_address
 
