@@ -101,9 +101,13 @@ def test_should_parse_destination_from_bytes(cairo_run, bytes, expected):
     assert result == expected
 
 
-def test_should_panic_incorrect_address_encoding(cairo_run):
-    with cairo_error(message="Bytes has length 40, expected 0 or 20"):
-        cairo_run("test__try_parse_destination_from_bytes", bytes=list(b"\x01" * 40))
+@given(bytes_len=st.integers(min_value=1, max_value=32).filter(lambda x: x != 20))
+@settings(max_examples=10)
+def test_should_panic_incorrect_address_encoding(cairo_run, bytes_len):
+    with cairo_error(message=f"Bytes has length {bytes_len}, expected 0 or 20"):
+        cairo_run(
+            "test__try_parse_destination_from_bytes", bytes=list(b"\x01" * bytes_len)
+        )
 
 
 @pytest.mark.parametrize(
