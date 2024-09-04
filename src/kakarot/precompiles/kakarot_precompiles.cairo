@@ -155,7 +155,14 @@ namespace KakarotPrecompiles {
         }
         let target_address = Helpers.bytes20_to_felt(input + 12);
 
-        let data_bytes_len = Helpers.bytes32_to_felt(input + 2 * 32);
+        // We enforce data_len to be at most 4 bytes, made some tests on Starknet
+        // and even bytes4 looks like it's not supported
+        let invalid_data_byte_len = Helpers.bytes_to_felt(28, input + 2 * 32);
+        if (invalid_data_byte_len != 0) {
+            let (revert_reason_len, revert_reason) = Errors.precompileInputError();
+            return (revert_reason_len, revert_reason, CAIRO_MESSAGE_GAS, TRUE);
+        }
+        let data_bytes_len = Helpers.bytes4_to_felt(input + 3 * 32 - 4);
         let data_fits_in_input = is_nn(input_len - 3 * 32 - data_bytes_len);
         if (data_fits_in_input == 0) {
             let (revert_reason_len, revert_reason) = Errors.outOfBoundsRead();
