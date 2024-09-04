@@ -1,5 +1,5 @@
 import pytest
-from hypothesis import given
+from hypothesis import example, given
 from hypothesis.strategies import binary, integers
 from starkware.cairo.lang.cairo_constants import DEFAULT_PRIME
 
@@ -73,11 +73,23 @@ class TestMemoryOperations:
 
         @given(
             memory_init_state=binary(min_size=1, max_size=100),
-            size_mcopy=integers(min_value=2**128 - 31, max_value=DEFAULT_PRIME - 1),
+            size_mcopy=integers(min_value=2**128, max_value=DEFAULT_PRIME - 1),
             src_offset_mcopy=integers(min_value=0, max_value=100),
             dst_offset_mcopy=integers(min_value=0, max_value=100),
         )
-        def test_should_fail_if_memory_expansion_to_large(
+        @example(
+            memory_init_state=b"a" * 100,
+            size_mcopy=2**128 - 1,
+            src_offset_mcopy=2**128 - 1,
+            dst_offset_mcopy=0,
+        )
+        @example(
+            memory_init_state=b"a" * 100,
+            size_mcopy=2**128 - 1,
+            src_offset_mcopy=0,
+            dst_offset_mcopy=2**128 - 1,
+        )
+        def test_should_fail_if_memory_expansion_too_large(
             self,
             cairo_run,
             memory_init_state,
