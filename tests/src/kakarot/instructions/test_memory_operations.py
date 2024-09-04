@@ -1,6 +1,6 @@
 import pytest
 from hypothesis import given
-from hypothesis.strategies import integers, lists
+from hypothesis.strategies import binary, integers
 from starkware.cairo.lang.cairo_constants import DEFAULT_PRIME
 
 from kakarot_scripts.utils.uint256 import int_to_uint256
@@ -37,9 +37,7 @@ class TestMemoryOperations:
     class TestMcopy:
 
         @given(
-            memory_init_state=lists(
-                integers(min_value=0, max_value=255), min_size=1, max_size=100
-            ),
+            memory_init_state=binary(min_size=1, max_size=100),
             size_mcopy=integers(min_value=1, max_value=100),
             src_offset_mcopy=integers(min_value=0, max_value=100),
             dst_offset_mcopy=integers(min_value=0, max_value=100),
@@ -59,29 +57,22 @@ class TestMemoryOperations:
                 src_offset_mcopy=int_to_uint256(src_offset_mcopy),
                 dst_offset_mcopy=int_to_uint256(dst_offset_mcopy),
             )
-            memory_init_state_expansion = memory_init_state + [0] * (
+            expected_memory_state = list(memory_init_state) + [0] * (
                 max(src_offset_mcopy, dst_offset_mcopy)
                 + size_mcopy
                 - len(memory_init_state)
             )
-            segment_to_copy = memory_init_state_expansion[
-                src_offset_mcopy : src_offset_mcopy + size_mcopy
-            ]
-            expected_memory_state = (
-                memory_init_state_expansion[:dst_offset_mcopy]
-                + segment_to_copy
-                + memory_init_state_expansion[dst_offset_mcopy + size_mcopy :]
+            expected_memory_state[dst_offset_mcopy : dst_offset_mcopy + size_mcopy] = (
+                expected_memory_state[src_offset_mcopy : src_offset_mcopy + size_mcopy]
             )
             words_len = (len(expected_memory_state) + 31) // 32
-            expected_memory_state = "".join(
-                [f"{byte:02x}" for byte in expected_memory_state]
-            ) + "00" * (words_len * 32 - len(expected_memory_state))
-            assert memory == expected_memory_state
+            expected_memory_state = expected_memory_state + [0] * (
+                words_len * 32 - len(expected_memory_state)
+            )
+            assert bytes.fromhex(memory) == bytes(expected_memory_state)
 
         @given(
-            memory_init_state=lists(
-                integers(min_value=0, max_value=255), min_size=1, max_size=100
-            ),
+            memory_init_state=binary(min_size=1, max_size=100),
             size_mcopy=integers(min_value=2**128 - 31, max_value=DEFAULT_PRIME - 1),
             src_offset_mcopy=integers(min_value=0, max_value=100),
             dst_offset_mcopy=integers(min_value=0, max_value=100),
