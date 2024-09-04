@@ -57,7 +57,7 @@ logger.setLevel(logging.INFO)
 # Due to some fee estimation issues, we skip it in all the calls and set instead
 # this hardcoded value. This has no impact apart from enforcing the signing wallet
 # to have at least 0.1 ETH
-_max_fee = int(1e17)
+_max_fee = int(0.05e18)
 
 Artifact = namedtuple("Artifact", ["sierra", "casm"])
 

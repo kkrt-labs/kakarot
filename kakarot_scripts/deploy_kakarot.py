@@ -149,7 +149,6 @@ async def main():
             1,
         )
         await invoke("kakarot", "set_coinbase", int(bridge.address, 16))
-        await invoke("kakarot", "set_base_fee", 1)
 
     dump_evm_deployments(evm_deployments)
 
