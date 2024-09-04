@@ -5,6 +5,7 @@ import pytest
 from ethereum.cancun.vm.runtime import get_valid_jump_destinations
 from hypothesis import given, settings
 from hypothesis import strategies as st
+from starkware.cairo.lang.cairo_constants import DEFAULT_PRIME
 
 from kakarot_scripts.utils.kakarot import get_contract
 from tests.utils.errors import cairo_error
@@ -236,3 +237,11 @@ class TestSplitWord:
     ):
         with cairo_error("len must be < 32"):
             cairo_run("test__split_word_little", value=value, length=length)
+
+
+class TestBytesToFelt:
+
+    @given(data=st.binary(min_size=0, max_size=35))
+    def test_should_convert_bytes_to_felt_with_overflow(self, cairo_run, data):
+        output = cairo_run("test__bytes_to_felt", data=list(data))
+        assert output == int.from_bytes(data, byteorder="big") % DEFAULT_PRIME
