@@ -180,9 +180,8 @@ namespace EnvironmentalInformation {
         let (words, _) = unsigned_div_rem(upper_bytes_bound, 32);
         let copy_gas_cost = words * Gas.COPY;
 
-        let size_high_is_zero = Helpers.is_zero(size.high);
         local gas_to_charge: felt;
-        if (size_high_is_zero != FALSE) {
+        if (size.high == 0) {
             assert gas_to_charge = memory_expansion.cost + copy_gas_cost;
         } else {
             assert gas_to_charge = Gas.MEMORY_COST_U128;
@@ -266,9 +265,8 @@ namespace EnvironmentalInformation {
         let (words, _) = unsigned_div_rem(upper_bytes_bound, 32);
         let copy_gas_cost = words * Gas.COPY;
 
-        let size_high_is_zero = Helpers.is_zero(size.high);
         local gas_to_charge: felt;
-        if (size_high_is_zero != FALSE) {
+        if (size.high == 0) {
             assert gas_to_charge = memory_expansion.cost + copy_gas_cost;
         } else {
             assert gas_to_charge = Gas.MEMORY_COST_U128;
@@ -411,9 +409,8 @@ namespace EnvironmentalInformation {
         let (words, _) = unsigned_div_rem(upper_bytes_bound, 32);
         let copy_gas_cost = words * Gas.COPY;
 
-        let size_high_is_zero = Helpers.is_zero(size.high);
         local gas_to_charge: felt;
-        if (size_high_is_zero != FALSE) {
+        if (size.high == 0) {
             assert gas_to_charge = memory_expansion.cost + copy_gas_cost + access_gas_cost;
         } else {
             assert gas_to_charge = Gas.MEMORY_COST_U128;
