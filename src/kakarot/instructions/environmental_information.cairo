@@ -176,19 +176,16 @@ namespace EnvironmentalInformation {
         );
 
         // Any size upper than 2**128 will cause an OOG error, considering the maximum gas for a transaction.
+        // here with size.low = 2**128 - 1, copy_gas_cost is 0x18000000000000000000000000000000, ie is between 2**124 and 2**125
         let upper_bytes_bound = size.low + 31;
         let (words, _) = unsigned_div_rem(upper_bytes_bound, 32);
-        let copy_gas_cost_low = words * Gas.COPY;
-        tempvar copy_gas_cost_high = is_not_zero(size.high) * 2 ** 128;
+        let copy_gas_cost = words * Gas.COPY;
 
         // static cost handled in jump table
-        let evm = EVM.charge_gas(
-            evm, memory_expansion.cost + copy_gas_cost_low + copy_gas_cost_high
-        );
+        let evm = EVM.charge_gas(evm, memory_expansion.cost + copy_gas_cost);
         if (evm.reverted != FALSE) {
             return evm;
         }
-
         // OPERATION
         tempvar memory = new model.Memory(
             word_dict_start=memory.word_dict_start,
@@ -257,15 +254,13 @@ namespace EnvironmentalInformation {
         );
 
         // Any size upper than 2**128 will cause an OOG error, considering the maximum gas for a transaction.
+        // here with size.low = 2**128 - 1, copy_gas_cost is 0x18000000000000000000000000000000, ie is between 2**124 and 2**125
         let upper_bytes_bound = size.low + 31;
         let (words, _) = unsigned_div_rem(upper_bytes_bound, 32);
-        let copy_gas_cost_low = words * Gas.COPY;
-        tempvar copy_gas_cost_high = is_not_zero(size.high) * 2 ** 128;
+        let copy_gas_cost = words * Gas.COPY;
 
         // static cost handled in jump table
-        let evm = EVM.charge_gas(
-            evm, memory_expansion.cost + copy_gas_cost_low + copy_gas_cost_high
-        );
+        let evm = EVM.charge_gas(evm, memory_expansion.cost + copy_gas_cost);
         if (evm.reverted != FALSE) {
             return evm;
         }
@@ -394,18 +389,16 @@ namespace EnvironmentalInformation {
             Gas.COLD_ACCOUNT_ACCESS;
 
         // Any size upper than 2**128 will cause an OOG error, considering the maximum gas for a transaction.
+        // here with size.low = 2**128 - 1, copy_gas_cost is 0x18000000000000000000000000000000, ie is between 2**124 and 2**125
         let upper_bytes_bound = size.low + 31;
         let (words, _) = unsigned_div_rem(upper_bytes_bound, 32);
-        let copy_gas_cost_low = words * Gas.COPY;
-        tempvar copy_gas_cost_high = is_not_zero(size.high) * 2 ** 128;
+        let copy_gas_cost = words * Gas.COPY;
 
         let memory_expansion = Gas.memory_expansion_cost_saturated(
             memory.words_len, dest_offset, size
         );
 
-        let evm = EVM.charge_gas(
-            evm, access_gas_cost + copy_gas_cost_low + copy_gas_cost_high + memory_expansion.cost
-        );
+        let evm = EVM.charge_gas(evm, access_gas_cost + copy_gas_cost + memory_expansion.cost);
         if (evm.reverted != FALSE) {
             return evm;
         }

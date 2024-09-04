@@ -108,14 +108,12 @@ namespace MemoryOperations {
         );
 
         // Any size upper than 2**128 will cause an OOG error, considering the maximum gas for a transaction.
+        // here with size.low = 2**128 - 1, copy_gas_cost is 0x18000000000000000000000000000000, ie is between 2**124 and 2**125
         let upper_bytes_bound = size.low + 31;
         let (words, _) = unsigned_div_rem(upper_bytes_bound, 32);
         let copy_gas_cost_low = words * Gas.COPY;
-        tempvar copy_gas_cost_high = is_not_zero(size.high) * 2 ** 128;
 
-        let evm = EVM.charge_gas(
-            evm, memory_expansion.cost + copy_gas_cost_low + copy_gas_cost_high
-        );
+        let evm = EVM.charge_gas(evm, memory_expansion.cost + copy_gas_cost_low);
         if (evm.reverted != FALSE) {
             return evm;
         }

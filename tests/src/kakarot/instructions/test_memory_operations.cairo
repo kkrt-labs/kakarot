@@ -144,7 +144,6 @@ func test__exec_mload_should_load_a_value_from_memory_with_offset_larger_than_ms
     let (bytecode) = alloc();
     let evm = TestHelpers.init_evm_with_bytecode(0, bytecode);
     let test_offset = 684;
-    // Given
     let stack = Stack.init();
     let state = State.init();
     let memory = Memory.init();
@@ -168,4 +167,40 @@ func test__exec_mload_should_load_a_value_from_memory_with_offset_larger_than_ms
     assert_uint256_eq([index0], Uint256(0, 0));
     assert memory.words_len = 23;
     return ();
+}
+
+func test__exec_mcopy{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() -> (model.EVM*, model.Memory*) {
+    alloc_locals;
+    let (memory_init_state) = alloc();
+    local memory_init_state_len: felt;
+    let (size_mcopy_ptr) = alloc();
+    let (src_offset_mcopy_ptr) = alloc();
+    let (dst_offset_mcopy_ptr) = alloc();
+
+    %{
+        ids.memory_init_state_len = len(program_input["memory_init_state"])
+        segments.write_arg(ids.memory_init_state, program_input["memory_init_state"])
+        segments.write_arg(ids.size_mcopy_ptr, program_input["size_mcopy"])
+        segments.write_arg(ids.src_offset_mcopy_ptr, program_input["src_offset_mcopy"])
+        segments.write_arg(ids.dst_offset_mcopy_ptr, program_input["dst_offset_mcopy"])
+    %}
+
+    let size_mcopy = cast(size_mcopy_ptr, Uint256*);
+    let src_offset_mcopy = cast(src_offset_mcopy_ptr, Uint256*);
+    let dst_offset_mcopy = cast(dst_offset_mcopy_ptr, Uint256*);
+
+    let evm = TestHelpers.init_evm();
+    let stack = Stack.init();
+    let state = State.init();
+    let memory = TestHelpers.init_memory_with_values(memory_init_state_len, memory_init_state);
+
+    with stack, memory, state {
+        Stack.push(size_mcopy);
+        Stack.push(src_offset_mcopy);
+        Stack.push(dst_offset_mcopy);
+        let evm = MemoryOperations.exec_mcopy(evm);
+    }
+    return (evm, memory);
 }
