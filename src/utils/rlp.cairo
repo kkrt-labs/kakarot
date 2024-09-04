@@ -29,7 +29,9 @@ namespace RLP {
     // @return rlp_type The type of the RLP data (string or list).
     // @return offset The offset of the data in the RLP encoded data.
     // @return len The length of the data.
-    func decode_type{range_check_ptr}(data: felt*) -> (rlp_type: felt, offset: felt, len: felt) {
+    func decode_type_unsafe{range_check_ptr}(data: felt*) -> (
+        rlp_type: felt, offset: felt, len: felt
+    ) {
         alloc_locals;
 
         let prefix = [data];
@@ -89,7 +91,7 @@ namespace RLP {
         }
 
         with_attr error_message("RLP data too short for declared length") {
-            let (rlp_type, offset, len) = decode_type(data);
+            let (rlp_type, offset, len) = decode_type_unsafe(data);
             assert [range_check_ptr] = offset + len;
             local remaining_data_len = data_len - [range_check_ptr];
             let range_check_ptr = range_check_ptr + 1;
@@ -115,7 +117,7 @@ namespace RLP {
 
     func decode{range_check_ptr}(items: Item*, data_len: felt, data: felt*) {
         alloc_locals;
-        let (rlp_type, offset, len) = decode_type(data);
+        let (rlp_type, offset, len) = decode_type_unsafe(data);
         local extra_bytes = data_len - offset - len;
         with_attr error_message("RLP string ends with {extra_bytes} superfluous bytes") {
             assert extra_bytes = 0;

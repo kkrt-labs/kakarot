@@ -46,7 +46,7 @@ func test__decode_type{range_check_ptr}() -> (felt, felt, felt) {
     %{ segments.write_arg(ids.data, program_input["data"]) %}
 
     // When
-    let (type, offset, len) = RLP.decode_type(data);
+    let (type, offset, len) = RLP.decode_type_unsafe(data);
 
     // Then
     return (type, offset, len);
