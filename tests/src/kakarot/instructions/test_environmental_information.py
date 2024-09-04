@@ -2,6 +2,8 @@ import random
 
 import pytest
 from Crypto.Hash import keccak
+from hypothesis import example, given
+from hypothesis import strategies as st
 
 from kakarot_scripts.utils.uint256 import int_to_uint256
 from tests.utils.syscall_handler import SyscallHandler
@@ -145,12 +147,12 @@ class TestEnvironmentalInformation:
                 "offset_is_bytecodelen",
             ],
         )
-        def test_exec_codecopy_should_copy_code(
+        def test_exec_copy_should_copy_code(
             self, cairo_run, size, offset, dest_offset, opcode_number, bytecode
         ):
             bytecode.insert(0, opcode_number)  # random bytecode that can be mutated
-            memory = cairo_run(
-                "test__exec_codecopy",
+            (_, memory) = cairo_run(
+                "test__exec_copy",
                 size=size,
                 offset=offset,
                 dest_offset=dest_offset,
@@ -167,6 +169,30 @@ class TestEnvironmentalInformation:
                 == copied_bytecode
             )
 
+        @given(
+            opcode_number=st.sampled_from([0x39, 0x37]),
+            offset=st.integers(0, 2**128 - 1),
+            dest_offset=st.integers(0, 2**128 - 1),
+        )
+        @example(opcode_number=0x39, offset=2**128 - 1, dest_offset=0)
+        @example(opcode_number=0x39, offset=0, dest_offset=2**128 - 1)
+        @example(opcode_number=0x37, offset=2**128 - 1, dest_offset=0)
+        @example(opcode_number=0x37, offset=0, dest_offset=2**128 - 1)
+        def test_exec_copy_fail_oog(
+            self, cairo_run, opcode_number, bytecode, offset, dest_offset
+        ):
+            bytecode.insert(0, opcode_number)  # random bytecode that can be mutated
+            (evm, _) = cairo_run(
+                "test__exec_copy",
+                size=2**128 - 1,
+                offset=offset,
+                dest_offset=dest_offset,
+                bytecode=bytecode,
+                opcode_number=opcode_number,
+            )
+            assert evm["reverted"] == 2
+            assert b"Kakarot: outOfGas left" in bytes(evm["return_data"])
+
         @pytest.mark.parametrize("opcode_number", [0x39, 0x37])
         @pytest.mark.parametrize(
             "size",
@@ -178,13 +204,13 @@ class TestEnvironmentalInformation:
                 "size_is_0",
             ],
         )
-        def test_exec_codecopy_offset_high_zellic_issue_1258(
+        def test_exec_copy_offset_high_zellic_issue_1258(
             self, cairo_run, size, opcode_number, bytecode
         ):
             bytecode.insert(0, opcode_number)  # random bytecode that can be mutated
             offset_high = 1
             memory = cairo_run(
-                "test__exec_codecopy_offset_high_zellic_issue_1258",
+                "test__exec_copy_offset_high_zellic_issue_1258",
                 size=size,
                 offset_high=offset_high,
                 dest_offset=0,
