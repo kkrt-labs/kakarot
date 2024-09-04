@@ -76,7 +76,6 @@ def test_bytes_to_uint256(cairo_run, word):
 
 
 @given(word=st.integers(min_value=0, max_value=2**128 - 1))
-@settings(max_examples=20)
 def test_should_return_bytes_used_in_128_word(cairo_run, word):
     bytes_length = (word.bit_length() + 7) // 8
     output = cairo_run(
