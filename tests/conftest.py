@@ -4,7 +4,7 @@ import os
 
 import pytest
 from dotenv import load_dotenv
-from hypothesis import Verbosity, settings
+from hypothesis import Verbosity, settings, Phase
 from starkware.cairo.lang.instances import LAYOUTS
 
 load_dotenv()
@@ -59,8 +59,8 @@ def seed(request):
 
 pytest_plugins = ["tests.fixtures.starknet"]
 
-settings.register_profile("ci", deadline=None, max_examples=1000)
-settings.register_profile("dev", deadline=None, max_examples=10)
-settings.register_profile("debug", max_examples=10, verbosity=Verbosity.verbose)
+settings.register_profile("ci", deadline=None, max_examples=1000, phases=[Phase.explicit, Phase.reuse, Phase.generate, Phase.target])
+settings.register_profile("dev", deadline=None, max_examples=10, phases=[Phase.explicit, Phase.reuse, Phase.generate, Phase.target])
+settings.register_profile("debug", max_examples=10, verbosity=Verbosity.verbose, phases=[Phase.explicit, Phase.reuse, Phase.generate, Phase.target])
 settings.load_profile(os.getenv("HYPOTHESIS_PROFILE", "default"))
 logger.info(f"Using Hypothesis profile: {os.getenv('HYPOTHESIS_PROFILE', 'default')}")
