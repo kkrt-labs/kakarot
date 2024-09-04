@@ -14,6 +14,7 @@ python-dotenv = "^0.21.0"
 async-lru = "^2.0.4"
 toml = "^0.10.2"
 scikit-learn = "^1.5.1"
+seaborn = "^0.13.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.1.1"

@@ -10,9 +10,8 @@ mod BenchmarkCairoCalls {
 
     #[external(v0)]
     fn produce_bytes_output(self: @ContractState, output_size: u32) -> Array<felt252> {
-        let n_felts = (output_size + 30) / 31;
         let mut res = array![];
-        while (res.len() != n_felts) {
+        while (res.len() != output_size) {
             res.append(MAX_FELT);
         };
         return res;

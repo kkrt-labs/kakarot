@@ -30,9 +30,11 @@ contract BenchmarkCairoCalls {
         cairoContract.callCairo(FUNCTION_SELECTOR_RECEIVE_FELT_INPUTS, data);
     }
 
-    function callCairoWithBytesOutput(uint32 n_bytes_output) external {
+    function callCairoWithBytesOutput(uint32 n_felt_output) external {
         uint256[] memory data = new uint256[](1);
-        data[0] = n_bytes_output;
-        cairoContract.callCairo(FUNCTION_SELECTOR_PRODUCE_BYTES_OUTPUT, data);
+        data[0] = n_felt_output;
+        bytes memory output = cairoContract.callCairo(FUNCTION_SELECTOR_PRODUCE_BYTES_OUTPUT, data);
+        // This is data_len, data from Cairo
+        require(output.length == (n_felt_output + 1) * 32, "Invalid output length");
     }
 }
