@@ -6,6 +6,8 @@ from ethereum.shanghai.vm.gas import (
 from hypothesis import given
 from hypothesis.strategies import integers
 
+from kakarot_scripts.constants import MAX_MEMORY_SIZE
+
 
 class TestGas:
     class TestCost:
@@ -33,10 +35,10 @@ class TestGas:
             assert diff == output
 
         @given(
-            offset_1=integers(min_value=0, max_value=0xFFFFF),
-            size_1=integers(min_value=0, max_value=0xFFFFF),
-            offset_2=integers(min_value=0, max_value=0xFFFFF),
-            size_2=integers(min_value=0, max_value=0xFFFFF),
+            offset_1=integers(min_value=0, max_value=0xFFFF),
+            size_1=integers(min_value=0, max_value=0xFFFF),
+            offset_2=integers(min_value=0, max_value=0xFFFF),
+            size_2=integers(min_value=0, max_value=0xFFFF),
         )
         def test_should_return_max_expansion_cost(
             self, cairo_run, offset_1, size_1, offset_2, size_2
@@ -73,7 +75,7 @@ class TestGas:
             )
             if size == 0:
                 cost = 0
-            elif offset + size > 2**128 - 1:
+            elif offset + size > MAX_MEMORY_SIZE:
                 cost = 0x200000000000000000000000000018000000000000000000000000000000
             else:
                 cost = calculate_gas_extend_memory(b"", [(offset, size)]).cost

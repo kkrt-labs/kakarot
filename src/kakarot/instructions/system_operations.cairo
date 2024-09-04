@@ -63,6 +63,13 @@ namespace SystemOperations {
         // + init_code_gas
         // + is_create2 * GAS_KECCAK256_WORD * call_data_words
         let memory_expansion = Gas.memory_expansion_cost_saturated(memory.words_len, offset, size);
+        if (memory_expansion.cost == Gas.MEMORY_COST_U128) {
+            let (revert_reason_len, revert_reason) = Errors.outOfGas(
+                evm.gas_left, memory_expansion.cost
+            );
+            let evm = EVM.out_of_gas(evm, revert_reason_len, revert_reason);
+            return evm;
+        }
         let (calldata_words, _) = unsigned_div_rem(size.low + 31, 32);
         let init_code_gas_low = Gas.INIT_CODE_WORD_COST * calldata_words;
         tempvar init_code_gas_high = is_not_zero(size.high) * 2 ** 128;
@@ -253,6 +260,13 @@ namespace SystemOperations {
         let size = popped[1];
 
         let memory_expansion = Gas.memory_expansion_cost_saturated(memory.words_len, offset, size);
+        if (memory_expansion.cost == Gas.MEMORY_COST_U128) {
+            let (revert_reason_len, revert_reason) = Errors.outOfGas(
+                evm.gas_left, memory_expansion.cost
+            );
+            let evm = EVM.out_of_gas(evm, revert_reason_len, revert_reason);
+            return evm;
+        }
         let evm = EVM.charge_gas(evm, memory_expansion.cost);
         if (evm.reverted != FALSE) {
             return evm;
@@ -295,6 +309,13 @@ namespace SystemOperations {
         let size = popped[1];
 
         let memory_expansion = Gas.memory_expansion_cost_saturated(memory.words_len, offset, size);
+        if (memory_expansion.cost == Gas.MEMORY_COST_U128) {
+            let (revert_reason_len, revert_reason) = Errors.outOfGas(
+                evm.gas_left, memory_expansion.cost
+            );
+            let evm = EVM.out_of_gas(evm, revert_reason_len, revert_reason);
+            return evm;
+        }
         let evm = EVM.charge_gas(evm, memory_expansion.cost);
         if (evm.reverted != FALSE) {
             return evm;
@@ -353,6 +374,14 @@ namespace SystemOperations {
         let memory_expansion = Gas.max_memory_expansion_cost(
             memory.words_len, args_offset, args_size, ret_offset, ret_size
         );
+
+        if (memory_expansion.cost == Gas.MEMORY_COST_U128) {
+            let (revert_reason_len, revert_reason) = Errors.outOfGas(
+                evm.gas_left, memory_expansion.cost
+            );
+            let evm = EVM.out_of_gas(evm, revert_reason_len, revert_reason);
+            return evm;
+        }
 
         // Access gas cost. The account is marked as warm in the `generic_call` function,
         // which performs a `get_account`.
@@ -483,6 +512,14 @@ namespace SystemOperations {
             memory.words_len, args_offset, args_size, ret_offset, ret_size
         );
 
+        if (memory_expansion.cost == Gas.MEMORY_COST_U128) {
+            let (revert_reason_len, revert_reason) = Errors.outOfGas(
+                evm.gas_left, memory_expansion.cost
+            );
+            let evm = EVM.out_of_gas(evm, revert_reason_len, revert_reason);
+            return evm;
+        }
+
         // Access gas cost. The account is marked as warm in the `is_account_alive` instruction,
         // which performs a `get_account`.
         let is_account_warm = State.is_account_warm(to);
@@ -580,6 +617,14 @@ namespace SystemOperations {
         let memory_expansion = Gas.max_memory_expansion_cost(
             memory.words_len, args_offset, args_size, ret_offset, ret_size
         );
+
+        if (memory_expansion.cost == Gas.MEMORY_COST_U128) {
+            let (revert_reason_len, revert_reason) = Errors.outOfGas(
+                evm.gas_left, memory_expansion.cost
+            );
+            let evm = EVM.out_of_gas(evm, revert_reason_len, revert_reason);
+            return evm;
+        }
 
         // Access gas cost. The account is marked as warm in the `is_account_alive` instruction,
         // which performs a `get_account`.
@@ -684,6 +729,14 @@ namespace SystemOperations {
         let memory_expansion = Gas.max_memory_expansion_cost(
             memory.words_len, args_offset, args_size, ret_offset, ret_size
         );
+
+        if (memory_expansion.cost == Gas.MEMORY_COST_U128) {
+            let (revert_reason_len, revert_reason) = Errors.outOfGas(
+                evm.gas_left, memory_expansion.cost
+            );
+            let evm = EVM.out_of_gas(evm, revert_reason_len, revert_reason);
+            return evm;
+        }
 
         // Access gas cost. The account is marked as warm in the `generic_call` function,
         // which performs a `get_account`.

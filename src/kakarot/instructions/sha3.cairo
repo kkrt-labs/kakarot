@@ -18,6 +18,7 @@ from kakarot.stack import Stack
 from kakarot.storages import Kakarot_cairo1_helpers_class_hash
 from utils.bytes import bytes_to_bytes8_little_endian
 from utils.maths import unsigned_div_rem
+from kakarot.errors import Errors
 
 namespace Sha3 {
     func exec_sha3{
@@ -37,6 +38,13 @@ namespace Sha3 {
 
         // GAS
         let memory_expansion = Gas.memory_expansion_cost_saturated(memory.words_len, offset, size);
+        if (memory_expansion.cost == Gas.MEMORY_COST_U128) {
+            let (revert_reason_len, revert_reason) = Errors.outOfGas(
+                evm.gas_left, memory_expansion.cost
+            );
+            let evm = EVM.out_of_gas(evm, revert_reason_len, revert_reason);
+            return evm;
+        }
         let (words, _) = unsigned_div_rem(size.low + 31, 32);
         let words_gas_cost_low = Gas.KECCAK256_WORD * words;
         tempvar words_gas_cost_high = is_not_zero(size.high) * 2 ** 128;

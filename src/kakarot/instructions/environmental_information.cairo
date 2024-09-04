@@ -175,6 +175,14 @@ namespace EnvironmentalInformation {
             memory.words_len, memory_offset, size
         );
 
+        if (memory_expansion.cost == Gas.MEMORY_COST_U128) {
+            let (revert_reason_len, revert_reason) = Errors.outOfGas(
+                evm.gas_left, memory_expansion.cost
+            );
+            let evm = EVM.out_of_gas(evm, revert_reason_len, revert_reason);
+            return evm;
+        }
+
         // Any size upper than 2**128 will cause an OOG error, considering the maximum gas for a transaction.
         // here with size.low = 2**128 - 1, copy_gas_cost is 0x18000000000000000000000000000000, ie is between 2**124 and 2**125
         let upper_bytes_bound = size.low + 31;
@@ -252,6 +260,14 @@ namespace EnvironmentalInformation {
         let memory_expansion = Gas.memory_expansion_cost_saturated(
             memory.words_len, dest_offset, size
         );
+
+        if (memory_expansion.cost == Gas.MEMORY_COST_U128) {
+            let (revert_reason_len, revert_reason) = Errors.outOfGas(
+                evm.gas_left, memory_expansion.cost
+            );
+            let evm = EVM.out_of_gas(evm, revert_reason_len, revert_reason);
+            return evm;
+        }
 
         // Any size upper than 2**128 will cause an OOG error, considering the maximum gas for a transaction.
         // here with size.low = 2**128 - 1, copy_gas_cost is 0x18000000000000000000000000000000, ie is between 2**124 and 2**125
@@ -397,6 +413,14 @@ namespace EnvironmentalInformation {
         let memory_expansion = Gas.memory_expansion_cost_saturated(
             memory.words_len, dest_offset, size
         );
+
+        if (memory_expansion.cost == Gas.MEMORY_COST_U128) {
+            let (revert_reason_len, revert_reason) = Errors.outOfGas(
+                evm.gas_left, memory_expansion.cost
+            );
+            let evm = EVM.out_of_gas(evm, revert_reason_len, revert_reason);
+            return evm;
+        }
 
         let evm = EVM.charge_gas(evm, access_gas_cost + copy_gas_cost + memory_expansion.cost);
         if (evm.reverted != FALSE) {

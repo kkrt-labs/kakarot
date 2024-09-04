@@ -19,8 +19,9 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 load_dotenv()
 
-# Hardcode block gas limit to 7M
+# Hardcode block gas limit to 7M if this is changed, also update the MAX_MEMORY_SIZE in the Kakarot contract
 BLOCK_GAS_LIMIT = 7_000_000
+MAX_MEMORY_SIZE = 0x1CDBE1
 DEFAULT_GAS_PRICE = int(1e9)
 BEACON_ROOT_ADDRESS = "0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02"
 

@@ -102,6 +102,19 @@ namespace EVM {
         );
     }
 
+    func out_of_gas(self: model.EVM*, revert_reason_len: felt, revert_reason: felt*) -> model.EVM* {
+        return new model.EVM(
+            message=self.message,
+            return_data_len=revert_reason_len,
+            return_data=revert_reason,
+            program_counter=self.program_counter,
+            stopped=TRUE,
+            gas_left=0,
+            gas_refund=self.gas_refund,
+            reverted=Errors.EXCEPTIONAL_HALT,
+        );
+    }
+
     // @notice Update the return data of the current execution context.
     // @param self The pointer to the execution context.
     // @param return_data_len The length of the return_data.
