@@ -76,7 +76,6 @@ def test_bytes_to_uint256(cairo_run, word):
 
 
 @given(word=st.integers(min_value=0, max_value=2**128 - 1))
-@settings(max_examples=20)
 def test_should_return_bytes_used_in_128_word(cairo_run, word):
     bytes_length = (word.bit_length() + 7) // 8
     output = cairo_run(
@@ -94,12 +93,17 @@ def test_should_return_bytes_used_in_128_word(cairo_run, word):
             b"\x01" * 20,
             [1, 0x0101010101010101010101010101010101010101],
         ),  # An address of 20 bytes
-        (b"\x01" * 40, [0, 0]),  # and invalid address
     ],
 )
 def test_should_parse_destination_from_bytes(cairo_run, bytes, expected):
     result = cairo_run("test__try_parse_destination_from_bytes", bytes=list(bytes))
     assert result == expected
+
+
+@given(bytes_array=st.binary(min_size=1, max_size=32).filter(lambda x: len(x) != 20))
+def test_should_panic_incorrect_address_encoding(cairo_run, bytes_array):
+    with cairo_error(message=f"Bytes has length {len(bytes_array)}, expected 0 or 20"):
+        cairo_run("test__try_parse_destination_from_bytes", bytes=list(bytes_array))
 
 
 @pytest.mark.parametrize(
