@@ -54,9 +54,7 @@ namespace Gas {
     const TX_ACCESS_LIST_ADDRESS_COST = 2400;
     const TX_ACCESS_LIST_STORAGE_KEY_COST = 1900;
     const BLOBHASH = 3;
-    const MAX_MEMORY_SIZE_U32 = 0x100000000;
     const MEMORY_COST_U32 = 0x200018000000;
-    const MAX_WORDS_LEN_U32 = 0x8000000;
 
     // @notice Compute the cost of the memory for a given words length.
     // @dev To avoid range_check overflow, we compute words_len / 512
@@ -117,15 +115,13 @@ namespace Gas {
             return expansion;
         }
 
-        let (q, _) = unsigned_div_rem(offset.low + size.low, MAX_MEMORY_SIZE_U32);
+        let (q, _) = unsigned_div_rem(offset.low + size.low, 2 ** 32);
         if (offset.high == 0 and size.high == 0 and q == 0) {
             return calculate_gas_extend_memory(words_len, offset.low + size.low);
         }
-        // Hardcoded value for memory expansion cost and new_words_len
+        // Hardcoded value of cost(2**32) and size of 2**32 bytes = 2**27 words of 32 bytes
         // This offset would produce an OOG error in any case
-        let expansion = model.MemoryExpansion(
-            cost=MEMORY_COST_U32, new_words_len=MAX_WORDS_LEN_U32
-        );
+        let expansion = model.MemoryExpansion(cost=MEMORY_COST_U32, new_words_len=2 ** 27);
         return expansion;
     }
 
@@ -162,7 +158,7 @@ namespace Gas {
         let max_expansion_is_2 = is_le_felt(max_offset_1, max_offset_2);
         let max_offset = max_offset_1 * (1 - max_expansion_is_2) + max_offset_2 *
             max_expansion_is_2;
-        let (q, _) = unsigned_div_rem(max_offset, MAX_MEMORY_SIZE_U32);
+        let (q, _) = unsigned_div_rem(max_offset, 2 ** 32);
         tempvar range_check_ptr = range_check_ptr;
         jmp expansion_cost_saturated if q != 0;
 
@@ -179,11 +175,9 @@ namespace Gas {
 
         expansion_cost_saturated:
         let range_check_ptr = [ap - 1];
-        // Hardcoded value of cost(2**128) and size of 2**128 bytes = 2**123 words of 32 bytes
+        // Hardcoded value of cost(2**32) and size of 2**32 bytes = 2**27 words of 32 bytes
         // This offset would produce an OOG error in any case
-        let expansion = model.MemoryExpansion(
-            cost=MEMORY_COST_U32, new_words_len=MAX_WORDS_LEN_U32
-        );
+        let expansion = model.MemoryExpansion(cost=MEMORY_COST_U32, new_words_len=2 ** 27);
         return expansion;
     }
 

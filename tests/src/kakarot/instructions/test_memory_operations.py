@@ -3,7 +3,6 @@ from hypothesis import example, given
 from hypothesis.strategies import binary, integers
 from starkware.cairo.lang.cairo_constants import DEFAULT_PRIME
 
-from kakarot_scripts.constants import MAX_MEMORY_SIZE_U32
 from kakarot_scripts.utils.uint256 import int_to_uint256
 
 
@@ -136,7 +135,7 @@ class TestMemoryOperations:
 
         @given(
             value=integers(min_value=0, max_value=2**256 - 1),
-            offset=integers(min_value=MAX_MEMORY_SIZE_U32, max_value=2**256 - 1),
+            offset=integers(min_value=2**32, max_value=2**256 - 1),
         )
         def test_exec_mstore_should_fail_if_memory_expansion_too_large(
             self, cairo_run, value, offset
