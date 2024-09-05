@@ -106,3 +106,44 @@ class TestMemoryOperations:
             )
             assert evm["reverted"] == 2
             assert b"Kakarot: outOfGas left" in bytes(evm["return_data"])
+
+    class TestMstore:
+
+        @given(
+            value=integers(min_value=0, max_value=2**256 - 1),
+            offset=integers(min_value=0, max_value=0xFFFF),
+        )
+        def test_exec_mstore_should_store_a_value_in_memory(
+            self, cairo_run, value, offset
+        ):
+            (evm, memory) = cairo_run(
+                "test_exec_mstore",
+                value=int_to_uint256(value),
+                offset=int_to_uint256(offset),
+            )
+
+            expected_memory = (
+                int.to_bytes(
+                    value, length=(value.bit_length() + 7) // 8, byteorder="big"
+                )
+                if value > 0
+                else b"\x00"
+            )
+            assert bytes.fromhex(memory)[offset : offset + 32] == bytes(
+                [0] * (32 - len(expected_memory)) + list(expected_memory)
+            )
+
+        @given(
+            value=integers(min_value=0, max_value=2**256 - 1),
+            offset=integers(min_value=2**32, max_value=2**256 - 1),
+        )
+        def test_exec_mstore_should_fail_if_memory_expansion_too_large(
+            self, cairo_run, value, offset
+        ):
+            (evm, _) = cairo_run(
+                "test_exec_mstore",
+                value=int_to_uint256(value),
+                offset=int_to_uint256(offset),
+            )
+            assert evm["reverted"] == 2
+            assert b"Kakarot: outOfGas left" in bytes(evm["return_data"])

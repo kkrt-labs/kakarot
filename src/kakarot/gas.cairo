@@ -50,11 +50,11 @@ namespace Gas {
     const COLD_ACCOUNT_ACCESS = 2600;
     const WARM_ACCESS = 100;
     const INIT_CODE_WORD_COST = 2;
-    const MEMORY_COST_U128 = 0x200000000000000000000000000018000000000000000000000000000000;
     const TX_BASE_COST = 21000;
     const TX_ACCESS_LIST_ADDRESS_COST = 2400;
     const TX_ACCESS_LIST_STORAGE_KEY_COST = 1900;
     const BLOBHASH = 3;
+    const MEMORY_COST_U32 = 0x200018000000;
 
     // @notice Compute the cost of the memory for a given words length.
     // @dev To avoid range_check overflow, we compute words_len / 512
@@ -115,13 +115,13 @@ namespace Gas {
             return expansion;
         }
 
-        let is_low_part_overflowing = is_le_felt(2 ** 128, offset.low + size.low);
-        if (offset.high == 0 and size.high == 0 and is_low_part_overflowing == 0) {
+        let (q, _) = unsigned_div_rem(offset.low + size.low, 2 ** 32);
+        if (offset.high == 0 and size.high == 0 and q == 0) {
             return calculate_gas_extend_memory(words_len, offset.low + size.low);
         }
-        // Hardcoded value of cost(2**128) and size of 2**128 bytes = 2**123 words of 32 bytes
+        // Hardcoded value of cost(2**32) and size of 2**32 bytes = 2**27 words of 32 bytes
         // This offset would produce an OOG error in any case
-        let expansion = model.MemoryExpansion(cost=MEMORY_COST_U128, new_words_len=2 ** 123);
+        let expansion = model.MemoryExpansion(cost=MEMORY_COST_U32, new_words_len=2 ** 27);
         return expansion;
     }
 
@@ -150,6 +150,7 @@ namespace Gas {
         tempvar is_not_saturated = Helpers.is_zero(offset_1.high) * Helpers.is_zero(size_1.high) *
             Helpers.is_zero(offset_2.high) * Helpers.is_zero(size_2.high);
         tempvar is_saturated = 1 - is_not_saturated;
+        tempvar range_check_ptr = range_check_ptr;
         jmp expansion_cost_saturated if is_saturated != 0;
 
         let max_offset_1 = (1 - is_zero_1) * (offset_1.low + size_1.low);
@@ -157,6 +158,10 @@ namespace Gas {
         let max_expansion_is_2 = is_le_felt(max_offset_1, max_offset_2);
         let max_offset = max_offset_1 * (1 - max_expansion_is_2) + max_offset_2 *
             max_expansion_is_2;
+        let (q, _) = unsigned_div_rem(max_offset, 2 ** 32);
+        tempvar range_check_ptr = range_check_ptr;
+        jmp expansion_cost_saturated if q != 0;
+
         let expansion = calculate_gas_extend_memory(words_len, max_offset);
         let expansion = model.MemoryExpansion(
             cost=expansion.cost, new_words_len=expansion.new_words_len
@@ -169,10 +174,10 @@ namespace Gas {
         return expansion;
 
         expansion_cost_saturated:
-        let range_check_ptr = [fp - 8];
-        // Hardcoded value of cost(2**128) and size of 2**128 bytes = 2**123 words of 32 bytes
+        let range_check_ptr = [ap - 1];
+        // Hardcoded value of cost(2**32) and size of 2**32 bytes = 2**27 words of 32 bytes
         // This offset would produce an OOG error in any case
-        let expansion = model.MemoryExpansion(cost=Gas.MEMORY_COST_U128, new_words_len=2 ** 123);
+        let expansion = model.MemoryExpansion(cost=MEMORY_COST_U32, new_words_len=2 ** 27);
         return expansion;
     }
 

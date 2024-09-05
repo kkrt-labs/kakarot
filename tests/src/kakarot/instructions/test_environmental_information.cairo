@@ -151,9 +151,9 @@ func test__exec_extcodecopy_zellic_issue_1258{
     return memory;
 }
 
-func test__exec_codecopy{
+func test__exec_copy{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() -> model.Memory* {
+}() -> (model.EVM*, model.Memory*) {
     // Given
     alloc_locals;
     local size: felt;
@@ -194,10 +194,10 @@ func test__exec_codecopy{
 
     // Then
     assert stack.size = 0;
-    return memory;
+    return (evm, memory);
 }
 
-func test__exec_codecopy_offset_high_zellic_issue_1258{
+func test__exec_copy_offset_high_zellic_issue_1258{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() -> model.Memory* {
     // Given

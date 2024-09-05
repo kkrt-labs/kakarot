@@ -37,6 +37,12 @@ namespace MemoryOperations {
         let memory_expansion = Gas.memory_expansion_cost_saturated(
             memory.words_len, [offset], Uint256(32, 0)
         );
+
+        if (memory_expansion.cost == Gas.MEMORY_COST_U32) {
+            let evm = EVM.out_of_gas(evm, memory_expansion.cost);
+            return evm;
+        }
+
         let evm = EVM.charge_gas(evm, memory_expansion.cost);
         if (evm.reverted != FALSE) {
             return evm;
@@ -72,6 +78,11 @@ namespace MemoryOperations {
         let memory_expansion = Gas.memory_expansion_cost_saturated(
             memory.words_len, offset, Uint256(32, 0)
         );
+        if (memory_expansion.cost == Gas.MEMORY_COST_U32) {
+            let evm = EVM.out_of_gas(evm, memory_expansion.cost);
+            return evm;
+        }
+
         let evm = EVM.charge_gas(evm, memory_expansion.cost);
         if (evm.reverted != FALSE) {
             return evm;
@@ -106,6 +117,11 @@ namespace MemoryOperations {
         let memory_expansion = Gas.max_memory_expansion_cost(
             memory.words_len, src, size, dst, size
         );
+
+        if (memory_expansion.cost == Gas.MEMORY_COST_U32) {
+            let evm = EVM.out_of_gas(evm, memory_expansion.cost);
+            return evm;
+        }
 
         // Any size upper than 2**128 will cause an OOG error, considering the maximum gas for a transaction.
         // here with size.low = 2**128 - 1, copy_gas_cost is 0x18000000000000000000000000000000, ie is between 2**124 and 2**125
@@ -258,6 +274,10 @@ namespace MemoryOperations {
         let memory_expansion = Gas.memory_expansion_cost_saturated(
             memory.words_len, offset, Uint256(1, 0)
         );
+        if (memory_expansion.cost == Gas.MEMORY_COST_U32) {
+            let evm = EVM.out_of_gas(evm, memory_expansion.cost);
+            return evm;
+        }
         let evm = EVM.charge_gas(evm, memory_expansion.cost);
         if (evm.reverted != FALSE) {
             return evm;

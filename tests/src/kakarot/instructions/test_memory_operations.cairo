@@ -204,3 +204,32 @@ func test__exec_mcopy{
     }
     return (evm, memory);
 }
+
+func test_exec_mstore{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() -> (model.EVM*, model.Memory*) {
+    alloc_locals;
+    let (value_ptr) = alloc();
+    let (offset_ptr) = alloc();
+
+    %{
+        segments.write_arg(ids.value_ptr, program_input["value"])
+        segments.write_arg(ids.offset_ptr, program_input["offset"])
+    %}
+
+    let evm = TestHelpers.init_evm();
+    let stack = Stack.init();
+    let state = State.init();
+    let memory = Memory.init();
+
+    let value = cast(value_ptr, Uint256*);
+    let offset = cast(offset_ptr, Uint256*);
+
+    with stack, memory, state {
+        Stack.push(value);
+        Stack.push(offset);
+
+        let evm = MemoryOperations.exec_mstore(evm);
+    }
+    return (evm, memory);
+}
