@@ -1,5 +1,10 @@
 import pytest
 from eth_account._utils.transaction_utils import transaction_rpc_to_rlp_structure
+from eth_account._utils.validation import LEGACY_TRANSACTION_VALID_VALUES
+from eth_account.typed_transactions.access_list_transaction import AccessListTransaction
+from eth_account.typed_transactions.dynamic_fee_transaction import DynamicFeeTransaction
+from hypothesis import given
+from hypothesis import strategies as st
 from rlp import encode
 
 from tests.utils.constants import INVALID_TRANSACTIONS, TRANSACTIONS
@@ -22,6 +27,57 @@ class TestEthTransaction:
             }
             with cairo_error():
                 cairo_run("test__decode", data=list(encode(list(transaction.values()))))
+
+        @given(value=st.integers(min_value=2**248))
+        @pytest.mark.parametrize("transaction", TRANSACTIONS)
+        @pytest.mark.parametrize(
+            "key",
+            [
+                "nonce",
+                "gasPrice",
+                "gas",
+                "value",
+                "chainId",
+                "maxFeePerGas",
+                "maxPriorityFeePerGas",
+            ],
+        )
+        async def test_should_raise_with_params_overflow(
+            self, cairo_run, transaction, key, value
+        ):
+            # Not all transactions have all keys
+            if key not in transaction:
+                return
+
+            # Value can be up to 32 bytes
+            if key == "value":
+                value *= 256
+
+            # Override the value
+            transaction = {**transaction, key: value}
+
+            tx_type = transaction.pop("type", 0)
+            # Remove accessList from the transaction if it exists, not relevant for this test
+            if tx_type > 0:
+                transaction["accessList"] = []
+
+            # Encode the transaction
+            encoded_unsigned_tx = (
+                b"" if tx_type == 0 else tx_type.to_bytes(1, "big")
+            ) + encode(
+                [
+                    transaction[key]
+                    for key in [
+                        LEGACY_TRANSACTION_VALID_VALUES.keys(),
+                        dict(AccessListTransaction.unsigned_transaction_fields).keys(),
+                        dict(DynamicFeeTransaction.unsigned_transaction_fields).keys(),
+                    ][tx_type]
+                ]
+            )
+
+            # Run the test
+            with cairo_error():
+                cairo_run("test__decode", data=list(encoded_unsigned_tx))
 
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
         async def test_should_decode_all_transactions_types(

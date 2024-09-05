@@ -4,7 +4,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin, HashBuiltin
 from starkware.cairo.common.math_cmp import is_not_zero, is_nn
-from starkware.cairo.common.math import assert_not_zero
+from starkware.cairo.common.math import assert_not_zero, assert_nn
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256
 
@@ -45,12 +45,16 @@ namespace EthTransaction {
         assert items[4].is_list = FALSE;
         assert items[5].is_list = FALSE;
 
+        assert_nn(31 - items[0].data_len);
         let nonce = Helpers.bytes_to_felt(items[0].data_len, items[0].data);
+        assert_nn(31 - items[1].data_len);
         let gas_price = Helpers.bytes_to_felt(items[1].data_len, items[1].data);
+        assert_nn(31 - items[2].data_len);
         let gas_limit = Helpers.bytes_to_felt(items[2].data_len, items[2].data);
         let destination = Helpers.try_parse_destination_from_bytes(
             items[3].data_len, items[3].data
         );
+        assert_nn(32 - items[4].data_len);
         let amount = Helpers.bytes_to_uint256(items[4].data_len, items[4].data);
         let payload_len = items[5].data_len;
         let payload = items[5].data;
@@ -114,13 +118,18 @@ namespace EthTransaction {
         assert items[6].is_list = FALSE;
         assert items[7].is_list = TRUE;
 
+        assert_nn(31 - items[0].data_len);
         let chain_id = Helpers.bytes_to_felt(items[0].data_len, items[0].data);
+        assert_nn(31 - items[1].data_len);
         let nonce = Helpers.bytes_to_felt(items[1].data_len, items[1].data);
+        assert_nn(31 - items[2].data_len);
         let gas_price = Helpers.bytes_to_felt(items[2].data_len, items[2].data);
+        assert_nn(31 - items[3].data_len);
         let gas_limit = Helpers.bytes_to_felt(items[3].data_len, items[3].data);
         let destination = Helpers.try_parse_destination_from_bytes(
             items[4].data_len, items[4].data
         );
+        assert_nn(32 - items[5].data_len);
         let amount = Helpers.bytes_to_uint256(items[5].data_len, items[5].data);
         let payload_len = items[6].data_len;
         let payload = items[6].data;
@@ -172,14 +181,20 @@ namespace EthTransaction {
         assert items[7].is_list = FALSE;
         assert items[8].is_list = TRUE;
 
+        assert_nn(31 - items[0].data_len);
         let chain_id = Helpers.bytes_to_felt(items[0].data_len, items[0].data);
+        assert_nn(31 - items[1].data_len);
         let nonce = Helpers.bytes_to_felt(items[1].data_len, items[1].data);
+        assert_nn(31 - items[2].data_len);
         let max_priority_fee_per_gas = Helpers.bytes_to_felt(items[2].data_len, items[2].data);
+        assert_nn(31 - items[3].data_len);
         let max_fee_per_gas = Helpers.bytes_to_felt(items[3].data_len, items[3].data);
+        assert_nn(31 - items[4].data_len);
         let gas_limit = Helpers.bytes_to_felt(items[4].data_len, items[4].data);
         let destination = Helpers.try_parse_destination_from_bytes(
             items[5].data_len, items[5].data
         );
+        assert_nn(32 - items[6].data_len);
         let amount = Helpers.bytes_to_uint256(items[6].data_len, items[6].data);
         let payload_len = items[7].data_len;
         let payload = items[7].data;
