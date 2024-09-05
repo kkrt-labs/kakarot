@@ -6,7 +6,7 @@ from ethereum.shanghai.vm.gas import (
 from hypothesis import given
 from hypothesis.strategies import integers
 
-from kakarot_scripts.constants import MAX_MEMORY_SIZE, MEMORY_COST_MAX_MEMORY_SIZE
+from kakarot_scripts.constants import MAX_MEMORY_SIZE_U32, MEMORY_COST_U32
 
 
 class TestGas:
@@ -75,8 +75,8 @@ class TestGas:
             )
             if size == 0:
                 cost = 0
-            elif offset + size > MAX_MEMORY_SIZE:
-                cost = MEMORY_COST_MAX_MEMORY_SIZE
+            elif offset + size > MAX_MEMORY_SIZE_U32:
+                cost = MEMORY_COST_U32
             else:
                 cost = calculate_gas_extend_memory(b"", [(offset, size)]).cost
 

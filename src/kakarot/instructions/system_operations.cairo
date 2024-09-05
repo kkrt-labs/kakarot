@@ -63,7 +63,7 @@ namespace SystemOperations {
         // + init_code_gas
         // + is_create2 * GAS_KECCAK256_WORD * call_data_words
         let memory_expansion = Gas.memory_expansion_cost_saturated(memory.words_len, offset, size);
-        if (memory_expansion.cost == Gas.MEMORY_COST_MAX_MEMORY_SIZE) {
+        if (memory_expansion.cost == Gas.MEMORY_COST_U32) {
             let evm = EVM.out_of_gas(evm, memory_expansion.cost);
             return evm;
         }
@@ -257,7 +257,7 @@ namespace SystemOperations {
         let size = popped[1];
 
         let memory_expansion = Gas.memory_expansion_cost_saturated(memory.words_len, offset, size);
-        if (memory_expansion.cost == Gas.MEMORY_COST_MAX_MEMORY_SIZE) {
+        if (memory_expansion.cost == Gas.MEMORY_COST_U32) {
             let evm = EVM.out_of_gas(evm, memory_expansion.cost);
             return evm;
         }
@@ -303,7 +303,7 @@ namespace SystemOperations {
         let size = popped[1];
 
         let memory_expansion = Gas.memory_expansion_cost_saturated(memory.words_len, offset, size);
-        if (memory_expansion.cost == Gas.MEMORY_COST_MAX_MEMORY_SIZE) {
+        if (memory_expansion.cost == Gas.MEMORY_COST_U32) {
             let evm = EVM.out_of_gas(evm, memory_expansion.cost);
             return evm;
         }
@@ -366,7 +366,7 @@ namespace SystemOperations {
             memory.words_len, args_offset, args_size, ret_offset, ret_size
         );
 
-        if (memory_expansion.cost == Gas.MEMORY_COST_MAX_MEMORY_SIZE) {
+        if (memory_expansion.cost == Gas.MEMORY_COST_U32) {
             let evm = EVM.out_of_gas(evm, memory_expansion.cost);
             return evm;
         }
@@ -500,7 +500,7 @@ namespace SystemOperations {
             memory.words_len, args_offset, args_size, ret_offset, ret_size
         );
 
-        if (memory_expansion.cost == Gas.MEMORY_COST_MAX_MEMORY_SIZE) {
+        if (memory_expansion.cost == Gas.MEMORY_COST_U32) {
             let evm = EVM.out_of_gas(evm, memory_expansion.cost);
             return evm;
         }
@@ -603,7 +603,7 @@ namespace SystemOperations {
             memory.words_len, args_offset, args_size, ret_offset, ret_size
         );
 
-        if (memory_expansion.cost == Gas.MEMORY_COST_MAX_MEMORY_SIZE) {
+        if (memory_expansion.cost == Gas.MEMORY_COST_U32) {
             let evm = EVM.out_of_gas(evm, memory_expansion.cost);
             return evm;
         }
@@ -712,7 +712,7 @@ namespace SystemOperations {
             memory.words_len, args_offset, args_size, ret_offset, ret_size
         );
 
-        if (memory_expansion.cost == Gas.MEMORY_COST_MAX_MEMORY_SIZE) {
+        if (memory_expansion.cost == Gas.MEMORY_COST_U32) {
             let evm = EVM.out_of_gas(evm, memory_expansion.cost);
             return evm;
         }

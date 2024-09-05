@@ -19,15 +19,11 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 load_dotenv()
 
-# Hardcode block gas limit to 7M if this is changed, also update the MAX_MEMORY_SIZE in the Kakarot contract
 BLOCK_GAS_LIMIT = 7_000_000
-# The max memory size fitting in block gas limit for its memory expansion cost
-# More precisely, this memory size would give a cost of 7_000_130 gas, which is the above block gas limit
-# hence it is safe to use as a flag for out of gas errors
-MAX_MEMORY_SIZE = 0x1CDBE1
-MEMORY_COST_MAX_MEMORY_SIZE = 0x6AD042
 DEFAULT_GAS_PRICE = int(1e9)
 BEACON_ROOT_ADDRESS = "0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02"
+MAX_MEMORY_SIZE_U32 = 0x100000000
+MEMORY_COST_U32 = 0x200018000000
 
 
 class NetworkType(Enum):
