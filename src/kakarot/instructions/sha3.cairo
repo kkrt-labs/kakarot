@@ -18,7 +18,6 @@ from kakarot.stack import Stack
 from kakarot.storages import Kakarot_cairo1_helpers_class_hash
 from utils.bytes import bytes_to_bytes8_little_endian
 from utils.maths import unsigned_div_rem
-from kakarot.errors import Errors
 
 namespace Sha3 {
     func exec_sha3{
