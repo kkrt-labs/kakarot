@@ -73,8 +73,8 @@ class TestGas:
             )
             if size == 0:
                 cost = 0
-            elif offset + size > 2**128 - 1:
-                cost = 0x200000000000000000000000000018000000000000000000000000000000
+            elif offset + size > 2**32:
+                cost = calculate_memory_gas_cost(2**32)
             else:
                 cost = calculate_gas_extend_memory(b"", [(offset, size)]).cost
 

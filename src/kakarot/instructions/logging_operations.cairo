@@ -53,6 +53,11 @@ namespace LoggingOperations {
 
         let memory_expansion = Gas.memory_expansion_cost_saturated(memory.words_len, offset, size);
 
+        if (memory_expansion.cost == Gas.MEMORY_COST_U32) {
+            let evm = EVM.out_of_gas(evm, memory_expansion.cost);
+            return evm;
+        }
+
         let size_cost_low = Gas.LOG_DATA * size.low;
         tempvar size_cost_high = is_not_zero(size.high) * 2 ** 128;
         let topics_cost = Gas.LOG_TOPIC * topics_len;

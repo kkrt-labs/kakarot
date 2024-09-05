@@ -20,6 +20,7 @@ from kakarot.library import Kakarot
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
+from utils.maths import unsigned_div_rem
 from utils.utils import Helpers
 
 namespace TestHelpers {
@@ -119,6 +120,8 @@ namespace TestHelpers {
     ) -> model.Memory* {
         alloc_locals;
         let memory = Memory.init();
+        let (words_len, _) = unsigned_div_rem(serialized_memory_len + 31, 32);
+        tempvar memory = new model.Memory(memory.word_dict_start, memory.word_dict, words_len);
         with memory {
             Memory.store_n(serialized_memory_len, serialized_memory, 0);
         }
