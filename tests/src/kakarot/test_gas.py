@@ -33,10 +33,10 @@ class TestGas:
             assert diff == output
 
         @given(
-            offset_1=integers(min_value=0, max_value=0xFFFF),
-            size_1=integers(min_value=0, max_value=0xFFFF),
-            offset_2=integers(min_value=0, max_value=0xFFFF),
-            size_2=integers(min_value=0, max_value=0xFFFF),
+            offset_1=integers(min_value=0, max_value=0xFFFFF),
+            size_1=integers(min_value=0, max_value=0xFFFFF),
+            offset_2=integers(min_value=0, max_value=0xFFFFF),
+            size_2=integers(min_value=0, max_value=0xFFFFF),
         )
         def test_should_return_max_expansion_cost(
             self, cairo_run, offset_1, size_1, offset_2, size_2
