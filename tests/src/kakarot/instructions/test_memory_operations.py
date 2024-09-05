@@ -3,6 +3,7 @@ from hypothesis import example, given
 from hypothesis.strategies import binary, integers
 from starkware.cairo.lang.cairo_constants import DEFAULT_PRIME
 
+from kakarot_scripts.constants import MAX_MEMORY_SIZE_U32
 from kakarot_scripts.utils.uint256 import int_to_uint256
 
 
@@ -103,6 +104,47 @@ class TestMemoryOperations:
                 size_mcopy=int_to_uint256(size_mcopy),
                 src_offset_mcopy=int_to_uint256(src_offset_mcopy),
                 dst_offset_mcopy=int_to_uint256(dst_offset_mcopy),
+            )
+            assert evm["reverted"] == 2
+            assert b"Kakarot: outOfGas left" in bytes(evm["return_data"])
+
+    class TestMstore:
+
+        @given(
+            value=integers(min_value=0, max_value=2**256 - 1),
+            offset=integers(min_value=0, max_value=0xFFFF),
+        )
+        def test_exec_mstore_should_store_a_value_in_memory(
+            self, cairo_run, value, offset
+        ):
+            (evm, memory) = cairo_run(
+                "test_exec_mstore",
+                value=int_to_uint256(value),
+                offset=int_to_uint256(offset),
+            )
+
+            expected_memory = (
+                int.to_bytes(
+                    value, length=(value.bit_length() + 7) // 8, byteorder="big"
+                )
+                if value > 0
+                else b"\x00"
+            )
+            assert bytes.fromhex(memory)[offset : offset + 32] == bytes(
+                [0] * (32 - len(expected_memory)) + list(expected_memory)
+            )
+
+        @given(
+            value=integers(min_value=0, max_value=2**256 - 1),
+            offset=integers(min_value=MAX_MEMORY_SIZE_U32, max_value=2**256 - 1),
+        )
+        def test_exec_mstore_should_fail_if_memory_expansion_too_large(
+            self, cairo_run, value, offset
+        ):
+            (evm, _) = cairo_run(
+                "test_exec_mstore",
+                value=int_to_uint256(value),
+                offset=int_to_uint256(offset),
             )
             assert evm["reverted"] == 2
             assert b"Kakarot: outOfGas left" in bytes(evm["return_data"])
