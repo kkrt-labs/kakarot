@@ -1032,6 +1032,12 @@ namespace CallHelper {
         ) * evm.return_data_len;
         Memory.store_n(actual_output_size, evm.return_data, ret_offset.low);
 
+        if (evm.reverted != FALSE) {
+            tempvar gas_refund = evm.message.parent.evm.gas_refund;
+        } else {
+            tempvar gas_refund = evm.message.parent.evm.gas_refund + evm.gas_refund;
+        }
+
         tempvar evm = new model.EVM(
             message=message,
             return_data_len=evm.return_data_len,
@@ -1039,7 +1045,7 @@ namespace CallHelper {
             program_counter=evm.message.parent.evm.program_counter + 1,
             stopped=evm.message.parent.evm.stopped,
             gas_left=evm.message.parent.evm.gas_left + evm.gas_left,
-            gas_refund=evm.message.parent.evm.gas_refund + evm.gas_refund,
+            gas_refund=gas_refund,
             reverted=evm.message.parent.evm.reverted,
         );
 
