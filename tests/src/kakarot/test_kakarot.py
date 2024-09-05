@@ -8,7 +8,6 @@ from eth_utils import keccak
 from eth_utils.address import to_checksum_address
 from hypothesis import given
 from hypothesis.strategies import composite, integers
-from starkware.cairo.lang.cairo_constants import DEFAULT_PRIME
 from starkware.starknet.public.abi import get_storage_var_address
 from web3._utils.abi import map_abi_data
 from web3._utils.normalizers import BASE_RETURN_NORMALIZERS
@@ -453,7 +452,7 @@ class TestKakarot:
                     tx_data=tx_data,
                 )
 
-        @given(gas_limit=integers(min_value=2**64, max_value=DEFAULT_PRIME - 1))
+        @given(gas_limit=integers(min_value=2**64, max_value=2**248 - 1))
         def test_raise_gas_limit_too_high(self, cairo_run, gas_limit):
             tx = {
                 "type": 2,
@@ -479,7 +478,7 @@ class TestKakarot:
                     tx_data=tx_data,
                 )
 
-        @given(maxFeePerGas=integers(min_value=2**128, max_value=DEFAULT_PRIME - 1))
+        @given(maxFeePerGas=integers(min_value=2**128, max_value=2**248 - 1))
         def test_raise_max_fee_per_gas_too_high(self, cairo_run, maxFeePerGas):
             tx = {
                 "type": 2,
@@ -539,7 +538,7 @@ class TestKakarot:
         def max_priority_fee_too_high(draw):
             max_fee_per_gas = draw(integers(min_value=0, max_value=2**128 - 2))
             max_priority_fee_per_gas = draw(
-                integers(min_value=max_fee_per_gas + 1, max_value=DEFAULT_PRIME - 1)
+                integers(min_value=max_fee_per_gas + 1, max_value=2**248 - 1)
             )
             return (max_fee_per_gas, max_priority_fee_per_gas)
 
