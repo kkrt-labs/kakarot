@@ -175,7 +175,7 @@ namespace EnvironmentalInformation {
             memory.words_len, memory_offset, size
         );
 
-        if (memory_expansion.cost == Gas.MEMORY_COST_MAX_MEMORY_SIZE) {
+        if (memory_expansion.cost == Gas.MEMORY_COST_U32) {
             let evm = EVM.out_of_gas(evm, memory_expansion.cost);
             return evm;
         }
@@ -258,7 +258,7 @@ namespace EnvironmentalInformation {
             memory.words_len, dest_offset, size
         );
 
-        if (memory_expansion.cost == Gas.MEMORY_COST_MAX_MEMORY_SIZE) {
+        if (memory_expansion.cost == Gas.MEMORY_COST_U32) {
             let evm = EVM.out_of_gas(evm, memory_expansion.cost);
             return evm;
         }
@@ -408,7 +408,7 @@ namespace EnvironmentalInformation {
             memory.words_len, dest_offset, size
         );
 
-        if (memory_expansion.cost == Gas.MEMORY_COST_MAX_MEMORY_SIZE) {
+        if (memory_expansion.cost == Gas.MEMORY_COST_U32) {
             let evm = EVM.out_of_gas(evm, memory_expansion.cost);
             return evm;
         }

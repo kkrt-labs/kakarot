@@ -38,7 +38,7 @@ namespace Sha3 {
 
         // GAS
         let memory_expansion = Gas.memory_expansion_cost_saturated(memory.words_len, offset, size);
-        if (memory_expansion.cost == Gas.MEMORY_COST_MAX_MEMORY_SIZE) {
+        if (memory_expansion.cost == Gas.MEMORY_COST_U32) {
             let evm = EVM.out_of_gas(evm, memory_expansion.cost);
             return evm;
         }
