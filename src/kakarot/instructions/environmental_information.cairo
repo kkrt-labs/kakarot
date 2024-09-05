@@ -175,11 +175,8 @@ namespace EnvironmentalInformation {
             memory.words_len, memory_offset, size
         );
 
-        if (memory_expansion.cost == Gas.MEMORY_COST_U128) {
-            let (revert_reason_len, revert_reason) = Errors.outOfGas(
-                evm.gas_left, memory_expansion.cost
-            );
-            let evm = EVM.out_of_gas(evm, revert_reason_len, revert_reason);
+        if (memory_expansion.cost == Gas.MEMORY_COST_MAX_MEMORY_SIZE) {
+            let evm = EVM.out_of_gas(evm, memory_expansion.cost);
             return evm;
         }
 
@@ -261,11 +258,8 @@ namespace EnvironmentalInformation {
             memory.words_len, dest_offset, size
         );
 
-        if (memory_expansion.cost == Gas.MEMORY_COST_U128) {
-            let (revert_reason_len, revert_reason) = Errors.outOfGas(
-                evm.gas_left, memory_expansion.cost
-            );
-            let evm = EVM.out_of_gas(evm, revert_reason_len, revert_reason);
+        if (memory_expansion.cost == Gas.MEMORY_COST_MAX_MEMORY_SIZE) {
+            let evm = EVM.out_of_gas(evm, memory_expansion.cost);
             return evm;
         }
 
@@ -414,11 +408,8 @@ namespace EnvironmentalInformation {
             memory.words_len, dest_offset, size
         );
 
-        if (memory_expansion.cost == Gas.MEMORY_COST_U128) {
-            let (revert_reason_len, revert_reason) = Errors.outOfGas(
-                evm.gas_left, memory_expansion.cost
-            );
-            let evm = EVM.out_of_gas(evm, revert_reason_len, revert_reason);
+        if (memory_expansion.cost == Gas.MEMORY_COST_MAX_MEMORY_SIZE) {
+            let evm = EVM.out_of_gas(evm, memory_expansion.cost);
             return evm;
         }
 
