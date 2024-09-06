@@ -334,8 +334,10 @@ async def deploy_starknet_account(class_hash=None, private_key=None, amount=1):
         )
     key_pair = KeyPair.from_private_key(int(private_key, 16))
     constructor_calldata = [key_pair.public_key]
-    class_hash = class_hash or get_declarations().get(
-        "OpenzeppelinAccount", NETWORK["class_hash"]
+    class_hash = (
+        class_hash or int(NETWORK.get("class_hash"), 16)
+        if NETWORK.get("class_hash")
+        else get_declarations().get("OpenzeppelinAccount")
     )
     address = compute_address(
         salt=salt,
