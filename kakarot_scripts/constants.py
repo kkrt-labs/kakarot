@@ -40,7 +40,7 @@ NETWORKS = {
         "chain_id": StarknetChainId.MAINNET,
         "check_interval": 1,
         "max_wait": 10,
-        "class_hash": "0x061dac032f228abef9c6626f995015233097ae253a7f72d68552db02f2971b8f",
+        "class_hash": 0x061DAC032F228ABEF9C6626F995015233097AE253A7F72D68552DB02F2971B8F,
     },
     "sepolia": {
         "name": "starknet-sepolia",
@@ -51,7 +51,7 @@ NETWORKS = {
         "chain_id": StarknetChainId.SEPOLIA,
         "check_interval": 1,
         "max_wait": 10,
-        "class_hash": "0x061dac032f228abef9c6626f995015233097ae253a7f72d68552db02f2971b8f",
+        "class_hash": 0x061DAC032F228ABEF9C6626F995015233097AE253A7F72D68552DB02F2971B8F,
     },
     "starknet-devnet": {
         "name": "starknet-devnet",
@@ -70,7 +70,7 @@ NETWORKS = {
         "type": NetworkType.DEV,
         "check_interval": 0.01,
         "max_wait": 3,
-        "class_hash": "0x6153ccf69fd20f832c794df36e19135f0070d0576144f0b47f75a226e4be530",
+        "class_hash": 0x6153CCF69FD20F832C794DF36E19135F0070D0576144F0B47F75A226E4BE530,
         "relayers": [
             {
                 "address": 0xB3FF441A68610B30FD5E2ABBF3A1548EB6BA6F3559F2862BF2DC757E5828CA,

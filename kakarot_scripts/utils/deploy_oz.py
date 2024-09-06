@@ -22,12 +22,14 @@ def get_private_key():
     """Retrieve or generate a private key."""
     try:
         response = client.get_secret_value(SecretId=SECRET_NAME)
-        return response["SecretString"], response["ARN"]
+        private_key = response["SecretString"]
+        secret_id = response["ARN"]
     except client.exceptions.ResourceNotFoundException:
         private_key = hex(secrets.randbits(256))
-        response = client.update_secret(SecretId=SECRET_NAME, SecretString=private_key)
-        secret_id = response["ARN"]
-        return secret_id, private_key
+        secret_id = client.create_secret(Name=SECRET_NAME, SecretString=private_key)[
+            "ARN"
+        ]
+    return private_key, secret_id
 
 
 # %% Deploy accounts
