@@ -32,7 +32,7 @@ from starknet_py.net.client_errors import ClientError
 from starknet_py.net.client_models import Call, DeclareTransactionResponse
 from starknet_py.net.full_node_client import _create_broadcasted_txn
 from starknet_py.net.models.transaction import DeclareV1
-from starknet_py.net.schemas.rpc import DeclareTransactionResponseSchema
+from starknet_py.net.schemas.rpc.transactions import DeclareTransactionResponseSchema
 from starknet_py.net.signer.stark_curve_signer import KeyPair
 from starkware.starknet.public.abi import get_selector_from_name
 
