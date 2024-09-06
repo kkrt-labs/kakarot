@@ -445,6 +445,19 @@ async def declare(contract_name):
 
 
 async def deploy(contract_name, *args):
+    deployments = get_deployments()
+    if deployments.get(contract_name):
+        try:
+            deployed_class_hash = await RPC_CLIENT.get_class_hash_at(
+                deployments[contract_name]["address"]
+            )
+            latest_class_hash = get_declarations()
+            if latest_class_hash == deployed_class_hash:
+                logger.info(f"✅ {contract_name} already deployed, skipping")
+                return deployments[contract_name]
+        except ClientError:
+            pass
+
     logger.info(f"ℹ️  Deploying {contract_name}")
     abi = get_abi(contract_name)
     declarations = get_declarations()
@@ -467,29 +480,6 @@ async def deploy(contract_name, *args):
         "tx": deploy_result.hash,
         "artifact": get_artifact(contract_name)[0],
     }
-
-
-async def upgrade(contract_name, *args):
-    deployments = get_deployments()
-    if not deployments.get(contract_name):
-        return await deploy(contract_name, *args)
-
-    logger.info(f"ℹ️  {contract_name} already deployed, checking version.")
-    class_hash = get_declarations()
-    try:
-        deployed_class_hash = await RPC_CLIENT.get_class_hash_at(
-            deployments[contract_name]["address"]
-        )
-    except ClientError as e:
-        if "Contract not found" in str(e):
-            logger.info(f"ℹ️  deploying {contract_name}.")
-            return await deploy(contract_name, *args)
-
-    if deployed_class_hash != class_hash[contract_name]:
-        logger.info(f"ℹ️  redeploying {contract_name}.")
-        return await deploy(contract_name, *args)
-
-    return deployments[contract_name]
 
 
 async def invoke_address(contract_address, function_name, *calldata, account=None):

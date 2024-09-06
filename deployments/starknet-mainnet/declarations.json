@@ -12,5 +12,6 @@
   "StarknetToken": "0x314a6a9f01e5a28beb6a7e2e8907243469d98a7e364054657e7593bea5dcee7",
   "uninitialized_account_fixture": "0x2957ff0877441dddcd140e6af50a3d45712f4f7205a36a846110a70297036be",
   "uninitialized_account": "0x45f7d0803659c3f58b5b6ba46f349178253dadabbfc6ab47fa1ba4bab4699f8",
-  "UniversalLibraryCaller": "0x244fd35db35b48882ca2e6c2966821bd54f302b131fb22ea98e5534da390482"
+  "UniversalLibraryCaller": "0x244fd35db35b48882ca2e6c2966821bd54f302b131fb22ea98e5534da390482",
+  "BalanceSender": "0x566fa5364a088be0e9bb7ab51a3af985245d8a0a0afbe4fd1c046af7ad8cff8"
 }

@@ -265,6 +265,7 @@ COMPILED_CONTRACTS = [
 ]
 DECLARED_CONTRACTS = [
     "account_contract",
+    "BalanceSender",
     "BenchmarkCairoCalls",
     "Cairo1Helpers",
     "Cairo1HelpersFixture",
