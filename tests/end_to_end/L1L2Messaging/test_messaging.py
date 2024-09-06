@@ -3,6 +3,7 @@ import time
 
 import pytest
 import pytest_asyncio
+from eth_abi import encode
 
 from kakarot_scripts.utils.kakarot import deploy
 from kakarot_scripts.utils.l1 import (
@@ -55,9 +56,24 @@ async def l1_kakarot_messaging(sn_messaging_local, kakarot):
 
 
 @pytest_asyncio.fixture(scope="session")
-async def message_app_l2(owner):
+async def l2KakarotMessaging(kakarot):
+    l2KakarotMessaging = await deploy("L1L2Messaging", "L2KakarotMessaging")
+    await invoke(
+        "kakarot",
+        "set_authorized_cairo_precompile_caller",
+        int(l2KakarotMessaging.address, 16),
+        True,
+    )
+    return l2KakarotMessaging
+
+
+@pytest_asyncio.fixture(scope="session")
+async def message_app_l2(owner, l2KakarotMessaging):
     return await deploy(
-        "L1L2Messaging", "MessageAppL2", caller_eoa=owner.starknet_contract
+        "L1L2Messaging",
+        "MessageAppL2",
+        caller_eoa=owner.starknet_contract,
+        _l2KakarotMessaging=l2KakarotMessaging.address,
     )
 
 
@@ -73,14 +89,22 @@ def message_app_l1(sn_messaging_local, l1_kakarot_messaging, kakarot):
 
 
 @pytest.fixture(scope="function")
-def wait_for_message(sn_messaging_local):
+def wait_for_message_l1(message_app_l1, sn_messaging_local):
 
     async def _factory():
-        event_filter = sn_messaging_local.events.MessageHashesAddedFromL2.create_filter(
-            fromBlock="latest"
+        event_filter_message_app_l1 = (
+            message_app_l1.events.CallerPrecompile.create_filter(fromBlock="latest")
+        )
+        event_filter_sn_messaging_local = (
+            sn_messaging_local.events.MessageHashesAddedFromL2.create_filter(
+                fromBlock="latest"
+            )
         )
         while True:
-            messages = event_filter.get_new_entries()
+            messages = (
+                event_filter_message_app_l1.get_new_entries()
+                + event_filter_sn_messaging_local.get_new_entries()
+            )
             if messages:
                 return messages
             await asyncio.sleep(1)
@@ -92,16 +116,26 @@ def wait_for_message(sn_messaging_local):
 @pytest.mark.asyncio(scope="module")
 class TestL2ToL1Messages:
     async def test_should_increment_counter_on_l1(
-        self, message_app_l1, message_app_l2, wait_for_message
+        self,
+        message_app_l1,
+        message_app_l2,
+        wait_for_message_l1,
     ):
         msg_counter_before = message_app_l1.receivedMessagesCounter()
         increment_value = 8
         await message_app_l2.increaseL1AppCounter(
             message_app_l1.address, increment_value
         )
-        await wait_for_message()
-        message_payload = increment_value.to_bytes(32, "big")
+        await wait_for_message_l1()
+        message_payload = encode(
+            ["address", "bytes"],
+            [message_app_l2.address, increment_value.to_bytes(32, "big")],
+        )
+
         message_app_l1.consumeCounterIncrease(message_payload)
+        message = await wait_for_message_l1()
+        assert len(message) == 1
+        assert message[0]["args"]["caller"] == message_app_l2.address
         msg_counter_after = message_app_l1.receivedMessagesCounter()
         assert msg_counter_after == msg_counter_before + increment_value
 

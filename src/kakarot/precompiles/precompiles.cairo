@@ -132,11 +132,8 @@ namespace Precompiles {
         ret;
 
         kakarot_precompile:
-        let is_cairo_module = Helpers.is_zero(
-            FIRST_KAKAROT_PRECOMPILE_ADDRESS - precompile_address
-        );
         let is_whitelisted = KakarotPrecompiles.is_caller_whitelisted(caller_code_address);
-        tempvar is_not_authorized = is_cairo_module * (1 - is_whitelisted);
+        tempvar is_not_authorized = 1 - is_whitelisted;
         tempvar syscall_ptr = syscall_ptr;
         tempvar pedersen_ptr = pedersen_ptr;
         tempvar range_check_ptr = range_check_ptr;
