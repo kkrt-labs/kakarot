@@ -15,6 +15,7 @@ async-lru = "^2.0.4"
 toml = "^0.10.2"
 scikit-learn = "^1.5.1"
 seaborn = "^0.13.2"
+boto3 = "^1.35.12"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.1.1"
