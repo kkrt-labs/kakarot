@@ -112,7 +112,7 @@ namespace KakarotPrecompiles {
         return (revert_reason_len, revert_reason, CAIRO_PRECOMPILE_GAS, TRUE);
     }
 
-    // @notice Sends a message to a message to L1.
+    // @notice Sends a message to L1.
     // @param input_len The length of the input in bytes.
     // @param input The input data.
     // @param caller_address unused

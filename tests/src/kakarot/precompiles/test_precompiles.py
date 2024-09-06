@@ -208,68 +208,99 @@ class TestPrecompiles:
                 )
                 return
 
-        @pytest.mark.parametrize(
-            "address, input_data, to_address, payload, expected_reverted",
-            [
-                (
-                    0x75002,
-                    encode(["uint160", "bytes"], [0xC0DE, encode(["uint128"], [0x2A])]),
-                    0xC0DE,
-                    list(bytes.fromhex(f"{0x2a:064x}")),
-                    False,
-                ),
-                (
-                    0x75002,
-                    encode(["uint160", "bytes"], [0xC0DE, 0x2A.to_bytes(1, "big")]),
-                    0xC0DE,
-                    list(0x2A.to_bytes(1, "big")),
-                    False,
-                ),
-                # case with data_len not matching the actual data length
-                (
-                    0x75002,
-                    bytes.fromhex(
-                        f"{0xc0de:064x}"
-                        + f"{0x40:064x}"
-                        + f"{0x20:064x}"
-                        + f"{0x2a:032x}"
-                    ),
-                    0xC0DE,
-                    [],
-                    True,
-                ),
-                # case with input data too short
-                (
-                    0x75002,
-                    bytes.fromhex(f"{0xc0de:064x}" + f"{0x40:064x}"),
-                    0xC0DE,
-                    [],
-                    True,
-                ),
-                (
-                    0x75002,
-                    encode(["uint256", "bytes"], [2**161, encode(["uint128"], [0x2A])]),
-                    0xC0DE,
-                    [],
-                    True,
-                ),
-            ],
-            ids=[
-                "ok_32_bytes_data",
-                "ok_1_bytes_data",
-                "ko_data_len_not_matching_actual_length",
-                "ko_input_too_short",
-                "ko_invalid_address",
-            ],
-        )
         class TestKakarotMessaging:
+            @SyscallHandler.patch(
+                "Kakarot_authorized_cairo_precompiles_callers",
+                AUTHORIZED_CALLER_CODE,
+                1,
+            )
+            @pytest.mark.parametrize(
+                "address, caller_code_address, input_data, to_address, payload, expected_return_data, expected_reverted",
+                [
+                    (
+                        0x75002,
+                        AUTHORIZED_CALLER_CODE,
+                        encode(
+                            ["uint160", "bytes"], [0xC0DE, encode(["uint128"], [0x2A])]
+                        ),
+                        0xC0DE,
+                        list(bytes.fromhex(f"{0x2a:064x}")),
+                        b"",
+                        False,
+                    ),
+                    (
+                        0x75002,
+                        AUTHORIZED_CALLER_CODE,
+                        encode(["uint160", "bytes"], [0xC0DE, 0x2A.to_bytes(1, "big")]),
+                        0xC0DE,
+                        list(0x2A.to_bytes(1, "big")),
+                        b"",
+                        False,
+                    ),
+                    # case with data_len not matching the actual data length
+                    (
+                        0x75002,
+                        AUTHORIZED_CALLER_CODE,
+                        bytes.fromhex(
+                            f"{0xc0de:064x}"
+                            + f"{0x40:064x}"
+                            + f"{0x20:064x}"
+                            + f"{0x2a:032x}"
+                        ),
+                        0xC0DE,
+                        [],
+                        b"Kakarot: OutOfBoundsRead",
+                        True,
+                    ),
+                    # case with input data too short
+                    (
+                        0x75002,
+                        AUTHORIZED_CALLER_CODE,
+                        bytes.fromhex(f"{0xc0de:064x}" + f"{0x40:064x}"),
+                        0xC0DE,
+                        [],
+                        b"Kakarot: OutOfBoundsRead",
+                        True,
+                    ),
+                    (
+                        0x75002,
+                        AUTHORIZED_CALLER_CODE,
+                        encode(
+                            ["uint256", "bytes"], [2**161, encode(["uint128"], [0x2A])]
+                        ),
+                        0xC0DE,
+                        [],
+                        b"Precompile: wrong input_len",
+                        True,
+                    ),
+                    (
+                        0x75002,
+                        UNAUTHORIZED_CALLER_CODE,
+                        bytes.fromhex("0abcdef0"),
+                        0xC0DE,
+                        [],
+                        b"Kakarot: unauthorizedPrecompile",
+                        True,
+                    ),
+                ],
+                ids=[
+                    "ok_32_bytes_data",
+                    "ok_1_bytes_data",
+                    "ko_data_len_not_matching_actual_length",
+                    "ko_input_too_short",
+                    "ko_invalid_address",
+                    "ko_unauthorized_caller",
+                ],
+            )
             def test__cairo_message(
                 self,
+                caller_code_address,
                 cairo_run,
                 address,
                 input_data,
                 to_address,
                 payload,
+                expected_return_data,
                 expected_reverted,
             ):
                 address = 0x75002
@@ -277,9 +308,12 @@ class TestPrecompiles:
                     "test__precompiles_run",
                     address=address,
                     input=input_data,
+                    caller_code_address=caller_code_address,
+                    caller_address=CALLER_ADDRESS,
                 )
                 if expected_reverted:
                     assert reverted
+                    assert bytes(return_data) == expected_return_data
                     return
 
                 SyscallHandler.mock_send_message_to_l1.assert_any_call(
