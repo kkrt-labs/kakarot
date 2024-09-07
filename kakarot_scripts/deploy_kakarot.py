@@ -20,10 +20,12 @@ from kakarot_scripts.constants import (
     NetworkType,
 )
 from kakarot_scripts.utils.kakarot import deploy as deploy_evm
-from kakarot_scripts.utils.kakarot import deploy_with_presigned_tx
+from kakarot_scripts.utils.kakarot import (
+    deploy_and_fund_evm_address,
+    deploy_with_presigned_tx,
+)
 from kakarot_scripts.utils.kakarot import dump_deployments as dump_evm_deployments
 from kakarot_scripts.utils.kakarot import get_deployments as get_evm_deployments
-from kakarot_scripts.utils.kakarot import get_eoa
 from kakarot_scripts.utils.starknet import declare
 from kakarot_scripts.utils.starknet import deploy as deploy_starknet
 from kakarot_scripts.utils.starknet import (
@@ -133,7 +135,9 @@ async def main():
 
     logger.info(f"ℹ️  Using account {EVM_ADDRESS} as deployer")
 
-    await get_eoa(amount=100 if NETWORK["type"] is NetworkType.DEV else 0.01)
+    await deploy_and_fund_evm_address(
+        EVM_ADDRESS, amount=100 if NETWORK["type"] is NetworkType.DEV else 0.01
+    )
 
     bridge = await deploy_evm("CairoPrecompiles", "EthStarknetBridge")
     evm_deployments["Bridge"] = {
