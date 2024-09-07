@@ -451,7 +451,7 @@ async def deploy(contract_name, *args):
             deployed_class_hash = await RPC_CLIENT.get_class_hash_at(
                 deployments[contract_name]["address"]
             )
-            latest_class_hash = get_declarations()
+            latest_class_hash = get_declarations().get(contract_name)
             if latest_class_hash == deployed_class_hash:
                 logger.info(f"✅ {contract_name} already deployed, skipping")
                 return deployments[contract_name]
