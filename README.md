@@ -111,14 +111,6 @@ To build the test Solidity smart contracts:
 make build-sol
 ```
 
-To build the Cairo1 files:
-
-```bash
-# install scarb via ASDF if you haven't done it already
-# https://docs.swmansion.com/scarb/download.html#install-via-asdf
-make build-cairo1
-```
-
 ## Code style
 
 The project uses [trunk.io](https://trunk.io/) to run a comprehensive list of

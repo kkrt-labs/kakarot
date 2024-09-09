@@ -76,7 +76,7 @@ RUN source "$HOME/.asdf/asdf.sh" && asdf plugin add scarb && asdf install scarb 
 
 
 RUN --mount=type=cache,target=/root/.cache \
-    source "$HOME/.asdf/asdf.sh" && make fetch-ssj-artifacts && make build && make build-cairo1 && make build-sol
+    source "$HOME/.asdf/asdf.sh" && make fetch-ssj-artifacts && make build && make build-sol
 
 
 ############################################
