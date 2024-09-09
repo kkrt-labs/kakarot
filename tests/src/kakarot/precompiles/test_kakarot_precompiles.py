@@ -14,16 +14,6 @@ class TestKakarotPrecompiles:
             assert reverted
             assert gas_used == 5000
 
-        @given(input_=st.binary(min_size=96))
-        def test_should_revert_first_word_not_address(self, cairo_run, input_):
-            (output_len, output, reverted, gas_used) = cairo_run(
-                "test__cairo_message", input=input_
-            )
-            assert bool(reverted) == (int.from_bytes(input_[:12], "big") != 0)
-            if reverted:
-                assert bytes(output[:output_len]) == b"Precompile: wrong input_len"
-            assert gas_used == 5000
-
         @given(data_len=st.integers(min_value=0, max_value=2**256 - 1))
         def test_should_revert_data_len_not_bytes4(self, cairo_run, data_len):
             input_ = b"\x00" * 64 + data_len.to_bytes(32, "big")

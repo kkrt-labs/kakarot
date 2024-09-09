@@ -8,7 +8,7 @@ contract L2KakarotMessaging {
     /// @param to The address of the contract on L1 to send the message to.
     /// @param data The data to send to the contract on L1.
     function sendMessageToL1(address to, bytes calldata data) external payable {
-        bytes memory payload = abi.encode(msg.sender, data);
-        CairoLib.sendMessageToL1(to, payload);
+        bytes memory payload = abi.encode(to, msg.sender, data);
+        CairoLib.sendMessageToL1(payload);
     }
 }

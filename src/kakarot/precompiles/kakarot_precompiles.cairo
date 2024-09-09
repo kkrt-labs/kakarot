@@ -11,7 +11,10 @@ from starkware.cairo.common.bool import FALSE, TRUE
 from kakarot.errors import Errors
 from kakarot.interfaces.interfaces import IAccount
 from kakarot.account import Account
-from kakarot.storages import Kakarot_authorized_cairo_precompiles_callers
+from kakarot.storages import (
+    Kakarot_authorized_cairo_precompiles_callers,
+    Kakarot_l1_messaging_contract_address,
+)
 from utils.utils import Helpers
 from backend.starknet import Starknet
 
@@ -126,43 +129,12 @@ namespace KakarotPrecompiles {
     ) {
         alloc_locals;
 
-        // Input must be at least 3*32 bytes long.
-        let is_input_invalid = is_nn(95 - input_len);
-        if (is_input_invalid != 0) {
-            let (revert_reason_len, revert_reason) = Errors.outOfBoundsRead();
-            return (revert_reason_len, revert_reason, CAIRO_MESSAGE_GAS, TRUE);
-        }
-
-        // Input is formatted as:
-        // [to_address: address][data_offset: uint256][data_len: uint256][data: bytes[]]
-
-        // Load target EVM address
-        let invalid_address = Helpers.bytes_to_felt(12, input);
-        if (invalid_address != 0) {
-            let (revert_reason_len, revert_reason) = Errors.precompileInputError();
-            return (revert_reason_len, revert_reason, CAIRO_MESSAGE_GAS, TRUE);
-        }
-        let target_address = Helpers.bytes20_to_felt(input + 12);
-
-        // We enforce data_len to be at most 4 bytes, made some tests on Starknet
-        // and even bytes4 looks like it's not supported
-        let invalid_data_byte_len = Helpers.bytes_to_felt(28, input + 2 * 32);
-        if (invalid_data_byte_len != 0) {
-            let (revert_reason_len, revert_reason) = Errors.precompileInputError();
-            return (revert_reason_len, revert_reason, CAIRO_MESSAGE_GAS, TRUE);
-        }
-        let data_bytes_len = Helpers.bytes4_to_felt(input + 3 * 32 - 4);
-        let data_fits_in_input = is_nn(input_len - 3 * 32 - data_bytes_len);
-        if (data_fits_in_input == 0) {
-            let (revert_reason_len, revert_reason) = Errors.outOfBoundsRead();
-            return (revert_reason_len, revert_reason, CAIRO_MESSAGE_GAS, TRUE);
-        }
-        let data_ptr = input + 3 * 32;
-
         // TODO: implement packing mechanism that doesn't truncate 32-byte values
         // let (data_len, data) = Helpers.load_256_bits_array(data_bytes_len, data_ptr);
 
-        send_message_to_l1(target_address, data_bytes_len, data_ptr);
+        let (target_address) = Kakarot_l1_messaging_contract_address.read();
+
+        send_message_to_l1(target_address, input_len, input);
         let (output) = alloc();
         return (0, output, CAIRO_MESSAGE_GAS, FALSE);
     }

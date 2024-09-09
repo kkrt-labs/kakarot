@@ -3,7 +3,6 @@ import time
 
 import pytest
 import pytest_asyncio
-from eth_abi import encode
 
 from kakarot_scripts.utils.kakarot import deploy
 from kakarot_scripts.utils.l1 import (
@@ -51,6 +50,9 @@ async def l1_kakarot_messaging(sn_messaging_local, kakarot):
     # Authorize the contract to send messages
     await invoke(
         "kakarot", "set_authorized_message_sender", int(contract.address, 16), True
+    )
+    await invoke(
+        "kakarot", "set_l1_messaging_contract_address", int(contract.address, 16)
     )
     return contract
 
@@ -106,23 +108,6 @@ def wait_for_sn_messaging_local(sn_messaging_local):
     return _factory
 
 
-@pytest.fixture(scope="function")
-def wait_for_message_app_l1(message_app_l1):
-
-    async def _factory():
-        event_filter_message_app_l1 = (
-            message_app_l1.events.CallerPrecompile.create_filter(fromBlock="latest")
-        )
-
-        while True:
-            messages = event_filter_message_app_l1.get_new_entries()
-            if messages:
-                return messages
-            await asyncio.sleep(1)
-
-    return _factory
-
-
 @pytest.mark.slow
 @pytest.mark.asyncio(scope="module")
 class TestL2ToL1Messages:
@@ -131,7 +116,6 @@ class TestL2ToL1Messages:
         message_app_l1,
         message_app_l2,
         wait_for_sn_messaging_local,
-        wait_for_message_app_l1,
     ):
         msg_counter_before = message_app_l1.receivedMessagesCounter()
         increment_value = 8
@@ -139,15 +123,8 @@ class TestL2ToL1Messages:
             message_app_l1.address, increment_value
         )
         await wait_for_sn_messaging_local()
-        message_payload = encode(
-            ["address", "bytes"],
-            [message_app_l2.address, increment_value.to_bytes(32, "big")],
-        )
-
-        message_app_l1.consumeCounterIncrease(message_payload)
-        message = await wait_for_message_app_l1()
-        assert len(message) == 1
-        assert message[0]["args"]["caller"] == message_app_l2.address
+        message_payload = increment_value.to_bytes(32, "big")
+        message_app_l1.consumeCounterIncrease(message_app_l2.address, message_payload)
         msg_counter_after = message_app_l1.receivedMessagesCounter()
         assert msg_counter_after == msg_counter_before + increment_value
 

@@ -214,6 +214,10 @@ class TestPrecompiles:
                 AUTHORIZED_CALLER_CODE,
                 1,
             )
+            @SyscallHandler.patch(
+                "Kakarot_l1_messaging_contract_address",
+                0xC0DE,
+            )
             @pytest.mark.parametrize(
                 "address, caller_code_address, input_data, to_address, payload, expected_return_data, expected_reverted",
                 [
@@ -264,17 +268,6 @@ class TestPrecompiles:
                     ),
                     (
                         0x75002,
-                        AUTHORIZED_CALLER_CODE,
-                        encode(
-                            ["uint256", "bytes"], [2**161, encode(["uint128"], [0x2A])]
-                        ),
-                        0xC0DE,
-                        [],
-                        b"Precompile: wrong input_len",
-                        True,
-                    ),
-                    (
-                        0x75002,
                         UNAUTHORIZED_CALLER_CODE,
                         bytes.fromhex("0abcdef0"),
                         0xC0DE,
@@ -288,7 +281,6 @@ class TestPrecompiles:
                     "ok_1_bytes_data",
                     "ko_data_len_not_matching_actual_length",
                     "ko_input_too_short",
-                    "ko_invalid_address",
                     "ko_unauthorized_caller",
                 ],
             )

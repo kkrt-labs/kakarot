@@ -336,6 +336,22 @@ func set_authorized_pre_eip155_tx{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*
     return ();
 }
 
+@external
+func set_l1_messaging_contract_address{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+}(l1_messaging_contract_address: felt) {
+    Ownable.assert_only_owner();
+    return Kakarot.set_l1_messaging_contract_address(l1_messaging_contract_address);
+}
+
+@external
+func get_l1_messaging_contract_address{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+}() -> (l1_messaging_contract_address: felt) {
+    let l1_messaging_contract_address = Kakarot.get_l1_messaging_contract_address();
+    return (l1_messaging_contract_address=l1_messaging_contract_address);
+}
+
 @l1_handler
 func handle_l1_message{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
