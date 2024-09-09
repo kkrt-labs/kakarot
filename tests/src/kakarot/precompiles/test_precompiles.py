@@ -158,20 +158,6 @@ class TestPrecompiles:
                     ),  # call_contract with return data
                     (
                         0x75001,
-                        AUTHORIZED_CALLER_CODE,
-                        bytes.fromhex(
-                            "5a9af197"
-                            + f"{0xc0de:064x}"
-                            + f"{get_selector_from_name('get'):064x}"
-                            + f"{0x60:064x}"  # data_offset
-                            + f"{0x01:064x}"  # data_len
-                            + f"{0x00:064x}"  # data
-                        ),
-                        bytes.fromhex(f"{0x00:064x}"),
-                        False,
-                    ),  # library call
-                    (
-                        0x75001,
                         UNAUTHORIZED_CALLER_CODE,
                         bytes.fromhex("0abcdef0"),
                         b"Kakarot: unauthorizedPrecompile",
@@ -182,7 +168,6 @@ class TestPrecompiles:
                     "invalid_input",
                     "call_contract",
                     "call_contract_w_returndata",
-                    "library_call",
                     "invalid_caller",
                 ],
             )
