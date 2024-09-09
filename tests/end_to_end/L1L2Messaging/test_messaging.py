@@ -72,8 +72,8 @@ async def message_app_l2(owner, l2KakarotMessaging):
     return await deploy(
         "L1L2Messaging",
         "MessageAppL2",
-        caller_eoa=owner.starknet_contract,
         _l2KakarotMessaging=l2KakarotMessaging.address,
+        caller_eoa=owner.starknet_contract,
     )
 
 
