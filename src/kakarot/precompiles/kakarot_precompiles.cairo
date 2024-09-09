@@ -16,7 +16,6 @@ from utils.utils import Helpers
 from backend.starknet import Starknet
 
 const CALL_CONTRACT_SOLIDITY_SELECTOR = 0xb3eb2c1b;
-const LIBRARY_CALL_SOLIDITY_SELECTOR = 0x5a9af197;
 
 // TODO: compute acceptable EVM gas values for Cairo execution
 const CAIRO_PRECOMPILE_GAS = 10000;
@@ -103,16 +102,6 @@ namespace KakarotPrecompiles {
                 return (retdata_len, retdata, CAIRO_PRECOMPILE_GAS, TRUE);
             }
 
-            let (output) = alloc();
-            let output_len = retdata_len * 32;
-            Helpers.felt_array_to_bytes32_array(retdata_len, retdata, output);
-            return (output_len, output, CAIRO_PRECOMPILE_GAS, FALSE);
-        }
-
-        if (selector == LIBRARY_CALL_SOLIDITY_SELECTOR) {
-            let (retdata_len, retdata) = library_call(
-                to_starknet_address, starknet_selector, data_len, data
-            );
             let (output) = alloc();
             let output_len = retdata_len * 32;
             Helpers.felt_array_to_bytes32_array(retdata_len, retdata, output);
