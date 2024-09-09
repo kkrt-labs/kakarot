@@ -89,22 +89,33 @@ def message_app_l1(sn_messaging_local, l1_kakarot_messaging, kakarot):
 
 
 @pytest.fixture(scope="function")
-def wait_for_message_l1(message_app_l1, sn_messaging_local):
+def wait_for_sn_messaging_local(sn_messaging_local):
 
     async def _factory():
-        event_filter_message_app_l1 = (
-            message_app_l1.events.CallerPrecompile.create_filter(fromBlock="latest")
-        )
         event_filter_sn_messaging_local = (
             sn_messaging_local.events.MessageHashesAddedFromL2.create_filter(
                 fromBlock="latest"
             )
         )
         while True:
-            messages = (
-                event_filter_message_app_l1.get_new_entries()
-                + event_filter_sn_messaging_local.get_new_entries()
-            )
+            messages = event_filter_sn_messaging_local.get_new_entries()
+            if messages:
+                return messages
+            await asyncio.sleep(1)
+
+    return _factory
+
+
+@pytest.fixture(scope="function")
+def wait_for_message_app_l1(message_app_l1):
+
+    async def _factory():
+        event_filter_message_app_l1 = (
+            message_app_l1.events.CallerPrecompile.create_filter(fromBlock="latest")
+        )
+
+        while True:
+            messages = event_filter_message_app_l1.get_new_entries()
             if messages:
                 return messages
             await asyncio.sleep(1)
@@ -119,21 +130,22 @@ class TestL2ToL1Messages:
         self,
         message_app_l1,
         message_app_l2,
-        wait_for_message_l1,
+        wait_for_sn_messaging_local,
+        wait_for_message_app_l1,
     ):
         msg_counter_before = message_app_l1.receivedMessagesCounter()
         increment_value = 8
         await message_app_l2.increaseL1AppCounter(
             message_app_l1.address, increment_value
         )
-        await wait_for_message_l1()
+        await wait_for_sn_messaging_local()
         message_payload = encode(
             ["address", "bytes"],
             [message_app_l2.address, increment_value.to_bytes(32, "big")],
         )
 
         message_app_l1.consumeCounterIncrease(message_payload)
-        message = await wait_for_message_l1()
+        message = await wait_for_message_app_l1()
         assert len(message) == 1
         assert message[0]["args"]["caller"] == message_app_l2.address
         msg_counter_after = message_app_l1.receivedMessagesCounter()
