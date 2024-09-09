@@ -5,7 +5,7 @@ import "../starknet/IStarknetMessaging.sol";
 
 interface IL1KakarotMessaging {
     function sendMessageToL2(address to, uint248 value, bytes memory data) external payable;
-    function consumeMessageFromL2(bytes calldata payload) external returns (bytes32 msgHash);
+    function consumeMessageFromL2(address fromAddress, bytes calldata payload) external;
 }
 
 contract L1KakarotMessaging {
@@ -13,13 +13,9 @@ contract L1KakarotMessaging {
     IStarknetMessaging private immutable _starknetMessaging;
     uint256 public immutable kakarotAddress;
 
-    /// @dev Address of this contract
-    address private immutable _self;
-
     constructor(address starknetMessaging_, uint256 kakarotAddress_) {
         _starknetMessaging = IStarknetMessaging(starknetMessaging_);
         kakarotAddress = kakarotAddress_;
-        _self = address(this);
     }
 
     /// @notice Sends a message to a contract on L2.
@@ -43,17 +39,16 @@ contract L1KakarotMessaging {
     }
 
     /// @notice Consumes a message sent from L2.
-    /// @dev Must be called with a delegatecall so that the `msg.sender` in the StarknetMessaging contract
-    ///     is the caller of this function.
+    /// @param fromAddress The address that called this the precompiles on Kakarot.
     /// @param payload The payload of the message to consume.
-    function consumeMessageFromL2(bytes calldata payload) external returns (bytes32 msgHash) {
-        require(address(this) != _self, "NOT_DELEGATECALL");
+    function consumeMessageFromL2(address fromAddress, bytes calldata payload) external {
         // Will revert if the message is not consumable.
         // Consider each byte of calldata as a uint256.
-        uint256[] memory convertedPayload = new uint256[](payload.length);
-        for (uint256 i = 0; i < payload.length; i++) {
-            convertedPayload[i] = uint256(uint8(payload[i]));
+        bytes memory fullPayload = abi.encode(msg.sender, fromAddress, payload);
+        uint256[] memory convertedPayload = new uint256[](fullPayload.length);
+        for (uint256 i = 0; i < fullPayload.length; i++) {
+            convertedPayload[i] = uint256(uint8(fullPayload[i]));
         }
-        return _starknetMessaging.consumeMessageFromL2(kakarotAddress, convertedPayload);
+        _starknetMessaging.consumeMessageFromL2(kakarotAddress, convertedPayload);
     }
 }

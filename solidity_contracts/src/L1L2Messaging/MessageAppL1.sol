@@ -18,8 +18,6 @@ contract MessageAppL1 {
     uint256 private _kakarotAddress;
     uint256 public receivedMessagesCounter;
 
-    event CallerPrecompile(address caller, bytes payload);
-
     /// @notice Constructor.
     /// @param starknetMessaging The address of the StarknetMessaging contract.
     /// @param l1KakarotMessaging The address of the L1KakarotMessaging contract.
@@ -46,17 +44,10 @@ contract MessageAppL1 {
     /// and validate the message content before being consumed.
     /// The L1KakarotMessaging contract must be called with a delegatecall to ensure that
     /// the Starknet Core contract considers this contract as the consumer.
-    function consumeCounterIncrease(bytes calldata payload) external {
-        // Will revert if the message is not consumable.
-        // Delegatecall to _l1KakarotMessaging
-        (bool success,) =
-            address(_l1KakarotMessaging).delegatecall(abi.encodeWithSignature("consumeMessageFromL2(bytes)", payload));
-        require(success, "message consumption failed");
-
+    function consumeCounterIncrease(address l2AppAddress, bytes calldata payload) external {
+        _l1KakarotMessaging.consumeMessageFromL2(l2AppAddress, payload);
         // Decode the uint256 value from the payload
-        (address caller, bytes memory data) = abi.decode(payload, (address, bytes));
-        uint256 value = abi.decode(data, (uint256));
+        uint256 value = abi.decode(payload, (uint256));
         receivedMessagesCounter += value;
-        emit CallerPrecompile(caller, data);
     }
 }
