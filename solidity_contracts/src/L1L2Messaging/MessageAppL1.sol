@@ -46,7 +46,7 @@ contract MessageAppL1 {
     /// and validate the message content before being consumed.
     /// The L1KakarotMessaging contract must be called with a delegatecall to ensure that
     /// the Starknet Core contract considers this contract as the consumer.
-    function consumeCounterIncrease(bytes calldata payload) external returns (address) {
+    function consumeCounterIncrease(bytes calldata payload) external {
         // Will revert if the message is not consumable.
         // Delegatecall to _l1KakarotMessaging
         (bool success,) =
@@ -54,10 +54,9 @@ contract MessageAppL1 {
         require(success, "message consumption failed");
 
         // Decode the uint256 value from the payload
-        (address caller, bytes memory executed_payload) = abi.decode(payload, (address, bytes));
-        uint256 value = abi.decode(executed_payload, (uint256));
+        (address caller, bytes memory data) = abi.decode(payload, (address, bytes));
+        uint256 value = abi.decode(data, (uint256));
         receivedMessagesCounter += value;
-        emit CallerPrecompile(caller, executed_payload);
-        return caller;
+        emit CallerPrecompile(caller, data);
     }
 }
