@@ -780,15 +780,17 @@ namespace Helpers {
     // @return n the resulting array
     func bytes_to_bytes4_array{range_check_ptr}(
         data_len: felt, data: felt*, n_len: felt, n: felt*
-    ) -> (n_len: felt, n: felt*) {
+    ) -> (n_len: felt, n: felt*, last: felt, last_num_bytes: felt) {
         alloc_locals;
         if (data_len == 0) {
-            return (n_len=n_len, n=n);
+            return (n_len=n_len, n=n, last=0, last_num_bytes=0);
         }
 
-        let (_, r) = unsigned_div_rem(data_len, 4);
-        with_attr error_message("data length must be multiple of 4") {
-            assert r = 0;
+        let (q, r) = unsigned_div_rem(data_len, 4);
+        if (q == 0 and r != 0) {
+            let res = bytes_to_felt(r, data);
+            assert n[n_len] = res;
+            return (n_len=n_len, n=n, last=res, last_num_bytes=r);
         }
 
         // Load sequence of 4 bytes into a single 32-bit word (big endian)

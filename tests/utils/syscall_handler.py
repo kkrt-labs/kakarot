@@ -84,6 +84,23 @@ def cairo_verify_signature_secp256r1(class_hash, calldata):
     return [is_valid]
 
 
+def cairo_compute_sha256_u32_array(class_hash, calldata):
+    """
+    Compute the sha256 of a u32 array and return its bytes4 array representation.
+    """
+    sha256_hash = sha256(
+        b"".join(
+            [num.to_bytes(4, "big") for num in calldata[1:-2]]
+            + [calldata[-2].to_bytes(calldata[-1], "big")]
+        )
+    ).hexdigest()
+
+    sha256_u32_array = [
+        int(sha256_hash[i : i + 8], 16) for i in range(0, len(sha256_hash), 8)
+    ]
+    return [8, *sha256_u32_array]
+
+
 def parse_state(state):
     """
     Parse a serialized state as a dict of string, mainly converting hex strings to
@@ -186,6 +203,9 @@ class SyscallHandler:
         get_selector_from_name("get_cairo1_helpers_class_hash"): lambda addr, data: [
             CAIRO1_HELPERS_CLASS_HASH
         ],
+        get_selector_from_name(
+            "compute_sha256_u32_array"
+        ): cairo_compute_sha256_u32_array,
     }
 
     def __post_init__(self):

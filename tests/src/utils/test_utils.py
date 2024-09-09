@@ -13,11 +13,29 @@ from tests.utils.helpers import pack_calldata
 from tests.utils.hints import patch_hint
 
 
+@given(data=st.binary(min_size=0, max_size=2**128 - 1))
+def test_bytes_to_bytes4_array(cairo_run, data):
+    (result, last, last_num) = cairo_run("test__bytes_to_bytes4_array", data=data)
+
+    expected = [
+        int.from_bytes(data[i : i + 4], byteorder="big") for i in range(0, len(data), 4)
+    ]
+
+    rem_modulo_4 = len(data) % 4
+
+    if expected == [] or rem_modulo_4 == 0:
+        expected_last = 0
+    else:
+        expected_last = expected[-1]
+    assert result == expected
+    assert last == expected_last
+    assert last_num == rem_modulo_4
+
+
 @pytest.mark.parametrize(
-    "test_case,data,expected",
+    "data,expected",
     [
         (
-            "test__bytes4_array_to_bytes",
             [
                 0x68656C6C,
                 0x6F20776F,
@@ -37,33 +55,11 @@ from tests.utils.hints import patch_hint
                 0x64,
                 0x00,
             ],
-        ),
-        (
-            "test__bytes_to_bytes4_array",
-            [
-                0x68,
-                0x65,
-                0x6C,
-                0x6C,
-                0x6F,
-                0x20,
-                0x77,
-                0x6F,
-                0x72,
-                0x6C,
-                0x64,
-                0x00,
-            ],
-            [
-                0x68656C6C,
-                0x6F20776F,
-                0x726C6400,
-            ],
-        ),
+        )
     ],
 )
-def test_utils(cairo_run, test_case, data, expected):
-    cairo_run(test_case, data=data, expected=expected)
+def test_bytes4_array_to_bytes(cairo_run, data, expected):
+    cairo_run("test__bytes4_array_to_bytes", data=data, expected=expected)
 
 
 @given(word=st.integers(min_value=0, max_value=2**256 - 1))

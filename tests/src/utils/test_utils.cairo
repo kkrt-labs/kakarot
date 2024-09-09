@@ -26,26 +26,24 @@ func test__bytes_to_uint256{range_check_ptr}() -> Uint256 {
     return res;
 }
 
-func test__bytes_to_bytes4_array{range_check_ptr}() {
+func test__bytes_to_bytes4_array{range_check_ptr}() -> (felt*, felt, felt) {
     alloc_locals;
     // Given
     let (data) = alloc();
-    let (expected) = alloc();
+    local data_len: felt;
+
     %{
         segments.write_arg(ids.data, program_input["data"])
-        segments.write_arg(ids.expected, program_input["expected"])
+        ids.data_len = len(program_input["data"])
     %}
 
     // When
     let (tmp: felt*) = alloc();
-    let (_, result: felt*) = Helpers.bytes_to_bytes4_array(12, data, 0, tmp);
+    let (_, result: felt*, last: felt, last_num_bytes: felt) = Helpers.bytes_to_bytes4_array(
+        data_len, data, 0, tmp
+    );
 
-    // Then
-    assert expected[0] = result[0];
-    assert expected[1] = result[1];
-    assert expected[2] = result[2];
-
-    return ();
+    return (result, last, last_num_bytes);
 }
 
 func test__bytes4_array_to_bytes{range_check_ptr}() {
