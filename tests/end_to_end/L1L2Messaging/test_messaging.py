@@ -140,7 +140,7 @@ class TestL2ToL1Messages:
         await wait_for_sn_messaging_local()
         message_payload = increment_value.to_bytes(32, "big")
         with evm_error("INVALID_MESSAGE_TO_CONSUME"):
-            l1_kakarot_messaging.consumeMessageFromL2(
+            await l1_kakarot_messaging.consumeMessageFromL2(
                 message_app_l2.address, message_payload
             )
 
