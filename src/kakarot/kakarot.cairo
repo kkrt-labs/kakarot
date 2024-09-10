@@ -319,14 +319,6 @@ func write_account_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_c
 }
 
 @external
-func set_authorized_message_sender{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    sender, authorized: felt
-) {
-    Ownable.assert_only_owner();
-    return Kakarot.set_authorized_message_sender(sender, authorized);
-}
-
-@external
 func set_authorized_pre_eip155_tx{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     sender_address: felt, msg_hash: Uint256
 ) {
@@ -357,8 +349,8 @@ func handle_l1_message{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(from_address: felt, l1_sender: felt, to_address: felt, value: felt, data_len: felt, data: felt*) {
     alloc_locals;
-    let is_authorized = Kakarot.get_authorized_message_sender(from_address);
-    if (is_authorized == 0) {
+    let l1_messaging_contract_address = Kakarot.get_l1_messaging_contract_address();
+    if (from_address != l1_messaging_contract_address) {
         return ();
     }
 

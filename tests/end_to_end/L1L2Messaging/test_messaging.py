@@ -50,9 +50,6 @@ async def l1_kakarot_messaging(sn_messaging_local, kakarot):
     dump_l1_addresses(l1_addresses)
     # Authorize the contract to send messages
     await invoke(
-        "kakarot", "set_authorized_message_sender", int(contract.address, 16), True
-    )
-    await invoke(
         "kakarot", "set_l1_messaging_contract_address", int(contract.address, 16)
     )
     return contract
@@ -167,9 +164,8 @@ class TestL1ToL2Messages:
         msg_counter_before = await message_app_l2.receivedMessagesCounter()
         await invoke(
             "kakarot",
-            "set_authorized_message_sender",
-            int(l1_kakarot_messaging.address, 16),
-            False,
+            "set_l1_messaging_contract_address",
+            0,
         )
         message_app_l1.increaseL2AppCounter(message_app_l2.address, value=1)
         time.sleep(4)
