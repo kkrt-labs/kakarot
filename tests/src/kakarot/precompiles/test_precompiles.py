@@ -219,7 +219,7 @@ class TestPrecompiles:
                 0xC0DE,
             )
             @pytest.mark.parametrize(
-                "address, caller_code_address, input_data, to_address, payload, expected_return_data, expected_reverted",
+                "address, caller_code_address, input_data, to_address, expected_reverted_return_data, expected_reverted",
                 [
                     (
                         0x75002,
@@ -228,7 +228,6 @@ class TestPrecompiles:
                             ["uint160", "bytes"], [0xC0DE, encode(["uint128"], [0x2A])]
                         ),
                         0xC0DE,
-                        list(bytes.fromhex(f"{0x2a:064x}")),
                         b"",
                         False,
                     ),
@@ -237,41 +236,14 @@ class TestPrecompiles:
                         AUTHORIZED_CALLER_CODE,
                         encode(["uint160", "bytes"], [0xC0DE, 0x2A.to_bytes(1, "big")]),
                         0xC0DE,
-                        list(0x2A.to_bytes(1, "big")),
                         b"",
                         False,
-                    ),
-                    # case with data_len not matching the actual data length
-                    (
-                        0x75002,
-                        AUTHORIZED_CALLER_CODE,
-                        bytes.fromhex(
-                            f"{0xc0de:064x}"
-                            + f"{0x40:064x}"
-                            + f"{0x20:064x}"
-                            + f"{0x2a:032x}"
-                        ),
-                        0xC0DE,
-                        [],
-                        b"Kakarot: OutOfBoundsRead",
-                        True,
-                    ),
-                    # case with input data too short
-                    (
-                        0x75002,
-                        AUTHORIZED_CALLER_CODE,
-                        bytes.fromhex(f"{0xc0de:064x}" + f"{0x40:064x}"),
-                        0xC0DE,
-                        [],
-                        b"Kakarot: OutOfBoundsRead",
-                        True,
                     ),
                     (
                         0x75002,
                         UNAUTHORIZED_CALLER_CODE,
                         bytes.fromhex("0abcdef0"),
                         0xC0DE,
-                        [],
                         b"Kakarot: unauthorizedPrecompile",
                         True,
                     ),
@@ -279,8 +251,6 @@ class TestPrecompiles:
                 ids=[
                     "ok_32_bytes_data",
                     "ok_1_bytes_data",
-                    "ko_data_len_not_matching_actual_length",
-                    "ko_input_too_short",
                     "ko_unauthorized_caller",
                 ],
             )
@@ -291,8 +261,7 @@ class TestPrecompiles:
                 address,
                 input_data,
                 to_address,
-                payload,
-                expected_return_data,
+                expected_reverted_return_data,
                 expected_reverted,
             ):
                 address = 0x75002
@@ -305,11 +274,10 @@ class TestPrecompiles:
                 )
                 if expected_reverted:
                     assert reverted
-                    assert bytes(return_data) == expected_return_data
+                    assert bytes(return_data) == expected_reverted_return_data
                     return
-
                 SyscallHandler.mock_send_message_to_l1.assert_any_call(
-                    to_address=to_address, payload=payload
+                    to_address=to_address, payload=list(input_data)
                 )
                 assert gas_used == CAIRO_MESSAGE_GAS
 

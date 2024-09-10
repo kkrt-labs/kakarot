@@ -38,14 +38,15 @@ contract MessageAppL1 {
     }
 
     /// @notice Manually consumes a message that was received from L2.
+    /// @param fromAddress L2 address sending the message.
     /// @param payload Payload of the message used to verify the hash.
     /// @dev A message "received" means that the message hash is registered as consumable.
     /// One must provide the message content, to let Starknet Core contract verify the hash
     /// and validate the message content before being consumed.
     /// The L1KakarotMessaging contract must be called with a delegatecall to ensure that
     /// the Starknet Core contract considers this contract as the consumer.
-    function consumeCounterIncrease(address l2AppAddress, bytes calldata payload) external {
-        _l1KakarotMessaging.consumeMessageFromL2(l2AppAddress, payload);
+    function consumeCounterIncrease(address fromAddress, bytes calldata payload) external {
+        _l1KakarotMessaging.consumeMessageFromL2(fromAddress, payload);
         // Decode the uint256 value from the payload
         uint256 value = abi.decode(payload, (uint256));
         receivedMessagesCounter += value;

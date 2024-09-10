@@ -39,7 +39,7 @@ contract L1KakarotMessaging {
     }
 
     /// @notice Consumes a message sent from L2.
-    /// @param fromAddress The address that called this the precompiles on Kakarot.
+    /// @param fromAddress L2 address sending the message.
     /// @param payload The payload of the message to consume.
     function consumeMessageFromL2(address fromAddress, bytes calldata payload) external {
         // Will revert if the message is not consumable.
