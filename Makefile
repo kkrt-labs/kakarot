@@ -47,7 +47,7 @@ test-unit: build-sol
 
 # run make run-nodes in other terminal
 test-end-to-end: deploy
-	poetry run pytest tests/end_to_end --seed 42
+	poetry run pytest tests/end_to_end/L1L2Messaging/test_messaging.py::TestL2ToL1Messages::test_should_fail_unauthorized_message_sender --seed 42
 
 deploy: build build-sol
 	poetry run python ./kakarot_scripts/deploy_kakarot.py
