@@ -453,6 +453,7 @@ class TestKakarot:
                 )
 
         @given(gas_limit=integers(min_value=2**64, max_value=2**248 - 1))
+        @SyscallHandler.patch("IAccount.get_nonce", lambda _, __: [34])
         def test_raise_gas_limit_too_high(self, cairo_run, gas_limit):
             tx = {
                 "type": 2,
@@ -468,10 +469,7 @@ class TestKakarot:
             }
             tx_data = list(rlp_encode_signed_data(tx))
 
-            with (
-                SyscallHandler.patch("IAccount.get_nonce", lambda _, __: [tx["nonce"]]),
-                cairo_error(message="Gas limit too high"),
-            ):
+            with cairo_error(message="Gas limit too high"):
                 cairo_run(
                     "test__eth_send_raw_unsigned_tx",
                     tx_data_len=len(tx_data),
@@ -479,6 +477,7 @@ class TestKakarot:
                 )
 
         @given(maxFeePerGas=integers(min_value=2**128, max_value=2**248 - 1))
+        @SyscallHandler.patch("IAccount.get_nonce", lambda _, __: [34])
         def test_raise_max_fee_per_gas_too_high(self, cairo_run, maxFeePerGas):
             tx = {
                 "type": 2,
@@ -494,10 +493,7 @@ class TestKakarot:
             }
             tx_data = list(rlp_encode_signed_data(tx))
 
-            with (
-                SyscallHandler.patch("IAccount.get_nonce", lambda _, __: [tx["nonce"]]),
-                cairo_error(message="Max fee per gas too high"),
-            ):
+            with cairo_error(message="Max fee per gas too high"):
                 cairo_run(
                     "test__eth_send_raw_unsigned_tx",
                     tx_data_len=len(tx_data),
@@ -543,6 +539,7 @@ class TestKakarot:
             return (max_fee_per_gas, max_priority_fee_per_gas)
 
         @SyscallHandler.patch("Kakarot_block_gas_limit", TRANSACTION_GAS_LIMIT)
+        @SyscallHandler.patch("IAccount.get_nonce", lambda _, __: [34])
         @given(max_priority_fee_too_high())
         def test_raise_max_priority_fee_too_high(
             self, cairo_run, max_priority_fee_too_high
@@ -561,10 +558,7 @@ class TestKakarot:
             }
             tx_data = list(rlp_encode_signed_data(tx))
 
-            with (
-                SyscallHandler.patch("IAccount.get_nonce", lambda _, __: [tx["nonce"]]),
-                cairo_error(message="Max priority fee greater than max fee per gas"),
-            ):
+            with cairo_error(message="Max priority fee greater than max fee per gas"):
                 cairo_run(
                     "test__eth_send_raw_unsigned_tx",
                     tx_data_len=len(tx_data),
