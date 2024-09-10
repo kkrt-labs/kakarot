@@ -14,7 +14,7 @@
 [![Telegram](https://img.shields.io/badge/telegram-Kakarot-yellow.svg?logo=telegram)](https://t.me/KakarotZkEvm)
 ![Contributions welcome](https://img.shields.io/badge/contributions-welcome-orange.svg)
 ![GitHub Repo stars](https://img.shields.io/github/stars/kkrt-labs/kakarot?style=social)
-[![Twitter Follow](https://img.shields.io/twitter/follow/KakarotZkEvm?style=social)](https://twitter.com/KakarotZkEvm)
+[![Twitter Follow](https://img.shields.io/twitter/follow/KakarotZkEvm?style=social)](https://x.com/KakarotZkEvm)
 [![Discord](https://img.shields.io/discord/984015101017346058?color=%235865F2&label=Discord&logo=discord&logoColor=%23fff)](https://discord.gg/kakarotzkevm)
 
 This repository contains the set of Cairo (Cairo compiler version Zero) programs
