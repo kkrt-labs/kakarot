@@ -60,9 +60,15 @@ def seed(request):
 pytest_plugins = ["tests.fixtures.starknet"]
 
 settings.register_profile(
+    "nightly",
+    deadline=None,
+    max_examples=1500,
+    phases=[Phase.explicit, Phase.reuse, Phase.generate, Phase.target],
+)
+settings.register_profile(
     "ci",
     deadline=None,
-    max_examples=1000,
+    max_examples=100,
     phases=[Phase.explicit, Phase.reuse, Phase.generate, Phase.target],
 )
 settings.register_profile(
