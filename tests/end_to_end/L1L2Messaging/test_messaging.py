@@ -13,6 +13,7 @@ from kakarot_scripts.utils.l1 import (
     l1_contract_exists,
 )
 from kakarot_scripts.utils.starknet import invoke
+from tests.utils.errors import evm_error
 
 
 @pytest.fixture(scope="session")
@@ -49,15 +50,30 @@ async def l1_kakarot_messaging(sn_messaging_local, kakarot):
     dump_l1_addresses(l1_addresses)
     # Authorize the contract to send messages
     await invoke(
-        "kakarot", "set_authorized_message_sender", int(contract.address, 16), True
+        "kakarot", "set_l1_messaging_contract_address", int(contract.address, 16)
     )
     return contract
 
 
 @pytest_asyncio.fixture(scope="session")
-async def message_app_l2(owner):
+async def l2KakarotMessaging(kakarot):
+    l2KakarotMessaging = await deploy("L1L2Messaging", "L2KakarotMessaging")
+    await invoke(
+        "kakarot",
+        "set_authorized_cairo_precompile_caller",
+        int(l2KakarotMessaging.address, 16),
+        True,
+    )
+    return l2KakarotMessaging
+
+
+@pytest_asyncio.fixture(scope="session")
+async def message_app_l2(owner, l2KakarotMessaging):
     return await deploy(
-        "L1L2Messaging", "MessageAppL2", caller_eoa=owner.starknet_contract
+        "L1L2Messaging",
+        "MessageAppL2",
+        _l2KakarotMessaging=l2KakarotMessaging.address,
+        caller_eoa=owner.starknet_contract,
     )
 
 
@@ -73,14 +89,16 @@ def message_app_l1(sn_messaging_local, l1_kakarot_messaging, kakarot):
 
 
 @pytest.fixture(scope="function")
-def wait_for_message(sn_messaging_local):
+def wait_for_sn_messaging_local(sn_messaging_local):
 
     async def _factory():
-        event_filter = sn_messaging_local.events.MessageHashesAddedFromL2.create_filter(
-            fromBlock="latest"
+        event_filter_sn_messaging_local = (
+            sn_messaging_local.events.MessageHashesAddedFromL2.create_filter(
+                fromBlock="latest"
+            )
         )
         while True:
-            messages = event_filter.get_new_entries()
+            messages = event_filter_sn_messaging_local.get_new_entries()
             if messages:
                 return messages
             await asyncio.sleep(1)
@@ -92,18 +110,39 @@ def wait_for_message(sn_messaging_local):
 @pytest.mark.asyncio(scope="module")
 class TestL2ToL1Messages:
     async def test_should_increment_counter_on_l1(
-        self, message_app_l1, message_app_l2, wait_for_message
+        self,
+        message_app_l1,
+        message_app_l2,
+        wait_for_sn_messaging_local,
     ):
         msg_counter_before = message_app_l1.receivedMessagesCounter()
         increment_value = 8
         await message_app_l2.increaseL1AppCounter(
             message_app_l1.address, increment_value
         )
-        await wait_for_message()
+        await wait_for_sn_messaging_local()
         message_payload = increment_value.to_bytes(32, "big")
-        message_app_l1.consumeCounterIncrease(message_payload)
+        message_app_l1.consumeCounterIncrease(message_app_l2.address, message_payload)
         msg_counter_after = message_app_l1.receivedMessagesCounter()
         assert msg_counter_after == msg_counter_before + increment_value
+
+    async def test_should_fail_unauthorized_message_sender(
+        self,
+        message_app_l1,
+        message_app_l2,
+        l1_kakarot_messaging,
+        wait_for_sn_messaging_local,
+    ):
+        increment_value = 8
+        await message_app_l2.increaseL1AppCounter(
+            message_app_l1.address, increment_value
+        )
+        await wait_for_sn_messaging_local()
+        message_payload = increment_value.to_bytes(32, "big")
+        with evm_error("INVALID_MESSAGE_TO_CONSUME"):
+            await l1_kakarot_messaging.consumeMessageFromL2(
+                message_app_l2.address, message_payload
+            )
 
 
 @pytest.mark.slow
@@ -123,12 +162,7 @@ class TestL1ToL2Messages:
         self, l1_kakarot_messaging, message_app_l1, message_app_l2
     ):
         msg_counter_before = await message_app_l2.receivedMessagesCounter()
-        await invoke(
-            "kakarot",
-            "set_authorized_message_sender",
-            int(l1_kakarot_messaging.address, 16),
-            False,
-        )
+        await invoke("kakarot", "set_l1_messaging_contract_address", 0)
         message_app_l1.increaseL2AppCounter(message_app_l2.address, value=1)
         time.sleep(4)
         msg_counter_after = await message_app_l2.receivedMessagesCounter()

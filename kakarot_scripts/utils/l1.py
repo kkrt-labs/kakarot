@@ -153,7 +153,7 @@ def send_l1_transaction(
         trace = L1_RPC_PROVIDER.manager.request_blocking(
             "debug_traceTransaction", [tx_hash, {"tracer": "callTracer"}]
         )
-        response = bytes(HexBytes(trace["returnValue"]))
+        response = trace["revertReason"].encode()
 
     return receipt, response, receipt.status, receipt.gasUsed
 

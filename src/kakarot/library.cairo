@@ -24,7 +24,7 @@ from kakarot.storages import (
     Kakarot_block_gas_limit,
     Kakarot_evm_to_starknet_address,
     Kakarot_authorized_cairo_precompiles_callers,
-    Kakarot_authorized_message_senders,
+    Kakarot_l1_messaging_contract_address,
 )
 from kakarot.events import evm_contract_deployed
 from kakarot.interpreter import Interpreter
@@ -405,18 +405,18 @@ namespace Kakarot {
         return (evm_address=evm_address);
     }
 
-    func set_authorized_message_sender{
+    func set_l1_messaging_contract_address{
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
-    }(sender: felt, authorized: felt) {
-        Kakarot_authorized_message_senders.write(sender, authorized);
+    }(l1_messaging_contract_address: felt) {
+        Kakarot_l1_messaging_contract_address.write(l1_messaging_contract_address);
         return ();
     }
 
-    func get_authorized_message_sender{
+    func get_l1_messaging_contract_address{
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
-    }(sender: felt) -> felt {
-        let (authorized) = Kakarot_authorized_message_senders.read(sender);
-        return authorized;
+    }() -> felt {
+        let (l1_messaging_contract_address) = Kakarot_l1_messaging_contract_address.read();
+        return l1_messaging_contract_address;
     }
 
     func handle_l1_message{

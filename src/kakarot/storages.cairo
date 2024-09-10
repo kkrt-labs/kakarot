@@ -45,5 +45,5 @@ func Kakarot_authorized_cairo_precompiles_callers(address: felt) -> (res: felt) 
 }
 
 @storage_var
-func Kakarot_authorized_message_senders(address: felt) -> (res: felt) {
+func Kakarot_l1_messaging_contract_address() -> (res: felt) {
 }

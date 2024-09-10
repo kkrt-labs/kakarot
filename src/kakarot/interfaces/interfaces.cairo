@@ -194,6 +194,12 @@ namespace IKakarot {
         return_data_len: felt, return_data: felt*, success: felt, gas_used: felt
     ) {
     }
+
+    func set_l1_messaging_contract_address(l1_messaging_contract_address: felt) {
+    }
+
+    func get_l1_messaging_contract_address() -> (l1_messaging_contract_address: felt) {
+    }
 }
 
 @contract_interface
