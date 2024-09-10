@@ -42,6 +42,11 @@ jobs:
           virtualenvs-in-project: true
           virtualenvs-path: .venv
           installer-parallel: true
+      - name: Enforce poetry config
+        run: |
+          poetry config virtualenvs.in-project true
+          poetry config virtualenvs.create true
+          poetry config virtualenvs.path .venv
       - name: Load cached venv
         id: cached-poetry-dependencies
         uses: actions/cache@v4
@@ -88,6 +93,11 @@ jobs:
           virtualenvs-in-project: true
           virtualenvs-path: .venv
           installer-parallel: true
+      - name: Enforce poetry config
+        run: |
+          poetry config virtualenvs.in-project true
+          poetry config virtualenvs.create true
+          poetry config virtualenvs.path .venv
       - name: Load cached venv
         id: cached-poetry-dependencies
         uses: actions/cache@v4
@@ -141,6 +151,11 @@ jobs:
           virtualenvs-in-project: true
           virtualenvs-path: .venv
           installer-parallel: true
+      - name: Enforce poetry config
+        run: |
+          poetry config virtualenvs.in-project true
+          poetry config virtualenvs.create true
+          poetry config virtualenvs.path .venv
       - name: Load cached venv
         id: cached-poetry-dependencies
         uses: actions/cache@v4
@@ -245,6 +260,11 @@ jobs:
           virtualenvs-in-project: true
           virtualenvs-path: .venv
           installer-parallel: true
+      - name: Enforce poetry config
+        run: |
+          poetry config virtualenvs.in-project true
+          poetry config virtualenvs.create true
+          poetry config virtualenvs.path .venv
       - name: Load cached venv
         id: cached-poetry-dependencies
         uses: actions/cache@v4
