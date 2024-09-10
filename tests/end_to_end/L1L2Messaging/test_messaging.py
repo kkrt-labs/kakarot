@@ -162,11 +162,7 @@ class TestL1ToL2Messages:
         self, l1_kakarot_messaging, message_app_l1, message_app_l2
     ):
         msg_counter_before = await message_app_l2.receivedMessagesCounter()
-        await invoke(
-            "kakarot",
-            "set_l1_messaging_contract_address",
-            0,
-        )
+        await invoke("kakarot", "set_l1_messaging_contract_address", 0)
         message_app_l1.increaseL2AppCounter(message_app_l2.address, value=1)
         time.sleep(4)
         msg_counter_after = await message_app_l2.receivedMessagesCounter()
