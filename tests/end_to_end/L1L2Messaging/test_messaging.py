@@ -13,6 +13,7 @@ from kakarot_scripts.utils.l1 import (
     l1_contract_exists,
 )
 from kakarot_scripts.utils.starknet import invoke
+from tests.utils.errors import evm_error
 
 
 @pytest.fixture(scope="session")
@@ -127,6 +128,24 @@ class TestL2ToL1Messages:
         message_app_l1.consumeCounterIncrease(message_app_l2.address, message_payload)
         msg_counter_after = message_app_l1.receivedMessagesCounter()
         assert msg_counter_after == msg_counter_before + increment_value
+
+    async def test_should_fail_unauthorized_message_sender(
+        self,
+        message_app_l1,
+        message_app_l2,
+        l1_kakarot_messaging,
+        wait_for_sn_messaging_local,
+    ):
+        increment_value = 8
+        await message_app_l2.increaseL1AppCounter(
+            message_app_l1.address, increment_value
+        )
+        await wait_for_sn_messaging_local()
+        message_payload = increment_value.to_bytes(32, "big")
+        with evm_error("INVALID_MESSAGE_TO_CONSUME"):
+            l1_kakarot_messaging.consumeMessageFromL2(
+                message_app_l2.address, message_payload
+            )
 
 
 @pytest.mark.slow
