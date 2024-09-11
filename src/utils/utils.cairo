@@ -771,13 +771,14 @@ namespace Helpers {
     }
 
     // @notice transform multiple bytes into words of 32 bits (big endian)
-    // @dev the input data must have length in multiples of 4
     // @param data_len The length of the bytes
     // @param data The pointer to the bytes array
     // @param n_len used for recursion, set to 0
     // @param n used for recursion, set to pointer
     // @return n_len the resulting array length
     // @return n the resulting array
+    // @return last the last word
+    // @return last_num_bytes the number of bytes in the last word
     func bytes_to_bytes4_array{range_check_ptr}(
         data_len: felt, data: felt*, n_len: felt, n: felt*
     ) -> (n_len: felt, n: felt*, last: felt, last_num_bytes: felt) {
