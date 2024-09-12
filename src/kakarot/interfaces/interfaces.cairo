@@ -226,4 +226,9 @@ namespace ICairo1Helpers {
         msg_hash: Uint256, r: Uint256, s: Uint256, x: Uint256, y: Uint256
     ) -> (is_valid: felt) {
     }
+
+    func compute_sha256_u32_array(
+        input_len: felt, input: felt*, last_input_word: felt, last_input_num_bytes: felt
+    ) -> (sha256_u32_array_len: felt, sha256_u32_array: felt*) {
+    }
 }

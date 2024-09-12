@@ -771,24 +771,27 @@ namespace Helpers {
     }
 
     // @notice transform multiple bytes into words of 32 bits (big endian)
-    // @dev the input data must have length in multiples of 4
     // @param data_len The length of the bytes
     // @param data The pointer to the bytes array
     // @param n_len used for recursion, set to 0
     // @param n used for recursion, set to pointer
     // @return n_len the resulting array length
     // @return n the resulting array
+    // @return last the last word
+    // @return last_num_bytes the number of bytes in the last word
     func bytes_to_bytes4_array{range_check_ptr}(
         data_len: felt, data: felt*, n_len: felt, n: felt*
-    ) -> (n_len: felt, n: felt*) {
+    ) -> (n_len: felt, n: felt*, last: felt, last_num_bytes: felt) {
         alloc_locals;
         if (data_len == 0) {
-            return (n_len=n_len, n=n);
+            return (n_len=n_len, n=n, last=0, last_num_bytes=0);
         }
 
-        let (_, r) = unsigned_div_rem(data_len, 4);
-        with_attr error_message("data length must be multiple of 4") {
-            assert r = 0;
+        let (q, r) = unsigned_div_rem(data_len, 4);
+        if (q == 0 and r != 0) {
+            let res = bytes_to_felt(r, data);
+            assert n[n_len] = res;
+            return (n_len=n_len, n=n, last=res, last_num_bytes=r);
         }
 
         // Load sequence of 4 bytes into a single 32-bit word (big endian)
