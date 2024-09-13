@@ -15,7 +15,7 @@ logger.setLevel(logging.INFO)
 
 # %% Fetch contract events
 def get_contracts():
-    url = f"https://sepolia-api.voyager.online/beta/events?ps=10&p=1&contract={os.getenv('KAKAROT_SEPOLIA_ACCOUNT_ADDRESS')}"
+    url = f"{os.getenv('VOYAGER_API_URL')}/events?ps=10&p=1&contract={os.getenv('KAKAROT_SEPOLIA_ACCOUNT_ADDRESS')}"
     headers = {
         "accept": "application/json",
         "x-api-key": os.getenv("VOYAGER_API_KEY"),
