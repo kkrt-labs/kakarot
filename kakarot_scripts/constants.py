@@ -41,6 +41,7 @@ NETWORKS = {
         "check_interval": 1,
         "max_wait": 60,
         "class_hash": 0x061DAC032F228ABEF9C6626F995015233097AE253A7F72D68552DB02F2971B8F,
+        "voyager_api_url": "https://api.voyager.online/beta",
     },
     "sepolia": {
         "name": "starknet-sepolia",
@@ -52,6 +53,7 @@ NETWORKS = {
         "check_interval": 1,
         "max_wait": 10,
         "class_hash": 0x061DAC032F228ABEF9C6626F995015233097AE253A7F72D68552DB02F2971B8F,
+        "voyager_api_url": "https://sepolia-api.voyager.online/beta",
     },
     "starknet-devnet": {
         "name": "starknet-devnet",

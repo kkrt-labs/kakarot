@@ -6,7 +6,12 @@ from asyncio import run
 import requests
 
 from kakarot_scripts.constants import ETH_TOKEN_ADDRESS, NETWORK, RPC_CLIENT
-from kakarot_scripts.utils.starknet import get_balance, get_declarations, invoke
+from kakarot_scripts.utils.starknet import (
+    get_balance,
+    get_declarations,
+    get_deployments,
+    invoke,
+)
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -15,7 +20,9 @@ logger.setLevel(logging.INFO)
 
 # %% Fetch contract events
 def get_contracts():
-    url = f"{os.getenv('VOYAGER_API_URL')}/events?ps=10&p=1&contract={os.getenv('KAKAROT_SEPOLIA_ACCOUNT_ADDRESS')}"
+    contract_address = hex(get_deployments()["kakarot"]["address"])
+    logger.info(f"ℹ️  Fetching contracts from {contract_address}")
+    url = f"{NETWORK['voyager_api_url']}/events?ps=10&p=1&contract={contract_address}"
     headers = {
         "accept": "application/json",
         "x-api-key": os.getenv("VOYAGER_API_KEY"),
@@ -23,12 +30,19 @@ def get_contracts():
     response = requests.get(url, headers=headers)
     return [
         {
-            "evm_address": "0x" + raw[2:22].hex(),
-            "starknet_address": "0x" + raw[23:].hex(),
+            "evm_address": next(
+                item["value"]
+                for item in event["dataDecoded"]
+                if item["name"] == "evm_contract_address"
+            ),
+            "starknet_address": next(
+                item["value"]
+                for item in event["dataDecoded"]
+                if item["name"] == "starknet_contract_address"
+            ),
         }
-        for raw in (
-            bytes(contract["data"]["data"]) for contract in response.json()["items"]
-        )
+        for event in response.json()["items"]
+        if "name" in event and event["name"] == "evm_contract_deployed"
     ]
 
 
