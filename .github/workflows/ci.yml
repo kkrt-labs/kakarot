@@ -181,7 +181,6 @@ jobs:
         run: make install-katana
       - name: Run tests
         run: |
-          make fetch-ssj-artifacts
           cp .env.example .env
           make run-nodes & make test-end-to-end
 
