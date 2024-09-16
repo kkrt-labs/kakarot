@@ -99,9 +99,9 @@ contract DualVmToken {
         starknetToken = _starknetToken;
     }
 
-    //     /*//////////////////////////////////////////////////////////////
-    //                                ERC20 LOGIC
-    //     //////////////////////////////////////////////////////////////*/
+    /*//////////////////////////////////////////////////////////////
+                               ERC20 LOGIC
+    //////////////////////////////////////////////////////////////*/
 
     function approve(address spender, uint256 amount) external returns (bool) {
         uint256[] memory spenderAddressCalldata = new uint256[](1);
@@ -139,6 +139,8 @@ contract DualVmToken {
         transferCallData[2] = uint256(amountHigh);
 
         starknetToken.delegatecallCairo("transfer", transferCallData);
+
+        emit Transfer(msg.sender, to, amount);
         return true;
     }
 
@@ -165,7 +167,6 @@ contract DualVmToken {
         starknetToken.delegatecallCairo("transfer_from", transferFromCallData);
 
         emit Transfer(from, to, amount);
-
         return true;
     }
 }
