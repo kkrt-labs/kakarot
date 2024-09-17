@@ -35,7 +35,7 @@ $(SSJ_ZIP):
 fetch-ef-tests:
 	poetry run python ./kakarot_scripts/ef_tests/fetch.py
 
-setup: fetch-ssj-artifacts
+setup:
 	poetry install
 
 test: deploy
