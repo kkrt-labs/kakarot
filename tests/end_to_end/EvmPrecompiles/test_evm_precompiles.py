@@ -2,7 +2,7 @@ import pytest
 import pytest_asyncio
 from ethereum.base_types import U256, Uint
 from ethereum.crypto.alt_bn128 import ALT_BN128_PRIME, BNF, BNP
-from ethereum.exceptions import OutOfGasError
+from ethereum.cancun.vm.exceptions import OutOfGasError
 
 from kakarot_scripts.utils.kakarot import deploy
 
@@ -70,7 +70,7 @@ def ref_alt_bn128_mul(x0, y0, s):
 
 @pytest.mark.asyncio(scope="package")
 @pytest.mark.EvmPrecompiles
-@pytest.mark.xfail(reason="Katana doesn't support new builtins")
+# @pytest.mark.xfail(reason="Katana doesn't support new builtins")
 class TestEvmPrecompiles:
     class TestEcAdd:
         async def test_should_return_ec_add_point_at_infinity(self, evm_precompiles):
