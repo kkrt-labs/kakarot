@@ -215,29 +215,16 @@ async def token_a(owner):
 
 @pytest_asyncio.fixture(scope="module")
 async def weth(owner):
-    return await deploy_kakarot(
-        "WETH",
-        "WETH9",
-        caller_eoa=owner.starknet_contract,
-    )
+    return await deploy_kakarot("WETH", "WETH9")
 
 
 @pytest_asyncio.fixture(scope="module")
 async def factory(owner):
-    return await deploy_kakarot(
-        "UniswapV2",
-        "UniswapV2Factory",
-        owner.address,
-        caller_eoa=owner.starknet_contract,
-    )
+    return await deploy_kakarot("UniswapV2", "UniswapV2Factory", owner.address)
 
 
 @pytest_asyncio.fixture(scope="module")
 async def router(owner, factory, weth):
     return await deploy_kakarot(
-        "UniswapV2Router",
-        "UniswapV2Router02",
-        factory.address,
-        weth.address,
-        caller_eoa=owner.starknet_contract,
+        "UniswapV2Router", "UniswapV2Router02", factory.address, weth.address
     )

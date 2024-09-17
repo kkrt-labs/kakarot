@@ -163,10 +163,7 @@ class TestDualVmToken:
             amount_a_desired = 1000 * await token_a.decimals()
             amount_dual_vm_token_desired = 500 * await dual_vm_token.decimals()
 
-            await token_a.mint(
-                owner.address, amount_a_desired, caller_eoa=owner.starknet_contract
-            )
-
+            await token_a.mint(owner.address, amount_a_desired)
             await token_a.approve(
                 router.address, amount_a_desired * 2, caller_eoa=owner.starknet_contract
             )
@@ -197,14 +194,15 @@ class TestDualVmToken:
             amount_dual_vm_token_desired = 5 * await dual_vm_token.decimals()
 
             balance_other_before = await dual_vm_token.balanceOf(other.address)
-            amountInMax = 2**128
+            amount_in_max = 2**128
             success = (
                 await router.swapTokensForExactTokens(
                     amount_dual_vm_token_desired,
-                    amountInMax,
+                    amount_in_max,
                     [token_a.address, dual_vm_token.address],
                     other.address,
                     deadline,
+                    caller_eoa=owner.starknet_contract,
                 )
             )["success"]
             assert success == 1
