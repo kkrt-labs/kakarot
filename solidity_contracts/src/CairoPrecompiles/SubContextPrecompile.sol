@@ -12,6 +12,7 @@ contract SubContextPrecompile {
 
     function exploitLowLevelCall() public {
         (bool success,) = address(revertingSubContext).call(abi.encodeWithSignature("reverting()"));
+        require(success == false);
     }
 
     function exploitChildContext() public {

@@ -81,7 +81,15 @@ class TestDualVmToken:
             amount = 1
             balance_owner_before = await dual_vm_token.balanceOf(owner.address)
             balance_other_before = await dual_vm_token.balanceOf(other.address)
-            await dual_vm_token.transfer(other.address, amount)
+            receipt = (await dual_vm_token.transfer(other.address, amount))["receipt"]
+            events = dual_vm_token.events.parse_events(receipt)
+            assert events["Transfer"] == [
+                {
+                    "from": str(owner.address),
+                    "to": str(other.address),
+                    "amount": amount,
+                }
+            ]
             balance_owner_after = await dual_vm_token.balanceOf(owner.address)
             balance_other_after = await dual_vm_token.balanceOf(other.address)
 
@@ -95,7 +103,15 @@ class TestDualVmToken:
             allowance_before = await dual_vm_token.allowance(
                 owner.address, other.address
             )
-            await dual_vm_token.approve(other.address, amount)
+            receipt = (await dual_vm_token.approve(other.address, amount))["receipt"]
+            events = dual_vm_token.events.parse_events(receipt)
+            assert events["Approval"] == [
+                {
+                    "owner": str(owner.address),
+                    "spender": str(other.address),
+                    "amount": amount,
+                }
+            ]
             allowance_after = await dual_vm_token.allowance(
                 owner.address, other.address
             )
@@ -108,9 +124,22 @@ class TestDualVmToken:
             balance_owner_before = await dual_vm_token.balanceOf(owner.address)
             balance_other_before = await dual_vm_token.balanceOf(other.address)
             await dual_vm_token.approve(other.address, amount)
-            await dual_vm_token.transferFrom(
-                owner.address, other.address, amount, caller_eoa=other.starknet_contract
-            )
+            receipt = (
+                await dual_vm_token.transferFrom(
+                    owner.address,
+                    other.address,
+                    amount,
+                    caller_eoa=other.starknet_contract,
+                )
+            )["receipt"]
+            events = dual_vm_token.events.parse_events(receipt)
+            assert events["Transfer"] == [
+                {
+                    "from": str(owner.address),
+                    "to": str(other.address),
+                    "amount": amount,
+                }
+            ]
             balance_owner_after = await dual_vm_token.balanceOf(owner.address)
             balance_other_after = await dual_vm_token.balanceOf(other.address)
 
@@ -126,3 +155,60 @@ class TestDualVmToken:
                 await dual_vm_token.transfer(
                     other.address, 1, gas_limit=45_000
                 )  # fails with out of gas
+
+    class TestIntegrationUniswap:
+        async def test_should_add_liquidity_and_swap(
+            starknet_token, dual_vm_token, token_a, router, owner, other
+        ):
+            amount_a_desired = 1000 * await token_a.decimals()
+            amount_dual_vm_token_desired = 500 * await dual_vm_token.decimals()
+
+            await token_a.mint(owner.address, amount_a_desired)
+            await token_a.approve(
+                router.address, amount_a_desired * 2, caller_eoa=owner.starknet_contract
+            )
+            await dual_vm_token.approve(
+                router.address,
+                amount_dual_vm_token_desired * 2,
+                caller_eoa=owner.starknet_contract,
+            )
+
+            deadline = 99999999999
+            to_address = owner.address
+            success = (
+                await router.addLiquidity(
+                    token_a.address,
+                    dual_vm_token.address,
+                    amount_a_desired,
+                    amount_dual_vm_token_desired,
+                    0,
+                    0,
+                    to_address,
+                    deadline,
+                    caller_eoa=owner.starknet_contract,
+                )
+            )["success"]
+
+            assert success == 1
+
+            amount_dual_vm_token_desired = 5 * await dual_vm_token.decimals()
+
+            balance_other_before = await dual_vm_token.balanceOf(other.address)
+            amount_in_max = 2**128
+            success = (
+                await router.swapTokensForExactTokens(
+                    amount_dual_vm_token_desired,
+                    amount_in_max,
+                    [token_a.address, dual_vm_token.address],
+                    other.address,
+                    deadline,
+                    caller_eoa=owner.starknet_contract,
+                )
+            )["success"]
+            assert success == 1
+
+            balance_other_after = await dual_vm_token.balanceOf(other.address)
+            assert (
+                balance_other_before + amount_dual_vm_token_desired
+                == balance_other_after
+            )

@@ -9,6 +9,7 @@ from starknet_py.contract import Contract
 from starknet_py.net.account.account import Account
 
 from kakarot_scripts.constants import NETWORK, RPC_CLIENT, NetworkType
+from kakarot_scripts.utils.kakarot import deploy as deploy_kakarot
 from kakarot_scripts.utils.kakarot import eth_balance_of
 from kakarot_scripts.utils.kakarot import get_contract as get_solidity_contract
 from kakarot_scripts.utils.kakarot import get_eoa
@@ -195,3 +196,35 @@ def relayers(worker_id):
     except ValueError:
         logger.info(f"Error while setting relayer index to {worker_id}")
     return
+
+
+# Uniswap fixtures
+
+TOTAL_SUPPLY = 10000 * 10**18
+
+
+@pytest_asyncio.fixture(scope="function")
+async def token_a(owner):
+    return await deploy_kakarot(
+        "UniswapV2",
+        "ERC20",
+        TOTAL_SUPPLY,
+        caller_eoa=owner.starknet_contract,
+    )
+
+
+@pytest_asyncio.fixture(scope="module")
+async def weth(owner):
+    return await deploy_kakarot("WETH", "WETH9")
+
+
+@pytest_asyncio.fixture(scope="module")
+async def factory(owner):
+    return await deploy_kakarot("UniswapV2", "UniswapV2Factory", owner.address)
+
+
+@pytest_asyncio.fixture(scope="module")
+async def router(owner, factory, weth):
+    return await deploy_kakarot(
+        "UniswapV2Router", "UniswapV2Router02", factory.address, weth.address
+    )
