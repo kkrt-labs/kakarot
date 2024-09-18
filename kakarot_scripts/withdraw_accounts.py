@@ -42,7 +42,7 @@ def get_contracts():
             ),
         }
         for event in response.json()["items"]
-        if "name" in event and event["name"] == "evm_contract_deployed"
+        if event.get("name") == "evm_contract_deployed"
     ]
 
 
