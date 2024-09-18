@@ -29,18 +29,7 @@ def get_contracts():
     }
     response = requests.get(url, headers=headers)
     return [
-        {
-            "evm_address": next(
-                item["value"]
-                for item in event["dataDecoded"]
-                if item["name"] == "evm_contract_address"
-            ),
-            "starknet_address": next(
-                item["value"]
-                for item in event["dataDecoded"]
-                if item["name"] == "starknet_contract_address"
-            ),
-        }
+        dict((item["name"], item["value"]) for item in event["dataDecoded"])
         for event in response.json()["items"]
         if event.get("name") == "evm_contract_deployed"
     ]
@@ -55,7 +44,7 @@ async def main():
     balance_prev = await get_balance(NETWORK["account_address"])
     logger.info(f"ℹ️  Current deployer balance {balance_prev / 1e18} ETH")
     for contract in contracts:
-        balance = await get_balance(contract["starknet_address"])
+        balance = await get_balance(contract["starknet_contract_address"])
         if balance == 0:
             logger.info(
                 f"ℹ️  No balance to withdraw from EVM contract {contract['evm_address']}"
@@ -65,11 +54,13 @@ async def main():
         logger.info(
             f"ℹ️  Withdrawing {balance / 1e18} ETH from EVM contract {contract['evm_address']}"
         )
-        current_class = await RPC_CLIENT.get_class_hash_at(contract["starknet_address"])
+        current_class = await RPC_CLIENT.get_class_hash_at(
+            contract["starknet_contract_address"]
+        )
         await invoke(
             "kakarot",
             "upgrade_account",
-            int(contract["evm_address"], 16),
+            int(contract["evm_contract_address"], 16),
             get_declarations()["BalanceSender"],
         )
         await invoke(
@@ -77,12 +68,12 @@ async def main():
             "send_balance",
             ETH_TOKEN_ADDRESS,
             int(NETWORK["account_address"], 16),
-            address=int(contract["starknet_address"], 16),
+            address=int(contract["starknet_contract_address"], 16),
         )
         await invoke(
             "kakarot",
             "upgrade_account",
-            int(contract["evm_address"], 16),
+            int(contract["evm_contract_address"], 16),
             current_class,
         )
     balance = await get_balance(NETWORK["account_address"])
