@@ -16,6 +16,9 @@ contract DualVmToken {
                         CAIRO SPECIFIC VARIABLES
     //////////////////////////////////////////////////////////////*/
 
+    /// @dev The prime number used in the Starknet field
+    uint256 public constant STARKNET_FIELD_PRIME = 2 ** 251 + 17 * 2 ** 192 + 1;
+
     /// @dev The address of the starknet token to call
     uint256 public immutable starknetToken;
 
@@ -37,6 +40,13 @@ contract DualVmToken {
 
     /// @dev Emitted when the allowance of a starknet address spender over the owner's tokens is set
     event ApprovalStarknet(address indexed owner, uint256 indexed spender, uint256 amount);
+
+    /*//////////////////////////////////////////////////////////////
+                               ERRORS
+    //////////////////////////////////////////////////////////////*/
+
+    /// @dev Emitted when an invalid starknet address is used
+    error InvalidStarknetAddress();
 
     /*//////////////////////////////////////////////////////////////
                             METADATA ACCESS
@@ -82,6 +92,9 @@ contract DualVmToken {
     }
 
     function _balanceOf(uint256 starknetAddress) private view returns (uint256) {
+        if (starknetAddress >= STARKNET_FIELD_PRIME) {
+            revert InvalidStarknetAddress();
+        }
         uint256[] memory balanceOfCallData = new uint256[](1);
         balanceOfCallData[0] = starknetAddress;
         bytes memory returnData = starknetToken.staticcallCairo("balance_of", balanceOfCallData);
@@ -138,6 +151,9 @@ contract DualVmToken {
     }
 
     function _allowance(uint256 owner, uint256 spender) private view returns (uint256) {
+        if (owner >= STARKNET_FIELD_PRIME || spender >= STARKNET_FIELD_PRIME) {
+            revert InvalidStarknetAddress();
+        }
         uint256[] memory allowanceCallData = new uint256[](2);
         allowanceCallData[0] = owner;
         allowanceCallData[1] = spender;
@@ -184,6 +200,9 @@ contract DualVmToken {
     }
 
     function _approve(uint256 spender, uint256 amount) private {
+        if (spender >= STARKNET_FIELD_PRIME) {
+            revert InvalidStarknetAddress();
+        }
         // Split amount in [low, high]
         uint128 amountLow = uint128(amount);
         uint128 amountHigh = uint128(amount >> 128);
@@ -217,6 +236,9 @@ contract DualVmToken {
     }
 
     function _transfer(uint256 to, uint256 amount) private {
+        if (to >= STARKNET_FIELD_PRIME) {
+            revert InvalidStarknetAddress();
+        }
         // Split amount in [low, high]
         uint128 amountLow = uint128(amount);
         uint128 amountHigh = uint128(amount >> 128);
@@ -294,6 +316,9 @@ contract DualVmToken {
     }
 
     function _transferFrom(uint256 from, uint256 to, uint256 amount) private {
+        if (from >= STARKNET_FIELD_PRIME || to >= STARKNET_FIELD_PRIME) {
+            revert InvalidStarknetAddress();
+        }
         // Split amount in [low, high]
         uint128 amountLow = uint128(amount);
         uint128 amountHigh = uint128(amount >> 128);
