@@ -229,7 +229,7 @@ contract DualVmToken {
         starknetToken.delegatecallCairo("transfer", transferCallData);
     }
 
-    function transferFrom(address from, address to, uint256 amount) public virtual returns (bool) {
+    function transferFrom(address from, address to, uint256 amount) external returns (bool) {
         uint256[] memory toAddressCalldata = new uint256[](1);
         toAddressCalldata[0] = uint256(uint160(to));
         uint256 toStarknetAddress =
@@ -251,7 +251,7 @@ contract DualVmToken {
     /// @param to The evm address to transfer the tokens to
     /// @param amount The amount of tokens to transfer
     /// @return True if the transfer was successful
-    function transferFromStarknetAddressFrom(uint256 from, address to, uint256 amount) public virtual returns (bool) {
+    function transferFromStarknetAddressFrom(uint256 from, address to, uint256 amount) external returns (bool) {
         uint256[] memory toAddressCalldata = new uint256[](1);
         uint256 toAddressUint256 = uint256(uint160(to));
         toAddressCalldata[0] = toAddressUint256;
@@ -269,7 +269,7 @@ contract DualVmToken {
     /// @param to The starknet address to transfer the tokens to
     /// @param amount The amount of tokens to transfer
     /// @return True if the transfer was successful
-    function transferFromStarknetAddressTo(address from, uint256 to, uint256 amount) public virtual returns (bool) {
+    function transferFromStarknetAddressTo(address from, uint256 to, uint256 amount) external returns (bool) {
         uint256[] memory fromAddressCalldata = new uint256[](1);
         uint256 fromAddressUint256 = uint256(uint160(from));
         fromAddressCalldata[0] = fromAddressUint256;
@@ -287,11 +287,7 @@ contract DualVmToken {
     /// @param to The starknet address to transfer the tokens to
     /// @param amount The amount of tokens to transfer
     /// @return True if the transfer was successful
-    function transferFromStarknetAddressFromAndTo(uint256 from, uint256 to, uint256 amount)
-        public
-        virtual
-        returns (bool)
-    {
+    function transferFromStarknetAddressFromAndTo(uint256 from, uint256 to, uint256 amount) external returns (bool) {
         _transferFrom(from, to, amount);
         emit TransferStarknet(from, to, amount);
         return true;
