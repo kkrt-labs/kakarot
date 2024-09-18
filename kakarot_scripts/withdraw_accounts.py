@@ -29,7 +29,7 @@ def get_contracts():
     }
     response = requests.get(url, headers=headers)
     return [
-        dict((item["name"], item["value"]) for item in event["dataDecoded"])
+        {item["name"]: item["value"] for item in event["dataDecoded"]}
         for event in response.json()["items"]
         if event.get("name") == "evm_contract_deployed"
     ]
