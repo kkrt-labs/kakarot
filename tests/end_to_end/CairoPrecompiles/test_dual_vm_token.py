@@ -88,7 +88,7 @@ class TestDualVmToken:
             assert balance_owner_starknet == balance_owner_evm
 
         async def test_should_revert_balance_of_invalid_address(
-            self, starknet_token, dual_vm_token, owner
+            self, starknet_token, dual_vm_token
         ):
             evm_error = keccak("InvalidStarknetAddress()".encode())[:4]
             with cairo_error(evm_error):
@@ -151,7 +151,7 @@ class TestDualVmToken:
             assert balance_other_before + amount == balance_other_after
 
         async def test_should_revert_transfer_starknet_address_invalid_address(
-            self, starknet_token, dual_vm_token, owner
+            self, starknet_token, dual_vm_token
         ):
             evm_error = keccak("InvalidStarknetAddress()".encode())[:4]
             with cairo_error(evm_error):
@@ -215,7 +215,7 @@ class TestDualVmToken:
             assert allowance_after == allowance_before + amount
 
         async def test_should_revert_approve_starknet_address_invalid_address(
-            self, starknet_token, dual_vm_token, owner
+            self, starknet_token, dual_vm_token
         ):
             evm_error = keccak("InvalidStarknetAddress()".encode())[:4]
             with cairo_error(evm_error):
@@ -244,7 +244,7 @@ class TestDualVmToken:
             assert allowance_after == allowance_before + amount
 
         async def test_should_revert_allowance_starknet_address_owner_invalid_address(
-            self, starknet_token, dual_vm_token, owner, other
+            self, starknet_token, dual_vm_token, other
         ):
             with cairo_error(
                 "EVM tx reverted, reverting SN tx because of previous calls to cairo precompiles"
@@ -375,7 +375,7 @@ class TestDualVmToken:
             assert balance_other_before + amount == balance_other_after
 
         async def test_should_revert_transfer_from_starnet_address_from_invalid_address(
-            self, starknet_token, dual_vm_token, owner, other
+            self, starknet_token, dual_vm_token, other
         ):
             with cairo_error(
                 "EVM tx reverted, reverting SN tx because of previous calls to cairo precompiles"
@@ -535,7 +535,7 @@ class TestDualVmToken:
                 )
 
         async def test_should_revert_transfer_from_starknet_address_from_and_to_invalid_address(
-            self, starknet_token, dual_vm_token, owner, other
+            self, starknet_token, dual_vm_token, other
         ):
             evm_error = keccak("InvalidStarknetAddress()".encode())[:4]
             with cairo_error(evm_error):
