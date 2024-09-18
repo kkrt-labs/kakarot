@@ -192,7 +192,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: kkrt-labs/ef-tests
-          ref: chore/bump-ef-tests-14-1
       - name: Checkout local skip file
         uses: actions/checkout@v4
         with:
