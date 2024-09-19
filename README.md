@@ -278,6 +278,13 @@ Deployed contract addresses will be stored in
 A step by step description of the individual components and how they are
 deployed/configured can be found [here](docs/general/kakarot_components.md).
 
+## Slither
+To run slither against provided Kakarot solidity contracts, you need to install slither and run:
+```
+forge build --build-info --force
+slither . --foundry-out-directory solidity_contracts/build --ignore-compile --include-paths "DualVmToken.sol|L1KakarotMessaging.sol|L2KakarotMessaging.sol" --checklist > report.md
+```
+
 ## License
 
 **kakarot** is released under the [MIT](LICENSE).
