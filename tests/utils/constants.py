@@ -7,7 +7,7 @@ from kakarot_scripts.constants import BLOCK_GAS_LIMIT
 
 BLOCK_GAS_LIMIT = BLOCK_GAS_LIMIT
 
-CHAIN_ID = int.from_bytes(b"KKRT", "big")  # KKRT (0x4b4b5254) in ASCII
+CHAIN_ID = 31337
 BIG_CHAIN_ID = int.from_bytes(b"SN_SEPOLIA", "big")
 
 # Class hash of the cairo1 helpers

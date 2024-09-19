@@ -57,6 +57,9 @@ namespace Interpreter {
         state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
+        %{
+            print(ids.evm.message.code_address.evm)
+        %}
 
         local opcode_number;
         local opcode: model.Opcode*;

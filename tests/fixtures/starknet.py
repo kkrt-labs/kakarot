@@ -171,7 +171,7 @@ def cairo_run(request, cairo_program) -> list:
             },
             vm_class=VmWithCoverage,
         )
-        run_resources = RunResources(n_steps=10_000_000)
+        run_resources = RunResources(n_steps=18_000_000)
         try:
             runner.run_until_pc(end, run_resources)
         except Exception as e:

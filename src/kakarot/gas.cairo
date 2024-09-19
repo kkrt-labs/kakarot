@@ -193,6 +193,12 @@ namespace Gas {
         tempvar max_allowed_gas = gas_left - quotient;
         let (max_allowed_high, max_allowed_low) = split_felt(max_allowed_gas);
         tempvar max_allowed = Uint256(low=max_allowed_low, high=max_allowed_high);
+        %{
+            print(ids.gas_param.low);
+            print(ids.gas_param.high);
+            print(ids.max_allowed.low);
+            print(ids.max_allowed.high);
+        %}
         let (is_gas_param_lower) = uint256_lt(gas_param, max_allowed);
 
         // The message gas is the minimum between the gas param and the remaining gas left.

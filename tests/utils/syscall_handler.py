@@ -15,12 +15,14 @@ from starkware.starknet.public.abi import (
     get_selector_from_name,
     get_storage_var_address,
 )
+from ethereum.cancun.vm.gas import GAS_SHA256, GAS_SHA256_WORD
 
 from kakarot_scripts.utils.uint256 import int_to_uint256, uint256_to_int
 from tests.utils.constants import (
     ACCOUNT_CLASS_IMPLEMENTATION,
     CAIRO1_HELPERS_CLASS_HASH,
     CHAIN_ID,
+    BLOCK_GAS_LIMIT,
 )
 
 
@@ -100,6 +102,18 @@ def cairo_compute_sha256_u32_array(class_hash, calldata):
     ]
     return [8, *sha256_u32_array]
 
+def exec_precompile(class_hash, calldata):
+    precompile_addr = calldata[0]
+    precompile_input = calldata[2:]
+    if precompile_addr == 0x02:
+        sha256_input_word_size = (len(precompile_input) + 31) // 32
+        gas_used = GAS_SHA256 + GAS_SHA256_WORD * sha256_input_word_size
+        message_bytes = bytes(precompile_input)
+        result_bytes = bytes.fromhex(sha256(message_bytes).hexdigest())
+        return_data = [1, gas_used, len(result_bytes), *list(result_bytes)]
+        return return_data
+    # Would need to implement the other precompiles
+    return [0,0,list(b"")]
 
 def parse_state(state):
     """
@@ -206,6 +220,7 @@ class SyscallHandler:
         get_selector_from_name(
             "compute_sha256_u32_array"
         ): cairo_compute_sha256_u32_array,
+        get_selector_from_name("exec_precompile"): exec_precompile,
     }
 
     def __post_init__(self):
@@ -684,12 +699,19 @@ class SyscallHandler:
         storage_selector = get_selector_from_name("storage")
         cls.patches[storage_selector] = _storage
 
+        # Called on the starknet_address that sends the tx - mocked to be its evm_address
+        get_evm_address_selector = get_selector_from_name("get_evm_address")
+        cls.patches[get_evm_address_selector] = lambda addr, data: [addr]
+
         # Register accounts
         for address in state.keys():
             address_selector = get_storage_var_address(
                 "Kakarot_evm_to_starknet_address", address
             )
             cls.patches[address_selector] = address
+
+        # Patch environment variables
+        cls.patches[get_selector_from_name("Kakarot_block_gas_limit")] = BLOCK_GAS_LIMIT
 
         yield
 
