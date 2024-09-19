@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.27;
 
-import "../starknet/IStarknetMessaging.sol";
+import {AddressAliasHelper} from "./AddressAliasHelper.sol";
+import {IStarknetMessaging} from "../starknet/IStarknetMessaging.sol";
 
 interface IL1KakarotMessaging {
     function sendMessageToL2(address to, uint248 value, bytes memory data) external payable;
@@ -9,9 +10,12 @@ interface IL1KakarotMessaging {
 }
 
 contract L1KakarotMessaging {
+    /// @dev The selector of the function to call on the L2 contract.
     uint256 public constant HANDLE_L1_MESSAGE_SELECTOR = uint256(keccak256("handle_l1_message")) % 2 ** 250;
 
+    /// @dev The Starknet messaging contract.
     IStarknetMessaging public immutable starknetMessaging;
+    /// @dev The address of the Kakarot contract on L2.
     uint256 public immutable kakarotAddress;
 
     constructor(address starknetMessaging_, uint256 kakarotAddress_) {
@@ -28,7 +32,7 @@ contract L1KakarotMessaging {
     function sendMessageToL2(address to, uint248 value, bytes calldata data) external payable {
         uint256 totalLength = data.length + 4;
         uint256[] memory convertedData = new uint256[](totalLength);
-        convertedData[0] = uint256(uint160(msg.sender));
+        convertedData[0] = uint256(uint160(AddressAliasHelper.applyL1ToL2Alias(msg.sender)));
         convertedData[1] = uint256(uint160(to));
         convertedData[2] = uint256(value);
         convertedData[3] = data.length;

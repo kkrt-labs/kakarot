@@ -2,13 +2,16 @@
 pragma solidity >=0.7.0 <0.9.0;
 
 import {L2KakarotMessaging} from "./L2KakarotMessaging.sol";
+import {AddressAliasHelper} from "./AddressAliasHelper.sol";
 
 contract MessageAppL2 {
-    L2KakarotMessaging immutable l2KakarotMessaging;
+    L2KakarotMessaging public immutable l2KakarotMessaging;
+    address public immutable l1ContractCounterPart;
     uint256 public receivedMessagesCounter;
 
-    constructor(address _l2KakarotMessaging) {
-        l2KakarotMessaging = L2KakarotMessaging(_l2KakarotMessaging);
+    constructor(address l2KakarotMessaging_, address l1ContractCounterPart_) {
+        l2KakarotMessaging = L2KakarotMessaging(l2KakarotMessaging_);
+        l1ContractCounterPart = l1ContractCounterPart_;
     }
 
     // @notice Sends a message to L1.
@@ -18,6 +21,11 @@ contract MessageAppL2 {
     }
 
     function increaseMessagesCounter(uint256 amount) external {
+        receivedMessagesCounter += amount;
+    }
+
+    function increaseMessageCounterFromL1Contract(uint256 amount) external {
+        require(AddressAliasHelper.undoL1ToL2Alias(msg.sender) == l1ContractCounterPart, "ONLY_COUNTERPART_CONTRACT");
         receivedMessagesCounter += amount;
     }
 }
