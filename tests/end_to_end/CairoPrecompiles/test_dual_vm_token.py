@@ -66,24 +66,24 @@ class TestDualVmToken:
             total_supply_evm = await dual_vm_token.totalSupply()
             assert total_supply_starknet == total_supply_evm
 
-        async def test_should_return_balance_of(
-            self, starknet_token, dual_vm_token, owner
+        @pytest.mark.parametrize(
+            "method,account_address",
+            [
+                ("balanceOf", lambda account: account.address),
+                (
+                    "balanceOfStarknetAddress",
+                    lambda account: account.starknet_contract.address,
+                ),
+            ],
+        )
+        async def test_should_return_balance(
+            self, starknet_token, dual_vm_token, owner, method, account_address
         ):
             (balance_owner_starknet,) = await starknet_token.functions[
                 "balance_of"
             ].call(owner.starknet_contract.address)
-            balance_owner_evm = await dual_vm_token.balanceOf(owner.address)
-            assert balance_owner_starknet == balance_owner_evm
-
-        async def test_should_return_balance_of_starknet_address(
-            self, starknet_token, dual_vm_token, owner
-        ):
-            (balance_owner_starknet,) = await starknet_token.functions[
-                "balance_of"
-            ].call(owner.starknet_contract.address)
-
-            balance_owner_evm = await dual_vm_token.balanceOfStarknetAddress(
-                owner.starknet_contract.address
+            balance_owner_evm = await getattr(dual_vm_token, method)(
+                account_address(owner)
             )
             assert balance_owner_starknet == balance_owner_evm
 
@@ -116,15 +116,6 @@ class TestDualVmToken:
             assert balance_owner_before - amount == balance_owner_after
             assert balance_other_before + amount == balance_other_after
 
-        async def test_should_revert_transfert_insufficient_balance(
-            self, starknet_token, dual_vm_token, owner, other
-        ):
-            # No wrapping of errors for OZ 0.10 contracts
-            with cairo_error("u256_sub Overflow"):
-                await dual_vm_token.transfer(
-                    owner.address, 1, caller_eoa=other.starknet_contract
-                )
-
         async def test_should_transfer_starknet_address(
             self, starknet_token, dual_vm_token, owner, other
         ):
@@ -150,23 +141,31 @@ class TestDualVmToken:
             assert balance_owner_before - amount == balance_owner_after
             assert balance_other_before + amount == balance_other_after
 
+        @pytest.mark.parametrize(
+            "method,to_address",
+            [
+                ("transfer", lambda to: to.address),
+                (
+                    "transferStarknetAddress",
+                    lambda to: to.starknet_contract.address,
+                ),
+            ],
+        )
+        async def test_should_revert_transfer_insufficient_balance(
+            self, dual_vm_token, owner, other, method, to_address
+        ):
+            # No wrapping of errors for OZ 0.10 contracts
+            with cairo_error("u256_sub Overflow"):
+                await getattr(dual_vm_token, method)(
+                    to_address(owner), 1, caller_eoa=other.starknet_contract
+                )
+
         async def test_should_revert_transfer_starknet_address_invalid_address(
             self, starknet_token, dual_vm_token
         ):
             evm_error = keccak("InvalidStarknetAddress()".encode())[:4]
             with cairo_error(evm_error):
                 await dual_vm_token.transferStarknetAddress(2**256 - 1, 1)
-
-        async def test_should_revert_transfer_to_starknet_address_insufficient_balance(
-            self, starknet_token, dual_vm_token, owner, other
-        ):
-            # No wrapping of errors for OZ 0.10 contracts
-            with cairo_error("u256_sub Overflow"):
-                await dual_vm_token.transferStarknetAddress(
-                    owner.starknet_contract.address,
-                    1,
-                    caller_eoa=other.starknet_contract,
-                )
 
         async def test_should_approve(
             self, starknet_token, dual_vm_token, owner, other
@@ -234,7 +233,7 @@ class TestDualVmToken:
                 starknet_token.address,
                 "approve",
                 other.starknet_contract.address,
-                1,
+                amount,
                 0,
                 account=owner,
             )
@@ -279,7 +278,7 @@ class TestDualVmToken:
                 starknet_token.address,
                 "approve",
                 spender.address,
-                1,
+                amount,
                 0,
                 account=owner,
             )
@@ -320,29 +319,6 @@ class TestDualVmToken:
             assert balance_owner_before - amount == balance_owner_after
             assert balance_other_before + amount == balance_other_after
 
-        async def test_should_revert_transfer_from_insufficient_balance(
-            self, starknet_token, dual_vm_token, owner, other
-        ):
-            # No wrapping of errors for OZ 0.10 contracts
-            with cairo_error("u256_sub Overflow"):
-                amount = 1
-                await dual_vm_token.approve(owner.address, amount)
-                await dual_vm_token.transferFrom(
-                    other.address,
-                    owner.address,
-                    amount,
-                    caller_eoa=owner.starknet_contract,
-                )
-
-        async def test_should_revert_transfer_from_insufficient_allowance(
-            self, starknet_token, dual_vm_token, owner, other
-        ):
-            # No wrapping of errors for OZ 0.10 contracts
-            with cairo_error("u256_sub Overflow"):
-                await dual_vm_token.transferFrom(
-                    other.address, owner.address, 1, caller_eoa=owner.starknet_contract
-                )
-
         async def test_should_transfer_from_starknet_address_from(
             self, starknet_token, dual_vm_token, owner, other
         ):
@@ -373,42 +349,6 @@ class TestDualVmToken:
 
             assert balance_owner_before - amount == balance_owner_after
             assert balance_other_before + amount == balance_other_after
-
-        async def test_should_revert_transfer_from_starnet_address_from_invalid_address(
-            self, starknet_token, dual_vm_token, other
-        ):
-            with cairo_error(
-                "EVM tx reverted, reverting SN tx because of previous calls to cairo precompiles"
-            ):
-                await dual_vm_token.transferFromStarknetAddressFrom(
-                    2**256 - 1, other.address, 1, caller_eoa=other.starknet_contract
-                )
-
-        async def test_should_revert_transfer_from_starknet_address_from_insufficient_balance(
-            self, starknet_token, dual_vm_token, owner, other
-        ):
-            # No wrapping of errors for OZ 0.10 contracts
-            with cairo_error("u256_sub Overflow"):
-                amount = 1
-                await dual_vm_token.approve(owner.address, amount)
-                await dual_vm_token.transferFromStarknetAddressFrom(
-                    other.starknet_contract.address,
-                    owner.address,
-                    amount,
-                    caller_eoa=owner.starknet_contract,
-                )
-
-        async def test_should_revert_transfer_from_starknet_address_from_insufficient_allowance(
-            self, starknet_token, dual_vm_token, owner, other
-        ):
-            # No wrapping of errors for OZ 0.10 contracts
-            with cairo_error("u256_sub Overflow"):
-                await dual_vm_token.transferFromStarknetAddressFrom(
-                    owner.starknet_contract.address,
-                    other.address,
-                    1,
-                    caller_eoa=other.starknet_contract,
-                )
 
         async def test_should_transfer_from_starknet_address_to(
             self, starknet_token, dual_vm_token, owner, other
@@ -441,42 +381,6 @@ class TestDualVmToken:
             assert balance_owner_before - amount == balance_owner_after
             assert balance_other_before + amount == balance_other_after
 
-        async def test_should_revert_transfer_from_starknet_address_to_insufficient_balance(
-            self, starknet_token, dual_vm_token, owner, other
-        ):
-            # No wrapping of errors for OZ 0.10 contracts
-            with cairo_error("u256_sub Overflow"):
-                amount = 1
-                await dual_vm_token.approve(owner.address, amount)
-                await dual_vm_token.transferFromStarknetAddressTo(
-                    other.address,
-                    owner.starknet_contract.address,
-                    amount,
-                    caller_eoa=owner.starknet_contract,
-                )
-
-        async def test_should_revert_transfer_from_starknet_address_to_insufficient_allowance(
-            self, starknet_token, dual_vm_token, owner, other
-        ):
-            # No wrapping of errors for OZ 0.10 contracts
-            with cairo_error("u256_sub Overflow"):
-                await dual_vm_token.transferFromStarknetAddressTo(
-                    owner.address,
-                    other.starknet_contract.address,
-                    1,
-                    caller_eoa=other.starknet_contract,
-                )
-
-        async def test_should_revert_transfer_from_starknet_address_to_invalid_address(
-            self, starknet_token, dual_vm_token, owner, other
-        ):
-            with cairo_error(
-                "EVM tx reverted, reverting SN tx because of previous calls to cairo precompiles"
-            ):
-                await dual_vm_token.transferFromStarknetAddressTo(
-                    owner.address, 2**256 - 1, 1, caller_eoa=other.starknet_contract
-                )
-
         async def test_should_transfer_from_starknet_address_from_and_to(
             self, starknet_token, dual_vm_token, owner, other
         ):
@@ -508,28 +412,106 @@ class TestDualVmToken:
             assert balance_owner_before - amount == balance_owner_after
             assert balance_other_before + amount == balance_other_after
 
-        async def test_should_revert_transfer_from_starknet_address_from_and_to_insufficient_balance(
-            self, starknet_token, dual_vm_token, owner, other
+        @pytest.mark.parametrize(
+            "method,from_address,to_address",
+            [
+                (
+                    "transferFrom",
+                    lambda other: other.address,
+                    lambda owner: owner.address,
+                ),
+                (
+                    "transferFromStarknetAddressFrom",
+                    lambda other: other.starknet_contract.address,
+                    lambda owner: owner.address,
+                ),
+                (
+                    "transferFromStarknetAddressTo",
+                    lambda other: other.address,
+                    lambda owner: owner.starknet_contract.address,
+                ),
+                (
+                    "transferFromStarknetAddressFromAndTo",
+                    lambda other: other.starknet_contract.address,
+                    lambda owner: owner.starknet_contract.address,
+                ),
+            ],
+        )
+        async def test_should_revert_transfer_from_insufficient_balance(
+            self, dual_vm_token, owner, other, method, from_address, to_address
         ):
             # No wrapping of errors for OZ 0.10 contracts
             with cairo_error("u256_sub Overflow"):
                 amount = 1
                 await dual_vm_token.approve(owner.address, amount)
-                await dual_vm_token.transferFromStarknetAddressFromAndTo(
-                    other.starknet_contract.address,
-                    owner.starknet_contract.address,
+                await getattr(dual_vm_token, method)(
+                    from_address(other),
+                    to_address(owner),
                     amount,
                     caller_eoa=owner.starknet_contract,
                 )
 
-        async def test_should_revert_transfer_from_starknet_address_from_and_to_insufficient_allowance(
-            self, starknet_token, dual_vm_token, owner, other
+        @pytest.mark.parametrize(
+            "method,from_address,to_address",
+            [
+                (
+                    "transferFrom",
+                    lambda owner: owner.address,
+                    lambda other: other.address,
+                ),
+                (
+                    "transferFromStarknetAddressFrom",
+                    lambda owner: owner.starknet_contract.address,
+                    lambda other: other.address,
+                ),
+                (
+                    "transferFromStarknetAddressTo",
+                    lambda owner: owner.address,
+                    lambda other: other.starknet_contract.address,
+                ),
+                (
+                    "transferFromStarknetAddressFromAndTo",
+                    lambda owner: owner.starknet_contract.address,
+                    lambda other: other.starknet_contract.address,
+                ),
+            ],
+        )
+        async def test_should_revert_transfer_from_insufficient_allowance(
+            self, dual_vm_token, owner, other, method, from_address, to_address
         ):
             # No wrapping of errors for OZ 0.10 contracts
             with cairo_error("u256_sub Overflow"):
-                await dual_vm_token.transferFromStarknetAddressFromAndTo(
-                    owner.starknet_contract.address,
-                    other.starknet_contract.address,
+                await getattr(dual_vm_token, method)(
+                    from_address(owner),
+                    to_address(other),
+                    1,
+                    caller_eoa=other.starknet_contract,
+                )
+
+        @pytest.mark.parametrize(
+            "method,from_address,to_address",
+            [
+                (
+                    "transferFromStarknetAddressFrom",
+                    lambda _: 2**256 - 1,
+                    lambda other: other.address,
+                ),
+                (
+                    "transferFromStarknetAddressTo",
+                    lambda owner: owner.address,
+                    lambda _: 2**256 - 1,
+                ),
+            ],
+        )
+        async def test_should_revert_transfer_from_starknet_address_invalid_address(
+            self, dual_vm_token, owner, other, method, from_address, to_address
+        ):
+            with cairo_error(
+                "EVM tx reverted, reverting SN tx because of previous calls to cairo precompiles"
+            ):
+                await getattr(dual_vm_token, method)(
+                    from_address(owner),
+                    to_address(other),
                     1,
                     caller_eoa=other.starknet_contract,
                 )
