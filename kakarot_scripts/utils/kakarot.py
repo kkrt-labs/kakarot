@@ -38,6 +38,7 @@ from kakarot_scripts.constants import (
     WEB3,
     ChainId,
 )
+from kakarot_scripts.utils.starknet import _max_fee
 from kakarot_scripts.utils.starknet import call as _call_starknet
 from kakarot_scripts.utils.starknet import fund_address as _fund_starknet_address
 from kakarot_scripts.utils.starknet import get_balance
@@ -267,6 +268,7 @@ async def deploy(
     contract = await get_contract(contract_app, contract_name, caller_eoa=caller_eoa)
     max_fee = kwargs.pop("max_fee", None)
     value = kwargs.pop("value", 0)
+    gas_price = kwargs.pop("gas_price", DEFAULT_GAS_PRICE)
     receipt, response, success, _ = await eth_send_transaction(
         to=0,
         gas=int(TRANSACTION_GAS_LIMIT),
@@ -274,6 +276,7 @@ async def deploy(
         caller_eoa=caller_eoa,
         max_fee=max_fee,
         value=value,
+        gas_price=gas_price,
     )
     if success == 0:
         raise EvmTransactionError(bytes(response))
@@ -623,7 +626,7 @@ async def send_starknet_transaction(
         "execute_after": current_timestamp - 60 * 60,
         "execute_before": current_timestamp + 60 * 60,
     }
-    max_fee = int(5e17) if max_fee in [None, 0] else max_fee
+    max_fee = _max_fee if max_fee in [None, 0] else max_fee
     response = (
         await _get_starknet_contract(
             "account_contract", address=evm_account.address, provider=relayer

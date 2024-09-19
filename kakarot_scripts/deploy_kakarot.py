@@ -20,7 +20,10 @@ from kakarot_scripts.constants import (
     NetworkType,
 )
 from kakarot_scripts.utils.kakarot import deploy as deploy_evm
-from kakarot_scripts.utils.kakarot import deploy_with_presigned_tx
+from kakarot_scripts.utils.kakarot import (
+    deploy_and_fund_evm_address,
+    deploy_with_presigned_tx,
+)
 from kakarot_scripts.utils.kakarot import dump_deployments as dump_evm_deployments
 from kakarot_scripts.utils.kakarot import get_deployments as get_evm_deployments
 from kakarot_scripts.utils.starknet import declare
@@ -31,7 +34,7 @@ from kakarot_scripts.utils.starknet import (
     get_declarations,
 )
 from kakarot_scripts.utils.starknet import get_deployments as get_starknet_deployments
-from kakarot_scripts.utils.starknet import get_starknet_account, invoke, upgrade
+from kakarot_scripts.utils.starknet import get_starknet_account, invoke
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -47,12 +50,34 @@ async def main():
     class_hash = {contract: await declare(contract) for contract in DECLARED_CONTRACTS}
     dump_declarations(class_hash)
 
-    # %% Deployments
+    # %% Starknet Deployments
     class_hash = get_declarations()
     starknet_deployments = get_starknet_deployments()
     evm_deployments = get_evm_deployments()
-    freshly_deployed = False
 
+    if NETWORK["type"] is not NetworkType.PROD:
+        starknet_deployments["EVM"] = await deploy_starknet(
+            "EVM",
+            account.address,  # owner
+            ETH_TOKEN_ADDRESS,  # native_token_address_
+            class_hash["account_contract"],  # account_contract_class_hash_
+            class_hash["uninitialized_account"],  # uninitialized_account_class_hash_
+            class_hash["Cairo1Helpers"],
+            COINBASE,
+            BLOCK_GAS_LIMIT,
+        )
+        starknet_deployments["Counter"] = await deploy_starknet("Counter")
+        starknet_deployments["MockPragmaOracle"] = await deploy_starknet(
+            "MockPragmaOracle"
+        )
+        starknet_deployments["UniversalLibraryCaller"] = await deploy_starknet(
+            "UniversalLibraryCaller"
+        )
+        starknet_deployments["BenchmarkCairoCalls"] = await deploy_starknet(
+            "BenchmarkCairoCalls"
+        )
+
+    # Deploy or upgrade Kakarot
     if starknet_deployments.get("kakarot") and NETWORK["type"] is not NetworkType.DEV:
         logger.info("ℹ️  Kakarot already deployed, checking version.")
         deployed_class_hash = await RPC_CLIENT.get_class_hash_at(
@@ -83,49 +108,16 @@ async def main():
             COINBASE,
             BLOCK_GAS_LIMIT,
         )
-        freshly_deployed = True
-
-    if NETWORK["type"] is NetworkType.STAGING or NETWORK["type"] is NetworkType.DEV:
-        starknet_deployments["EVM"] = await upgrade(
-            "EVM",
-            account.address,  # owner
-            ETH_TOKEN_ADDRESS,  # native_token_address_
-            class_hash["account_contract"],  # account_contract_class_hash_
-            class_hash["uninitialized_account"],  # uninitialized_account_class_hash_
-            class_hash["Cairo1Helpers"],
-            COINBASE,
-            BLOCK_GAS_LIMIT,
-        )
-        starknet_deployments["Counter"] = await upgrade("Counter")
-        starknet_deployments["MockPragmaOracle"] = await upgrade("MockPragmaOracle")
-        starknet_deployments["UniversalLibraryCaller"] = await upgrade(
-            "UniversalLibraryCaller"
-        )
-        starknet_deployments["BenchmarkCairoCalls"] = await deploy_starknet(
-            "BenchmarkCairoCalls"
+        await invoke(
+            "kakarot",
+            "set_base_fee",
+            DEFAULT_GAS_PRICE,
+            address=starknet_deployments["kakarot"]["address"],
         )
 
     dump_deployments(starknet_deployments)
 
-    if EVM_ADDRESS:
-        logger.info(f"ℹ️  Found default EVM address {EVM_ADDRESS}")
-        from kakarot_scripts.utils.kakarot import get_eoa
-
-        amount = 100 if NETWORK["type"] is NetworkType.DEV else 0.01
-        await get_eoa(amount=amount)
-
-    # Set the base fee if freshly deployed
-    if freshly_deployed:
-        await invoke("kakarot", "set_base_fee", DEFAULT_GAS_PRICE)
-
-    # Deploy the solidity contracts
-    weth = await deploy_evm("WETH", "WETH9")
-    evm_deployments["WETH"] = {
-        "address": int(weth.address, 16),
-        "starknet_address": weth.starknet_address,
-    }
-
-    # Pre-EIP155 deployments
+    # %% Pre-EIP155 deployments
     evm_deployments["Multicall3"] = await deploy_with_presigned_tx(
         MULTICALL3_DEPLOYER, MULTICALL3_SIGNED_TX, name="Multicall3"
     )
@@ -136,20 +128,32 @@ async def main():
         CREATEX_DEPLOYER, CREATEX_SIGNED_TX, amount=0.3, name="CreateX"
     )
 
-    if NETWORK["type"] is NetworkType.STAGING or NETWORK["type"] is NetworkType.DEV:
-        bridge = await deploy_evm("CairoPrecompiles", "EthStarknetBridge")
-        evm_deployments["Bridge"] = {
-            "address": int(bridge.address, 16),
-            "starknet_address": bridge.starknet_address,
-        }
-        await invoke(
-            "kakarot",
-            "set_authorized_cairo_precompile_caller",
-            int(bridge.address, 16),
-            1,
-        )
-        await invoke("kakarot", "set_coinbase", int(bridge.address, 16))
-        await invoke("kakarot", "set_base_fee", 1)
+    # %% EVM Deployments
+    if not EVM_ADDRESS:
+        logger.info("ℹ️  No EVM address provided, skipping EVM deployments")
+        return
+
+    logger.info(f"ℹ️  Using account {EVM_ADDRESS} as deployer")
+
+    await deploy_and_fund_evm_address(
+        EVM_ADDRESS, amount=100 if NETWORK["type"] is NetworkType.DEV else 0.01
+    )
+
+    bridge = await deploy_evm("CairoPrecompiles", "EthStarknetBridge")
+    evm_deployments["Bridge"] = {
+        "address": int(bridge.address, 16),
+        "starknet_address": bridge.starknet_address,
+    }
+    await invoke(
+        "kakarot", "set_authorized_cairo_precompile_caller", int(bridge.address, 16), 1
+    )
+    await invoke("kakarot", "set_coinbase", int(bridge.address, 16))
+
+    weth = await deploy_evm("WETH", "WETH9")
+    evm_deployments["WETH"] = {
+        "address": int(weth.address, 16),
+        "starknet_address": weth.starknet_address,
+    }
 
     dump_evm_deployments(evm_deployments)
 

@@ -20,7 +20,7 @@ logger.setLevel(logging.INFO)
 load_dotenv()
 
 BLOCK_GAS_LIMIT = 7_000_000
-DEFAULT_GAS_PRICE = int(1e9)
+DEFAULT_GAS_PRICE = 1
 BEACON_ROOT_ADDRESS = "0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02"
 
 
@@ -39,8 +39,9 @@ NETWORKS = {
         "type": NetworkType.PROD,
         "chain_id": StarknetChainId.MAINNET,
         "check_interval": 1,
-        "max_wait": 10,
+        "max_wait": 60,
         "class_hash": 0x061DAC032F228ABEF9C6626F995015233097AE253A7F72D68552DB02F2971B8F,
+        "voyager_api_url": "https://api.voyager.online/beta",
     },
     "sepolia": {
         "name": "starknet-sepolia",
@@ -52,6 +53,7 @@ NETWORKS = {
         "check_interval": 1,
         "max_wait": 10,
         "class_hash": 0x061DAC032F228ABEF9C6626F995015233097AE253A7F72D68552DB02F2971B8F,
+        "voyager_api_url": "https://sepolia-api.voyager.online/beta",
     },
     "starknet-devnet": {
         "name": "starknet-devnet",
@@ -265,6 +267,7 @@ COMPILED_CONTRACTS = [
 ]
 DECLARED_CONTRACTS = [
     "account_contract",
+    "BalanceSender",
     "BenchmarkCairoCalls",
     "Cairo1Helpers",
     "Cairo1HelpersFixture",

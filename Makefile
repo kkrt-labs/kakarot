@@ -77,9 +77,9 @@ run-katana:
 	katana --chain-id test --validate-max-steps 6000000 --invoke-max-steps 14000000 --eth-gas-price 0 --strk-gas-price 0 --disable-fee --seed 0
 
 run-anvil:
-	anvil --block-base-fee-per-gas 10
+	anvil --block-base-fee-per-gas 1
 
 run-nodes:
 	@echo "Starting Anvil and Katana in messaging mode"
-	@anvil --block-base-fee-per-gas 10 &
+	@anvil --block-base-fee-per-gas 1 &
 	@katana --chain-id test --validate-max-steps 6000000 --invoke-max-steps 14000000 --eth-gas-price 0 --strk-gas-price 0 --disable-fee --messaging .katana/messaging_config.json --seed 0
