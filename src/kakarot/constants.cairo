@@ -16,7 +16,8 @@ namespace Constants {
     // ACCOUNTS
     const MAX_NONCE = 2 ** 64 - 1;
     const MAX_CODE_SIZE = 0x6000;
-
+    const EMPTY_CODE_HASH_LOW = 0xe500b653ca82273b7bfad8045d85a470;
+    const EMPTY_CODE_HASH_HIGH = 0xc5d2460186f7233c927e7db2dcc703c0;
     const BURN_ADDRESS = 0xdead;
 }
 
