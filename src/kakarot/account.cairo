@@ -125,8 +125,7 @@ namespace Account {
             assert balance_ptr = new Uint256(balance.low, balance.high);
             // empty code hash see https://eips.ethereum.org/EIPS/eip-1052
             tempvar code_hash_ptr = new Uint256(
-                low=Constants.EMPTY_CODE_HASH_LOW,
-                high=Constants.EMPTY_CODE_HASH_HIGH,
+                low=Constants.EMPTY_CODE_HASH_LOW, high=Constants.EMPTY_CODE_HASH_HIGH
             );
             let account = Account.init(
                 address=address,
@@ -700,8 +699,7 @@ namespace Account {
         if (code_len == 0) {
             // see https://eips.ethereum.org/EIPS/eip-1052
             let empty_code_hash = Uint256(
-                low=Constants.EMPTY_CODE_HASH_LOW,
-                high=Constants.EMPTY_CODE_HASH_HIGH,
+                low=Constants.EMPTY_CODE_HASH_LOW, high=Constants.EMPTY_CODE_HASH_HIGH
             );
             return empty_code_hash;
         }
