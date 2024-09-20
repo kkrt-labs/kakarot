@@ -358,7 +358,7 @@ namespace Kakarot {
     ) {
         alloc_locals;
         let starknet_address = Account.get_starknet_address(evm_address);
-        IAccount.set_implementation(starknet_address, new_class_hash);
+        IAccount.replace_class(starknet_address, new_class_hash);
         return ();
     }
 

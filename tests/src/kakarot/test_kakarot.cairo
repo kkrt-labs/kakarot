@@ -18,6 +18,7 @@ from kakarot.kakarot import (
     set_authorized_cairo_precompile_caller,
     set_cairo1_helpers_class_hash,
     transfer_ownership,
+    upgrade_account,
 )
 from kakarot.model import model
 from kakarot.account import Account
@@ -214,4 +215,18 @@ func test__set_cairo1_helpers_class_hash{
 func test__eth_chain_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> felt {
     let (chain_id) = Kakarot.eth_chain_id();
     return chain_id;
+}
+
+func test__upgrade_account{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+    tempvar evm_address;
+    tempvar new_class_hash;
+
+    %{
+        ids.evm_address = program_input["evm_address"]
+        ids.new_class_hash = program_input["new_class_hash"]
+    %}
+
+    upgrade_account(evm_address, new_class_hash);
+
+    return ();
 }

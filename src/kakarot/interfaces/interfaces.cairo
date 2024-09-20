@@ -39,7 +39,7 @@ namespace IAccount {
     func get_evm_address() -> (evm_address: felt) {
     }
 
-    func set_implementation(implementation: felt) {
+    func replace_class(new_class: felt) {
     }
 
     func bytecode_len() -> (len: felt) {

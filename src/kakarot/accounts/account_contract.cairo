@@ -59,6 +59,17 @@ func get_evm_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
     return AccountContract.get_evm_address();
 }
 
+// @notice Sets the implementation of the account contract.
+// @param implementation_class The class to replace the current implementation with.
+@external
+func replace_class{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    new_class: felt
+) {
+    // Access control check.
+    Ownable.assert_only_owner();
+    return replace_class(new_class);
+}
+
 // @notice Checks if the account was initialized.
 // @return is_initialized: 1 if the account has been initialized 0 otherwise.
 @view
