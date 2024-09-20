@@ -177,3 +177,9 @@ class TestL1ToL2Messages:
         time.sleep(4)
         msg_counter_after = await message_app_l2.receivedMessagesCounter()
         assert msg_counter_after == msg_counter_before
+        # teardown
+        await invoke(
+            "kakarot",
+            "set_l1_messaging_contract_address",
+            int(l1_kakarot_messaging.address, 16),
+        )
