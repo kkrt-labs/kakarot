@@ -309,7 +309,7 @@ class TestKakarot:
                 "Kakarot_evm_to_starknet_address", EVM_ADDRESS, 0x99999
             )
             @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
-            @SyscallHandler.patch("IAccount.replace_class", lambda addr, data: [])
+            @SyscallHandler.patch("IAccount.upgrade", lambda addr, data: [])
             def test_upgrade_account_should_replace_class(self, cairo_run):
                 cairo_run(
                     "test__upgrade_account",
