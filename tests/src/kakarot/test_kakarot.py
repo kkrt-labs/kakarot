@@ -318,7 +318,7 @@ class TestKakarot:
                 )
                 SyscallHandler.mock_call.assert_called_with(
                     contract_address=0x99999,
-                    function_selector=get_selector_from_name("replace_class"),
+                    function_selector=get_selector_from_name("upgrade"),
                     calldata=[0x1234],
                 )
 

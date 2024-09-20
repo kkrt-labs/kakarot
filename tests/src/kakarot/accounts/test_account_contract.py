@@ -152,15 +152,15 @@ class TestAccountContract:
                 value=1,
             )
 
-    class TestReplaceClass:
+    class TestUpgrade:
         @SyscallHandler.patch("Ownable_owner", 0xDEAD)
         def test_should_assert_only_owner(self, cairo_run):
             with cairo_error(message="Ownable: caller is not the owner"):
-                cairo_run("test__replace_class", new_class=0x00)
+                cairo_run("test__upgrade", new_class=0x00)
 
         @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
         def test_should_set_new_class(self, cairo_run):
-            cairo_run("test__replace_class", new_class=0x1234)
+            cairo_run("test__upgrade", new_class=0x1234)
             SyscallHandler.mock_replace_class.assert_any_call(class_hash=0x1234)
 
     class TestJumpdests:

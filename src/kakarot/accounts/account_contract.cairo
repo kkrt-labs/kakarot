@@ -13,6 +13,7 @@ from starkware.starknet.common.syscalls import (
     get_caller_address,
     get_block_timestamp,
     call_contract,
+    replace_class,
 )
 from starkware.cairo.common.bool import FALSE, TRUE
 
@@ -62,12 +63,11 @@ func get_evm_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
 // @notice Sets the implementation of the account contract.
 // @param implementation_class The class to replace the current implementation with.
 @external
-func replace_class{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    new_class: felt
-) {
+func upgrade{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(new_class: felt) {
     // Access control check.
     Ownable.assert_only_owner();
-    return replace_class(new_class);
+    replace_class(new_class);
+    return ();
 }
 
 // @notice Checks if the account was initialized.
