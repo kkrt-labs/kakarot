@@ -407,6 +407,7 @@ testname:
     - precompsEIP2929Cancun_d58g0v0_Cancun
     - precompsEIP2929Cancun_d76g0v0_Cancun
     - precompsEIP2929Cancun_d7g0v0_Cancun
+    - precompsEIP2929Cancun_d94g0v0_Cancun
     - idPrecomps_d4g0v0_Cancun
     - idPrecomps_d9g0v0_Cancun
     - modexp_d11g0v0_Cancun
