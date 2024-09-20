@@ -114,7 +114,7 @@ namespace Precompiles {
         ret;
         call PrecompileDataCopy.run;  // 0x4
         ret;
-        call external_precompile;  // 0x5
+        call not_implemented_precompile;  // 0x5
         ret;
         call not_implemented_precompile;  // 0x6
         ret;
