@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-pragma solidity >=0.8.0;
+pragma solidity 0.8.27;
 
 import {CairoLib} from "kakarot-lib/CairoLib.sol";
 

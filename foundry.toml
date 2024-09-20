@@ -4,6 +4,9 @@ test = 'solidity_contracts/tests'
 out = 'solidity_contracts/build'
 libs = ['solidity_contracts/lib']
 
+optimizer = true
+optimizer_runs = 100_000
+
 [rpc_endpoints]
 anvil = "http://127.0.0.1:8545"
 kakarot = "http://127.0.0.1:3030"
