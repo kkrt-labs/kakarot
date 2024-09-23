@@ -10,10 +10,10 @@ contract EvmPrecompiles {
     /// @dev Address of the ECMUL precompile
     address private constant ECMUL_PRECOMPILE = address(0x07);
 
-    /// @dev Gas cost for ECADD operation
-    uint256 private constant ECADD_GAS = 150;
-    /// @dev Gas cost for ECMUL operation
-    uint256 private constant ECMUL_GAS = 6000;
+    /// @dev Gas cost for ECADD call is 150
+    uint256 private constant ECADD_GAS = 1000000;
+    /// @dev Gas cost for ECMUL call is 6000
+    uint256 private constant ECMUL_GAS = 1000000;
 
     /*//////////////////////////////////////////////////////////////
                                CONSTRUCTOR
@@ -28,25 +28,37 @@ contract EvmPrecompiles {
     /// @param y1 Y coordinate of the first point
     /// @param x2 X coordinate of the second point
     /// @param y2 Y coordinate of the second point
+    /// @return success True if the operation was successful, false otherwise
     /// @return x X coordinate of the result point
     /// @return y Y coordinate of the result point
-    function ecAdd(uint256 x1, uint256 y1, uint256 x2, uint256 y2) public view returns (uint256 x, uint256 y) {
+    function ecAdd(uint256 x1, uint256 y1, uint256 x2, uint256 y2)
+        public
+        view
+        returns (bool success, uint256 x, uint256 y)
+    {
         bytes memory input = abi.encodePacked(x1, y1, x2, y2);
         (bool success, bytes memory result) = ECADD_PRECOMPILE.staticcall{gas: ECADD_GAS}(input);
-        require(success, "ECADD precompile call failed");
-        return abi.decode(result, (uint256, uint256));
+        if (!success) {
+            return (false, 0, 0);
+        }
+        (x, y) = abi.decode(result, (uint256, uint256));
+        return (true, x, y);
     }
 
     /// @notice Performs elliptic curve scalar multiplication
     /// @param x1 X coordinate of the point
     /// @param y1 Y coordinate of the point
     /// @param s Scalar for multiplication
+    /// @return success True if the operation was successful, false otherwise
     /// @return x X coordinate of the result point
     /// @return y Y coordinate of the result point
-    function ecMul(uint256 x1, uint256 y1, uint256 s) public view returns (uint256 x, uint256 y) {
+    function ecMul(uint256 x1, uint256 y1, uint256 s) public view returns (bool success, uint256 x, uint256 y) {
         bytes memory input = abi.encodePacked(x1, y1, s);
         (bool success, bytes memory result) = ECMUL_PRECOMPILE.staticcall{gas: ECMUL_GAS}(input);
-        require(success, "ECMUL precompile call failed");
-        return abi.decode(result, (uint256, uint256));
+        if (!success) {
+            return (false, 0, 0);
+        }
+        (x, y) = abi.decode(result, (uint256, uint256));
+        return (true, x, y);
     }
 }

@@ -6,8 +6,8 @@ endif
 
 .PHONY: build test coverage clean
 
-# 173874367 corresponds to release v0.1.12 of Kakarot SSJ.
-KKRT_SSJ_RELEASE_ID = 173874367
+# 173874367 corresponds to release v0.1.13 of Kakarot SSJ.
+KKRT_SSJ_RELEASE_ID = 176384150
 # Kakarot SSJ artifacts for precompiles.
 KKRT_SSJ_BUILD_ARTIFACT_URL = $(shell curl -L https://api.github.com/repos/kkrt-labs/kakarot-ssj/releases/${KKRT_SSJ_RELEASE_ID} | jq -r '.assets[0].browser_download_url')
 KATANA_VERSION = v1.0.0-alpha.12
