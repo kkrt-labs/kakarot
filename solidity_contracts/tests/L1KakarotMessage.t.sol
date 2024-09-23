@@ -4,6 +4,7 @@ import "forge-std/Test.sol";
 
 import {L1KakarotMessaging} from "../src/L1L2Messaging/L1KakarotMessaging.sol";
 import {StarknetMessagingLocal} from "../src/starknet/StarknetMessagingLocal.sol";
+import {AddressAliasHelper} from "../src/L1L2Messaging/AddressAliasHelper.sol";
 
 contract L1KakarotMessagingTest is Test {
     L1KakarotMessaging l1KakarotMessaging;
@@ -34,7 +35,7 @@ contract L1KakarotMessagingTest is Test {
 
         uint256 totalLength = data.length + 4;
         uint256[] memory convertedData = new uint256[](totalLength);
-        convertedData[0] = uint256(uint160(address(this)));
+        convertedData[0] = uint256(uint160(AddressAliasHelper.applyL1ToL2Alias(address(this))));
         convertedData[1] = uint256(uint160(to));
         convertedData[2] = value;
         convertedData[3] = data.length;
