@@ -28,8 +28,6 @@ class TestPrecompiles:
                 "address, error_message",
                 [
                     (0x0, "Kakarot: UnknownPrecompile 0"),
-                    (0x6, "Kakarot: NotImplementedPrecompile 6"),
-                    (0x7, "Kakarot: NotImplementedPrecompile 7"),
                     (0x8, "Kakarot: NotImplementedPrecompile 8"),
                     (0x0A, "Kakarot: NotImplementedPrecompile 10"),
                 ],
