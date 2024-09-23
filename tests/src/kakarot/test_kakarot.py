@@ -8,7 +8,10 @@ from eth_utils import keccak
 from eth_utils.address import to_checksum_address
 from hypothesis import given
 from hypothesis.strategies import composite, integers
-from starkware.starknet.public.abi import get_storage_var_address
+from starkware.starknet.public.abi import (
+    get_selector_from_name,
+    get_storage_var_address,
+)
 from web3._utils.abi import map_abi_data
 from web3._utils.normalizers import BASE_RETURN_NORMALIZERS
 from web3.exceptions import NoABIFunctionsFound
@@ -291,6 +294,33 @@ class TestKakarot:
                 message=f"Kakarot: Caller should be {felt_to_signed_int(expected_starknet_address)}, got {expected_starknet_address // 2}"
             ):
                 cairo_run("test__register_account", evm_address=EVM_ADDRESS)
+
+        class TestUpgradeAccount:
+            @SyscallHandler.patch("Ownable_owner", 0xDEAD)
+            def test_should_assert_only_owner(self, cairo_run):
+                with cairo_error(message="Ownable: caller is not the owner"):
+                    cairo_run(
+                        "test__upgrade_account",
+                        evm_address=EVM_ADDRESS,
+                        new_class_hash=0x1234,
+                    )
+
+            @SyscallHandler.patch(
+                "Kakarot_evm_to_starknet_address", EVM_ADDRESS, 0x99999
+            )
+            @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
+            @SyscallHandler.patch("IAccount.upgrade", lambda addr, data: [])
+            def test_upgrade_account_should_replace_class(self, cairo_run):
+                cairo_run(
+                    "test__upgrade_account",
+                    evm_address=EVM_ADDRESS,
+                    new_class_hash=0x1234,
+                )
+                SyscallHandler.mock_call.assert_called_with(
+                    contract_address=0x99999,
+                    function_selector=get_selector_from_name("upgrade"),
+                    calldata=[0x1234],
+                )
 
     class TestEthCall:
         @pytest.mark.slow

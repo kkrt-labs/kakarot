@@ -18,6 +18,7 @@ from kakarot.accounts.account_contract import (
     execute_starknet_call,
     set_code_hash,
     execute_from_outside,
+    upgrade,
 )
 from kakarot.accounts.model import OutsideExecution, CallArray
 
@@ -220,5 +221,13 @@ func test__set_code_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_c
 
     set_code_hash(code_hash);
 
+    return ();
+}
+
+func test__upgrade{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+    alloc_locals;
+    local new_class: felt;
+    %{ ids.new_class = program_input["new_class"] %}
+    upgrade(new_class);
     return ();
 }
