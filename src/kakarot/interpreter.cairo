@@ -83,18 +83,23 @@ namespace Interpreter {
                     caller_code_address,
                     caller_address,
                 );
+
                 let precompile_reverted = is_not_zero(revert_code);
-                // Consume all gas if precompile execution __failed__
                 if (precompile_reverted != FALSE) {
-                    tempvar gas_used = evm.gas_left;
+                    // No need to charge gas as precompiles can only trigger EXCEPTIONAL_REVERT
+                    // which will consume the entire gas of the context.
+                    let evm = EVM.stop(evm, output_len, output, revert_code);
+                    tempvar range_check_ptr = range_check_ptr;
+                    tempvar evm = evm;
                 } else {
-                    tempvar gas_used = gas_used;
+                    // Charge gas before stopping
+                    let evm = EVM.charge_gas(evm, gas_used);
+                    let evm = EVM.stop(evm, output_len, output, evm.reverted);
+                    tempvar range_check_ptr = range_check_ptr;
+                    tempvar evm = evm;
                 }
-                let gas_used = [ap - 1];
-                let evm = EVM.charge_gas(evm, gas_used);
-                let evm_reverted = is_not_zero(evm.reverted);
-                let success = (1 - precompile_reverted) * (1 - evm_reverted);
-                let evm = EVM.stop(evm, output_len, output, 1 - success);
+                let range_check_ptr = [ap - 2];
+                let evm = cast([ap - 1], model.EVM*);
                 let is_cairo_precompile_called = PrecompilesHelpers.is_kakarot_precompile(
                     evm.message.code_address.evm
                 );

@@ -24,7 +24,6 @@ from kakarot.precompiles.precompiles_helpers import (
     FIRST_KAKAROT_PRECOMPILE_ADDRESS,
 )
 from utils.utils import Helpers
-from tests.utils.debug import Debug
 
 // @title Precompile related functions.
 namespace Precompiles {
@@ -38,7 +37,7 @@ namespace Precompiles {
     // @return output_len The output length.
     // @return output The output array.
     // @return gas_used The gas usage of precompile.
-    // @return reverted Whether the precompile ran successfully or not
+    // @return reverted The reverted code in {0(success), REVERTED, EXCEPTIONAL_HALT}.
     func exec_precompile{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
