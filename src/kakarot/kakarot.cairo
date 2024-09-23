@@ -31,7 +31,7 @@ from kakarot.eth_rpc import (
 
 // / ADMIN ///
 
-// @notive Upgrade the contract
+// @notice Upgrade the contract
 // @dev Use the replace_hash syscall to upgrade the contract
 // @param new_class_hash The new class hash
 @external
