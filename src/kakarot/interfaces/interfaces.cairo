@@ -130,9 +130,6 @@ namespace IKakarot {
     func deploy_externally_owned_account(evm_address: felt) {
     }
 
-    func compute_starknet_address(evm_address: felt) -> (contract_address: felt) {
-    }
-
     func get_account_contract_class_hash() -> (account_contract_class_hash: felt) {
     }
 

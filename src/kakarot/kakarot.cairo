@@ -191,17 +191,6 @@ func get_block_gas_limit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_c
     return Kakarot.get_block_gas_limit();
 }
 
-// @notice Compute the starknet address of a contract given its EVM address
-// @param evm_address The EVM address of the contract
-// @return contract_address The starknet address of the contract
-@view
-func compute_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    evm_address: felt
-) -> (contract_address: felt) {
-    let starknet_address = Account.compute_starknet_address(evm_address);
-    return (contract_address=starknet_address);
-}
-
 // @notice Return the account implementation class hash
 // @return account_contract_class_hash The account implementation class hash
 @view

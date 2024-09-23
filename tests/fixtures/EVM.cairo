@@ -210,14 +210,15 @@ func is_deployed{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     return (deployed=1);
 }
 
-// @notice Compute the starknet address of a contract given its EVM address
-// @param evm_address The EVM address of the contract
-// @return contract_address The starknet address of the contract
+// @notice Returns the corresponding Starknet address for a given EVM address.
+// @dev Returns the registered address if there is one, otherwise returns the deterministic address got when Kakarot deploys an account.
+// @param evm_address The EVM address to transform to a starknet address
+// @return starknet_address The Starknet Account Contract address
 @view
-func compute_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+func get_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     evm_address: felt
 ) -> (contract_address: felt) {
-    let starknet_address = Account.compute_starknet_address(evm_address);
+    let starknet_address = Account.get_starknet_address(evm_address);
     return (contract_address=starknet_address);
 }
 
