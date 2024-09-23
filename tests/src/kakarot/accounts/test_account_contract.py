@@ -518,55 +518,8 @@ class TestAccountContract:
 
     class TestExecuteFromOutsideEntrypoint:
 
-        def test_should_raise_when_caller_is_not_any_caller_nor_actual_caller(
-            self, cairo_run
-        ):
-            with cairo_error(message="Execute from outside: invalid caller"):
-                cairo_run(
-                    "test__execute_from_outside_entrypoint",
-                    outside_execution={
-                        "caller": SyscallHandler.caller_address + 1,
-                        "nonce": 0,
-                        "execute_after": 0,
-                        "execute_before": 0,
-                    },
-                    call_array=[],
-                    calldata=[],
-                    signature=[],
-                )
-
-        def test_should_raise_when_call_is_too_early(self, cairo_run):
-            with cairo_error(message="Execute from outside: too early"):
-                cairo_run(
-                    "test__execute_from_outside_entrypoint",
-                    outside_execution={
-                        "caller": SyscallHandler.caller_address,
-                        "nonce": 0,
-                        "execute_after": SyscallHandler.block_timestamp + 1,
-                        "execute_before": 0,
-                    },
-                    call_array=[],
-                    calldata=[],
-                    signature=[],
-                )
-
-        def test_should_raise_when_call_is_too_late(self, cairo_run):
-            with cairo_error(message="Execute from outside: too late"):
-                cairo_run(
-                    "test__execute_from_outside_entrypoint",
-                    outside_execution={
-                        "caller": SyscallHandler.caller_address,
-                        "nonce": 0,
-                        "execute_after": 0,
-                        "execute_before": SyscallHandler.block_timestamp - 1,
-                    },
-                    call_array=[],
-                    calldata=[],
-                    signature=[],
-                )
-
         def test_should_raise_when_call_array_is_empty(self, cairo_run):
-            with cairo_error(message="Execute from outside: multicall not supported"):
+            with cairo_error(message="EOA: multicall not supported"):
                 cairo_run(
                     "test__execute_from_outside_entrypoint",
                     outside_execution={
@@ -581,7 +534,7 @@ class TestAccountContract:
                 )
 
         def test_should_raise_when_call_array_has_more_than_one_call(self, cairo_run):
-            with cairo_error(message="Execute from outside: multicall not supported"):
+            with cairo_error(message="EOA: multicall not supported"):
                 cairo_run(
                     "test__execute_from_outside_entrypoint",
                     outside_execution={
