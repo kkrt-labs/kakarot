@@ -4,7 +4,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.alloc import alloc
 
 from utils.utils import Helpers
-from kakarot.precompiles.datacopy import PrecompileDataCopy
+from kakarot.precompiles.identity import PrecompileIdentity
 from tests.utils.helpers import TestHelpers
 
 func test__datacopy_impl{
@@ -20,8 +20,8 @@ func test__datacopy_impl{
     %}
 
     // When
-    let result = PrecompileDataCopy.run(
-        PrecompileDataCopy.PRECOMPILE_ADDRESS, calldata_len, calldata
+    let result = PrecompileIdentity.run(
+        PrecompileIdentity.PRECOMPILE_ADDRESS, calldata_len, calldata
     );
 
     TestHelpers.assert_array_equal(

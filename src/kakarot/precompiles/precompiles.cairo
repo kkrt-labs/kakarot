@@ -12,7 +12,7 @@ from kakarot.storages import Kakarot_cairo1_helpers_class_hash
 from kakarot.errors import Errors
 from kakarot.precompiles.blake2f import PrecompileBlake2f
 from kakarot.precompiles.kakarot_precompiles import KakarotPrecompiles
-from kakarot.precompiles.datacopy import PrecompileDataCopy
+from kakarot.precompiles.identity import PrecompileIdentity
 from kakarot.precompiles.ec_recover import PrecompileEcRecover
 from kakarot.precompiles.p256verify import PrecompileP256Verify
 from kakarot.precompiles.ripemd160 import PrecompileRIPEMD160
@@ -113,7 +113,7 @@ namespace Precompiles {
         ret;
         call PrecompileRIPEMD160.run;  // 0x3
         ret;
-        call PrecompileDataCopy.run;  // 0x4
+        call PrecompileIdentity.run;  // 0x4
         ret;
         call not_implemented_precompile;  // 0x5
         ret;
