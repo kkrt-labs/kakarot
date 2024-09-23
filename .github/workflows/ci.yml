@@ -184,6 +184,19 @@ jobs:
           cp .env.example .env
           make run-nodes & make test-end-to-end
 
+  forge-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+      - name: Install deps
+        run: forge install
+      - name: Run tests
+        run: forge test -vvv
+
   ef-tests:
     runs-on: ubuntu-latest-32-cores
     needs: build
