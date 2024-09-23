@@ -33,12 +33,16 @@ contract DualVmToken {
     event Transfer(address indexed from, address indexed to, uint256 amount);
 
     /// @dev Emitted when tokens are transferred from one starknet address to another
+    ///      This event does not specify if the starknet address has a corresponding kakarot evm address
+    ///      It will need further processing by offchain systems
     event TransferStarknet(uint256 indexed from, uint256 indexed to, uint256 amount);
 
     /// @dev Emitted when the allowance of a spender over the owner's tokens is set
     event Approval(address indexed owner, address indexed spender, uint256 amount);
 
     /// @dev Emitted when the allowance of a starknet address spender over the owner's tokens is set
+    ///      This event does not specify if the starknet address has a corresponding kakarot evm address
+    ///      It will need further processing by offchain systems
     event ApprovalStarknet(address indexed owner, uint256 indexed spender, uint256 amount);
 
     /*//////////////////////////////////////////////////////////////
@@ -76,6 +80,9 @@ contract DualVmToken {
         return abi.decode(returnData, (uint256));
     }
 
+    /// @dev This function is used to get the balance of an evm account
+    /// @param account The evm account to get the balance of
+    /// @return The balance of the evm address
     function balanceOf(address account) external view returns (uint256) {
         uint256[] memory kakarotCallData = new uint256[](1);
         kakarotCallData[0] = uint256(uint160(account));
@@ -87,7 +94,7 @@ contract DualVmToken {
     /// @dev This function is used to get the balance of a starknet address
     /// @param starknetAddress The starknet address to get the balance of
     /// @return The balance of the starknet address
-    function balanceOfStarknetAddress(uint256 starknetAddress) external view returns (uint256) {
+    function balanceOf(uint256 starknetAddress) external view returns (uint256) {
         return _balanceOf(starknetAddress);
     }
 
@@ -102,6 +109,10 @@ contract DualVmToken {
         return uint256(valueLow) + (uint256(valueHigh) << 128);
     }
 
+    /// @dev Get the allowance of a spender over the owner's tokens
+    /// @param owner The evm address of the owner of the tokens
+    /// @param spender The evm address of the spender to get the allowance of
+    /// @return The allowance of spender over the owner's tokens
     function allowance(address owner, address spender) external view returns (uint256) {
         uint256[] memory ownerAddressCalldata = new uint256[](1);
         ownerAddressCalldata[0] = uint256(uint160(owner));
@@ -120,7 +131,7 @@ contract DualVmToken {
     /// @param owner The evm address of the owner of the tokens
     /// @param spender The starknet address of the spender to get the allowance of
     /// @return The allowance of spender over the owner's tokens
-    function allowanceStarknetAddressSpender(address owner, uint256 spender) external view returns (uint256) {
+    function allowance(address owner, uint256 spender) external view returns (uint256) {
         uint256[] memory ownerAddressCalldata = new uint256[](1);
         ownerAddressCalldata[0] = uint256(uint160(owner));
         uint256 ownerStarknetAddress =
@@ -133,7 +144,7 @@ contract DualVmToken {
     /// @param owner The starknet address of the owner of the tokens
     /// @param spender The evm address of the spender to get the allowance of
     /// @return The allowance of spender over the owner's tokens
-    function allowanceStarknetAddressOwner(uint256 owner, address spender) external view returns (uint256) {
+    function allowance(uint256 owner, address spender) external view returns (uint256) {
         uint256[] memory spenderAddressCalldata = new uint256[](1);
         spenderAddressCalldata[0] = uint256(uint160(spender));
         uint256 spenderStarknetAddress =
@@ -146,7 +157,7 @@ contract DualVmToken {
     /// @param owner The starknet address of the owner of the tokens
     /// @param spender The starknet address of the spender to get the allowance of
     /// @return The allowance of spender over the owner's tokens
-    function allowanceStarknetAddressOwnerAndSpender(uint256 owner, uint256 spender) external view returns (uint256) {
+    function allowance(uint256 owner, uint256 spender) external view returns (uint256) {
         return _allowance(owner, spender);
     }
 
@@ -177,6 +188,7 @@ contract DualVmToken {
                                ERC20 LOGIC
     //////////////////////////////////////////////////////////////*/
 
+    /// @dev Approve an evm account spender for a specific amount
     function approve(address spender, uint256 amount) external returns (bool) {
         uint256[] memory spenderAddressCalldata = new uint256[](1);
         spenderAddressCalldata[0] = uint256(uint160(spender));
@@ -189,11 +201,11 @@ contract DualVmToken {
         return true;
     }
 
-    /// @dev Approve a starknet address
+    /// @dev Approve a starknet address for a specific amount
     /// @param spender The starknet address to approve
     /// @param amount The amount of tokens to approve
     /// @return True if the approval was successful
-    function approveStarknetAddress(uint256 spender, uint256 amount) external returns (bool) {
+    function approve(uint256 spender, uint256 amount) external returns (bool) {
         _approve(spender, amount);
         emit ApprovalStarknet(msg.sender, spender, amount);
         return true;
@@ -214,6 +226,10 @@ contract DualVmToken {
         starknetToken.delegatecallCairo("approve", approveCallData);
     }
 
+    /// @dev Transfer tokens to an evm account
+    /// @param to The evm address to transfer the tokens to
+    /// @param amount The amount of tokens to transfer
+    /// @return True if the transfer was successful
     function transfer(address to, uint256 amount) external returns (bool) {
         uint256[] memory toAddressCalldata = new uint256[](1);
         toAddressCalldata[0] = uint256(uint160(to));
@@ -229,7 +245,7 @@ contract DualVmToken {
     /// @param to The starknet address to transfer the tokens to
     /// @param amount The amount of tokens to transfer
     /// @return True if the transfer was successful
-    function transferStarknetAddress(uint256 to, uint256 amount) external returns (bool) {
+    function transfer(uint256 to, uint256 amount) external returns (bool) {
         _transfer(to, amount);
         emit TransferStarknet(uint256(uint160(msg.sender)), to, amount);
         return true;
@@ -251,6 +267,11 @@ contract DualVmToken {
         starknetToken.delegatecallCairo("transfer", transferCallData);
     }
 
+    /// @dev Transfer tokens from one evm address to another
+    /// @param from The evm address to transfer the tokens from
+    /// @param to The evm address to transfer the tokens to
+    /// @param amount The amount of tokens to transfer
+    /// @return True if the transfer was successful
     function transferFrom(address from, address to, uint256 amount) external returns (bool) {
         uint256[] memory toAddressCalldata = new uint256[](1);
         toAddressCalldata[0] = uint256(uint160(to));
@@ -268,12 +289,12 @@ contract DualVmToken {
         return true;
     }
 
-    /// @dev Transfer tokens from a starknet address
+    /// @dev Transfer tokens from a starknet address to an evm address
     /// @param from The starknet address to transfer the tokens from
     /// @param to The evm address to transfer the tokens to
     /// @param amount The amount of tokens to transfer
     /// @return True if the transfer was successful
-    function transferFromStarknetAddressFrom(uint256 from, address to, uint256 amount) external returns (bool) {
+    function transferFrom(uint256 from, address to, uint256 amount) external returns (bool) {
         uint256[] memory toAddressCalldata = new uint256[](1);
         uint256 toAddressUint256 = uint256(uint160(to));
         toAddressCalldata[0] = toAddressUint256;
@@ -291,7 +312,7 @@ contract DualVmToken {
     /// @param to The starknet address to transfer the tokens to
     /// @param amount The amount of tokens to transfer
     /// @return True if the transfer was successful
-    function transferFromStarknetAddressTo(address from, uint256 to, uint256 amount) external returns (bool) {
+    function transferFrom(address from, uint256 to, uint256 amount) external returns (bool) {
         uint256[] memory fromAddressCalldata = new uint256[](1);
         uint256 fromAddressUint256 = uint256(uint160(from));
         fromAddressCalldata[0] = fromAddressUint256;
@@ -309,7 +330,7 @@ contract DualVmToken {
     /// @param to The starknet address to transfer the tokens to
     /// @param amount The amount of tokens to transfer
     /// @return True if the transfer was successful
-    function transferFromStarknetAddressFromAndTo(uint256 from, uint256 to, uint256 amount) external returns (bool) {
+    function transferFrom(uint256 from, uint256 to, uint256 amount) external returns (bool) {
         _transferFrom(from, to, amount);
         emit TransferStarknet(from, to, amount);
         return true;

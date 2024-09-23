@@ -67,22 +67,22 @@ class TestDualVmToken:
             assert total_supply_starknet == total_supply_evm
 
         @pytest.mark.parametrize(
-            "method,account_address",
+            "signature,account_address",
             [
-                ("balanceOf", lambda account: account.address),
+                ("balanceOf(address)", lambda account: account.address),
                 (
-                    "balanceOfStarknetAddress",
+                    "balanceOf(uint256)",
                     lambda account: account.starknet_contract.address,
                 ),
             ],
         )
         async def test_should_return_balance(
-            self, starknet_token, dual_vm_token, owner, method, account_address
+            self, starknet_token, dual_vm_token, owner, signature, account_address
         ):
             (balance_owner_starknet,) = await starknet_token.functions[
                 "balance_of"
             ].call(owner.starknet_contract.address)
-            balance_owner_evm = await getattr(dual_vm_token, method)(
+            balance_owner_evm = await dual_vm_token.functions[signature](
                 account_address(owner)
             )
             assert balance_owner_starknet == balance_owner_evm
@@ -92,16 +92,24 @@ class TestDualVmToken:
         ):
             evm_error = keccak("InvalidStarknetAddress()".encode())[:4]
             with cairo_error(evm_error):
-                await dual_vm_token.balanceOfStarknetAddress(2**256 - 1)
+                await dual_vm_token.functions["balanceOf(uint256)"](2**256 - 1)
 
     class TestActions:
         async def test_should_transfer(
             self, starknet_token, dual_vm_token, owner, other
         ):
             amount = 1
-            balance_owner_before = await dual_vm_token.balanceOf(owner.address)
-            balance_other_before = await dual_vm_token.balanceOf(other.address)
-            receipt = (await dual_vm_token.transfer(other.address, amount))["receipt"]
+            balance_owner_before = await dual_vm_token.functions["balanceOf(address)"](
+                owner.address
+            )
+            balance_other_before = await dual_vm_token.functions["balanceOf(address)"](
+                other.address
+            )
+            receipt = (
+                await dual_vm_token.functions["transfer(address,uint256)"](
+                    other.address, amount
+                )
+            )["receipt"]
             events = dual_vm_token.events.parse_events(receipt)
             assert events["Transfer"] == [
                 {
@@ -110,8 +118,12 @@ class TestDualVmToken:
                     "amount": amount,
                 }
             ]
-            balance_owner_after = await dual_vm_token.balanceOf(owner.address)
-            balance_other_after = await dual_vm_token.balanceOf(other.address)
+            balance_owner_after = await dual_vm_token.functions["balanceOf(address)"](
+                owner.address
+            )
+            balance_other_after = await dual_vm_token.functions["balanceOf(address)"](
+                other.address
+            )
 
             assert balance_owner_before - amount == balance_owner_after
             assert balance_other_before + amount == balance_other_after
@@ -120,10 +132,14 @@ class TestDualVmToken:
             self, starknet_token, dual_vm_token, owner, other
         ):
             amount = 1
-            balance_owner_before = await dual_vm_token.balanceOf(owner.address)
-            balance_other_before = await dual_vm_token.balanceOf(other.address)
+            balance_owner_before = await dual_vm_token.functions["balanceOf(address)"](
+                owner.address
+            )
+            balance_other_before = await dual_vm_token.functions["balanceOf(address)"](
+                other.address
+            )
             receipt = (
-                await dual_vm_token.transferStarknetAddress(
+                await dual_vm_token.functions["transfer(uint256,uint256)"](
                     other.starknet_contract.address, amount
                 )
             )["receipt"]
@@ -135,28 +151,32 @@ class TestDualVmToken:
                     "amount": amount,
                 }
             ]
-            balance_owner_after = await dual_vm_token.balanceOf(owner.address)
-            balance_other_after = await dual_vm_token.balanceOf(other.address)
+            balance_owner_after = await dual_vm_token.functions["balanceOf(address)"](
+                owner.address
+            )
+            balance_other_after = await dual_vm_token.functions["balanceOf(address)"](
+                other.address
+            )
 
             assert balance_owner_before - amount == balance_owner_after
             assert balance_other_before + amount == balance_other_after
 
         @pytest.mark.parametrize(
-            "method,to_address",
+            "signature,to_address",
             [
-                ("transfer", lambda to: to.address),
+                ("transfer(address,uint256)", lambda to: to.address),
                 (
-                    "transferStarknetAddress",
+                    "transfer(uint256,uint256)",
                     lambda to: to.starknet_contract.address,
                 ),
             ],
         )
         async def test_should_revert_transfer_insufficient_balance(
-            self, dual_vm_token, owner, other, method, to_address
+            self, dual_vm_token, owner, other, signature, to_address
         ):
             # No wrapping of errors for OZ 0.10 contracts
             with cairo_error("u256_sub Overflow"):
-                await getattr(dual_vm_token, method)(
+                await dual_vm_token.functions[signature](
                     to_address(owner), 1, caller_eoa=other.starknet_contract
                 )
 
@@ -165,16 +185,22 @@ class TestDualVmToken:
         ):
             evm_error = keccak("InvalidStarknetAddress()".encode())[:4]
             with cairo_error(evm_error):
-                await dual_vm_token.transferStarknetAddress(2**256 - 1, 1)
+                await dual_vm_token.functions["transfer(uint256,uint256)"](
+                    2**256 - 1, 1
+                )
 
         async def test_should_approve(
             self, starknet_token, dual_vm_token, owner, other
         ):
             amount = 1
-            allowance_before = await dual_vm_token.allowance(
-                owner.address, other.address
-            )
-            receipt = (await dual_vm_token.approve(other.address, amount))["receipt"]
+            allowance_before = await dual_vm_token.functions[
+                "allowance(address,address)"
+            ](owner.address, other.address)
+            receipt = (
+                await dual_vm_token.functions["approve(address,uint256)"](
+                    other.address, amount
+                )
+            )["receipt"]
             events = dual_vm_token.events.parse_events(receipt)
             assert events["Approval"] == [
                 {
@@ -183,20 +209,20 @@ class TestDualVmToken:
                     "amount": amount,
                 }
             ]
-            allowance_after = await dual_vm_token.allowance(
-                owner.address, other.address
-            )
+            allowance_after = await dual_vm_token.functions[
+                "allowance(address,address)"
+            ](owner.address, other.address)
             assert allowance_after == allowance_before + amount
 
         async def test_should_approve_starknet_address(
             self, starknet_token, dual_vm_token, owner, other
         ):
             amount = 1
-            allowance_before = await dual_vm_token.allowanceStarknetAddressSpender(
-                owner.address, other.starknet_contract.address
-            )
+            allowance_before = await dual_vm_token.functions[
+                "allowance(address,uint256)"
+            ](owner.address, other.starknet_contract.address)
             receipt = (
-                await dual_vm_token.approveStarknetAddress(
+                await dual_vm_token.functions["approve(uint256,uint256)"](
                     other.starknet_contract.address, amount
                 )
             )["receipt"]
@@ -208,9 +234,9 @@ class TestDualVmToken:
                     "amount": amount,
                 }
             ]
-            allowance_after = await dual_vm_token.allowanceStarknetAddressSpender(
-                owner.address, other.starknet_contract.address
-            )
+            allowance_after = await dual_vm_token.functions[
+                "allowance(address,uint256)"
+            ](owner.address, other.starknet_contract.address)
             assert allowance_after == allowance_before + amount
 
         async def test_should_revert_approve_starknet_address_invalid_address(
@@ -218,7 +244,7 @@ class TestDualVmToken:
         ):
             evm_error = keccak("InvalidStarknetAddress()".encode())[:4]
             with cairo_error(evm_error):
-                await dual_vm_token.approveStarknetAddress(2**256 - 1, 1)
+                await dual_vm_token.functions["approve(uint256,uint256)"](2**256 - 1, 1)
 
         async def test_allowance_owner_starknet_address(
             self, starknet_token, dual_vm_token, other
@@ -226,9 +252,9 @@ class TestDualVmToken:
 
             amount = 1
             owner = await get_starknet_account()
-            allowance_before = await dual_vm_token.allowanceStarknetAddressOwner(
-                owner.address, other.address
-            )
+            allowance_before = await dual_vm_token.functions[
+                "allowance(uint256,address)"
+            ](owner.address, other.address)
             await invoke(
                 starknet_token.address,
                 "approve",
@@ -237,9 +263,9 @@ class TestDualVmToken:
                 0,
                 account=owner,
             )
-            allowance_after = await dual_vm_token.allowanceStarknetAddressOwner(
-                owner.address, other.address
-            )
+            allowance_after = await dual_vm_token.functions[
+                "allowance(uint256,address)"
+            ](owner.address, other.address)
             assert allowance_after == allowance_before + amount
 
         async def test_should_revert_allowance_starknet_address_owner_invalid_address(
@@ -248,7 +274,7 @@ class TestDualVmToken:
             with cairo_error(
                 "EVM tx reverted, reverting SN tx because of previous calls to cairo precompiles"
             ):
-                await dual_vm_token.allowanceStarknetAddressOwner(
+                await dual_vm_token.functions["allowance(uint256,address)"](
                     2**256 - 1, other.address
                 )
 
@@ -258,7 +284,7 @@ class TestDualVmToken:
             with cairo_error(
                 "EVM tx reverted, reverting SN tx because of previous calls to cairo precompiles"
             ):
-                await dual_vm_token.allowanceStarknetAddressSpender(
+                await dual_vm_token.functions["allowance(address,uint256)"](
                     owner.address, 2**256 - 1
                 )
 
@@ -268,11 +294,9 @@ class TestDualVmToken:
             amount = 1
             owner = await get_starknet_account()
             spender = await get_starknet_account()
-            allowance_before = (
-                await dual_vm_token.allowanceStarknetAddressOwnerAndSpender(
-                    owner.address, spender.address
-                )
-            )
+            allowance_before = await dual_vm_token.functions[
+                "allowance(uint256,uint256)"
+            ](owner.address, spender.address)
 
             await invoke(
                 starknet_token.address,
@@ -283,22 +307,26 @@ class TestDualVmToken:
                 account=owner,
             )
 
-            allowance_after = (
-                await dual_vm_token.allowanceStarknetAddressOwnerAndSpender(
-                    owner.address, spender.address
-                )
-            )
+            allowance_after = await dual_vm_token.functions[
+                "allowance(uint256,uint256)"
+            ](owner.address, spender.address)
             assert allowance_after == allowance_before + amount
 
         async def test_should_transfer_from(
             self, starknet_token, dual_vm_token, owner, other
         ):
             amount = 1
-            balance_owner_before = await dual_vm_token.balanceOf(owner.address)
-            balance_other_before = await dual_vm_token.balanceOf(other.address)
-            await dual_vm_token.approve(other.address, amount)
+            balance_owner_before = await dual_vm_token.functions["balanceOf(address)"](
+                owner.address
+            )
+            balance_other_before = await dual_vm_token.functions["balanceOf(address)"](
+                other.address
+            )
+            await dual_vm_token.functions["approve(address,uint256)"](
+                other.address, amount
+            )
             receipt = (
-                await dual_vm_token.transferFrom(
+                await dual_vm_token.functions["transferFrom(address,address,uint256)"](
                     owner.address,
                     other.address,
                     amount,
@@ -313,8 +341,12 @@ class TestDualVmToken:
                     "amount": amount,
                 }
             ]
-            balance_owner_after = await dual_vm_token.balanceOf(owner.address)
-            balance_other_after = await dual_vm_token.balanceOf(other.address)
+            balance_owner_after = await dual_vm_token.functions["balanceOf(address)"](
+                owner.address
+            )
+            balance_other_after = await dual_vm_token.functions["balanceOf(address)"](
+                other.address
+            )
 
             assert balance_owner_before - amount == balance_owner_after
             assert balance_other_before + amount == balance_other_after
@@ -323,13 +355,17 @@ class TestDualVmToken:
             self, starknet_token, dual_vm_token, owner, other
         ):
             amount = 1
-            balance_owner_before = await dual_vm_token.balanceOf(owner.address)
-            balance_other_before = await dual_vm_token.balanceOf(other.address)
-            await dual_vm_token.approveStarknetAddress(
+            balance_owner_before = await dual_vm_token.functions["balanceOf(address)"](
+                owner.address
+            )
+            balance_other_before = await dual_vm_token.functions["balanceOf(address)"](
+                other.address
+            )
+            await dual_vm_token.functions["approve(uint256,uint256)"](
                 other.starknet_contract.address, amount
             )
             receipt = (
-                await dual_vm_token.transferFromStarknetAddressFrom(
+                await dual_vm_token.functions["transferFrom(uint256,address,uint256)"](
                     owner.starknet_contract.address,
                     other.address,
                     amount,
@@ -344,8 +380,12 @@ class TestDualVmToken:
                     "amount": amount,
                 }
             ]
-            balance_owner_after = await dual_vm_token.balanceOf(owner.address)
-            balance_other_after = await dual_vm_token.balanceOf(other.address)
+            balance_owner_after = await dual_vm_token.functions["balanceOf(address)"](
+                owner.address
+            )
+            balance_other_after = await dual_vm_token.functions["balanceOf(address)"](
+                other.address
+            )
 
             assert balance_owner_before - amount == balance_owner_after
             assert balance_other_before + amount == balance_other_after
@@ -354,13 +394,17 @@ class TestDualVmToken:
             self, starknet_token, dual_vm_token, owner, other
         ):
             amount = 1
-            balance_owner_before = await dual_vm_token.balanceOf(owner.address)
-            balance_other_before = await dual_vm_token.balanceOf(other.address)
-            await dual_vm_token.approveStarknetAddress(
+            balance_owner_before = await dual_vm_token.functions["balanceOf(address)"](
+                owner.address
+            )
+            balance_other_before = await dual_vm_token.functions["balanceOf(address)"](
+                other.address
+            )
+            await dual_vm_token.functions["approve(uint256,uint256)"](
                 other.starknet_contract.address, amount
             )
             receipt = (
-                await dual_vm_token.transferFromStarknetAddressTo(
+                await dual_vm_token.functions["transferFrom(address,uint256,uint256)"](
                     owner.address,
                     other.starknet_contract.address,
                     amount,
@@ -375,8 +419,12 @@ class TestDualVmToken:
                     "amount": amount,
                 }
             ]
-            balance_owner_after = await dual_vm_token.balanceOf(owner.address)
-            balance_other_after = await dual_vm_token.balanceOf(other.address)
+            balance_owner_after = await dual_vm_token.functions["balanceOf(address)"](
+                owner.address
+            )
+            balance_other_after = await dual_vm_token.functions["balanceOf(address)"](
+                other.address
+            )
 
             assert balance_owner_before - amount == balance_owner_after
             assert balance_other_before + amount == balance_other_after
@@ -385,13 +433,17 @@ class TestDualVmToken:
             self, starknet_token, dual_vm_token, owner, other
         ):
             amount = 1
-            balance_owner_before = await dual_vm_token.balanceOf(owner.address)
-            balance_other_before = await dual_vm_token.balanceOf(other.address)
-            await dual_vm_token.approveStarknetAddress(
+            balance_owner_before = await dual_vm_token.functions["balanceOf(address)"](
+                owner.address
+            )
+            balance_other_before = await dual_vm_token.functions["balanceOf(address)"](
+                other.address
+            )
+            await dual_vm_token.functions["approve(uint256,uint256)"](
                 other.starknet_contract.address, amount
             )
             receipt = (
-                await dual_vm_token.transferFromStarknetAddressFromAndTo(
+                await dual_vm_token.functions["transferFrom(uint256,uint256,uint256)"](
                     owner.starknet_contract.address,
                     other.starknet_contract.address,
                     amount,
@@ -406,45 +458,51 @@ class TestDualVmToken:
                     "amount": amount,
                 }
             ]
-            balance_owner_after = await dual_vm_token.balanceOf(owner.address)
-            balance_other_after = await dual_vm_token.balanceOf(other.address)
+            balance_owner_after = await dual_vm_token.functions["balanceOf(address)"](
+                owner.address
+            )
+            balance_other_after = await dual_vm_token.functions["balanceOf(address)"](
+                other.address
+            )
 
             assert balance_owner_before - amount == balance_owner_after
             assert balance_other_before + amount == balance_other_after
 
         @pytest.mark.parametrize(
-            "method,from_address,to_address",
+            "signature,from_address,to_address",
             [
                 (
-                    "transferFrom",
+                    "transferFrom(address,address,uint256)",
                     lambda other: other.address,
                     lambda owner: owner.address,
                 ),
                 (
-                    "transferFromStarknetAddressFrom",
+                    "transferFrom(uint256,address,uint256)",
                     lambda other: other.starknet_contract.address,
                     lambda owner: owner.address,
                 ),
                 (
-                    "transferFromStarknetAddressTo",
+                    "transferFrom(address,uint256,uint256)",
                     lambda other: other.address,
                     lambda owner: owner.starknet_contract.address,
                 ),
                 (
-                    "transferFromStarknetAddressFromAndTo",
+                    "transferFrom(uint256,uint256,uint256)",
                     lambda other: other.starknet_contract.address,
                     lambda owner: owner.starknet_contract.address,
                 ),
             ],
         )
         async def test_should_revert_transfer_from_insufficient_balance(
-            self, dual_vm_token, owner, other, method, from_address, to_address
+            self, dual_vm_token, owner, other, signature, from_address, to_address
         ):
             # No wrapping of errors for OZ 0.10 contracts
             with cairo_error("u256_sub Overflow"):
                 amount = 1
-                await dual_vm_token.approve(owner.address, amount)
-                await getattr(dual_vm_token, method)(
+                await dual_vm_token.functions["approve(address,uint256)"](
+                    owner.address, amount
+                )
+                await dual_vm_token.functions[signature](
                     from_address(other),
                     to_address(owner),
                     amount,
@@ -452,66 +510,66 @@ class TestDualVmToken:
                 )
 
         @pytest.mark.parametrize(
-            "method,from_address,to_address",
+            "signature,from_address,to_address",
             [
                 (
-                    "transferFrom",
+                    "transferFrom(address,address,uint256)",
                     lambda owner: owner.address,
                     lambda other: other.address,
                 ),
                 (
-                    "transferFromStarknetAddressFrom",
+                    "transferFrom(uint256,address,uint256)",
                     lambda owner: owner.starknet_contract.address,
                     lambda other: other.address,
                 ),
                 (
-                    "transferFromStarknetAddressTo",
+                    "transferFrom(address,uint256,uint256)",
                     lambda owner: owner.address,
                     lambda other: other.starknet_contract.address,
                 ),
                 (
-                    "transferFromStarknetAddressFromAndTo",
+                    "transferFrom(uint256,uint256,uint256)",
                     lambda owner: owner.starknet_contract.address,
                     lambda other: other.starknet_contract.address,
                 ),
             ],
         )
         async def test_should_revert_transfer_from_insufficient_allowance(
-            self, dual_vm_token, owner, other, method, from_address, to_address
+            self, dual_vm_token, owner, other, signature, from_address, to_address
         ):
             # No wrapping of errors for OZ 0.10 contracts
             with cairo_error("u256_sub Overflow"):
-                await getattr(dual_vm_token, method)(
-                    from_address(owner),
-                    to_address(other),
+                await dual_vm_token.functions[signature](
+                    from_address(other),
+                    to_address(owner),
                     1,
                     caller_eoa=other.starknet_contract,
                 )
 
         @pytest.mark.parametrize(
-            "method,from_address,to_address",
+            "signature,from_address,to_address",
             [
                 (
-                    "transferFromStarknetAddressFrom",
+                    "transferFrom(uint256,address,uint256)",
                     lambda _: 2**256 - 1,
                     lambda other: other.address,
                 ),
                 (
-                    "transferFromStarknetAddressTo",
+                    "transferFrom(address,uint256,uint256)",
                     lambda owner: owner.address,
                     lambda _: 2**256 - 1,
                 ),
             ],
         )
         async def test_should_revert_transfer_from_starknet_address_invalid_address(
-            self, dual_vm_token, owner, other, method, from_address, to_address
+            self, dual_vm_token, owner, other, signature, from_address, to_address
         ):
             with cairo_error(
                 "EVM tx reverted, reverting SN tx because of previous calls to cairo precompiles"
             ):
-                await getattr(dual_vm_token, method)(
-                    from_address(owner),
-                    to_address(other),
+                await dual_vm_token.functions[signature](
+                    from_address(other),
+                    to_address(owner),
                     1,
                     caller_eoa=other.starknet_contract,
                 )
@@ -521,7 +579,7 @@ class TestDualVmToken:
         ):
             evm_error = keccak("InvalidStarknetAddress()".encode())[:4]
             with cairo_error(evm_error):
-                await dual_vm_token.transferFromStarknetAddressFromAndTo(
+                await dual_vm_token.functions["transferFrom(uint256,uint256,uint256)"](
                     2**256 - 1, 2**256 - 1, 1, caller_eoa=other.starknet_contract
                 )
 
@@ -546,7 +604,7 @@ class TestDualVmToken:
             await token_a.approve(
                 router.address, amount_a_desired * 2, caller_eoa=owner.starknet_contract
             )
-            await dual_vm_token.approve(
+            await dual_vm_token.functions["approve(address,uint256)"](
                 router.address,
                 amount_dual_vm_token_desired * 2,
                 caller_eoa=owner.starknet_contract,
@@ -572,7 +630,9 @@ class TestDualVmToken:
 
             amount_dual_vm_token_desired = 5 * await dual_vm_token.decimals()
 
-            balance_other_before = await dual_vm_token.balanceOf(other.address)
+            balance_other_before = await dual_vm_token.functions["balanceOf(address)"](
+                other.address
+            )
             amount_in_max = 2**128
             success = (
                 await router.swapTokensForExactTokens(
@@ -586,7 +646,9 @@ class TestDualVmToken:
             )["success"]
             assert success == 1
 
-            balance_other_after = await dual_vm_token.balanceOf(other.address)
+            balance_other_after = await dual_vm_token.functions["balanceOf(address)"](
+                other.address
+            )
             assert (
                 balance_other_before + amount_dual_vm_token_desired
                 == balance_other_after

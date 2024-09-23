@@ -20,7 +20,7 @@ from starknet_py.net.client_errors import ClientError
 from starknet_py.net.signer.stark_curve_signer import KeyPair
 from starkware.starknet.public.abi import starknet_keccak
 from web3 import Web3
-from web3._utils.abi import get_abi_output_types, map_abi_data
+from web3._utils.abi import abi_to_signature, get_abi_output_types, map_abi_data
 from web3._utils.events import get_event_data
 from web3._utils.normalizers import BASE_RETURN_NORMALIZERS
 from web3.contract import Contract as Web3Contract
@@ -162,8 +162,17 @@ async def get_contract(
     contract.bytecode_runtime = HexBytes(bytecode_runtime)
 
     try:
-        for fun in contract.functions:
-            setattr(contract, fun, MethodType(_wrap_kakarot(fun, caller_eoa), contract))
+        for fun_name, signature in [
+            (fun.fn_name, abi_to_signature(fun.abi)) for fun in contract.all_functions()
+        ]:
+            setattr(
+                contract,
+                fun_name,
+                MethodType(_wrap_kakarot(signature, caller_eoa), contract),
+            )
+            contract.functions.__dict__[signature] = MethodType(
+                _wrap_kakarot(signature, caller_eoa), contract
+            )
     except NoABIFunctionsFound:
         pass
     contract.events.parse_events = MethodType(_parse_events, contract.events)
@@ -396,13 +405,13 @@ def _wrap_kakarot(fun: str, caller_eoa: Optional[Account] = None):
     """Wrap a contract function call with the Kakarot contract."""
 
     async def _wrapper(self, *args, **kwargs):
-        abi = self.get_function_by_name(fun).abi
+        abi = self.get_function_by_signature(fun).abi
         gas_price = kwargs.pop("gas_price", DEFAULT_GAS_PRICE)
         gas_limit = kwargs.pop("gas_limit", TRANSACTION_GAS_LIMIT)
         value = kwargs.pop("value", 0)
         caller_eoa_ = kwargs.pop("caller_eoa", caller_eoa)
         max_fee = kwargs.pop("max_fee", None)
-        calldata = self.get_function_by_name(fun)(
+        calldata = self.get_function_by_signature(fun)(
             *args, **kwargs
         )._encode_transaction_data()
 
