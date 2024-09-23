@@ -18,6 +18,7 @@ from kakarot.gas import Gas
 from utils.dict import default_dict_copy
 from utils.utils import Helpers
 from utils.uint256 import uint256_add, uint256_sub, uint256_eq
+from kakarot.constants import Constants
 
 namespace State {
     // @dev Create a new empty State
@@ -466,7 +467,7 @@ namespace Internals {
         let (bytecode) = alloc();
         // empty code hash see https://eips.ethereum.org/EIPS/eip-1052
         tempvar code_hash_ptr = new Uint256(
-            304396909071904405792975023732328604784, 262949717399590921288928019264691438528
+            Constants.EMPTY_CODE_HASH_LOW, Constants.EMPTY_CODE_HASH_HIGH
         );
         let account = Account.init(
             address=address,

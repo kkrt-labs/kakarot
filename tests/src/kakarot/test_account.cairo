@@ -10,6 +10,7 @@ from starkware.cairo.common.memcpy import memcpy
 from kakarot.model import model
 from kakarot.account import Account
 from tests.utils.helpers import TestHelpers
+from kakarot.constants import Constants
 
 func test__init__should_return_account_with_default_dict_as_storage{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
@@ -173,9 +174,7 @@ func test__fetch_original_storage__state_modified{
     let starknet_address = Account.compute_starknet_address(evm_address);
     tempvar address = new model.Address(starknet_address, evm_address);
     let (local code: felt*) = alloc();
-    tempvar code_hash = new Uint256(
-        304396909071904405792975023732328604784, 262949717399590921288928019264691438528
-    );
+    tempvar code_hash = new Uint256(Constants.EMPTY_CODE_HASH_LOW, Constants.EMPTY_CODE_HASH_HIGH);
     tempvar balance = new Uint256(0, 0);
     let account = Account.init(address, 0, code, code_hash, 0, balance);
 
