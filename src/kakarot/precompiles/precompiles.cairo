@@ -242,15 +242,14 @@ namespace Precompiles {
         assert [calldata + 1] = input_len;
         memcpy(calldata + 2, input, input_len);
         let (
-            success, gas_if_success, return_data_len, return_data
+            success, gas, return_data_len, return_data
         ) = ICairo1Helpers.library_call_exec_precompile(
             class_hash=implementation, address=evm_address, data_len=input_len, data=input
         );
-        let gas = gas_if_success * success;
         if (success != FALSE) {
             return (return_data_len, return_data, gas, 0);
         }
         // Precompiles can only revert with exceptions. Thus if the execution failed, it's an error EXCEPTIONAL_HALT.
-        return (return_data_len, return_data, gas, Errors.EXCEPTIONAL_HALT);
+        return (return_data_len, return_data, 0, Errors.EXCEPTIONAL_HALT);
     }
 }
