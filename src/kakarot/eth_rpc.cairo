@@ -1,6 +1,7 @@
 %lang starknet
 
 from openzeppelin.access.ownable.library import Ownable_owner
+from openzeppelin.security.pausable.library import Pausable
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math import assert_le, assert_nn, split_felt
@@ -241,6 +242,7 @@ func eth_send_raw_unsigned_tx{
     return_data_len: felt, return_data: felt*, success: felt, gas_used: felt
 ) {
     alloc_locals;
+    Pausable.assert_not_paused();
     let tx = EthTransaction.decode(tx_data_len, tx_data);
 
     // Validate chain_id for post eip155
