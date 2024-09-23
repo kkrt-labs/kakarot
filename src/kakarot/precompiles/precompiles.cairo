@@ -24,6 +24,7 @@ from kakarot.precompiles.precompiles_helpers import (
     FIRST_KAKAROT_PRECOMPILE_ADDRESS,
 )
 from utils.utils import Helpers
+from tests.utils.debug import Debug
 
 // @title Precompile related functions.
 namespace Precompiles {
@@ -224,11 +225,11 @@ namespace Precompiles {
         assert [calldata + 1] = input_len;
         memcpy(calldata + 2, input, input_len);
         let (
-            success, gas, return_data_len, return_data
+            success, gas_if_success, return_data_len, return_data
         ) = ICairo1Helpers.library_call_exec_precompile(
             class_hash=implementation, address=evm_address, data_len=input_len, data=input
         );
-
+        let gas = gas_if_success * success;
         return (return_data_len, return_data, gas, 1 - success);
     }
 }
