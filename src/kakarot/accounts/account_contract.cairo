@@ -80,6 +80,19 @@ func is_initialized{
 }
 
 // EOA specific entrypoints
+
+// @notice Executes a transaction from outside the account.
+// @dev This function validates the transaction for account-related checks and sends it to the Kakarot contract for execution.
+// Further EVM-related checks are performed in the library and in the Kakarot contract.
+// @param outside_execution The outside execution context. Actually unused, but required by the SNIP-9 specification.
+// @param call_array_len The length of the call array. Must be 1 as multicall is not supported.
+// @param call_array An array containing the call data for the transaction.
+// @param calldata_len The length of the calldata array.
+// @param calldata The calldata for the transaction.
+// @param signature_len The length of the signature array.
+// @param signature The signature of the transaction.
+// @return response_len The length of the response array.
+// @return response The response from the Kakarot contract.
 @external
 func execute_from_outside{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, bitwise_ptr: BitwiseBuiltin*, range_check_ptr
@@ -94,23 +107,7 @@ func execute_from_outside{
 ) -> (response_len: felt, response: felt*) {
     alloc_locals;
     let (caller) = get_caller_address();
-
-    // Starknet validation
-    if (outside_execution.caller != 'ANY_CALLER') {
-        with_attr error_message("Execute from outside: invalid caller") {
-            assert caller = outside_execution.caller;
-        }
-    }
-    let (block_timestamp) = get_block_timestamp();
-    let too_early = is_nn(outside_execution.execute_after - block_timestamp);
-    with_attr error_message("Execute from outside: too early") {
-        assert too_early = FALSE;
-    }
-    let too_late = is_nn(block_timestamp - outside_execution.execute_before);
-    with_attr error_message("Execute from outside: too late") {
-        assert too_late = FALSE;
-    }
-    with_attr error_message("Execute from outside: multicall not supported") {
+    with_attr error_message("EOA: multicall not supported") {
         assert call_array_len = 1;
     }
     let (tx_info) = get_tx_info();
@@ -153,11 +150,7 @@ func execute_from_outside{
 }
 
 // @notice Validate a transaction
-// @dev The transaction is considered as valid if it is signed with the correct address and is a valid kakarot transaction
-// @param call_array_len The length of the call_array
-// @param call_array An array containing all the calls of the transaction see: https://docs.openzeppelin.com/contracts-cairo/0.6.0/accounts#call_and_accountcallarray_format
-// @param calldata_len The length of the Calldata array
-// @param calldata The calldata
+// @dev Disabled in favor of `execute_from_outside`. Required by the Native Account Abstraction spec.
 @external
 func __validate__{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, bitwise_ptr: BitwiseBuiltin*, range_check_ptr
@@ -168,9 +161,7 @@ func __validate__{
     return ();
 }
 
-// @notice Validate this account class for declaration
-// @dev For our use case the account doesn't need to declare contracts
-// @param class_hash The account class
+// @notice Disabled. Required by the Native Account Abstraction spec.
 @external
 func __validate_declare__{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, bitwise_ptr: BitwiseBuiltin*, range_check_ptr
@@ -181,14 +172,8 @@ func __validate_declare__{
     return ();
 }
 
-// @notice Execute the Kakarot transaction
-// @dev this is executed only if the __validate__ function succeeded
-// @param call_array_len The length of the call_array
-// @param call_array An array containing all the calls of the transaction see: https://docs.openzeppelin.com/contracts-cairo/0.6.0/accounts#call_and_accountcallarray_format
-// @param calldata_len The length of the Calldata array
-// @param calldata The calldata
-// @return response_len The length of the response array
-// @return response The response from the kakarot contract
+// @notice Execute a starknet transaction.
+// @dev Disabled in favor of `execute_from_outside`.
 @external
 func __execute__{
     syscall_ptr: felt*,
@@ -300,6 +285,8 @@ func is_valid_jumpdest{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_che
     return (is_valid=is_valid);
 }
 
+// @notice Get the code hash of the account.
+// @return code_hash The code hash of the account.
 @view
 func get_code_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
     code_hash: Uint256
@@ -308,6 +295,8 @@ func get_code_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
     return (code_hash,);
 }
 
+// @notice Set the code hash of the account.
+// @param code_hash The code hash of the account.
 @external
 func set_code_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     code_hash: Uint256
@@ -329,8 +318,9 @@ func set_authorized_pre_eip155_tx{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*
     return ();
 }
 
-// @notice Used to preserve caller in Cairo Precompiles
-// @dev Reentrency check is done, only get_starknet_address is allowed for Solidity contracts
+// @notice Execute a starknet call.
+// @dev Used when executing a Cairo Precompile. Used to preserve the caller address.
+// Reentrency check is done, only `get_starknet_address` is allowed for Solidity contracts
 //      to be able to get the corresponding Starknet address in their calldata.
 @external
 func execute_starknet_call{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
