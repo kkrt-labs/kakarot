@@ -85,9 +85,16 @@ namespace Interpreter {
                     caller_code_address,
                     caller_address,
                 );
-                let evm = EVM.charge_gas(evm, gas_used);
                 let evm_reverted = is_not_zero(evm.reverted);
                 let success = (1 - precompile_reverted) * (1 - evm_reverted);
+                // Consume all gas if precompile execution __failed__
+                if (success == FALSE) {
+                    tempvar gas_used = evm.gas_left;
+                } else {
+                    tempvar gas_used = gas_used;
+                }
+                let gas_used = [ap - 1];
+                let evm = EVM.charge_gas(evm, gas_used);
                 let evm = EVM.stop(evm, output_len, output, 1 - success);
                 let is_cairo_precompile_called = PrecompilesHelpers.is_kakarot_precompile(
                     evm.message.code_address.evm
