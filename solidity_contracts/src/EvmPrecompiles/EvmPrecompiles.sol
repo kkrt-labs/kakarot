@@ -31,11 +31,7 @@ contract EvmPrecompiles {
     /// @return success True if the operation was successful, false otherwise
     /// @return x X coordinate of the result point
     /// @return y Y coordinate of the result point
-    function ecAdd(uint256 x1, uint256 y1, uint256 x2, uint256 y2)
-        public
-        view
-        returns (bool success, uint256 x, uint256 y)
-    {
+    function ecAdd(uint256 x1, uint256 y1, uint256 x2, uint256 y2) external view returns (bool, uint256 x, uint256 y) {
         bytes memory input = abi.encodePacked(x1, y1, x2, y2);
         (bool success, bytes memory result) = ECADD_PRECOMPILE.staticcall{gas: ECADD_GAS}(input);
         if (!success) {
@@ -52,7 +48,7 @@ contract EvmPrecompiles {
     /// @return success True if the operation was successful, false otherwise
     /// @return x X coordinate of the result point
     /// @return y Y coordinate of the result point
-    function ecMul(uint256 x1, uint256 y1, uint256 s) public view returns (bool success, uint256 x, uint256 y) {
+    function ecMul(uint256 x1, uint256 y1, uint256 s) external view returns (bool, uint256 x, uint256 y) {
         bytes memory input = abi.encodePacked(x1, y1, s);
         (bool success, bytes memory result) = ECMUL_PRECOMPILE.staticcall{gas: ECMUL_GAS}(input);
         if (!success) {
