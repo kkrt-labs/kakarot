@@ -310,7 +310,7 @@ class TestKakarot:
             # of an already deployed account is not impacted
             assert (
                 await call("kakarot", "get_starknet_address", int(eoa.address, 16))
-            ) == eoa.starknet_contract.address
+            ).starknet_address == eoa.starknet_contract.address
 
             result = await kakarot.functions["eth_call"].call(
                 nonce=0,
