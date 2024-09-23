@@ -67,16 +67,6 @@ async def l2KakarotMessaging(kakarot):
     return l2KakarotMessaging
 
 
-@pytest_asyncio.fixture(scope="session")
-async def message_app_l2(owner, l2KakarotMessaging):
-    return await deploy(
-        "L1L2Messaging",
-        "MessageAppL2",
-        _l2KakarotMessaging=l2KakarotMessaging.address,
-        caller_eoa=owner.starknet_contract,
-    )
-
-
 @pytest.fixture(scope="session")
 def message_app_l1(sn_messaging_local, l1_kakarot_messaging, kakarot):
     return deploy_on_l1(
@@ -85,6 +75,16 @@ def message_app_l1(sn_messaging_local, l1_kakarot_messaging, kakarot):
         starknetMessaging=sn_messaging_local.address,
         l1KakarotMessaging=l1_kakarot_messaging.address,
         kakarotAddress=kakarot.address,
+    )
+
+
+@pytest_asyncio.fixture(scope="session")
+async def message_app_l2(owner, l2KakarotMessaging, message_app_l1):
+    return await deploy(
+        "L1L2Messaging",
+        "MessageAppL2",
+        l2KakarotMessaging_=l2KakarotMessaging.address,
+        l1ContractCounterPart_=message_app_l1.address,
     )
 
 
@@ -158,6 +158,16 @@ class TestL1ToL2Messages:
         msg_counter_after = await message_app_l2.receivedMessagesCounter()
         assert msg_counter_after == msg_counter_before + increment_value
 
+    async def test_should_apply_alias_from_l1(self, message_app_l1, message_app_l2):
+        msg_counter_before = await message_app_l2.receivedMessagesCounter()
+        increment_value = 1
+        message_app_l1.increaseL2AppCounterFromCounterPartOnly(
+            message_app_l2.address, value=increment_value
+        )
+        time.sleep(4)
+        msg_counter_after = await message_app_l2.receivedMessagesCounter()
+        assert msg_counter_after == msg_counter_before + increment_value
+
     async def test_should_fail_unauthorized_message_sender(
         self, l1_kakarot_messaging, message_app_l1, message_app_l2
     ):
@@ -167,3 +177,9 @@ class TestL1ToL2Messages:
         time.sleep(4)
         msg_counter_after = await message_app_l2.receivedMessagesCounter()
         assert msg_counter_after == msg_counter_before
+        # teardown
+        await invoke(
+            "kakarot",
+            "set_l1_messaging_contract_address",
+            int(l1_kakarot_messaging.address, 16),
+        )

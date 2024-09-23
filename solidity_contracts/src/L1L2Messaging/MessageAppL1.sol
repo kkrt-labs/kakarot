@@ -37,6 +37,15 @@ contract MessageAppL1 {
         );
     }
 
+    /// @notice Increases the counter inside the MessageAppL2 contract deployed on Kakarot from this contract only.
+    /// @dev Must be called with a value sufficient to pay for the L1 message fee.
+    /// @param l2AppAddress The address of the L2 contract to trigger.
+    function increaseL2AppCounterFromCounterPartOnly(address l2AppAddress) external payable {
+        _l1KakarotMessaging.sendMessageToL2{value: msg.value}(
+            l2AppAddress, 0, abi.encodeCall(MessageAppL2.increaseMessageCounterFromL1Contract, 1)
+        );
+    }
+
     /// @notice Manually consumes a message that was received from L2.
     /// @param fromAddress L2 address sending the message.
     /// @param payload Payload of the message used to verify the hash.
