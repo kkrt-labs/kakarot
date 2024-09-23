@@ -9,6 +9,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256
 from starkware.starknet.common.syscalls import replace_class
 from openzeppelin.access.ownable.library import Ownable, Ownable_owner
+from openzeppelin.security.pausable.library import Pausable
 
 // Local dependencies
 from backend.starknet import Starknet
@@ -27,6 +28,47 @@ from kakarot.eth_rpc import (
     eth_send_transaction,
     eth_send_raw_unsigned_tx,
 )
+
+// / ADMIN ///
+
+// @notice Upgrade the contract
+// @dev Use the replace_hash syscall to upgrade the contract
+// @param new_class_hash The new class hash
+@external
+func upgrade{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    new_class_hash: felt
+) {
+    Ownable.assert_only_owner();
+    replace_class(new_class_hash);
+    kakarot_upgraded.emit(new_class_hash);
+    return ();
+}
+
+// @notice Transfer the ownership of the contract
+// @param new_owner The new owner
+@external
+func transfer_ownership{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    new_owner: felt
+) {
+    Ownable.transfer_ownership(new_owner);
+    return ();
+}
+
+// @notice Pause the contract
+@external
+func pause{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+    Ownable.assert_only_owner();
+    Pausable._pause();
+    return ();
+}
+
+// @notice Unpause the contract
+@external
+func unpause{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+    Ownable.assert_only_owner();
+    Pausable._unpause();
+    return ();
+}
 
 // Constructor
 @constructor
@@ -50,33 +92,10 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     );
 }
 
-// @notive Upgrade the contract
-// @dev Use the replace_hash syscall to upgrade the contract
-// @param new_class_hash The new class hash
-@external
-func upgrade{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    new_class_hash: felt
-) {
-    Ownable.assert_only_owner();
-    replace_class(new_class_hash);
-    kakarot_upgraded.emit(new_class_hash);
-    return ();
-}
-
 // @notive Returns the owner of the contract
 @external
 func get_owner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (owner: felt) {
     return Ownable_owner.read();
-}
-
-// @notive Transfer the ownership of the contract
-// @param new_owner The new owner
-@external
-func transfer_ownership{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    new_owner: felt
-) {
-    Ownable.transfer_ownership(new_owner);
-    return ();
 }
 
 // @notice Set the native token used by kakarot
@@ -269,6 +288,7 @@ func get_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_
 func deploy_externally_owned_account{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 }(evm_address: felt) -> (starknet_contract_address: felt) {
+    Pausable.assert_not_paused();
     return Kakarot.deploy_externally_owned_account(evm_address);
 }
 
@@ -279,6 +299,7 @@ func deploy_externally_owned_account{
 func register_account{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     evm_address: felt
 ) {
+    Pausable.assert_not_paused();
     return Kakarot.register_account(evm_address);
 }
 
@@ -349,6 +370,7 @@ func handle_l1_message{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(from_address: felt, l1_sender: felt, to_address: felt, value: felt, data_len: felt, data: felt*) {
     alloc_locals;
+    Pausable.assert_not_paused();
     let l1_messaging_contract_address = Kakarot.get_l1_messaging_contract_address();
     if (from_address != l1_messaging_contract_address) {
         return ();

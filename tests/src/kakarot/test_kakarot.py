@@ -77,6 +77,35 @@ def get_contract(cairo_run):
 
 class TestKakarot:
 
+    class TestPause:
+        @SyscallHandler.patch("Ownable_owner", 0xDEAD)
+        def test_should_assert_only_owner(self, cairo_run):
+            with cairo_error(message="Ownable: caller is not the owner"):
+                cairo_run("test__pause")
+
+        @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
+        @SyscallHandler.patch("Pausable_paused", 0)
+        def test_should_pause(self, cairo_run):
+            cairo_run("test__pause")
+            SyscallHandler.mock_storage.assert_called_with(
+                address=get_storage_var_address("Pausable_paused"), value=1
+            )
+
+    class TestUnpause:
+
+        @SyscallHandler.patch("Ownable_owner", 0xDEAD)
+        def test_should_assert_only_owner(self, cairo_run):
+            with cairo_error(message="Ownable: caller is not the owner"):
+                cairo_run("test__unpause")
+
+        @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
+        @SyscallHandler.patch("Pausable_paused", 1)
+        def test_should_unpause(self, cairo_run):
+            cairo_run("test__unpause")
+            SyscallHandler.mock_storage.assert_called_with(
+                address=get_storage_var_address("Pausable_paused"), value=0
+            )
+
     class TestNativeToken:
         @pytest.mark.slow
         @SyscallHandler.patch("Ownable_owner", 0xDEAD)
@@ -237,7 +266,20 @@ class TestKakarot:
             with cairo_error(message="Ownable: caller is not the owner"):
                 cairo_run("test__set_cairo1_helpers_class_hash", class_hash=0xABC)
 
+    class TestDeployEOA:
+        @SyscallHandler.patch("Pausable_paused", 1)
+        def test_should_assert_unpaused(self, cairo_run):
+            with cairo_error(message="Pausable: paused"):
+                cairo_run(
+                    "test__deploy_externally_owned_account", evm_address=EVM_ADDRESS
+                )
+
     class TestRegisterAccount:
+        @SyscallHandler.patch("Pausable_paused", 1)
+        def test_should_assert_unpaused(self, cairo_run):
+            with cairo_error(message="Pausable: paused"):
+                cairo_run("test__register_account", evm_address=EVM_ADDRESS)
+
         @SyscallHandler.patch("Kakarot_evm_to_starknet_address", EVM_ADDRESS, 0)
         @patch(
             "tests.utils.syscall_handler.SyscallHandler.caller_address",
@@ -320,6 +362,19 @@ class TestKakarot:
                     contract_address=0x99999,
                     function_selector=get_selector_from_name("upgrade"),
                     calldata=[0x1234],
+                )
+
+    class TestL1Handler:
+        @SyscallHandler.patch("Pausable_paused", 1)
+        def test_should_assert_unpaused(self, cairo_run):
+            with cairo_error(message="Pausable: paused"):
+                cairo_run(
+                    "test__handle_l1_message",
+                    from_address=0xABC,
+                    l1_sender=0xABC,
+                    to_address=0xABC,
+                    value=0xABC,
+                    data=[],
                 )
 
     class TestEthCall:
@@ -445,6 +500,11 @@ class TestKakarot:
                 assert res == chain_id % 2**53
 
     class TestEthSendRawTransactionEntrypoint:
+        @SyscallHandler.patch("Pausable_paused", 1)
+        def test_should_assert_unpaused(self, cairo_run):
+            with cairo_error(message="Pausable: paused"):
+                cairo_run("test__eth_send_raw_unsigned_tx", tx_data_len=0, tx_data=[])
+
         def test_should_raise_invalid_chain_id_tx_type_different_from_0(
             self, cairo_run
         ):
