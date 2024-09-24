@@ -1,7 +1,6 @@
 import pytest
 import pytest_asyncio
 from ethereum.base_types import U256, Uint
-from ethereum.cancun.vm.exceptions import OutOfGasError
 from ethereum.crypto.alt_bn128 import ALT_BN128_PRIME, BNF, BNP
 from hypothesis import given, settings
 from hypothesis.strategies import integers
@@ -10,15 +9,19 @@ from kakarot_scripts.utils.kakarot import deploy
 
 
 @pytest_asyncio.fixture(scope="package")
-async def evm_precompiles(owner):
+async def evm_precompiles():
     return await deploy(
         "EvmPrecompiles",
         "EvmPrecompiles",
-        caller_eoa=owner.starknet_contract,
     )
 
 
 def ref_alt_bn128_add(x0, y0, x1, y1):
+    """
+    # ruff: noqa: D401
+    Reference implementation of the alt_bn128_add precompile.
+    Source: https://github.com/ethereum/execution-specs/blob/07f5747a43d62ef7f203d41d77005cb15ca5e434/src/ethereum/cancun/vm/precompiled_contracts/alt_bn128.py#L32-L103.
+    """
     x0_value = U256.from_signed(x0)
     y0_value = U256.from_signed(y0)
     x1_value = U256.from_signed(x1)
@@ -26,13 +29,13 @@ def ref_alt_bn128_add(x0, y0, x1, y1):
 
     for i in (x0_value, y0_value, x1_value, y1_value):
         if i >= ALT_BN128_PRIME:
-            raise OutOfGasError
+            return [False, 0, 0]
 
     try:
         p0 = BNP(BNF(x0_value), BNF(y0_value))
         p1 = BNP(BNF(x1_value), BNF(y1_value))
     except ValueError:
-        raise OutOfGasError from None
+        return [False, 0, 0]
 
     p = p0 + p1
 
@@ -42,24 +45,29 @@ def ref_alt_bn128_add(x0, y0, x1, y1):
     x = Uint(int.from_bytes(x_bytes, "big"))
     y = Uint(int.from_bytes(y_bytes, "big"))
 
-    return [x, y]
+    return [True, x, y]
 
 
 def ref_alt_bn128_mul(x0, y0, s):
+    """
+    # ruff: noqa: D401
+    Reference implementation of the alt_bn128_mul precompile.
+    Source: https://github.com/ethereum/execution-specs/blob/07f5747a43d62ef7f203d41d77005cb15ca5e434/src/ethereum/cancun/vm/precompiled_contracts/alt_bn128.py#L32-L103.
+    """
     x0_value = U256.from_signed(x0)
     y0_value = U256.from_signed(y0)
-    U256.from_signed(s)
+    s_value = U256.from_signed(s)
 
     for i in (x0_value, y0_value):
         if i >= ALT_BN128_PRIME:
-            raise OutOfGasError
+            return [False, 0, 0]
 
     try:
         p0 = BNP(BNF(x0_value), BNF(y0_value))
     except ValueError:
-        raise OutOfGasError from None
+        return [False, 0, 0]
 
-    p = p0.mul_by(s)
+    p = p0.mul_by(s_value)
 
     x_bytes = p.x.to_be_bytes32()
     y_bytes = p.y.to_be_bytes32()
@@ -67,12 +75,11 @@ def ref_alt_bn128_mul(x0, y0, s):
     x = Uint(int.from_bytes(x_bytes, "big"))
     y = Uint(int.from_bytes(y_bytes, "big"))
 
-    return [x, y]
+    return [True, x, y]
 
 
 @pytest.mark.asyncio(scope="package")
 @pytest.mark.EvmPrecompiles
-# @pytest.mark.xfail(reason="Katana doesn't support new builtins")
 class TestEvmPrecompiles:
     class TestEcAdd:
         @given(
@@ -85,24 +92,14 @@ class TestEvmPrecompiles:
         async def test_should_return_ec_add_with_coordinates(
             self, evm_precompiles, x0, y0, x1, y1
         ):
-            try:
-                expected = ref_alt_bn128_add(x0, y0, x1, y1)
-                result = await evm_precompiles.ecAdd(x0, y0, x1, y1)
-                assert result[0] is True
-                assert result[1:] == expected
-            except OutOfGasError:
-                result = await evm_precompiles.ecAdd(x0, y0, x1, y1)
-                assert result[0] is False
+            expected = ref_alt_bn128_add(x0, y0, x1, y1)
+            result = await evm_precompiles.ecAdd(x0, y0, x1, y1)
+            assert result == expected
 
         async def test_should_return_ec_add_point_at_infinity(self, evm_precompiles):
-            try:
-                expected = ref_alt_bn128_add(0, 0, 0, 0)
-                result = await evm_precompiles.ecAdd(0, 0, 0, 0)
-                assert result[0] is True
-                assert result[1:] == expected
-            except OutOfGasError:
-                result = await evm_precompiles.ecAdd(0, 0, 0, 0)
-                assert result[0] is False
+            expected = ref_alt_bn128_add(0, 0, 0, 0)
+            result = await evm_precompiles.ecAdd(0, 0, 0, 0)
+            assert result == expected
 
     class TestEcMul:
         @given(
@@ -114,21 +111,11 @@ class TestEvmPrecompiles:
         async def test_should_return_ec_mul_with_coordinates(
             self, evm_precompiles, x0, y0, s
         ):
-            try:
-                expected = ref_alt_bn128_mul(x0, y0, s)
-                result = await evm_precompiles.ecMul(x0, y0, s)
-                assert result[0] is True
-                assert result[1:] == expected
-            except OutOfGasError:
-                result = await evm_precompiles.ecMul(x0, y0, s)
-                assert result[0] is False
+            expected = ref_alt_bn128_mul(x0, y0, s)
+            result = await evm_precompiles.ecMul(x0, y0, s)
+            assert result == expected
 
         async def test_should_return_ec_mul_point_at_infinity(self, evm_precompiles):
-            try:
-                expected = ref_alt_bn128_mul(0, 0, 0)
-                result = await evm_precompiles.ecMul(0, 0, 0)
-                assert result[0] is True
-                assert result[1:] == expected
-            except OutOfGasError:
-                result = await evm_precompiles.ecMul(0, 0, 0)
-                assert result[0] is False
+            expected = ref_alt_bn128_mul(0, 0, 0)
+            result = await evm_precompiles.ecMul(0, 0, 0)
+            assert result == expected

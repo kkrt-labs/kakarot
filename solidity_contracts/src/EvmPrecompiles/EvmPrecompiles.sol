@@ -11,9 +11,9 @@ contract EvmPrecompiles {
     address private constant ECMUL_PRECOMPILE = address(0x07);
 
     /// @dev Gas cost for ECADD call is 150
-    uint256 private constant ECADD_GAS = 1000000;
+    uint256 private constant ECADD_GAS = 150;
     /// @dev Gas cost for ECMUL call is 6000
-    uint256 private constant ECMUL_GAS = 1000000;
+    uint256 private constant ECMUL_GAS = 6000;
 
     /*//////////////////////////////////////////////////////////////
                             FUNCTIONS FOR PRECOMPILES
