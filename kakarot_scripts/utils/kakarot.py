@@ -162,12 +162,11 @@ async def get_contract(
     contract.bytecode_runtime = HexBytes(bytecode_runtime)
 
     try:
-        for fun_name, signature in [
-            (fun.fn_name, abi_to_signature(fun.abi)) for fun in contract.all_functions()
-        ]:
+        for fun in contract.all_functions():
+            signature = abi_to_signature(fun.abi)
             setattr(
                 contract,
-                fun_name,
+                fun.fn_name,
                 MethodType(_wrap_kakarot(signature, caller_eoa), contract),
             )
             contract.functions.__dict__[signature] = MethodType(
