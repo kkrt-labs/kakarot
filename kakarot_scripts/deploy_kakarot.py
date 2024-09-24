@@ -25,7 +25,7 @@ from kakarot_scripts.utils.kakarot import (
 )
 from kakarot_scripts.utils.kakarot import dump_deployments as dump_evm_deployments
 from kakarot_scripts.utils.kakarot import get_deployments as get_evm_deployments
-from kakarot_scripts.utils.starknet import declare
+from kakarot_scripts.utils.starknet import call, declare
 from kakarot_scripts.utils.starknet import deploy as deploy_starknet
 from kakarot_scripts.utils.starknet import (
     dump_declarations,
@@ -146,9 +146,7 @@ async def main():
     )
     await invoke("kakarot", "set_coinbase", int(bridge.address, 16))
 
-    coinbase = await RPC_CLIENT.call_contract(
-        starknet_deployments["kakarot"]["address"], "get_coinbase"
-    )
+    coinbase = (await call("kakarot", "get_coinbase")).coinbase
 
     if coinbase == 0:
         logger.error("❌ Coinbase is set to 0, all transaction fees will be lost")
