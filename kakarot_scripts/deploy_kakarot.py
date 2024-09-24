@@ -6,7 +6,6 @@ from kakarot_scripts.constants import (
     ARACHNID_PROXY_DEPLOYER,
     ARACHNID_PROXY_SIGNED_TX,
     BLOCK_GAS_LIMIT,
-    COINBASE,
     CREATEX_DEPLOYER,
     CREATEX_SIGNED_TX,
     DECLARED_CONTRACTS,
@@ -63,7 +62,6 @@ async def main():
             class_hash["account_contract"],  # account_contract_class_hash_
             class_hash["uninitialized_account"],  # uninitialized_account_class_hash_
             class_hash["Cairo1Helpers"],
-            COINBASE,
             BLOCK_GAS_LIMIT,
         )
         starknet_deployments["Counter"] = await deploy_starknet("Counter")
@@ -105,7 +103,6 @@ async def main():
             class_hash["account_contract"],  # account_contract_class_hash_
             class_hash["uninitialized_account"],  # uninitialized_account_class_hash_
             class_hash["Cairo1Helpers"],
-            COINBASE,
             BLOCK_GAS_LIMIT,
         )
         await invoke(
