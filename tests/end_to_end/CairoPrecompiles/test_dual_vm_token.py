@@ -90,7 +90,7 @@ class TestDualVmToken:
         async def test_should_revert_balance_of_invalid_address(
             self, starknet_token, dual_vm_token
         ):
-            evm_error = keccak("InvalidStarknetAddress()".encode())[:4]
+            evm_error = keccak(b"InvalidStarknetAddress()")[:4]
             with cairo_error(evm_error):
                 await dual_vm_token.functions["balanceOf(uint256)"](2**256 - 1)
 
@@ -111,7 +111,7 @@ class TestDualVmToken:
                 )
             )["receipt"]
             events = dual_vm_token.events.parse_events(receipt)
-            assert events["Transfer"] == [
+            assert events["Transfer(address,address,uint256)"] == [
                 {
                     "from": str(owner.address),
                     "to": str(other.address),
@@ -144,9 +144,9 @@ class TestDualVmToken:
                 )
             )["receipt"]
             events = dual_vm_token.events.parse_events(receipt)
-            assert events["TransferStarknet"] == [
+            assert events["Transfer(address,uint256,uint256)"] == [
                 {
-                    "from": int(owner.address, 16),
+                    "from": str(owner.address),
                     "to": other.starknet_contract.address,
                     "amount": amount,
                 }
@@ -183,7 +183,7 @@ class TestDualVmToken:
         async def test_should_revert_transfer_starknet_address_invalid_address(
             self, starknet_token, dual_vm_token
         ):
-            evm_error = keccak("InvalidStarknetAddress()".encode())[:4]
+            evm_error = keccak(b"InvalidStarknetAddress()")[:4]
             with cairo_error(evm_error):
                 await dual_vm_token.functions["transfer(uint256,uint256)"](
                     2**256 - 1, 1
@@ -202,7 +202,7 @@ class TestDualVmToken:
                 )
             )["receipt"]
             events = dual_vm_token.events.parse_events(receipt)
-            assert events["Approval"] == [
+            assert events["Approval(address,address,uint256)"] == [
                 {
                     "owner": str(owner.address),
                     "spender": str(other.address),
@@ -227,7 +227,7 @@ class TestDualVmToken:
                 )
             )["receipt"]
             events = dual_vm_token.events.parse_events(receipt)
-            assert events["ApprovalStarknet"] == [
+            assert events["Approval(address,uint256,uint256)"] == [
                 {
                     "owner": str(owner.address),
                     "spender": other.starknet_contract.address,
@@ -242,7 +242,7 @@ class TestDualVmToken:
         async def test_should_revert_approve_starknet_address_invalid_address(
             self, starknet_token, dual_vm_token
         ):
-            evm_error = keccak("InvalidStarknetAddress()".encode())[:4]
+            evm_error = keccak(b"InvalidStarknetAddress()")[:4]
             with cairo_error(evm_error):
                 await dual_vm_token.functions["approve(uint256,uint256)"](2**256 - 1, 1)
 
@@ -289,11 +289,12 @@ class TestDualVmToken:
                 )
 
         async def test_allowance_owner_and_spender_starknet_address(
-            self, starknet_token, dual_vm_token
+            self, starknet_token, dual_vm_token, new_eoa
         ):
             amount = 1
             owner = await get_starknet_account()
-            spender = await get_starknet_account()
+            eoa = await new_eoa()
+            spender = await get_starknet_account(eoa.private_key)
             allowance_before = await dual_vm_token.functions[
                 "allowance(uint256,uint256)"
             ](owner.address, spender.address)
@@ -334,7 +335,7 @@ class TestDualVmToken:
                 )
             )["receipt"]
             events = dual_vm_token.events.parse_events(receipt)
-            assert events["Transfer"] == [
+            assert events["Transfer(address,address,uint256)"] == [
                 {
                     "from": str(owner.address),
                     "to": str(other.address),
@@ -373,10 +374,10 @@ class TestDualVmToken:
                 )
             )["receipt"]
             events = dual_vm_token.events.parse_events(receipt)
-            assert events["TransferStarknet"] == [
+            assert events["Transfer(uint256,address,uint256)"] == [
                 {
                     "from": owner.starknet_contract.address,
-                    "to": int(other.address, 16),
+                    "to": str(other.address),
                     "amount": amount,
                 }
             ]
@@ -412,9 +413,9 @@ class TestDualVmToken:
                 )
             )["receipt"]
             events = dual_vm_token.events.parse_events(receipt)
-            assert events["TransferStarknet"] == [
+            assert events["Transfer(address,uint256,uint256)"] == [
                 {
-                    "from": int(owner.address, 16),
+                    "from": str(owner.address),
                     "to": other.starknet_contract.address,
                     "amount": amount,
                 }
@@ -451,7 +452,7 @@ class TestDualVmToken:
                 )
             )["receipt"]
             events = dual_vm_token.events.parse_events(receipt)
-            assert events["TransferStarknet"] == [
+            assert events["Transfer(uint256,uint256,uint256)"] == [
                 {
                     "from": owner.starknet_contract.address,
                     "to": other.starknet_contract.address,
@@ -577,7 +578,7 @@ class TestDualVmToken:
         async def test_should_revert_transfer_from_starknet_address_from_and_to_invalid_address(
             self, starknet_token, dual_vm_token, other
         ):
-            evm_error = keccak("InvalidStarknetAddress()".encode())[:4]
+            evm_error = keccak(b"InvalidStarknetAddress()")[:4]
             with cairo_error(evm_error):
                 await dual_vm_token.functions["transferFrom(uint256,uint256,uint256)"](
                     2**256 - 1, 2**256 - 1, 1, caller_eoa=other.starknet_contract

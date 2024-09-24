@@ -32,18 +32,20 @@ contract DualVmToken {
     /// @dev Emitted when tokens are transferred from one address to another
     event Transfer(address indexed from, address indexed to, uint256 amount);
 
+    /// @dev Emitted when tokens are transferred from one starknet address to an evm address
+    event Transfer(uint256 indexed from, address indexed to, uint256 amount);
+
+    /// @dev Emitted when tokens are transferred from one address to a starknet address
+    event Transfer(address indexed from, uint256 indexed to, uint256 amount);
+
     /// @dev Emitted when tokens are transferred from one starknet address to another
-    ///      This event does not specify if the starknet address has a corresponding kakarot evm address
-    ///      It will need further processing by offchain systems
-    event TransferStarknet(uint256 indexed from, uint256 indexed to, uint256 amount);
+    event Transfer(uint256 indexed from, uint256 indexed to, uint256 amount);
 
     /// @dev Emitted when the allowance of a spender over the owner's tokens is set
     event Approval(address indexed owner, address indexed spender, uint256 amount);
 
     /// @dev Emitted when the allowance of a starknet address spender over the owner's tokens is set
-    ///      This event does not specify if the starknet address has a corresponding kakarot evm address
-    ///      It will need further processing by offchain systems
-    event ApprovalStarknet(address indexed owner, uint256 indexed spender, uint256 amount);
+    event Approval(address indexed owner, uint256 indexed spender, uint256 amount);
 
     /*//////////////////////////////////////////////////////////////
                                ERRORS
@@ -207,7 +209,7 @@ contract DualVmToken {
     /// @return True if the approval was successful
     function approve(uint256 spender, uint256 amount) external returns (bool) {
         _approve(spender, amount);
-        emit ApprovalStarknet(msg.sender, spender, amount);
+        emit Approval(msg.sender, spender, amount);
         return true;
     }
 
@@ -247,7 +249,7 @@ contract DualVmToken {
     /// @return True if the transfer was successful
     function transfer(uint256 to, uint256 amount) external returns (bool) {
         _transfer(to, amount);
-        emit TransferStarknet(uint256(uint160(msg.sender)), to, amount);
+        emit Transfer(msg.sender, to, amount);
         return true;
     }
 
@@ -296,14 +298,13 @@ contract DualVmToken {
     /// @return True if the transfer was successful
     function transferFrom(uint256 from, address to, uint256 amount) external returns (bool) {
         uint256[] memory toAddressCalldata = new uint256[](1);
-        uint256 toAddressUint256 = uint256(uint160(to));
-        toAddressCalldata[0] = toAddressUint256;
+        toAddressCalldata[0] = uint256(uint160(to));
         uint256 toStarknetAddress =
             abi.decode(kakarot.staticcallCairo("get_starknet_address", toAddressCalldata), (uint256));
 
         _transferFrom(from, toStarknetAddress, amount);
 
-        emit TransferStarknet(from, toAddressUint256, amount);
+        emit Transfer(from, to, amount);
         return true;
     }
 
@@ -314,14 +315,13 @@ contract DualVmToken {
     /// @return True if the transfer was successful
     function transferFrom(address from, uint256 to, uint256 amount) external returns (bool) {
         uint256[] memory fromAddressCalldata = new uint256[](1);
-        uint256 fromAddressUint256 = uint256(uint160(from));
-        fromAddressCalldata[0] = fromAddressUint256;
+        fromAddressCalldata[0] = uint256(uint160(from));
         uint256 fromStarknetAddress =
             abi.decode(kakarot.staticcallCairo("get_starknet_address", fromAddressCalldata), (uint256));
 
         _transferFrom(fromStarknetAddress, to, amount);
 
-        emit TransferStarknet(fromAddressUint256, to, amount);
+        emit Transfer(from, to, amount);
         return true;
     }
 
@@ -332,7 +332,7 @@ contract DualVmToken {
     /// @return True if the transfer was successful
     function transferFrom(uint256 from, uint256 to, uint256 amount) external returns (bool) {
         _transferFrom(from, to, amount);
-        emit TransferStarknet(from, to, amount);
+        emit Transfer(from, to, amount);
         return true;
     }
 

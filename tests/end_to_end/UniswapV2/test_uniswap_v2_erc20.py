@@ -37,7 +37,7 @@ class TestUniswapV2ERC20:
                 )
             )["receipt"]
             events = token_a.events.parse_events(receipt)
-            assert events["Approval"] == [
+            assert events["Approval(address,address,uint256)"] == [
                 {
                     "owner": owner.address,
                     "spender": other.address,
@@ -57,7 +57,7 @@ class TestUniswapV2ERC20:
                 )
             )["receipt"]
             events = token_a.events.parse_events(receipt)
-            assert events["Transfer"] == [
+            assert events["Transfer(address,address,uint256)"] == [
                 {
                     "from": owner.address,
                     "to": other.address,
@@ -99,7 +99,7 @@ class TestUniswapV2ERC20:
                 )
             )["receipt"]
             events = token_a.events.parse_events(receipt)
-            assert events["Transfer"] == [
+            assert events["Transfer(address,address,uint256)"] == [
                 {"from": owner.address, "to": other.address, "value": TEST_AMOUNT}
             ]
 
@@ -122,7 +122,7 @@ class TestUniswapV2ERC20:
                 )
             )["receipt"]
             events = token_a.events.parse_events(receipt)
-            assert events["Transfer"] == [
+            assert events["Transfer(address,address,uint256)"] == [
                 {"from": owner.address, "to": other.address, "value": TEST_AMOUNT}
             ]
 
@@ -159,7 +159,7 @@ class TestUniswapV2ERC20:
                 )
             )["receipt"]
             events = token_a.events.parse_events(receipt)
-            assert events["Approval"] == [
+            assert events["Approval(address,address,uint256)"] == [
                 {"owner": owner.address, "spender": other.address, "value": TEST_AMOUNT}
             ]
             assert await token_a.allowance(owner.address, other.address) == TEST_AMOUNT

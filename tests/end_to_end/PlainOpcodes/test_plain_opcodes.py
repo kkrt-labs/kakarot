@@ -102,21 +102,21 @@ class TestPlainOpcodes:
                 await plain_opcodes.opcodeLog0(caller_eoa=owner.starknet_contract)
             )["receipt"]
             events = plain_opcodes.events.parse_events(receipt)
-            assert events["Log0"] == [{}]
+            assert events["Log0()"] == [{}]
 
         async def test_should_emit_log0_with_data(self, plain_opcodes, owner, event):
             receipt = (
                 await plain_opcodes.opcodeLog0Value(caller_eoa=owner.starknet_contract)
             )["receipt"]
             events = plain_opcodes.events.parse_events(receipt)
-            assert events["Log0Value"] == [{"value": event["value"]}]
+            assert events["Log0Value(uint256)"] == [{"value": event["value"]}]
 
         async def test_should_emit_log1(self, plain_opcodes, owner, event):
             receipt = (
                 await plain_opcodes.opcodeLog1(caller_eoa=owner.starknet_contract)
             )["receipt"]
             events = plain_opcodes.events.parse_events(receipt)
-            assert events["Log1"] == [{"value": event["value"]}]
+            assert events["Log1(uint256)"] == [{"value": event["value"]}]
 
         async def test_should_emit_log2(self, plain_opcodes, owner, event):
             receipt = (
@@ -124,21 +124,21 @@ class TestPlainOpcodes:
             )["receipt"]
             events = plain_opcodes.events.parse_events(receipt)
             del event["spender"]
-            assert events["Log2"] == [event]
+            assert events["Log2(address,uint256)"] == [event]
 
         async def test_should_emit_log3(self, plain_opcodes, owner, event):
             receipt = (
                 await plain_opcodes.opcodeLog3(caller_eoa=owner.starknet_contract)
             )["receipt"]
             events = plain_opcodes.events.parse_events(receipt)
-            assert events["Log3"] == [event]
+            assert events["Log3(address,address,uint256)"] == [event]
 
         async def test_should_emit_log4(self, plain_opcodes, owner, event):
             receipt = (
                 await plain_opcodes.opcodeLog4(caller_eoa=owner.starknet_contract)
             )["receipt"]
             events = plain_opcodes.events.parse_events(receipt)
-            assert events["Log4"] == [event]
+            assert events["Log4(address,address,uint256)"] == [event]
 
     class TestCreate:
         @pytest.mark.parametrize("count", [1, 2])
@@ -155,8 +155,8 @@ class TestPlainOpcodes:
                 )
             )["receipt"]
             events = plain_opcodes.events.parse_events(receipt)
-            assert len(events["CreateAddress"]) == count
-            for create_event in events["CreateAddress"]:
+            assert len(events["CreateAddress(address)"]) == count
+            for create_event in events["CreateAddress(address)"]:
                 deployed_counter = await get_contract(
                     "PlainOpcodes", "Counter", address=create_event["_address"]
                 )
@@ -178,15 +178,17 @@ class TestPlainOpcodes:
             )["receipt"]
 
             events = plain_opcodes.events.parse_events(receipt)
-            assert len(events["CreateAddress"]) == 1
-            assert b"" == await eth_get_code(events["CreateAddress"][0]["_address"])
+            assert len(events["CreateAddress(address)"]) == 1
+            assert b"" == await eth_get_code(
+                events["CreateAddress(address)"][0]["_address"]
+            )
 
         async def test_should_create_counter_and_call_in_the_same_tx(
             self, plain_opcodes
         ):
             receipt = (await plain_opcodes.createCounterAndCall())["receipt"]
             events = plain_opcodes.events.parse_events(receipt)
-            address = events["CreateAddress"][0]["_address"]
+            address = events["CreateAddress(address)"][0]["_address"]
             counter = await get_contract("PlainOpcodes", "Counter", address=address)
             assert await counter.count() == 0
 
@@ -195,7 +197,7 @@ class TestPlainOpcodes:
         ):
             receipt = (await plain_opcodes.createCounterAndInvoke())["receipt"]
             events = plain_opcodes.events.parse_events(receipt)
-            address = events["CreateAddress"][0]["_address"]
+            address = events["CreateAddress(address)"][0]["_address"]
             counter = await get_contract("PlainOpcodes", "Counter", address=address)
             assert await counter.count() == 1
 
@@ -215,11 +217,11 @@ class TestPlainOpcodes:
                 )
             )["receipt"]
             events = plain_opcodes.events.parse_events(receipt)
-            assert len(events["Create2Address"]) == 1
+            assert len(events["Create2Address(address)"]) == 1
             contract_with_selfdestruct = await get_contract(
                 "PlainOpcodes",
                 "ContractWithSelfdestructMethod",
-                address=events["Create2Address"][0]["_address"],
+                address=events["Create2Address(address)"][0]["_address"],
             )
             pre_code = await eth_get_code(contract_with_selfdestruct.address)
             assert pre_code
@@ -238,7 +240,7 @@ class TestPlainOpcodes:
             events = plain_opcodes.events.parse_events(receipt)
 
             # There should be a create2 collision which returns zero
-            assert events["Create2Address"] == [
+            assert events["Create2Address(address)"] == [
                 {"_address": "0x0000000000000000000000000000000000000000"}
             ]
 
@@ -256,12 +258,12 @@ class TestPlainOpcodes:
                 )
             )["receipt"]
             events = plain_opcodes.events.parse_events(receipt)
-            assert len(events["Create2Address"]) == 1
+            assert len(events["Create2Address(address)"]) == 1
 
             deployed_counter = await get_contract(
                 "PlainOpcodes",
                 "Counter",
-                address=events["Create2Address"][0]["_address"],
+                address=events["Create2Address(address)"][0]["_address"],
             )
             assert await deployed_counter.count() == 0
             assert await eth_get_transaction_count(deployed_counter.address) == 1
@@ -301,7 +303,9 @@ class TestPlainOpcodes:
                 "PlainOpcodes", "ContractRevertsOnMethodCall"
             )
 
-            assert reverting_contract.events.parse_events(receipt) == {"PartyTime": []}
+            assert reverting_contract.events.parse_events(receipt) == {
+                "PartyTime(bool)": []
+            }
 
     class TestOriginAndSender:
         async def test_should_return_owner_as_origin_and_sender(
@@ -323,9 +327,11 @@ class TestPlainOpcodes:
                 )
             )["receipt"]
             events = caller.events.parse_events(receipt)
-            assert len(events["Call"]) == 1
-            assert events["Call"][0]["success"]
-            decoded = decode(["address", "address"], events["Call"][0]["returnData"])
+            assert len(events["Call(bool,bytes)"]) == 1
+            assert events["Call(bool,bytes)"][0]["success"]
+            decoded = decode(
+                ["address", "address"], events["Call(bool,bytes)"][0]["returnData"]
+            )
             assert int(owner.address, 16) == int(decoded[0], 16)  # tx.origin
             assert int(caller.address, 16) == int(decoded[1], 16)  # msg.sender
 
@@ -368,7 +374,7 @@ class TestPlainOpcodes:
                 )
             )["receipt"]
             events = plain_opcodes.events.parse_events(receipt)
-            assert events["SentSome"] == [
+            assert events["SentSome(address,uint256,bool)"] == [
                 {
                     "to": other.address,
                     "amount": sender_balance_before + 1,
@@ -381,10 +387,10 @@ class TestPlainOpcodes:
         async def test_should_emit_event_and_increase_nonce(self, plain_opcodes):
             receipt = (await plain_opcodes.incrementMapping())["receipt"]
             events = plain_opcodes.events.parse_events(receipt)
-            prev_nonce = events["NonceIncreased"][0]["nonce"]
+            prev_nonce = events["NonceIncreased(uint256)"][0]["nonce"]
             receipt = (await plain_opcodes.incrementMapping())["receipt"]
             events = plain_opcodes.events.parse_events(receipt)
-            assert events["NonceIncreased"][0]["nonce"] - prev_nonce == 1
+            assert events["NonceIncreased(uint256)"][0]["nonce"] - prev_nonce == 1
 
     class TestFallbackFunctions:
         @pytest.mark.parametrize(
@@ -429,4 +435,6 @@ class TestPlainOpcodes:
             input_bytes = os.urandom(input_length)
             receipt = (await plain_opcodes.computeHash(input_bytes))["receipt"]
             events = plain_opcodes.events.parse_events(receipt)
-            assert events["HashComputed"][0]["hash"] == keccak(input_bytes)
+            assert events["HashComputed(address,bytes32)"][0]["hash"] == keccak(
+                input_bytes
+            )

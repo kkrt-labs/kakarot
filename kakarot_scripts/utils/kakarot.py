@@ -384,7 +384,9 @@ def _parse_events(cls: ContractEvents, tx_receipt):
     log_receipts = get_log_receipts(tx_receipt)
 
     return {
-        event_abi.get("name"): _get_matching_logs_for_event(event_abi, log_receipts)
+        abi_to_signature(event_abi): _get_matching_logs_for_event(
+            event_abi, log_receipts
+        )
         for event_abi in cls._events
     }
 
