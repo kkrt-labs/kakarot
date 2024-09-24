@@ -147,7 +147,6 @@ async def main():
     await invoke("kakarot", "set_coinbase", int(bridge.address, 16))
 
     coinbase = (await call("kakarot", "get_coinbase")).coinbase
-
     if coinbase == 0:
         logger.error("❌ Coinbase is set to 0, all transaction fees will be lost")
     else:
