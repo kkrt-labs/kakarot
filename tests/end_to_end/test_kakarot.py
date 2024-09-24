@@ -4,7 +4,7 @@ import pytest
 import pytest_asyncio
 from starknet_py.contract import Contract
 
-from kakarot_scripts.constants import COINBASE, NETWORK, RPC_CLIENT
+from kakarot_scripts.constants import NETWORK, RPC_CLIENT
 from kakarot_scripts.utils.kakarot import (
     get_eoa,
     get_solidity_artifacts,
@@ -68,22 +68,6 @@ async def origin(evm, max_fee):
     evm_address = int(generate_random_evm_address(), 16)
     await evm.functions["deploy_account"].invoke_v1(evm_address, max_fee=max_fee)
     return evm_address
-
-
-# Used to fill the coinbase with the constant COINBASE address
-# used when generating test cases.
-@pytest.fixture(scope="class", autouse=True)
-async def setup_and_teardown(owner):
-    # Setup code
-    print("Setup before all tests in TestKakarot")
-    prev_coinbase = (await call("kakarot", "get_coinbase")).coinbase
-    await invoke("kakarot", "set_coinbase", COINBASE)
-
-    yield
-
-    # Teardown code
-    print("Teardown after all tests in TestKakarot")
-    await invoke("kakarot", "set_coinbase", prev_coinbase)
 
 
 @pytest.mark.asyncio(scope="session")

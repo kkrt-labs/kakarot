@@ -6,6 +6,7 @@ from kakarot_scripts.constants import (
     ARACHNID_PROXY_DEPLOYER,
     ARACHNID_PROXY_SIGNED_TX,
     BLOCK_GAS_LIMIT,
+    COINBASE,
     CREATEX_DEPLOYER,
     CREATEX_SIGNED_TX,
     DECLARED_CONTRACTS,
@@ -64,6 +65,7 @@ async def main():
             class_hash["Cairo1Helpers"],
             BLOCK_GAS_LIMIT,
         )
+        await invoke("EVM", "set_coinbase", COINBASE)
         starknet_deployments["Counter"] = await deploy_starknet("Counter")
         starknet_deployments["MockPragmaOracle"] = await deploy_starknet(
             "MockPragmaOracle"
