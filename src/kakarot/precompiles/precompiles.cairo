@@ -12,7 +12,7 @@ from kakarot.storages import Kakarot_cairo1_helpers_class_hash
 from kakarot.errors import Errors
 from kakarot.precompiles.blake2f import PrecompileBlake2f
 from kakarot.precompiles.kakarot_precompiles import KakarotPrecompiles
-from kakarot.precompiles.datacopy import PrecompileDataCopy
+from kakarot.precompiles.identity import PrecompileIdentity
 from kakarot.precompiles.ec_recover import PrecompileEcRecover
 from kakarot.precompiles.p256verify import PrecompileP256Verify
 from kakarot.precompiles.ripemd160 import PrecompileRIPEMD160
@@ -37,7 +37,7 @@ namespace Precompiles {
     // @return output_len The output length.
     // @return output The output array.
     // @return gas_used The gas usage of precompile.
-    // @return reverted Whether the precompile ran successfully or not
+    // @return reverted The reverted code in {0(success), REVERTED, EXCEPTIONAL_HALT}.
     func exec_precompile{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -112,13 +112,13 @@ namespace Precompiles {
         ret;
         call PrecompileRIPEMD160.run;  // 0x3
         ret;
-        call PrecompileDataCopy.run;  // 0x4
+        call PrecompileIdentity.run;  // 0x4
         ret;
         call not_implemented_precompile;  // 0x5
         ret;
-        call not_implemented_precompile;  // 0x6
+        call external_precompile;  // 0x6
         ret;
-        call not_implemented_precompile;  // 0x7
+        call external_precompile;  // 0x7
         ret;
         call not_implemented_precompile;  // 0x8
         ret;
@@ -161,10 +161,11 @@ namespace Precompiles {
     }
 
     // @notice A placeholder for attempts to call a precompile without permissions
-    // @dev Halts execution.
-    // @param evm_address The evm_address.
-    // @param input_len The length of the input array.
-    // @param input The input array.
+    // @dev Halts execution with an unauthorized precompile error.
+    // @return output_len The length of the error message.
+    // @return output The error message.
+    // @return gas_used The gas used (always 0 for this function).
+    // @return reverted The reverted code (EXCEPTIONAL_HALT).
     func unauthorized_precompile{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -172,14 +173,18 @@ namespace Precompiles {
         bitwise_ptr: BitwiseBuiltin*,
     }() -> (output_len: felt, output: felt*, gas_used: felt, reverted: felt) {
         let (revert_reason_len, revert_reason) = Errors.unauthorizedPrecompile();
-        return (revert_reason_len, revert_reason, 0, Errors.REVERT);
+        return (revert_reason_len, revert_reason, 0, Errors.EXCEPTIONAL_HALT);
     }
 
-    // @notice A placeholder for precompile that don't exist.
-    // @dev Halts execution.
-    // @param evm_address The evm_address.
-    // @param input_len The length of the input array.
-    // @param input The input array.
+    // @notice A placeholder for precompiles that don't exist.
+    // @dev Halts execution with an unknown precompile error.
+    // @param evm_address The address of the unknown precompile.
+    // @param input_len The length of the input array (unused).
+    // @param input The input array (unused).
+    // @return output_len The length of the error message.
+    // @return output The error message.
+    // @return gas_used The gas used (always 0 for this function).
+    // @return reverted The reverted code (EXCEPTIONAL_HALT).
     func unknown_precompile{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -192,11 +197,15 @@ namespace Precompiles {
         return (revert_reason_len, revert_reason, 0, Errors.EXCEPTIONAL_HALT);
     }
 
-    // @notice A placeholder for precompile that are not implemented yet.
-    // @dev Halts execution.
-    // @param evm_address The evm_address.
-    // @param input_len The length of the input array.
-    // @param input The input array.
+    // @notice A placeholder for precompiles that are not implemented yet.
+    // @dev Halts execution with a not implemented precompile error.
+    // @param evm_address The address of the not implemented precompile.
+    // @param input_len The length of the input array (unused).
+    // @param input The input array (unused).
+    // @return output_len The length of the error message.
+    // @return output The error message.
+    // @return gas_used The gas used (always 0 for this function).
+    // @return reverted The reverted code (EXCEPTIONAL_HALT).
     func not_implemented_precompile{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -209,6 +218,15 @@ namespace Precompiles {
         return (revert_reason_len, revert_reason, 0, Errors.EXCEPTIONAL_HALT);
     }
 
+    // @notice Executes an external precompile using a Cairo 1 helper contract.
+    // @dev Calls the library_call_exec_precompile function of the ICairo1Helpers interface.
+    // @param evm_address The address of the external precompile.
+    // @param input_len The length of the input array.
+    // @param input The input array.
+    // @return output_len The length of the output data.
+    // @return output The output data.
+    // @return gas_used The gas used by the precompile execution.
+    // @return reverted 0 if successful, EXCEPTIONAL_HALT if execution failed.
     func external_precompile{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -228,7 +246,10 @@ namespace Precompiles {
         ) = ICairo1Helpers.library_call_exec_precompile(
             class_hash=implementation, address=evm_address, data_len=input_len, data=input
         );
-
-        return (return_data_len, return_data, gas, 1 - success);
+        if (success != FALSE) {
+            return (return_data_len, return_data, gas, 0);
+        }
+        // Precompiles can only revert with exceptions. Thus if the execution failed, it's an error EXCEPTIONAL_HALT.
+        return (return_data_len, return_data, 0, Errors.EXCEPTIONAL_HALT);
     }
 }

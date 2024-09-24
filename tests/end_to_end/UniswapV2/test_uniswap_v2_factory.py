@@ -27,7 +27,9 @@ class TestUniswapV2Factory:
             )["receipt"]
             token_0, token_1 = sorted(TEST_ADDRESSES)
             pair_evm_address = await factory.getPair(*TEST_ADDRESSES)
-            assert factory.events.parse_events(receipt)["PairCreated"] == [
+            assert factory.events.parse_events(receipt)[
+                "PairCreated(address,address,address,uint256)"
+            ] == [
                 {
                     "token0": token_0,
                     "token1": token_1,

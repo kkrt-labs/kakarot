@@ -221,7 +221,7 @@ class TestERC20:
             )["receipt"]
             events = erc_20.events.parse_events(receipt)
 
-            assert events["Approval"] == [
+            assert events["Approval(address,address,uint256)"] == [
                 {
                     "owner": owner.address,
                     "spender": other.address,

@@ -76,19 +76,30 @@ namespace Interpreter {
                     tempvar caller_code_address = parent_context.evm.message.code_address.evm;
                 }
                 tempvar caller_address = evm.message.caller;
-                let (
-                    output_len, output, gas_used, precompile_reverted
-                ) = Precompiles.exec_precompile(
+                let (output_len, output, gas_used, revert_code) = Precompiles.exec_precompile(
                     evm.message.code_address.evm,
                     evm.message.calldata_len,
                     evm.message.calldata,
                     caller_code_address,
                     caller_address,
                 );
-                let evm = EVM.charge_gas(evm, gas_used);
-                let evm_reverted = is_not_zero(evm.reverted);
-                let success = (1 - precompile_reverted) * (1 - evm_reverted);
-                let evm = EVM.stop(evm, output_len, output, 1 - success);
+
+                let precompile_reverted = is_not_zero(revert_code);
+                if (precompile_reverted != FALSE) {
+                    // No need to charge gas as precompiles can only trigger EXCEPTIONAL_REVERT
+                    // which will consume the entire gas of the context.
+                    let evm = EVM.stop(evm, output_len, output, revert_code);
+                    tempvar range_check_ptr = range_check_ptr;
+                    tempvar evm = evm;
+                } else {
+                    // Charge gas before stopping
+                    let evm = EVM.charge_gas(evm, gas_used);
+                    let evm = EVM.stop(evm, output_len, output, evm.reverted);
+                    tempvar range_check_ptr = range_check_ptr;
+                    tempvar evm = evm;
+                }
+                let range_check_ptr = [ap - 2];
+                let evm = cast([ap - 1], model.EVM*);
                 let is_cairo_precompile_called = PrecompilesHelpers.is_kakarot_precompile(
                     evm.message.code_address.evm
                 );

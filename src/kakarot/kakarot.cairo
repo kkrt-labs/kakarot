@@ -78,7 +78,6 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     account_contract_class_hash: felt,
     uninitialized_account_class_hash: felt,
     cairo1_helpers_class_hash: felt,
-    coinbase: felt,
     block_gas_limit: felt,
 ) {
     return Kakarot.constructor(
@@ -87,7 +86,6 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
         account_contract_class_hash,
         uninitialized_account_class_hash,
         cairo1_helpers_class_hash,
-        coinbase,
         block_gas_limit,
     );
 }

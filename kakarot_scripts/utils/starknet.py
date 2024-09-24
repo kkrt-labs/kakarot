@@ -243,6 +243,12 @@ def get_deployments():
 
 @cache
 def get_artifact(contract_name):
+    # Cairo 0 artifacts
+    artifacts = list(BUILD_DIR.glob(f"*{contract_name}*.json"))
+    if artifacts:
+        return Artifact(sierra=None, casm=artifacts[0])
+
+    # Cairo 1 artifacts
     artifacts = list(CAIRO_DIR.glob(f"**/*{contract_name}.*.json")) or list(
         BUILD_DIR_SSJ.glob(f"**/*{contract_name}.*.json")
     )
@@ -255,10 +261,7 @@ def get_artifact(contract_name):
         )
         return Artifact(sierra=sierra, casm=casm)
 
-    artifacts = list(BUILD_DIR.glob(f"**/*{contract_name}*.json"))
-    if not artifacts:
-        raise FileNotFoundError(f"No artifact found for {contract_name}")
-    return Artifact(sierra=None, casm=artifacts[0])
+    raise FileNotFoundError(f"No artifact found for {contract_name}")
 
 
 @cache

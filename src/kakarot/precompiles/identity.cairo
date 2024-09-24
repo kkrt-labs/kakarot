@@ -11,13 +11,14 @@ from utils.utils import Helpers
 from kakarot.memory import Memory
 from kakarot.evm import EVM
 
-// @title DataCopy precompile
+// @title Identity precompile
 // @custom:precompile
 // @custom:address 0x04
 // @notice This precompile serves as a cheaper way to copy data in memory
-namespace PrecompileDataCopy {
+namespace PrecompileIdentity {
     const PRECOMPILE_ADDRESS = 0x04;
-    const GAS_COST_DATACOPY = 15;
+    const GAS_IDENTITY = 15;
+    const GAS_IDENTITY_WORD = 3;
 
     // @notice Run the precompile.
     // @param input_len The length of input array.
@@ -34,6 +35,6 @@ namespace PrecompileDataCopy {
         output_len: felt, output: felt*, gas_used: felt, reverted: felt
     ) {
         let (minimum_word_size) = Helpers.minimum_word_count(input_len);
-        return (input_len, input, 3 * minimum_word_size + GAS_COST_DATACOPY, 0);
+        return (input_len, input, GAS_IDENTITY_WORD * minimum_word_size + GAS_IDENTITY, 0);
     }
 }

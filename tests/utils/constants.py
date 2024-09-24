@@ -19,11 +19,6 @@ PRE_FUND_AMOUNT = int(1e17)  # 0.01 ETH
 # Account balance is the amount of funds that the account has after being deployed
 ACCOUNT_BALANCE = PRE_FUND_AMOUNT
 
-# Coinbase address is the address of the sequencer
-MOCK_COINBASE_ADDRESS = (
-    0x388CA486B82E20CC81965D056B4CDCAACDFFE0CF08E20ED8BA10EA97A487004
-)
-
 # STACK
 STACK_MAX_DEPTH = 1024
 
