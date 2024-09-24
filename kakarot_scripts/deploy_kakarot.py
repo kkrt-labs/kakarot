@@ -146,6 +146,15 @@ async def main():
     )
     await invoke("kakarot", "set_coinbase", int(bridge.address, 16))
 
+    coinbase = await RPC_CLIENT.call_contract(
+        starknet_deployments["kakarot"]["address"], "get_coinbase"
+    )
+
+    if coinbase == 0:
+        logger.error("❌ Coinbase is set to 0, all transaction fees will be lost")
+    else:
+        logger.info(f"✅ Coinbase set to: 0x{coinbase:040x}")
+
     weth = await deploy_evm("WETH", "WETH9")
     evm_deployments["WETH"] = {
         "address": int(weth.address, 16),
