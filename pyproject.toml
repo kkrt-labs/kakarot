@@ -8,7 +8,6 @@ packages = [{ include = "kakarot_scripts" }, { include = "tests" }]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.11"
-starknet-py = "^0.23.0"
 cairo-lang = "0.13.1"
 python-dotenv = "^0.21.0"
 async-lru = "^2.0.4"
@@ -16,6 +15,7 @@ toml = "^0.10.2"
 scikit-learn = "^1.5.1"
 seaborn = "^0.13.2"
 boto3 = "^1.35.12"
+starknet-py = "0.23.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.1.1"

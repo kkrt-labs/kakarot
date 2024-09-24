@@ -6,11 +6,11 @@ endif
 
 .PHONY: build test coverage clean
 
-# 154615699 corresponds to release v0.1.7 of Kakarot SSJ.
-KKRT_SSJ_RELEASE_ID = 154615699
+# 176384150 corresponds to release v0.1.13 of Kakarot SSJ.
+KKRT_SSJ_RELEASE_ID = 176384150
 # Kakarot SSJ artifacts for precompiles.
 KKRT_SSJ_BUILD_ARTIFACT_URL = $(shell curl -L https://api.github.com/repos/kkrt-labs/kakarot-ssj/releases/${KKRT_SSJ_RELEASE_ID} | jq -r '.assets[0].browser_download_url')
-KATANA_VERSION = v1.0.0-alpha.11
+KATANA_VERSION = v1.0.0-alpha.12
 ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
 BUILD_DIR = build
@@ -35,7 +35,7 @@ $(SSJ_ZIP):
 fetch-ef-tests:
 	poetry run python ./kakarot_scripts/ef_tests/fetch.py
 
-setup: fetch-ssj-artifacts
+setup:
 	poetry install
 
 test: deploy
