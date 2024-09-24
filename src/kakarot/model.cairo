@@ -11,7 +11,7 @@ namespace model {
         new_words_len: felt,
     }
 
-    // @notice: Represents an optional value.
+    // @notice Represents an optional value.
     // @param is_some A boolean indicating whether the value is present.
     // @param value The value (if applicable).
     struct Option {
@@ -24,20 +24,20 @@ namespace model {
     // @notice opcodes to consume their parameters from.
     // @dev The dict stores a pointer to the word (a Uint256).
     // @param size The size of the Stack.
-    // @param dict_ptr_start pointer to a DictAccess array used to store the stack's value at a given index.
-    // @param dict_ptr pointer to the end of the DictAccess array.
+    // @param dict_ptr_start Pointer to a DictAccess array used to store the stack's value at a given index.
+    // @param dict_ptr Pointer to the end of the DictAccess array.
     struct Stack {
         dict_ptr_start: DictAccess*,
         dict_ptr: DictAccess*,
         size: felt,
     }
 
-    // @notice info: https://www.evm.codes/about#memory
+    // @notice Info: https://www.evm.codes/about#memory
     // @notice Transient memory maintained by the EVM during an execution which doesn't persist
     // @notice between transactions.
-    // @param word_dict_start pointer to a DictAccess used to store the memory's value at a given index.
-    // @param word_dict pointer to the end of the DictAccess array.
-    // @param words_len number of words (bytes32).
+    // @param word_dict_start Pointer to a DictAccess used to store the memory's value at a given index.
+    // @param word_dict Pointer to the end of the DictAccess array.
+    // @param words_len Number of words (bytes32).
     struct Memory {
         word_dict_start: DictAccess*,
         word_dict: DictAccess*,
@@ -52,6 +52,12 @@ namespace model {
     //      transfers := List<Transfer>
     //      Unlike in standard EVM, we need to store the native token transfers as well since we use the
     //      Starknet's ETH and can't just set the balances
+    // @param accounts_start Pointer to the start of the accounts DictAccess array.
+    // @param accounts Pointer to the end of the accounts DictAccess array.
+    // @param events_len The number of events.
+    // @param events Pointer to the start of the events array.
+    // @param transfers_len The number of transfers.
+    // @param transfers Pointer to the start of the transfers array.
     struct State {
         accounts_start: DictAccess*,
         accounts: DictAccess*,
@@ -65,6 +71,20 @@ namespace model {
     // @dev We don't put the balance here to avoid loading the whole Account just for sending ETH
     // @dev The address is a tuple (starknet, evm) for step-optimization purposes:
     // we can compute the starknet only once.
+    // @param address Pointer to the address of the account.
+    // @param code_len The length of the code.
+    // @param code Pointer to the code.
+    // @param code_hash Pointer to the code hash.
+    // @param storage_start Pointer to the start of the storage DictAccess array.
+    // @param storage Pointer to the end of the storage DictAccess array.
+    // @param transient_storage_start Pointer to the start of the transient storage DictAccess array.
+    // @param transient_storage Pointer to the end of the transient storage DictAccess array.
+    // @param valid_jumpdests_start Pointer to the start of the valid jump destinations DictAccess array.
+    // @param valid_jumpdests Pointer to the end of the valid jump destinations DictAccess array.
+    // @param nonce The nonce of the account.
+    // @param balance Pointer to the balance of the account.
+    // @param selfdestruct Indicates if the account is self-destructed.
+    // @param created Indicates if the account was created in the current transaction.
     struct Account {
         address: model.Address*,
         code_len: felt,
@@ -79,14 +99,15 @@ namespace model {
         nonce: felt,
         balance: Uint256*,
         selfdestruct: felt,
-        // @dev: another way of knowing if an account was just created or not is to get it's registered starknet address.
-        // 1. It's zero -> it was created in the same tx
-        // 2. It's non-zero -> We fetch it's nonce from storage, if 0 -> it was created in the same tx, otherwise it was created in a previous tx.
         created: felt,
     }
 
     // @notice The struct representing an EVM event.
     // @dev The topics are indeed a first felt for the emitting EVM account, followed by a list of Uint256
+    // @param topics_len The number of topics.
+    // @param topics Pointer to the topics array.
+    // @param data_len The length of the data.
+    // @param data Pointer to the data array.
     struct Event {
         topics_len: felt,
         topics: felt*,
@@ -95,6 +116,9 @@ namespace model {
     }
 
     // @dev A struct to save Starknet native ETH transfers to be made when finalizing a tx
+    // @param sender Pointer to the sender's address.
+    // @param recipient Pointer to the recipient's address.
+    // @param amount The amount to be transferred.
     struct Transfer {
         sender: Address*,
         recipient: Address*,
@@ -102,26 +126,30 @@ namespace model {
     }
 
     // @dev Though one of the two address is enough, we store both to save on steps and simplify the usage.
+    // @param starknet The Starknet address.
+    // @param evm The EVM address.
     struct Address {
         starknet: felt,
         evm: felt,
     }
 
-    // @notice info: https://www.evm.codes/about#calldata
+    // @notice Info: https://www.evm.codes/about#calldata
     // @notice Struct storing data related to a call.
     // @dev All Message fields are constant during a given call.
-    // @param bytecode The executed bytecode.
+    // @param bytecode Pointer to the executed bytecode.
     // @param bytecode_len The length of bytecode.
-    // @param calldata byte The space where the data parameter of a transaction or call is held.
+    // @param calldata Pointer to the calldata.
     // @param calldata_len The length of calldata.
-    // @param value The amount of native token to transfer.
-    // @param parent The parent context of the current execution context, can be empty.
-    // @param address The address of the current EVM account. Note that the bytecode may not be the one
-    //        of the account in case of a CALLCODE or DELEGATECALL
-    // @param code_address The EVM address the bytecode of the message is taken from.
-    // @param read_only if set to true, context cannot do any state modifying instructions or send ETH in the sub context.
-    // @param is_create if set to true, the call context is a CREATEs or deploy execution
+    // @param value Pointer to the amount of native token to transfer.
+    // @param parent Pointer to the parent context of the current execution context, can be empty.
+    // @param address Pointer to the address of the current EVM account. Note that the bytecode may not be the one
+    //        of the account in case of a CALLCODE or DELEGATECALL.
+    // @param code_address Pointer to the EVM address the bytecode of the message is taken from.
+    // @param read_only Indicates if the context cannot do any state modifying instructions or send ETH in the sub context.
+    // @param is_create Indicates if the call context is a CREATE or deploy execution.
     // @param depth The depth of the current execution context.
+    // @param env Pointer to the environment data.
+    // @param cairo_precompile_called Indicates if a Cairo precompile was called.
     struct Message {
         bytecode: felt*,
         bytecode_len: felt,
@@ -142,14 +170,14 @@ namespace model {
     }
 
     // @dev Stores all data relevant to the current execution context.
-    // @param message The call context data.
-    // @param return_data_len The return_data length.
-    // @param return_data The region used to return a value after a call.
-    // @param program_counter The keep track of the current position in the program as it is being executed.
-    // @param stopped A boolean that state if the current execution is halted.
+    // @param message Pointer to the call context data.
+    // @param return_data_len The length of the return data.
+    // @param return_data Pointer to the region used to return a value after a call.
+    // @param program_counter The current position in the program as it is being executed.
+    // @param stopped Indicates if the current execution is halted.
     // @param gas_left The gas consumed by the current state of the execution.
-    // @param reverted A code indicating whether the EVM is reverted or not.
-    // can be either 0 - not reverted, Errors.REVERTED or Errors.EXCEPTIONAL_HALT
+    // @param gas_refund The gas to be refunded.
+    // @param reverted Indicates whether the EVM is reverted or not.
     struct EVM {
         message: Message*,
         return_data_len: felt,
@@ -170,7 +198,7 @@ namespace model {
     // @param block_gas_limit The gas limit for the current block.
     // @param block_timestamp The timestamp of the current block.
     // @param coinbase The address of the miner of the current block.
-    // @param base_fee The basefee of the current block.
+    // @param base_fee The base fee of the current block.
     struct Environment {
         origin: felt,
         gas_price: felt,
@@ -184,6 +212,10 @@ namespace model {
     }
 
     // @dev The parent EVM struct is used to store the parent EVM context of the current execution context.
+    // @param evm Pointer to the parent EVM context.
+    // @param stack Pointer to the parent stack.
+    // @param memory Pointer to the parent memory.
+    // @param state Pointer to the parent state.
     struct Parent {
         evm: EVM*,
         stack: Stack*,
@@ -191,12 +223,12 @@ namespace model {
         state: State*,
     }
 
-    // @dev Stores the constant data of an opcode
-    // @param number The opcode number
-    // @param gas The minimum gas used by the opcode (not including possible dynamic gas)
+    // @dev Stores the constant data of an opcode.
+    // @param number The opcode number.
+    // @param gas The minimum gas used by the opcode (not including possible dynamic gas).
     // @param stack_input The number of inputs popped from the stack.
-    // @param stack_size_min The minimal size of the Stack for this opcode.
-    // @param stack_size_diff The difference between the stack size after and before
+    // @param stack_size_min The minimal size of the stack for this opcode.
+    // @param stack_size_diff The difference between the stack size after and before.
     struct Opcode {
         number: felt,
         gas: felt,
@@ -205,8 +237,19 @@ namespace model {
         stack_size_diff: felt,
     }
 
-    // @notice A normalized Ethereum transaction
+    // @notice A normalized Ethereum transaction.
     // @dev See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1559.md
+    // @param signer_nonce The nonce of the signer.
+    // @param gas_limit The gas limit for the transaction.
+    // @param max_priority_fee_per_gas The maximum priority fee per gas.
+    // @param max_fee_per_gas The maximum fee per gas.
+    // @param destination The destination address (optional).
+    // @param amount The amount to be transferred.
+    // @param payload_len The length of the payload.
+    // @param payload Pointer to the payload.
+    // @param access_list_len The length of the access list.
+    // @param access_list Pointer to the access list.
+    // @param chain_id The chain id (optional).
     struct EthTransaction {
         signer_nonce: felt,
         gas_limit: felt,

@@ -44,6 +44,7 @@ namespace Kakarot {
     // @param uninitialized_account_class_hash The class hash of the uninitialized account used for deterministic address calculation.
     // @param cairo1_helpers_class_hash The precompiles class hash for precompiles not implemented in Kakarot.
     // @param coinbase The EOA whose key is owned by the deployer (or known to be owned by Coinbase)
+    // @param block_gas_limit The block gas limit.
     func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         owner: felt,
         native_token_address,
@@ -64,6 +65,7 @@ namespace Kakarot {
     }
 
     // @notice The eth_call function as described in the RPC spec, see https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_call
+    // @param nonce The transaction nonce.
     // @param origin The address the transaction is sent from.
     // @param to The address the transaction is directed to.
     // @param gas_limit Integer of the gas provided for the transaction execution
@@ -121,6 +123,7 @@ namespace Kakarot {
         return (evm, state, gas_used, required_gas);
     }
 
+    // @return chain_id The chain ID.
     func eth_chain_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
         chain_id: felt
     ) {
@@ -268,8 +271,7 @@ namespace Kakarot {
         return (uninitialized_account_class_hash,);
     }
 
-    // @notice Return the hash of the Cairo1Helpers class
-    // @return account_contract_class_hash The hash of the Cairo1Helpers class
+    // @return cairo1_helpers_class_hash The hash of the Cairo1Helpers class.
     func get_cairo1_helpers_class_hash{
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     }() -> (cairo1_helpers_class_hash: felt) {
@@ -278,7 +280,7 @@ namespace Kakarot {
     }
 
     // @notice Set the hash of the Cairo1Helpers class
-    // @param account_contract_class_hash The hash of the Cairo1Helpers class
+    // @param cairo1_helpers_class_hash The hash of the Cairo1Helpers class
     func set_cairo1_helpers_class_hash{
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     }(cairo1_helpers_class_hash: felt) {

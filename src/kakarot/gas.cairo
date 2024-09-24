@@ -100,9 +100,9 @@ namespace Gas {
         return expansion;
     }
 
-    // @notive A saturated version of the memory_expansion_cost function
+    // @notice A saturated version of the memory_expansion_cost function
     // @dev Saturation at offset + size = 2^128.
-    // @param words_len The current length of the memory as Uint256.
+    // @param words_len The current length of 256-bit words in memory.
     // @param offset An offset to be applied to the given memory as Uint256.
     // @param size The size of the memory chunk.
     // @return cost The expansion gas cost: 0 if no expansion is triggered, and the new size of the memory
@@ -126,24 +126,24 @@ namespace Gas {
     }
 
     // @notice Given two memory chunks, compute the maximum expansion cost
-    //  based on the maximum offset reached by each chunks.
+    //  based on the maximum offset reached by each chunk.
     // @dev Memory expansion cost is computed over the `low` parts of
-    // the offsets and sizes.  In the second step, we check whether the `high`
+    // the offsets and sizes. In the second step, we check whether the `high`
     // parts are non-zero and if so, we add the cost of expanding the memory by
     // 2**128 words (saturating).
-    // @param words_len The current length of the memory as felt252.
+    // @param words_len The current length of 256-bit words in memory.
     // @param offset_1 The offset of the first memory chunk as Uint256.
     // @param size_1 The size of the first memory chunk as Uint256.
     // @param offset_2 The offset of the second memory chunk as Uint256.
     // @param size_2 The size of the second memory chunk as Uint256.
-    // @return cost The expansion gas cost for chunk who's ending offset is the largest and the new size of the memory
+    // @return cost The expansion gas cost for the chunk whose ending offset is the largest and the new size of the memory
     func max_memory_expansion_cost{range_check_ptr}(
-        words_len: felt, offset_1: Uint256*, size_1: Uint256*, offset_2: Uint256*, size_2: Uint256*
+        words_len: felt, offset_1: Uint256, size_1: Uint256, offset_2: Uint256, size_2: Uint256
     ) -> model.MemoryExpansion {
         alloc_locals;
 
-        let (is_zero_1) = uint256_eq([size_1], Uint256(0, 0));
-        let (is_zero_2) = uint256_eq([size_2], Uint256(0, 0));
+        let (is_zero_1) = uint256_eq(offset_1, Uint256(0, 0));
+        let (is_zero_2) = uint256_eq(offset_2, Uint256(0, 0));
         tempvar both_zero = is_zero_1 * is_zero_2;
         jmp no_expansion if both_zero != 0;
 
