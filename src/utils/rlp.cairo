@@ -22,7 +22,7 @@ namespace RLP {
         is_list: felt,
     }
 
-    // @notive Decode the type of an RLP item.
+    // @notice Decode the type of an RLP item.
     // @dev Unsafe function, does not check if the data is long enough (can be exploited by a malicious prover).
     //      Always check afterwards that outputs are compatible with the associated data_len.
     // @param data The RLP encoded data.
@@ -72,7 +72,7 @@ namespace RLP {
     }
 
     // @notice Decodes a Recursive Length Prefix (RLP) encoded data.
-    // @notice This function decodes the RLP encoded data into a list of items.
+    // @dev This function decodes the RLP encoded data into a list of items.
     // Each item is a struct containing the length of the data, the data itself, and a flag indicating whether the data is a list.
     // The function first determines the type of the RLP data (string or list) and then processes it accordingly.
     // If the data is a string, it is simply added to the items.
@@ -115,6 +115,17 @@ namespace RLP {
         return 1 + items_len;
     }
 
+    // @notice Decodes a Recursive Length Prefix (RLP) encoded data.
+    // @dev This function decodes the RLP encoded data into a list of items.
+    // Each item is a struct containing the length of the data, the data itself, and a flag indicating whether the data is a list.
+    // The function first determines the type of the RLP data (string or list) and then processes it accordingly.
+    // If the data is a string, it is simply added to the items.
+    // If the data is a list, it is recursively decoded.
+    // After processing the first item, the function checks if there is more data to decode and if so,
+    // it recursively decodes the remaining data and adds the decoded items to the list of items.
+    // @param data_len The length of the data to decode.
+    // @param data The RLP encoded data.
+    // @param items The pointer to the next free cell in the list of items decoded.
     func decode{range_check_ptr}(items: Item*, data_len: felt, data: felt*) {
         alloc_locals;
         let (rlp_type, offset, len) = decode_type_unsafe(data);

@@ -26,7 +26,8 @@ namespace EVM {
     // @notice Initialize the execution context.
     // @dev Initialize the execution context of a specific contract.
     // @param message The message (see model.Message) to be executed.
-    // @return EVM The initialized execution context.
+    // @param gas_left The amount of gas left for execution.
+    // @return model.EVM* The initialized execution context.
     func init(message: model.Message*, gas_left: felt) -> model.EVM* {
         let (return_data: felt*) = alloc();
 
@@ -42,6 +43,8 @@ namespace EVM {
         );
     }
 
+    // @notice Finalize the execution context.
+    // @dev Finalize the execution context by squashing the valid jump destinations.
     func finalize{range_check_ptr, evm: model.EVM*}() {
         let (squashed_start, squashed_end) = default_dict_finalize(
             evm.message.valid_jumpdests_start, evm.message.valid_jumpdests, 0
@@ -86,7 +89,7 @@ namespace EVM {
     // @param return_data The pointer to the return_data array.
     // @param reverted A code indicating whether the EVM is reverted or not.
     // can be either 0 - not reverted, Errors.REVERTED or Errors.EXCEPTIONAL_HALT
-    // @return EVM The pointer to the updated execution context.
+    // @return model.EVM* The pointer to the updated execution context.
     func stop(
         self: model.EVM*, return_data_len: felt, return_data: felt*, reverted: felt
     ) -> model.EVM* {
@@ -102,6 +105,10 @@ namespace EVM {
         );
     }
 
+    // @notice Handle out of gas scenario.
+    // @param self The pointer to the execution context.
+    // @param amount The amount of gas required.
+    // @return model.EVM* The pointer to the updated execution context.
     func out_of_gas{range_check_ptr}(self: model.EVM*, amount: felt) -> model.EVM* {
         let (revert_reason_len, revert_reason) = Errors.outOfGas(self.gas_left, amount);
         return new model.EVM(
@@ -120,7 +127,7 @@ namespace EVM {
     // @param self The pointer to the execution context.
     // @param return_data_len The length of the return_data.
     // @param return_data The pointer to the return_data array.
-    // @return EVM The pointer to the updated execution context.
+    // @return model.EVM* The pointer to the updated execution context.
     func update_return_data(
         self: model.EVM*, return_data_len: felt, return_data: felt*
     ) -> model.EVM* {
@@ -140,7 +147,7 @@ namespace EVM {
     // @dev The program counter is incremented by the given value.
     // @param self The pointer to the execution context.
     // @param inc_value The value to increment the program counter with.
-    // @return EVM The pointer to the updated execution context.
+    // @return model.EVM* The pointer to the updated execution context.
     func increment_program_counter(self: model.EVM*, inc_value: felt) -> model.EVM* {
         return new model.EVM(
             message=self.message,
@@ -160,7 +167,7 @@ namespace EVM {
     // Assumption: gas_left < 2 ** 128
     // @param self The pointer to the current execution context.
     // @param amount The amount of gas the current operation requires.
-    // @return EVM The pointer to the updated execution context.
+    // @return model.EVM* The pointer to the updated execution context.
     func charge_gas{range_check_ptr}(self: model.EVM*, amount: felt) -> model.EVM* {
         // This is equivalent to is_nn(self.gas_left - amount)
         tempvar a = self.gas_left - amount;  // a is necessary for using the whitelisted hint
@@ -211,6 +218,9 @@ namespace EVM {
         );
     }
 
+    // @notice Handle validation failure.
+    // @param self The pointer to the execution context.
+    // @return model.EVM* The pointer to the updated execution context.
     func halt_validation_failed{range_check_ptr}(self: model.EVM*) -> model.EVM* {
         let (revert_reason_len, revert_reason) = Errors.eth_validation_failed();
         return new model.EVM(
@@ -227,10 +237,10 @@ namespace EVM {
 
     // @notice Update the array of events to emit in the case of a execution context successfully running to completion (see `EVM.finalize`).
     // @param self The pointer to the execution context.
-    // @param topics_len The length of the topics
-    // @param topics The topics Uint256 array
-    // @param data_len The length of the data
-    // @param data The data bytes array
+    // @param topics_len The length of the topics.
+    // @param topics The topics Uint256 array.
+    // @param data_len The length of the data.
+    // @param data The data bytes array.
     func push_event{state: model.State*}(
         self: model.EVM*, topics_len: felt, topics: Uint256*, data_len: felt, data: felt*
     ) {
@@ -257,10 +267,10 @@ namespace EVM {
     }
 
     // @notice Update the program counter.
-    // @dev The program counter is updated to a given value. This is only ever called by JUMP or JUMPI
+    // @dev The program counter is updated to a given value. This is only ever called by JUMP or JUMPI.
     // @param self The pointer to the execution context.
     // @param new_pc_offset The value to update the program counter by.
-    // @return EVM The pointer to the updated execution context.
+    // @return model.EVM* The pointer to the updated execution context.
     func jump{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*}(
         self: model.EVM*, new_pc_offset: felt
     ) -> model.EVM* {
@@ -327,6 +337,10 @@ namespace EVM {
 }
 
 namespace Internals {
+    // @notice Check if the given index is a valid jump destination.
+    // @param code_address The address of the code.
+    // @param index The index to check.
+    // @return felt 1 if valid, 0 otherwise.
     func is_valid_jumpdest{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,

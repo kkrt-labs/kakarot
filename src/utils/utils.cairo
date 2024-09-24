@@ -34,6 +34,9 @@ namespace Helpers {
     }
 
     // @notice Performs subtraction and returns 0 if the result is negative.
+    // @param a: the minuend.
+    // @param b: the subtrahend.
+    // @return: the result of the subtraction or 0 if the result is negative.
     func saturated_sub{range_check_ptr}(a, b) -> felt {
         let res = a - b;
         let is_res_nn = is_nn(res);
@@ -43,24 +46,27 @@ namespace Helpers {
         return 0;
     }
 
+    // @notice Converts a felt to Uint256.
+    // @param val: the felt value to convert.
+    // @return: a pointer to the Uint256 representation of the input.
     func to_uint256{range_check_ptr}(val: felt) -> Uint256* {
         let (high, low) = split_felt(val);
         tempvar res = new Uint256(low, high);
         return res;
     }
 
-    // @notice This helper converts a felt straight to BigInt3
-    // @param val: felt value to be converted
-    // @return res: BigInt3 representation of the given input
+    // @notice Converts a felt straight to BigInt3.
+    // @param val: felt value to be converted.
+    // @return: BigInt3 representation of the given input.
     func to_bigint{range_check_ptr}(val: felt) -> BigInt3 {
         let val_uint256: Uint256 = to_uint256(val);
         let (res: BigInt3) = uint256_to_bigint(val_uint256);
         return res;
     }
 
-    // @notice This helper converts a BigInt3 straight to felt
-    // @param val: BigInt3 value to be converted
-    // @return res: felt representation of the given input
+    // @notice Converts a BigInt3 straight to felt.
+    // @param val: BigInt3 value to be converted.
+    // @return: felt representation of the given input.
     func bigint_to_felt{range_check_ptr}(val: BigInt3) -> felt {
         let (val_uint256: Uint256) = bigint_to_uint256(val);
         let res = uint256_to_felt(val_uint256);
@@ -69,7 +75,7 @@ namespace Helpers {
 
     // @notice This function is used to convert a sequence of 32 bytes to Uint256.
     // @param val: pointer to the first byte of the 32.
-    // @return res: Uint256 representation of the given input in bytes32.
+    // @return: Uint256 representation of the given input in bytes32.
     func bytes32_to_uint256(val: felt*) -> Uint256 {
         let low = [val + 16] * 256 ** 15;
         let low = low + [val + 17] * 256 ** 14;
@@ -106,11 +112,12 @@ namespace Helpers {
         let res = Uint256(low=low, high=high);
         return res;
     }
+
     // @notice This function is used to convert bytes array in big-endian to Uint256.
     // @dev The function is limited to 32 bytes or less.
     // @param bytes_len: bytes array length.
     // @param bytes: pointer to the first byte of the bytes array.
-    // @return res: Uint256 representation of the given input in bytes.
+    // @return: Uint256 representation of the given input in bytes.
     func bytes_to_uint256{range_check_ptr}(bytes_len: felt, bytes: felt*) -> Uint256 {
         alloc_locals;
 
@@ -139,7 +146,7 @@ namespace Helpers {
 
     // @notice This helper is used to convert a sequence of 32 bytes straight to BigInt3.
     // @param val: pointer to the first byte of the 32.
-    // @return res: BigInt3 representation of the given input in bytes32.
+    // @return: BigInt3 representation of the given input in bytes32.
     func bytes32_to_bigint{range_check_ptr}(val: felt*) -> BigInt3 {
         alloc_locals;
 
@@ -149,7 +156,7 @@ namespace Helpers {
     }
 
     // @notice This function is used to convert a BigInt3 to straight to a bytes array represented by an array of felts (1 felt represents 1 byte).
-    // @param value: BigInt3 value to convert.
+    // @param val: BigInt3 value to convert.
     // @return: array length and felt array representation of the value.
     func bigint_to_bytes_array{range_check_ptr}(val: BigInt3) -> (
         bytes_array_len: felt, bytes_array: felt*
@@ -161,16 +168,16 @@ namespace Helpers {
         return (32, bytes);
     }
 
-    // @notice: This helper returns the minimal number of EVM words for a given bytes length
-    // @param length: a given bytes length
-    // @return res: the minimal number of EVM words
+    // @notice Returns the minimal number of EVM words for a given bytes length.
+    // @param length: a given bytes length.
+    // @return: the minimal number of 256-bit words to represent the bytes.
     func minimum_word_count{range_check_ptr}(length: felt) -> (res: felt) {
         let (quotient, remainder) = unsigned_div_rem(length + 31, 32);
         return (res=quotient);
     }
 
     // @notice This function is used to convert a sequence of 8 bytes to a felt.
-    // @param val: pointer to the first byte.
+    // @param bytes: pointer to the first byte.
     // @return: felt representation of the input.
     func bytes_to_64_bits_little_felt(bytes: felt*) -> felt {
         let res = [bytes + 7] * 256 ** 7;
@@ -224,6 +231,10 @@ namespace Helpers {
         return current;
     }
 
+    // @notice Tries to parse a destination address from bytes.
+    // @param bytes_len: length of the bytes array.
+    // @param bytes: pointer to the bytes array.
+    // @return: an Option containing the parsed address if successful.
     func try_parse_destination_from_bytes(bytes_len: felt, bytes: felt*) -> model.Option {
         if (bytes_len != 20) {
             with_attr error_message("Bytes has length {bytes_len}, expected 0 or 20") {
@@ -237,10 +248,9 @@ namespace Helpers {
         return res;
     }
 
-    // @notice This function is used to convert a sequence of 4 bytes big-endian
-    // to a felt.
+    // @notice This function is used to convert a sequence of 4 bytes big-endian to a felt.
     // @param val: pointer to the first byte of the 4.
-    // @return res: felt representation of the given input in bytes4.
+    // @return: felt representation of the given input in bytes4.
     func bytes4_to_felt(val: felt*) -> felt {
         let current = [val] * 256 ** 3;
         let current = current + [val + 1] * 256 ** 2;
@@ -249,10 +259,9 @@ namespace Helpers {
         return current;
     }
 
-    // @notice This function is used to convert a sequence of 20 bytes big-endian
-    // to felt.
+    // @notice This function is used to convert a sequence of 20 bytes big-endian to felt.
     // @param val: pointer to the first byte of the 20.
-    // @return res: felt representation of the given input in bytes20.
+    // @return: felt representation of the given input in bytes20.
     func bytes20_to_felt(val: felt*) -> felt {
         let current = [val] * 256 ** 19;
         let current = current + [val + 1] * 256 ** 18;
@@ -277,11 +286,10 @@ namespace Helpers {
         return current;
     }
 
-    // @notice This function is used to convert a sequence of 32 bytes big-endian
-    // to a felt.
+    // @notice This function is used to convert a sequence of 32 bytes big-endian to a felt.
     // @dev If the value doesn't fit in a felt, the value will be wrapped around.
     // @param val: pointer to the first byte of the 32.
-    // @return res: felt representation of the given input in bytes32.
+    // @return: felt representation of the given input in bytes32.
     @known_ap_change
     func bytes32_to_felt(val: felt*) -> felt {
         let current = [val] * 256 ** 31;
@@ -319,7 +327,7 @@ namespace Helpers {
         return current;
     }
 
-    // @notice Load sequences of 8 bytes little endian into an array of felts
+    // @notice Load sequences of 8 bytes little endian into an array of felts.
     // @param len: final length of the output.
     // @param input: pointer to bytes array input.
     // @param output: pointer to bytes array output.
@@ -332,11 +340,11 @@ namespace Helpers {
         return load_64_bits_array(len - 1, input + 8, output + 1);
     }
 
-    // @notice Load sequence of 32 bytes into an array of felts
+    // @notice Load sequence of 32 bytes into an array of felts.
     // @dev If the input doesn't fit in a felt, the value will be wrapped around.
     // @param input_len: The number of bytes in the input.
     // @param input: pointer to bytes array input.
-    // @param output: pointer to bytes array output.
+    // @return: the length of the output array and the output array.
     func load_256_bits_array(input_len: felt, input: felt*) -> (output_len: felt, output: felt*) {
         alloc_locals;
         let (local output_start) = alloc();
@@ -422,6 +430,8 @@ namespace Helpers {
     }
 
     // @notice Computes 256 ** (16 - i) for 0 <= i <= 16.
+    // @param i: the exponent.
+    // @return: the result of 256 raised to the power of (16 - i).
     func pow256_rev(i: felt) -> felt {
         let (pow256_rev_address) = get_label_location(pow256_rev_table);
         return pow256_rev_address[i];
@@ -447,6 +457,9 @@ namespace Helpers {
     }
 
     // @notice Splits a felt into `len` bytes, big-endian, and outputs to `dst`.
+    // @param value: the felt value to split.
+    // @param len: the number of bytes to split into.
+    // @param dst: pointer to the output array.
     func split_word{range_check_ptr}(value: felt, len: felt, dst: felt*) {
         if (len == 0) {
             with_attr error_message("value not empty") {
@@ -472,6 +485,9 @@ namespace Helpers {
     }
 
     // @notice Splits a felt into `len` bytes, little-endian, and outputs to `dst`.
+    // @param value: the felt value to split.
+    // @param len: the number of bytes to split into.
+    // @param dst: pointer to the output array.
     func split_word_little{range_check_ptr}(value: felt, len: felt, dst: felt*) {
         if (len == 0) {
             with_attr error_message("value not empty") {

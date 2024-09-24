@@ -52,7 +52,7 @@ func eth_get_transaction_count{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, r
 // @notice The eth_chainId function as described in the spec
 //         see https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_chainid
 //         This is a view only function, meaning that it doesn't make any state change.
-// @return chain_id Chaind id of the chain
+// @return chain_id Chain id of the chain
 @view
 func eth_chain_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
     chain_id: felt
@@ -76,7 +76,7 @@ func eth_chain_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
 // @param access_list The access list passed in the transaction
 // @return return_data_len The length of the return_data
 // @return return_data An array of returned felts
-// @return success An boolean, TRUE if the transaction succeeded, FALSE otherwise
+// @return success A boolean, TRUE if the transaction succeeded, FALSE otherwise
 // @return gas_used The amount of gas used by the transaction
 @view
 func eth_call{
@@ -130,7 +130,7 @@ func eth_call{
 // @param access_list The access list passed in the transaction
 // @return return_data_len The length of the return_data
 // @return return_data An array of returned felts
-// @return success An boolean, TRUE if the transaction succeeded, FALSE otherwise
+// @return success A boolean, TRUE if the transaction succeeded, FALSE otherwise
 // @return required_gas The amount of gas required by the transaction to successfully execute. This is different
 // from the gas used by the transaction as it doesn't take into account any refunds.
 @view
@@ -183,7 +183,7 @@ func eth_estimate_gas{
 // @param access_list The access list passed in the transaction
 // @return return_data_len The length of the return_data
 // @return return_data An array of returned felts
-// @return success An boolean, TRUE if the transaction succeeded, FALSE otherwise
+// @return success A boolean, TRUE if the transaction succeeded, FALSE otherwise
 // @return gas_used The amount of gas used by the transaction
 func eth_send_transaction{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
@@ -233,7 +233,7 @@ func eth_send_transaction{
 // @param tx_data The unsigned transaction data
 // @return return_data_len The length of the return_data
 // @return return_data An array of returned felts
-// @return success An boolean, TRUE if the transaction succeeded, FALSE otherwise
+// @return success A boolean, TRUE if the transaction succeeded, FALSE otherwise
 // @return gas_used The amount of gas used by the transaction
 @external
 func eth_send_raw_unsigned_tx{
