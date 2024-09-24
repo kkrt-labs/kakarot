@@ -26,7 +26,7 @@ from kakarot_scripts.utils.kakarot import (
 )
 from kakarot_scripts.utils.kakarot import dump_deployments as dump_evm_deployments
 from kakarot_scripts.utils.kakarot import get_deployments as get_evm_deployments
-from kakarot_scripts.utils.starknet import declare
+from kakarot_scripts.utils.starknet import call, declare
 from kakarot_scripts.utils.starknet import deploy as deploy_starknet
 from kakarot_scripts.utils.starknet import (
     dump_declarations,
@@ -63,8 +63,13 @@ async def main():
             class_hash["account_contract"],  # account_contract_class_hash_
             class_hash["uninitialized_account"],  # uninitialized_account_class_hash_
             class_hash["Cairo1Helpers"],
-            COINBASE,
             BLOCK_GAS_LIMIT,
+        )
+        await invoke(
+            "EVM",
+            "set_coinbase",
+            COINBASE,
+            address=starknet_deployments["EVM"]["address"],
         )
         starknet_deployments["Counter"] = await deploy_starknet("Counter")
         starknet_deployments["MockPragmaOracle"] = await deploy_starknet(
@@ -105,7 +110,6 @@ async def main():
             class_hash["account_contract"],  # account_contract_class_hash_
             class_hash["uninitialized_account"],  # uninitialized_account_class_hash_
             class_hash["Cairo1Helpers"],
-            COINBASE,
             BLOCK_GAS_LIMIT,
         )
         await invoke(
@@ -148,6 +152,12 @@ async def main():
         "kakarot", "set_authorized_cairo_precompile_caller", int(bridge.address, 16), 1
     )
     await invoke("kakarot", "set_coinbase", int(bridge.address, 16))
+
+    coinbase = (await call("kakarot", "get_coinbase")).coinbase
+    if coinbase == 0:
+        logger.error("❌ Coinbase is set to 0, all transaction fees will be lost")
+    else:
+        logger.info(f"✅ Coinbase set to: 0x{coinbase:040x}")
 
     weth = await deploy_evm("WETH", "WETH9")
     evm_deployments["WETH"] = {
