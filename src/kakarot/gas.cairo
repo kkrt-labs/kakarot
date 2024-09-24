@@ -138,12 +138,12 @@ namespace Gas {
     // @param size_2 The size of the second memory chunk as Uint256.
     // @return cost The expansion gas cost for the chunk whose ending offset is the largest and the new size of the memory
     func max_memory_expansion_cost{range_check_ptr}(
-        words_len: felt, offset_1: Uint256, size_1: Uint256, offset_2: Uint256, size_2: Uint256
+        words_len: felt, offset_1: Uint256*, size_1: Uint256*, offset_2: Uint256*, size_2: Uint256*
     ) -> model.MemoryExpansion {
         alloc_locals;
 
-        let (is_zero_1) = uint256_eq(offset_1, Uint256(0, 0));
-        let (is_zero_2) = uint256_eq(offset_2, Uint256(0, 0));
+        let (is_zero_1) = uint256_eq([size_1], Uint256(0, 0));
+        let (is_zero_2) = uint256_eq([size_2], Uint256(0, 0));
         tempvar both_zero = is_zero_1 * is_zero_2;
         jmp no_expansion if both_zero != 0;
 
