@@ -65,7 +65,12 @@ async def main():
             class_hash["Cairo1Helpers"],
             BLOCK_GAS_LIMIT,
         )
-        await invoke("EVM", "set_coinbase", COINBASE)
+        await invoke(
+            "EVM",
+            "set_coinbase",
+            COINBASE,
+            address=starknet_deployments["EVM"]["address"],
+        )
         starknet_deployments["Counter"] = await deploy_starknet("Counter")
         starknet_deployments["MockPragmaOracle"] = await deploy_starknet(
             "MockPragmaOracle"
