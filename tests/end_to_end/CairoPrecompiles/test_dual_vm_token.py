@@ -289,20 +289,18 @@ class TestDualVmToken:
                 )
 
         async def test_allowance_owner_and_spender_starknet_address(
-            self, starknet_token, dual_vm_token, new_eoa
+            self, starknet_token, dual_vm_token, other
         ):
             amount = 1
             owner = await get_starknet_account()
-            eoa = await new_eoa()
-            spender = await get_starknet_account(eoa.private_key)
             allowance_before = await dual_vm_token.functions[
                 "allowance(uint256,uint256)"
-            ](owner.address, spender.address)
+            ](owner.address, other.starknet_contract.address)
 
             await invoke(
                 starknet_token.address,
                 "approve",
-                spender.address,
+                other.starknet_contract.address,
                 amount,
                 0,
                 account=owner,
@@ -310,7 +308,7 @@ class TestDualVmToken:
 
             allowance_after = await dual_vm_token.functions[
                 "allowance(uint256,uint256)"
-            ](owner.address, spender.address)
+            ](owner.address, other.starknet_contract.address)
             assert allowance_after == allowance_before + amount
 
         async def test_should_transfer_from(
