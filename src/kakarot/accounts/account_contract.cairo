@@ -41,8 +41,7 @@ func constructor{
     return ();
 }
 
-// @notice Initializes the account with the given Kakarot and EVM addresses.
-// @param kakarot_address The address of the main Kakarot contract.
+// @notice Initializes the account with the given EVM address.
 // @param evm_address The EVM address of the account.
 @external
 func initialize{
@@ -51,7 +50,7 @@ func initialize{
     return AccountContract.initialize(evm_address);
 }
 
-// @notice Gets the evm address associated with the account.
+// @notice Gets the EVM address associated with the account.
 // @return address The EVM address of the account.
 @view
 func get_evm_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
@@ -61,7 +60,7 @@ func get_evm_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
 }
 
 // @notice Sets the implementation of the account contract.
-// @param implementation_class The class to replace the current implementation with.
+// @param new_class The class to replace the current implementation with.
 @external
 func upgrade{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(new_class: felt) {
     // Access control check.
@@ -71,7 +70,7 @@ func upgrade{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(ne
 }
 
 // @notice Checks if the account was initialized.
-// @return is_initialized: 1 if the account has been initialized 0 otherwise.
+// @return is_initialized 1 if the account has been initialized, 0 otherwise.
 @view
 func is_initialized{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
@@ -192,8 +191,8 @@ func __execute__{
 }
 
 // @notice Store the bytecode of the contract.
-// @param bytecode The bytecode of the contract.
 // @param bytecode_len The length of the bytecode.
+// @param bytecode The bytecode of the contract.
 @external
 func write_bytecode{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
@@ -225,7 +224,7 @@ func bytecode_len{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
 }
 
 // @notice Store a key-value pair.
-// @param key The storage address, with storage_var being Account_storage(key: Uint256)
+// @param storage_addr The storage address.
 // @param value The bytes32 stored value.
 @external
 func write_storage{
@@ -237,7 +236,7 @@ func write_storage{
 }
 
 // @notice Read a given storage key
-// @param key The storage address, with storage_var being Account_storage(key: Uint256)
+// @param storage_addr The storage address.
 // @return value The stored value if the key exists, 0 otherwise.
 @view
 func storage{
@@ -253,7 +252,8 @@ func get_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     return AccountContract.get_nonce();
 }
 
-// @notice This function set the contract account nonce
+// @notice Sets the contract account nonce
+// @param nonce The new nonce value.
 @external
 func set_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(nonce: felt) {
     // Access control check.
@@ -320,8 +320,15 @@ func set_authorized_pre_eip155_tx{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*
 
 // @notice Execute a starknet call.
 // @dev Used when executing a Cairo Precompile. Used to preserve the caller address.
-// Reentrency check is done, only `get_starknet_address` is allowed for Solidity contracts
+// Reentrancy check is done, only `get_starknet_address` is allowed for Solidity contracts
 //      to be able to get the corresponding Starknet address in their calldata.
+// @param to The address to call.
+// @param function_selector The function selector to call.
+// @param calldata_len The length of the calldata array.
+// @param calldata The calldata for the call.
+// @return retdata_len The length of the return data array.
+// @return retdata The return data from the call.
+// @return success 1 if the call was successful, 0 otherwise.
 @external
 func execute_starknet_call{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     to: felt, function_selector: felt, calldata_len: felt, calldata: felt*

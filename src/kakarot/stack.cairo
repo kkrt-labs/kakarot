@@ -33,7 +33,6 @@ namespace Stack {
     // @notice Store an element into the stack.
     // @param stack The pointer to the stack.
     // @param element The element to push.
-    // @return stack The new pointer to the stack.
     func push{stack: model.Stack*}(element: Uint256*) {
         let dict_ptr = stack.dict_ptr;
         with dict_ptr {
@@ -47,17 +46,15 @@ namespace Stack {
     // @notice Store a uint128 into the stack.
     // @param stack The pointer to the stack.
     // @param element The element to push.
-    // @return stack The new pointer to the stack.
     func push_uint128{stack: model.Stack*}(element: felt) {
         tempvar item = new Uint256(element, 0);
         push(item);
         return ();
     }
 
-    // @notice Store a uint128 into the stack.
+    // @notice Store a uint256 into the stack.
     // @param stack The pointer to the stack.
     // @param element The element to push.
-    // @return stack The new pointer to the stack.
     func push_uint256{stack: model.Stack*}(element: Uint256) {
         alloc_locals;
         let fp_and_pc = get_fp_and_pc();
@@ -68,8 +65,7 @@ namespace Stack {
 
     // @notice Pop N elements from the stack.
     // @param stack The pointer to the stack.
-    // @param n The len of elements to pop.
-    // @return stack The new pointer to the stack.
+    // @param n The number of elements to pop.
     // @return elements The pointer to the first popped element.
     func pop_n{stack: model.Stack*}(n: felt) -> (elements: Uint256*) {
         alloc_locals;
@@ -86,7 +82,6 @@ namespace Stack {
 
     // @notice Pop an element from the stack.
     // @param stack The pointer to the stack.
-    // @return stack The new pointer to the stack.
     // @return element The popped element.
     func pop{stack: model.Stack*}() -> (element: Uint256*) {
         let dict_ptr = stack.dict_ptr;
@@ -103,7 +98,6 @@ namespace Stack {
     // @dev stack_index is 0-based, 0 is the top of the stack.
     // @param stack The pointer to the stack.
     // @param stack_index The index of the element to return.
-    // @return stack The new pointer to the stack.
     // @return value The element at the given index.
     func peek{stack: model.Stack*}(stack_index: felt) -> (value: Uint256*) {
         let dict_ptr = stack.dict_ptr;
@@ -121,7 +115,6 @@ namespace Stack {
     // @dev i is 0-based, 0 is the top of the stack.
     // @param stack The pointer to the stack.
     // @param i The index of the second element to swap.
-    // @return stack The new pointer to the stack.
     func swap_i{stack: model.Stack*}(i: felt) {
         let dict_ptr = stack.dict_ptr;
 
@@ -140,6 +133,10 @@ namespace Stack {
 }
 
 namespace Internals {
+    // @notice Read N elements from the stack.
+    // @param index The starting index to read from.
+    // @param n The number of elements to read.
+    // @param output The pointer to the output array.
     func _read_n{dict_ptr: DictAccess*}(index: felt, n: felt, output: felt*) {
         if (n == 0) {
             return ();

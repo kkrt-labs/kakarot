@@ -79,12 +79,13 @@ namespace AccountContract {
     // @notice This function is used to initialize the smart contract account.
     // @dev The `evm_address` and `kakarot_address` were set during the uninitialized_account creation.
     // Reading them from state ensures that they always match the ones the account was created for.
+    // @param evm_address The EVM address of the account.
     func initialize{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(evm_address) {
+    }(evm_address: felt) {
         alloc_locals;
         let (is_initialized) = Account_is_initialized.read();
         with_attr error_message("Account already initialized") {
@@ -104,7 +105,8 @@ namespace AccountContract {
         return ();
     }
 
-    // @return address The EVM address of the account
+    // @notice This function returns the EVM address of the account.
+    // @return address The EVM address of the account.
     func get_evm_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
         address: felt
     ) {
@@ -113,7 +115,7 @@ namespace AccountContract {
     }
 
     // @notice This function checks if the account was initialized.
-    // @return is_initialized 1 if the account has been initialized 0 otherwise.
+    // @return is_initialized 1 if the account has been initialized, 0 otherwise.
     func is_initialized{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -124,16 +126,16 @@ namespace AccountContract {
         return (is_initialized=is_initialized);
     }
 
-    // EOA functions
-
     // @notice Validate an Ethereum transaction and execute it.
     // @dev This function validates the transaction by checking its signature,
     // chain_id, nonce and gas. It then sends it to Kakarot.
-    // @param tx_data_len The length of tx data
+    // @param tx_data_len The length of tx data.
     // @param tx_data The tx data.
     // @param signature_len The length of tx signature.
     // @param signature The tx signature.
-    // @param chain_id The expected chain id of the tx
+    // @param chain_id The expected chain id of the tx.
+    // @return response_len The length of the response array.
+    // @return response The response from the Kakarot contract.
     func execute_from_outside{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -229,8 +231,6 @@ namespace AccountContract {
         return (response_len=return_data_len, response=return_data);
     }
 
-    // Contract Account functions
-
     // @notice Store the bytecode of the contract.
     // @param bytecode_len The length of the bytecode.
     // @param bytecode The bytecode of the contract.
@@ -248,7 +248,7 @@ namespace AccountContract {
     }
 
     // @notice This function is used to get the bytecode_len of the smart contract.
-    // @return bytecode_len The length of the bytecode.
+    // @return res The length of the bytecode.
     func bytecode_len{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
         res: felt
     ) {
@@ -271,8 +271,8 @@ namespace AccountContract {
     }
 
     // @notice This function is used to read the storage at a key.
-    // @param key The storage key, which is hash_felts(cast(Uint256, felt*)) of the Uint256 storage key.
-    // @return value The store value.
+    // @param storage_addr The storage address.
+    // @return value The stored value.
     func storage{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -286,7 +286,8 @@ namespace AccountContract {
     }
 
     // @notice This function is used to write to the storage of the account.
-    // @param key The storage key, which is hash_felts(cast(Uint256, felt*)) of the Uint256 storage key.
+    // @param storage_addr The storage address, which is hash_felts(cast(Uint256, felt*)) of the Uint256 storage key.
+
     // @param value The value to store.
     func write_storage{
         syscall_ptr: felt*,
@@ -300,17 +301,16 @@ namespace AccountContract {
         return ();
     }
 
-    // @notice This function is used to read the nonce from storage
-    // @dev If the nonce is that of an EOA and the previous transaction reverted with a CairoVM,
-    // the nonce was not incremented and this is off-by-one until the next successful CairoVM execution.
-    // @return nonce The current nonce of the contract account
+    // @notice This function is used to read the nonce from storage.
+    // @return nonce The current nonce of the contract account.
     func get_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
         nonce: felt
     ) {
         return Account_nonce.read();
     }
 
-    // @notice This function set the account nonce
+    // @notice This function sets the account nonce.
+    // @param new_nonce The new nonce value.
     func set_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         new_nonce: felt
     ) {
@@ -331,6 +331,9 @@ namespace AccountContract {
         return ();
     }
 
+    // @notice Checks if the jump destination at the given index is valid.
+    // @param index The index of the jump destination.
+    // @return is_valid 1 if the jump destination is valid, 0 otherwise.
     func is_valid_jumpdest{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         index: felt
     ) -> felt {
@@ -350,12 +353,16 @@ namespace AccountContract {
         return value;
     }
 
+    // @notice Gets the code hash of the account.
+    // @return code_hash The code hash of the account.
     func get_code_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         ) -> Uint256 {
         let (code_hash) = Account_code_hash.read();
         return code_hash;
     }
 
+    // @notice Sets the code hash of the account.
+    // @param code_hash The new code hash.
     func set_code_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         code_hash: Uint256
     ) {
@@ -365,7 +372,7 @@ namespace AccountContract {
 }
 
 namespace Internals {
-    // @notice asserts that the caller is the account itself
+    // @notice Asserts that the caller is the account itself.
     func assert_only_self{syscall_ptr: felt*}() {
         let (this) = get_contract_address();
         let (caller) = get_caller_address();
@@ -474,9 +481,8 @@ namespace Internals {
     }
 
     // @notice Load the bytecode of the contract in the specified array.
-    // @param index The index in the bytecode.
     // @param bytecode_len The length of the bytecode.
-    // @param bytecode The bytecode of the contract.
+    // @return bytecode The bytecode of the contract.
     func load_bytecode{syscall_ptr: felt*, range_check_ptr}(bytecode_len: felt) -> (
         bytecode: felt*
     ) {

@@ -862,7 +862,8 @@ namespace CallHelper {
     //  execution frame of the call and returns it.
     // @param evm The current EVM, which is the parent of the new EVM.
     // @param gas The gas to be used by the new EVM.
-    // @param value The value to be transferred in the call
+    // @param value The value to be transferred in the call.
+    // @param caller The address of the caller.
     // @param to The address of the target account.
     // @param code_address The address of the account whose code will be executed.
     // @param is_staticcall A boolean indicating whether the call is a static call.
@@ -941,6 +942,8 @@ namespace CallHelper {
         return child_evm;
     }
 
+    // @notice Finalizes the parent context after a call.
+    // @param evm The current EVM context.
     // @return EVM The pointer to the updated calling context.
     func finalize_parent{
         syscall_ptr: felt*,
@@ -1059,9 +1062,8 @@ namespace CreateHelper {
     //         keccak256(rlp([sender_address,sender_nonce])).
     //         See [CREATE](https://www.evm.codes/#f0).
     // @param sender_address The evm sender address.
-    // @param bytecode_len The length of the initialization code.
     // @param nonce The nonce given to the create opcode.
-    // @return EVM The pointer to the updated calling context.
+    // @return evm_contract_address The computed EVM contract address.
     func get_create_address{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -1121,7 +1123,7 @@ namespace CreateHelper {
     // @param bytecode_len The length of the initialization code.
     // @param bytecode The offset to store the element at.
     // @param salt The salt given to the create2 opcode.
-    // @return EVM The pointer to the updated calling context.
+    // @return create2_address The computed EVM contract address.
     func get_create2_address{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -1173,6 +1175,12 @@ namespace CreateHelper {
     }
 
     // @notice Pre-compute the evm address of a contract account before deploying it.
+    // @param evm_address The EVM address of the sender.
+    // @param popped_len The length of the popped stack elements.
+    // @param popped The popped stack elements.
+    // @param bytecode_len The length of the initialization code.
+    // @param bytecode The initialization code.
+    // @return The computed EVM contract address.
     func get_evm_address{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,

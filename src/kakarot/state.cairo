@@ -21,7 +21,8 @@ from utils.uint256 import uint256_add, uint256_sub, uint256_eq
 from kakarot.constants import Constants
 
 namespace State {
-    // @dev Create a new empty State
+    // @notice Create a new empty State
+    // @return The pointer to the new State
     func init() -> model.State* {
         let (accounts_start) = default_dict_new(0);
         let (events: model.Event*) = alloc();
@@ -36,8 +37,9 @@ namespace State {
         );
     }
 
-    // @dev Deep copy of the state, creating new memory segments
-    // @param self The pointer to the State
+    // @notice Deep copy of the state, creating new memory segments
+    // @param state The pointer to the State
+    // @return The pointer to the copied State
     func copy{range_check_ptr, state: model.State*}() -> model.State* {
         alloc_locals;
         // accounts are a new memory segment
@@ -62,7 +64,8 @@ namespace State {
         return state_copy;
     }
 
-    // @dev Squash dicts used internally
+    // @notice Finalizes the state by squashing the internal dicts and copying the result to a new memory segment.
+    // @param state The pointer to the State
     func finalize{range_check_ptr, state: model.State*}() {
         alloc_locals;
         // First squash to get only one account per key
@@ -90,7 +93,6 @@ namespace State {
     // @dev Try to retrieve in the local Dict<Address*, Account*> first, and if not already here
     //      read the contract storage and cache the result.
     // @param evm_address The evm address of the Account
-    // @return The updated state
     // @return The account
     func get_account{
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*
@@ -128,6 +130,7 @@ namespace State {
     }
 
     // @notice Cache precompiles accounts in the state, making them warm.
+    // @param state The pointer to the State
     func cache_precompiles{
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*
     }() {
@@ -225,7 +228,7 @@ namespace State {
     // @notice Checks if a storage slot is warm (has been accessed before) in an account.
     // @dev Since this is only called in SSTORE/SLOAD opcodes,
     //     we consider that account and storage will be warmed up during the execution of the opcode.
-    // @param self The account to check.
+    // @param address The address of the account to check.
     // @param key The key of the storage slot to check.
     // @return A boolean indicating whether the storage slot is warm.
     func is_storage_warm{pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*}(
@@ -283,6 +286,7 @@ namespace State {
     //      read the contract storage and cache the result.
     // @param evm_address The evm address of the account to read storage from.
     // @param key The pointer to the storage key
+    // @return The value of the storage key.
     func read_storage{
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*
     }(evm_address: felt, key: Uint256*) -> Uint256* {
@@ -336,8 +340,7 @@ namespace State {
     }
 
     // @notice Add an event to the Event* array
-    // @param event The pointer to the Event
-    // @return The updated State
+    // @param event The event to add.
     func add_event{state: model.State*}(event: model.Event) {
         assert state.events[state.events_len] = event;
 
@@ -353,8 +356,7 @@ namespace State {
     }
 
     // @notice Add a transfer to the Transfer* array
-    // @param event The pointer to the Transfer
-    // @return The updated State
+    // @param transfer The transfer to add.
     // @return The status of the transfer
     func add_transfer{
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*
@@ -456,6 +458,8 @@ namespace Internals {
         return _copy_accounts(accounts_start + DictAccess.SIZE, accounts_end);
     }
 
+    // @notice Cache a precompiled account in the state.
+    // @param evm_address The EVM address of the precompiled account.
     func _cache_precompile{
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, accounts_ptr: DictAccess*
     }(evm_address: felt) {
@@ -481,6 +485,11 @@ namespace Internals {
         return ();
     }
 
+    // @notice Cache the addresses and storage keys from the access list
+    //  in the state, making them warm.
+    // @param access_list_len The length of the access list.
+    // @param access_list The pointer to the access list.
+    // @return The gas cost of caching the access list.
     func _cache_access_list{
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, accounts_ptr: DictAccess*
     }(access_list_len: felt, access_list: felt*) -> felt {

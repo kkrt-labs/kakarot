@@ -90,7 +90,7 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     );
 }
 
-// @notive Returns the owner of the contract
+// @notice Returns the owner of the contract
 @external
 func get_owner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (owner: felt) {
     return Ownable_owner.read();
@@ -181,7 +181,7 @@ func set_block_gas_limit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_c
 }
 
 // @notice Get the block gas limit.
-// @return gas_limit The current block gas limit.
+// @return block_gas_limit The current block gas limit.
 @view
 func get_block_gas_limit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
     block_gas_limit: felt
@@ -326,6 +326,9 @@ func write_account_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_c
     return Kakarot.write_account_nonce(evm_address, nonce);
 }
 
+// @notice Authorizes a pre-EIP155 transaction for a specific sender
+// @param sender_address The EVM address of the sender
+// @param msg_hash The hash of the message to be authorized
 @external
 func set_authorized_pre_eip155_tx{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     sender_address: felt, msg_hash: Uint256
@@ -336,6 +339,8 @@ func set_authorized_pre_eip155_tx{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*
     return ();
 }
 
+// @notice Sets the L1 messaging contract address
+// @param l1_messaging_contract_address The address of the L1 messaging contract
 @external
 func set_l1_messaging_contract_address{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
@@ -344,6 +349,8 @@ func set_l1_messaging_contract_address{
     return Kakarot.set_l1_messaging_contract_address(l1_messaging_contract_address);
 }
 
+// @notice Gets the L1 messaging contract address
+// @return l1_messaging_contract_address The address of the L1 messaging contract
 @external
 func get_l1_messaging_contract_address{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
@@ -352,6 +359,13 @@ func get_l1_messaging_contract_address{
     return (l1_messaging_contract_address=l1_messaging_contract_address);
 }
 
+// @notice Handles messages from L1
+// @param from_address The address of the L1 contract sending the message
+// @param l1_sender The address of the L1 account that initiated the message
+// @param to_address The target address on L2
+// @param value The amount of native tokens to be transferred
+// @param data_len The length of the EVM calldata
+// @param data The EVM calldata
 @l1_handler
 func handle_l1_message{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*

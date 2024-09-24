@@ -24,6 +24,7 @@ namespace EthTransaction {
     // transaction data, which includes the chain ID in accordance with EIP-155.
     // @param tx_data_len The length of the raw transaction data
     // @param tx_data The raw transaction data
+    // @return model.EthTransaction* The decoded Ethereum transaction
     func decode_legacy_tx{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(
         tx_data_len: felt, tx_data: felt*
     ) -> model.EthTransaction* {
@@ -96,6 +97,7 @@ namespace EthTransaction {
     // @dev See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-2930.md
     // @param tx_data_len The length of the raw transaction data
     // @param tx_data The raw transaction data
+    // @return model.EthTransaction* The decoded Ethereum transaction
     func decode_2930{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(
         tx_data_len: felt, tx_data: felt*
     ) -> model.EthTransaction* {
@@ -158,6 +160,7 @@ namespace EthTransaction {
     // @dev See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1559.md
     // @param tx_data_len The length of the raw transaction data
     // @param tx_data The raw transaction data
+    // @return model.EthTransaction* The decoded Ethereum transaction
     func decode_1559{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(
         tx_data_len: felt, tx_data: felt*
     ) -> model.EthTransaction* {
@@ -224,6 +227,7 @@ namespace EthTransaction {
     // See https://eips.ethereum.org/EIPS/eip-2718#transactiontype-only-goes-up-to-0x7f
     // @param tx_data_len The len of the raw transaction data
     // @param tx_data The raw transaction data
+    // @return felt The type of the transaction
     func get_tx_type{range_check_ptr}(tx_data_len: felt, tx_data: felt*) -> felt {
         with_attr error_message("tx_data_len is zero") {
             assert_not_zero(tx_data_len);
@@ -240,6 +244,7 @@ namespace EthTransaction {
     // @notice Decode a raw Ethereum transaction
     // @param tx_data_len The length of the raw transaction data
     // @param tx_data The raw transaction data
+    // @return model.EthTransaction* The decoded Ethereum transaction
     func decode{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(
         tx_data_len: felt, tx_data: felt*
     ) -> model.EthTransaction* {
@@ -267,9 +272,9 @@ namespace EthTransaction {
     // @dev the parsed format is [address, storage_keys_len, *[storage_keys], address, storage_keys_len, *[storage_keys]]
     // where keys_len is the number of storage keys, and each storage key takes 2 felts.
     // @param parsed_list The pointer to the next free cell in the parsed access list.
-    // @param list_len The remaining length of the RLP-decoded access list to parse.
-    // @param list_items The pointer to the current RLP-decoded access list item to parse.
-    // @return The length of the serialized access list, expressed in total amount of felts in the list.
+    // @param access_list_len The remaining length of the RLP-decoded access list to parse.
+    // @param access_list The pointer to the current RLP-decoded access list item to parse.
+    // @return felt The length of the serialized access list, expressed in total amount of felts in the list.
     func parse_access_list{range_check_ptr}(
         parsed_list: felt*, access_list_len: felt, access_list: RLP.Item*
     ) -> felt {
