@@ -6,9 +6,9 @@ from starknet_py.contract import Contract
 
 from kakarot_scripts.constants import NETWORK, RPC_CLIENT
 from kakarot_scripts.utils.kakarot import (
-    compute_starknet_address,
     get_eoa,
     get_solidity_artifacts,
+    get_starknet_address,
 )
 from kakarot_scripts.utils.starknet import (
     call,
@@ -85,7 +85,7 @@ class TestKakarot:
                 access_list=[],
             )
             origin_starknet_address = (
-                await evm.functions["compute_starknet_address"].call(origin)
+                await evm.functions["get_starknet_address"].call(origin)
             ).contract_address
             self_balance = (
                 await eth.functions["balanceOf"].call(origin_starknet_address)
@@ -133,10 +133,10 @@ class TestKakarot:
                     if event.from_address != eth.address
                 ] == events
 
-    class TestComputeStarknetAddress:
+    class TestGetStarknetAddress:
         async def test_should_return_same_as_deployed_address(self, new_eoa):
             eoa = await new_eoa()
-            starknet_address = await compute_starknet_address(eoa.address)
+            starknet_address = await get_starknet_address(eoa.address)
             assert eoa.starknet_contract.address == starknet_address
 
     class TestDeployExternallyOwnedAccount:
@@ -305,9 +305,12 @@ class TestKakarot:
                 "set_uninitialized_account_class_hash",
                 class_hashes["uninitialized_account_fixture"],
             )
+
+            # Verifying that when updating the uninitialized account class hash, the starknet address
+            # of an already deployed account is not impacted
             assert (
-                await call("kakarot", "compute_starknet_address", int(eoa.address, 16))
-            ) != eoa.starknet_contract.address
+                await call("kakarot", "get_starknet_address", int(eoa.address, 16))
+            ).starknet_address == eoa.starknet_contract.address
 
             result = await kakarot.functions["eth_call"].call(
                 nonce=0,

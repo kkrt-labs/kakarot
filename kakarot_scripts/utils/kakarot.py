@@ -677,18 +677,6 @@ async def send_starknet_transaction(
     return receipt, response, success, gas_used
 
 
-async def compute_starknet_address(address: Union[str, int]):
-    """
-    Compute the Starknet address of an EVM address.
-    Warning: use get_starknet_address for getting the actual address of an account.
-    """
-    evm_address = int(address, 16) if isinstance(address, str) else address
-    kakarot_contract = _get_starknet_contract("kakarot")
-    return (
-        await kakarot_contract.functions["compute_starknet_address"].call(evm_address)
-    ).contract_address
-
-
 async def get_starknet_address(address: Union[str, int]):
     """
     Get the registered Starknet address of an EVM address, or the one it would get
