@@ -1,113 +1,78 @@
-# Accounts
+# Accounts in Kakarot
 
-While the EVM defines two types of accounts (EOAs and CAs), Starknet only has
-one type of account. There is no distinction between accounts managed by a
-private key and a wallet (EOAs) and smart contracts, due to native Account
-Abstraction.
+## Overview
 
-Kakarot leverages this abstraction to provide a single account type that can be
-used for both EOA and CA use cases. This account type is managed by a single
-Starknet contract class (`account_contract.cairo`). This contract class defines
-the `__validate__` and `__execute__` entrypoints, which are used to send
-transactions from a wallet to Kakarot in a way that is compatible with the
-Starknet infrastructure. If you own the keys to an Ethereum address, you can use
-the `deploy_externally_owned_account` entrypoint to deploy a corresponding
-Starknet account contract, whose address is deterministic based on the Ethereum
-address.
+Kakarot leverages Starknet's native Account Abstraction to provide a single
+account type for both EOA (Externally Owned Account) and CA (Contract Account)
+use cases. This unified approach differs from the EVM, which distinguishes
+between EOAs and CAs.
 
-Although our backend makes no distinction between EOA and CA, the validation
-logic will reject any transaction that originates from a contract that has EVM
-code, as per the EVM specification. In the (extremely unlikely) event that a
-user sends a transaction from a contract account after mining the private key
-corresponding to an EOA, the transaction will be rejected.
+## Account Structure
 
-## Account storage
+### Account Contract
+
+All accounts in Kakarot are managed by a single Starknet contract class
+(`account_contract.cairo`). This contract implements the required Starknet
+Account Abstraction entrypoints, but they're disabled in favor of the
+`execute_from_outside` entrypoint. `execute_from_outside` accepts transactions
+sent by relayers to leverage applicative paymaster features.
+
+### Account Storage
 
 Account contracts store the following information:
 
-- `storage`: A mapping from 32-byte keys to 32-byte values. This is used to
-  store the values stored in the EVM account storage.
-- `nonce`: A 64-bits value representing the number of transactions sent from the
-  account. Even though EOAs do not use the stored nonce for validation, it is
-  still stored in the account contract to ensure the stored nonce always matches
-  the protocol nonce, which is incremented by one by the sequencer for each
-  transaction.
-- `bytecode`: The EVM bytecode of the account. This is only used for CAs, as
-  EOAs do not have bytecode.
-- `version`: A 9-digit integer representing the version of the account contract,
-  in the format `major.minor.patch` (3 digits each).
-- `implementation`: The class hash of the current account contract class.
+- `storage`: A mapping from 32-byte keys to 32-byte values (EVM account
+  storage).
+- `nonce`: A 64-bit value representing the number of transactions sent from the
+  account.
+- `bytecode`: The EVM bytecode of the account (used only for CAs).
 - `is_initialized`: A boolean indicating whether the account has been
-  initialized, used to prevent reinitializing an already initialized account.
+  initialized.
 - `evm_address`: The Ethereum address associated with this Starknet account.
 - `code_hash`: The hash of the EVM contract account bytecode.
+- `valid_jumpdests`: A mapping of bytecode-indexes to booleans indicating
+  whether the destination is a valid jump destination. Analyzed at deploy time.
+- `authorized_message_hashes`: A mapping of message hashes to booleans
+  indicating whether the message has been authorized. Used to whitelist hashes
+  of specific pre-eip155 transactions.
 
-## Account entrypoints
+## Deterministic Address Mapping
 
-The account contract class provides entrypoints to query and set the account
-storage, nonce, and bytecode. These entrypoints are used by the Kakarot contract
-to update the account state after a successful transaction. Even in the case of
-a reverted transaction, the nonce of the transaction sender is incremented, to
-ensure that the nonce stored in the account contract always matches the protocol
-nonce.
+Kakarot uses a deterministic system to compute the address of an account
+contract from an Ethereum address. The Starknet contract address is derived
+from:
 
-The account contract class also provides entrypoints related to account
-management: the current implementation hash, the version of the account contract
-class, and the Ethereum address associated with the account. These entrypoints
-are used to verify the account state and to upgrade the account contract class.
+1. The hash of the Starknet contract class
+2. A salt (using the Ethereum address)
+3. Constructor arguments: `[1, evm_address]`
+4. The deployer address (always the Kakarot contract)
 
-The account contract class also has `__validate__` and `__execute__`
-entrypoints, as per the
-[https://docs.starknet.io/documentation/architecture_and_concepts/Accounts/account_functions/](Starknet
-specification), which are used to process transactions originating from EOAs.
-These entrypoints are called by the sequencer when a transaction is submitted to
-the sequencer. The `__validate__` entrypoint first checks if the transaction is
-valid, and the `__execute__` entrypoint processes the transaction if it is
-valid. While it is technically feasible to submit multiple EVM transactions in a
-single multicall, the current implementation only supports submitting one EVM
-transaction per invoke transaction.
+This system ensures a one-to-one mapping between Ethereum and Starknet
+addresses.
 
-## Deterministic mapping of addresses
+It is recommended to use the `get_starknet_address` on the Kakarot contract to
+get the Starknet address of an EVM account.
 
-The account model allows us to compute the address of an account contract from
-an Ethereum address. The address of a starknet contract is computed from the
-following inputs:
+## Account Deployment and Initialization
 
-- The hash of the starknet contract class.
-- A salt, for which we use the Ethereum address.
-- Eventual constructor arguments. We use the address of the Kakarot contract and
-  the Ethereum address of the account as constructor arguments.
-- The deployer address, or zero. In our case, we always deploy from zero.
+Kakarot uses a proxy pattern for account deployment:
 
-This system ensures a deterministic calculation of the starknet contract address
-from an Ethereum address. However, this requires all inputs to be immutable, as
-changing any input will result in a different starknet contract address. This
-requires a deployment process, where we first deploy a contract using a
-restricted class that will always stay immutable (`uninitialized_account`), and
-then upgrade the class of the contract to the desired account class using the
-most up-to-date class. Anyone can deploy an account contract using the
-`deploy_externally_owned_account` entrypoint from Kakarot, or do the same
-manually using the `deploy` syscall.
-
-When an account is deployed, we make a library call to the `initialize` selector
-of its new implementation. This implementation is read directly from the storage
-of the Kakarot contract, so that newly deployed accounts are always up-to-date.
-In this initialization, we give infinite allowance to the Kakarot contract for
-the native token, we register the account in the Kakarot mapping of evm
-addresses to starknet addresses, and we set the `is_initialized` flag to true to
-prevent accounts from being initialized twice.
+1. All accounts are deployed as instances of the `uninitialized_account` class,
+   which acts as a transparent proxy.
+2. The actual account implementation is stored in the Kakarot contract.
+3. During initialization, the account is registered in Kakarot's mapping of EVM
+   addresses to Starknet addresses.
 
 The deployment process is illustrated as follows:
 
 ```mermaid
 sequenceDiagram
-    Anyone ->>+ UninitializedAccount: deploy_syscall
-    UninitializedAccount ->>+ Kakarot: get_account_contract_class_hash()
-    Kakarot -->>- UninitializedAccount: account_contract_class_hash
-    UninitializedAccount->>+AccountContractClass: library_call_initialize(kakarot_address,evm_address,account_contract_class_hash)
+    Kakarot ->>+ UninitializedAccount(Proxy): deploy_syscall
+    UninitializedAccount(Proxy) ->>+ Kakarot: get_account_contract_class_hash()
+    Kakarot -->>- UninitializedAccount(Proxy): account_contract_class_hash
+    UninitializedAccount(Proxy)->>+AccountContractClass: library_call_initialize(kakarot_address,evm_address,account_contract_class_hash)
     AccountContractClass ->> AccountContractClass: set_owner(kakarot_address)
     AccountContractClass ->> AccountContractClass: set_evm_address
-    AccountContractClass ->> AccountContractClass: set_implementation(account_contract_class_hash)
     AccountContractClass ->> AccountContractClass: set_initialized
     AccountContractClass ->>+ Kakarot: get_native_token()
     Kakarot -->>- AccountContractClass: native_token
@@ -115,56 +80,35 @@ sequenceDiagram
     AccountContractClass ->>+ Kakarot: register_account(evm_address)
     Kakarot ->> Kakarot: set_mapping(evm_address => starknet_address)
     Kakarot -->>- AccountContractClass : _
-    AccountContractClass -->>- UninitializedAccount: _
-    UninitializedAccount ->> UninitializedAccount: replace_class(account_contract_class_hash)
-    UninitializedAccount -->>- Anyone: _
+    AccountContractClass -->>- UninitializedAccount(Proxy): _
+    UninitializedAccount(Proxy) -->>- Kakarot: _
 ```
 
-## Account versioning
+## Transaction Execution
 
-Kakarot's account versioning system allows for upgrading the account contract
-class without affecting the address of an account and the subsequent deployment
-of accounts. The upgrade process works as follows:
+Transactions in Kakarot are executed through the proxy pattern:
 
-1. The account contract class exposes an `upgrade` entrypoint, which allows the
-   owner of the account to upgrade the account contract class to a new version.
-   Only the owner of the account can upgrade the account contract class.
-2. Accounts have a `version` field that stores the version of the account
-   contract class.
-3. The `version` field should be a 9-digit integer, where the first 3 digits
-   represent the major version, the next 3 digits represent the minor version,
-   and the last 3 digits represent the patch version.
-4. Upgrading an account will not change the content of the account storage. It
-   will only change the implementation logic.
+1. The `uninitialized_account` proxy receives the transaction.
+2. The `__default__` entrypoint delegates the call to the current account
+   implementation.
+3. The actual execution is performed through a library call to the account
+   implementation.
 
-## Upgrading accounts with AA
-
-As end users engage with Kakarot using EOAs, we need to ensure that the upgrade
-process is seamless and does not require any action from the user. One way of
-achieving this is to check if an account's class hash matches the one defined in
-the Kakarot contract every time we execute a transaction. If not, we can replace
-the user's account contract class with a `replace_class` syscall, and execute a
-`library_call` to the new class with the transaction to execute. The class
-upgrade would only be effective at the end of the transaction, but since we
-would execute the transaction through a library call, the transaction sent would
-be executed in the context of the latest account version.
+The execution process is as follows:
 
 ```mermaid
 sequenceDiagram
     User ->>+ Kakarot-RPC: eth_sendRawTransaction
-    Kakarot-RPC ->>+ UserAccount: __execute__(params)
-    UserAccount ->>+ Kakarot: get_account_contract_class_hash()
-    Kakarot -->>- UserAccount: account_contract_class_hash
-    alt class_hash equal
-        UserAccount ->>+ Kakarot: eth_send_transaction()
-        Kakarot -->> UserAccount: (returndata, success, gas_used)
-    else class_hash not equal
-        UserAccount ->> AccountClass: library_call_execute(params)
-        AccountClass ->>+ Kakarot: eth_send_transaction()
-        Kakarot -->> AccountClass: (returndata, success, gas_used)
-        AccountClass -->> UserAccount: response
-        UserAccount ->> UserAccount: replace_class(account_contract_class_hash)
-    end
-    UserAccount -->> Kakarot-RPC: response
-    Kakarot-RPC -->> User: _
+    Kakarot-RPC ->>+ UninitializedAccount(Proxy): __default__(params)
+    UninitializedAccount(Proxy) ->>+ Kakarot: get_account_contract_class_hash()
+    Kakarot -->>- UninitializedAccount(Proxy): account_contract_class_hash
+    UninitializedAccount(Proxy) ->>+ AccountContractClass: library_call(params)
+    AccountContractClass ->>+ Kakarot: eth_send_transaction()
+    Kakarot -->>- AccountContractClass: (returndata, success, gas_used)
+    AccountContractClass -->>- UninitializedAccount(Proxy): response
+    UninitializedAccount(Proxy) -->>- Kakarot-RPC: response
+    Kakarot-RPC -->>- User: transaction result
 ```
+
+This approach ensures that all Kakarot accounts remain up-to-date and function
+consistently, regardless of when they were created or last used.

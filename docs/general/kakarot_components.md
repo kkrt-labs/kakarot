@@ -1,12 +1,10 @@
 # Kakarot Components and Deployment
 
-The entire Kakarot protocol is composed of 3 different kind of Starknet
+The entire Kakarot protocol is composed of 2 different kind of Starknet
 contracts:
 
 - Kakarot
-- Accounts
-  - EOA
-  - Contract account
+- Accounts (EOA & Contract Accounts)
 
 ## Kakarot
 
@@ -14,22 +12,21 @@ The main Kakarot contract is located at:
 [`./src/kakarot/kakarot.cairo`](../../src/kakarot/kakarot.cairo).
 
 This is the core contract which is capable of executing decoded ethereum
-transactions thanks to its `eth_send_transaction` and `eth_call` entrypoint.
+transactions thanks to its `eth_send_transaction` and `eth_call` entrypoint
+(defined in [`./src/kakarot/eth_rpc.cairo`](../../src/kakarot/eth_rpc.cairo)).
 
 Currently, Argent or Braavos accounts contracts don't work with Kakarot.
-Consequently, the `deploy_externally_owned_account` entrypoint has been added to
-let the owner of an Ethereum address get their corresponding starknet contract.
 
 The mapping between EVM addresses and Starknet addresses of the deployed
 contracts is stored as follows:
 
 - each deployed contract has a `get_evm_address` entrypoint
 - only the Kakarot contract deploys accounts and provides a
-  `compute_starknet_address(evm_address)` entrypoint that returns the
-  corresponding starknet address
+  `get_starknet_address(evm_address)` entrypoint that returns the corresponding
+  starknet address
 
 For this latter computation to be account agnostic, Kakarot indeed uses a
-transparent proxy.
+transparent proxy described in [Accounts](./accounts.md).
 
 ## Accounts
 
@@ -62,23 +59,6 @@ the balances and consequently only the three other fields are stored in the
 corresponding Starknet contracts. Though it doesn't bring any change from the
 Kakarot point of view, it would allow Kakarot within Starknet to use Starknet
 ETH (or STRK) as native token, removing the need for bridging it.
-
-### Contract Accounts
-
-It is basically used only as a storage backend for an EVM contract account. More
-precisely, it uses regular Starknet `@storage_var` to store both the contract
-bytecode and the contract storage (`SSTORE` and `SLOAD`).
-
-### Externally Owned Account
-
-This [contract](../../src/kakarot/accounts/eoa/externally_owned_account.cairo)
-is an account in the Starknet sense, meaning that it defines the `__validate__`
-and `__execute__` entrypoints and is used to send transactions from a wallet to
-Kakarot. However, it doesn't use the `to` and `selector` fields but only the
-`calldata` of a Starknet transaction to send the RLP encoded unsigned data. The
-Ethereum signature is sent in the signature field. For a general introduction to
-EVM transactions, see
-[the official doc](https://ethereum.org/en/developers/docs/transactions/).
 
 ## Deploying Kakarot
 
