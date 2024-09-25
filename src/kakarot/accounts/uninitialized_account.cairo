@@ -82,16 +82,6 @@ func __l1_default__{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
     return ();
 }
 
-// TODO: Remove this function for mainnet
-@external
-func set_implementation{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    new_implementation: felt
-) {
-    Ownable.assert_only_owner();
-    replace_class(new_implementation);
-    return ();
-}
-
 @view
 func get_owner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (owner: felt) {
     return Ownable.owner();

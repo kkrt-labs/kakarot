@@ -6,7 +6,6 @@ from kakarot.accounts.uninitialized_account import (
     constructor,
     __default__,
     __l1_default__,
-    set_implementation,
     get_owner,
 )
 
