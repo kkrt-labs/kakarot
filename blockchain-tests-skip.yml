@@ -583,9 +583,6 @@ testname:
 regex:
   eip4895_withdrawals:
     - .*
-  stBadOpcode:
-    - opcF6.*
-    - opcF7.*
   eip4844_blobs:
     - .*
   eip4788_beacon_root:
@@ -594,11 +591,3 @@ regex:
     - .*
   stEIP4844-blobtransactions:
     - .*
-  stMemoryStressTest:
-    - mload32bitBound_return.* # ef-tests #565
-    - CREATE_Bounds.* # ef-tests #565
-    - CREATE2_Bounds.* # ef-tests #565
-    - CALL_Bounds.* # ef-tests #565
-    - CALLCODE_Bounds.* # ef-tests #565
-    - DELEGATECALL_Bounds.* # ef-tests #565
-    - static_CALL_Bounds.* # ef-tests #565
