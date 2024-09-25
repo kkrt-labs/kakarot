@@ -949,6 +949,13 @@ namespace Interpreter {
             let sender = State.get_account(env.origin);
             let (local new_balance) = uint256_sub([sender.balance], max_fee_u256);
             let sender = Account.set_balance(sender, &new_balance);
+            // Check that the sender nonce cannot overflow MAX_64
+            if (sender.nonce == 2 ** 64 - 1) {
+                let (revert_reason_len, revert_reason) = Errors.nonceIsMax();
+                let evm = EVM.stop(evm, revert_reason_len, revert_reason, Errors.EXCEPTIONAL_HALT);
+                State.finalize();
+                return (evm, stack, memory, state, 0, 0);
+            }
             let sender = Account.set_nonce(sender, sender.nonce + 1);
             State.update_account(sender);
 
