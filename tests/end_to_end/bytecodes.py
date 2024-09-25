@@ -1,6 +1,7 @@
 import pytest
 
 from kakarot_scripts.constants import BLOCK_GAS_LIMIT, COINBASE, NETWORK
+from tests.utils.constants import MIN_BASE_FEE_PER_BLOB_GAS
 
 test_cases = [
     {
@@ -1002,7 +1003,7 @@ test_cases = [
             "value": 0,
             "code": "4a00",
             "calldata": "",
-            "stack": "0",
+            "stack": f"{MIN_BASE_FEE_PER_BLOB_GAS}",
             "memory": "",
             "return_data": "",
             "success": 1,

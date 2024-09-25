@@ -47,11 +47,6 @@ testname:
   vmArithmeticTest:
     - expPower256Of256_d0g0v0_Cancun #RunResources error
     - exp_d9g0v0_Cancun #RunResources error
-  stBadOpcode:
-    - opc4ADiffPlaces_d0g0v0_Cancun
-    - opc4ADiffPlaces_d21g0v0_Cancun
-    - opc4ADiffPlaces_d22g0v0_Cancun
-    - opc4ADiffPlaces_d23g0v0_Cancun
   stAttackTest:
     - ContractCreationSpam_d0g0v0_Cancun #RunResources error
   stChainId:
@@ -586,8 +581,6 @@ regex:
   eip4844_blobs:
     - .*
   eip4788_beacon_root:
-    - .*
-  eip7516_blobgasfee:
     - .*
   stEIP4844-blobtransactions:
     - .*

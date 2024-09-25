@@ -5,6 +5,9 @@ from kakarot.gas import Gas
 // @title Constants file.
 // @notice This file contains global constants.
 namespace Constants {
+    // BLOCK
+    const MIN_BASE_FEE_PER_BLOB_GAS = 1;  // https://eips.ethereum.org/EIPS/eip-4844#gas-accounting
+
     const UINT128_MAX = 0xffffffffffffffffffffffffffffffff;
 
     // STACK

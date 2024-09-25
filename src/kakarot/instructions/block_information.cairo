@@ -134,7 +134,7 @@ namespace BlockInformation {
 
         blobbasefee:
         let stack = cast([fp - 6], model.Stack*);
-        Stack.push_uint128(0);
+        Stack.push_uint128(Constants.MIN_BASE_FEE_PER_BLOB_GAS);
         jmp end;
 
         end:
