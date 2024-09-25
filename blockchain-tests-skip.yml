@@ -585,8 +585,6 @@ regex:
     - .*
   eip4788_beacon_root:
     - .*
-  eip7516_blobgasfee:
-    - .*
   stEIP4844-blobtransactions:
     - .*
   stMemoryStressTest:

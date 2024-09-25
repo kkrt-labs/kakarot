@@ -1,11 +1,7 @@
 import pytest
 
-from kakarot_scripts.constants import (
-    BLOCK_GAS_LIMIT,
-    COINBASE,
-    MIN_BASE_FEE_PER_BLOB_GAS,
-    NETWORK,
-)
+from kakarot_scripts.constants import BLOCK_GAS_LIMIT, COINBASE, NETWORK
+from tests.utils.constants import MIN_BASE_FEE_PER_BLOB_GAS
 
 test_cases = [
     {
