@@ -11,9 +11,10 @@ contracts:
 The main Kakarot contract is located at:
 [`./src/kakarot/kakarot.cairo`](../../src/kakarot/kakarot.cairo).
 
-This is the core contract which is capable of executing ethereum
-transactions thanks to its `eth_send_transaction`, `eth_send_raw_unsigned_tx` and `eth_call` entrypoints
-(defined in [`./src/kakarot/eth_rpc.cairo`](../../src/kakarot/eth_rpc.cairo)).
+This is the core contract which is capable of executing ethereum transactions
+thanks to its `eth_send_transaction`, `eth_send_raw_unsigned_tx` and `eth_call`
+entrypoints (defined in
+[`./src/kakarot/eth_rpc.cairo`](../../src/kakarot/eth_rpc.cairo)).
 
 Currently, Argent or Braavos accounts contracts don't work with Kakarot.
 
