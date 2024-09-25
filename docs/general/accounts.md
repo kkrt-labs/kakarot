@@ -4,8 +4,7 @@
 
 Kakarot leverages Starknet's native Account Abstraction to provide a single
 account type for both EOA (Externally Owned Account) and CA (Contract Account)
-use cases. This unified approach differs from the EVM, which distinguishes
-between EOAs and CAs.
+use cases.
 
 ## Account Structure
 
@@ -25,7 +24,7 @@ Account contracts store the following information:
   storage).
 - `nonce`: A 64-bit value representing the number of transactions sent from the
   account.
-- `bytecode`: The EVM bytecode of the account (used only for CAs).
+- `bytecode`: The EVM bytecode of the account.
 - `is_initialized`: A boolean indicating whether the account has been
   initialized.
 - `evm_address`: The Ethereum address associated with this Starknet account.
@@ -51,7 +50,8 @@ This system ensures a one-to-one mapping between Ethereum and Starknet
 addresses.
 
 It is recommended to use the `get_starknet_address` on the Kakarot contract to
-get the Starknet address of an EVM account.
+get the Starknet address of an EVM account, in case the contract class hash
+changes in the future.
 
 ## Account Deployment and Initialization
 
