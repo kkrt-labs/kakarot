@@ -65,12 +65,12 @@ testname:
   stCreateTest:
     - CreateOOGafterMaxCodesize_d3g0v0_Cancun #RunResources error
     - CreateOOGafterMaxCodesize_d5g0v0_Cancun #RunResources error
-    - CreateTransactionHighNonce_d0g0v0_Cancun
-    - CreateTransactionHighNonce_d0g0v1_Cancun
   stCallCreateCallCodeTest:
     - Call1024PreCalls_d0g0v0_Cancun #RunResources error
     - Call1024PreCalls_d0g1v0_Cancun #RunResources error
   stExtCodeHash:
+    # fails because we don't support the behavior described in: https://github.com/ethereum/execution-specs/blob/07f5747a43d62ef7f203d41d77005cb15ca5e434/src/ethereum/cancun/vm/interpreter.py#L165-L177
+    # At no point in Kakarot can there be an empty account with storage.
     - dynamicAccountOverwriteEmpty_Paris_d0g0v0_Cancun
   stDelegatecallTestHomestead:
     - Call1024PreCalls_d0g0v0_Cancun #RunResources error
@@ -459,6 +459,8 @@ testname:
     - randomStatetest476_d0g0v0_Cancun #RunResources error
     - randomStatetest650_d0g0v0_Cancun #RunResources error
   stSStoreTest:
+    # Test family fails because we don't support the behavior described in: https://github.com/ethereum/execution-specs/blob/07f5747a43d62ef7f203d41d77005cb15ca5e434/src/ethereum/cancun/vm/interpreter.py#L165-L177
+    # At no point in Kakarot can there be an empty account with storage.
     - InitCollisionParis_d0g0v0_Cancun
     - InitCollisionParis_d1g0v0_Cancun
     - InitCollisionParis_d2g0v0_Cancun

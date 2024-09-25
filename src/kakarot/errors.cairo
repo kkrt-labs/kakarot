@@ -770,4 +770,32 @@ namespace Errors {
         dw 'c';
         dw 'y';
     }
+
+    func nonceIsMax() -> (error_len: felt, error: felt*) {
+        let (error) = get_label_location(nonce_is_max_error_message);
+        return (21, error);
+
+        nonce_is_max_error_message:
+        dw 'K';
+        dw 'a';
+        dw 'k';
+        dw 'a';
+        dw 'r';
+        dw 'o';
+        dw 't';
+        dw ':';
+        dw ' ';
+        dw 'n';
+        dw 'o';
+        dw 'n';
+        dw 'c';
+        dw 'e';
+        dw ' ';
+        dw 'i';
+        dw 's';
+        dw ' ';
+        dw 'm';
+        dw 'a';
+        dw 'x';
+    }
 }
