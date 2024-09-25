@@ -8,7 +8,7 @@ from pathlib import Path
 
 import requests
 
-EF_TESTS_TAG = "v13.3-kkrt-1"
+EF_TESTS_TAG = "v14.1.1-kkrt"
 EF_TESTS_URL = (
     f"https://github.com/kkrt-labs/tests/archive/refs/tags/{EF_TESTS_TAG}.tar.gz"
 )

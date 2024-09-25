@@ -6,6 +6,7 @@ import pytest
 from kakarot_scripts.constants import BLOCK_GAS_LIMIT
 
 BLOCK_GAS_LIMIT = BLOCK_GAS_LIMIT
+MIN_BASE_FEE_PER_BLOB_GAS = 1
 
 CHAIN_ID = int.from_bytes(b"KKRT", "big")  # KKRT (0x4b4b5254) in ASCII
 BIG_CHAIN_ID = int.from_bytes(b"SN_SEPOLIA", "big")

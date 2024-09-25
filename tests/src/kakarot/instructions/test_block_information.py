@@ -3,7 +3,12 @@ from unittest.mock import patch
 import pytest
 
 from kakarot_scripts.constants import COINBASE
-from tests.utils.constants import BLOCK_GAS_LIMIT, CHAIN_ID, Opcodes
+from tests.utils.constants import (
+    BLOCK_GAS_LIMIT,
+    CHAIN_ID,
+    MIN_BASE_FEE_PER_BLOB_GAS,
+    Opcodes,
+)
 from tests.utils.syscall_handler import SyscallHandler
 
 
@@ -19,7 +24,7 @@ class TestBlockInformation:
             (Opcodes.CHAINID, CHAIN_ID),
             (Opcodes.BASEFEE, 0),
             (Opcodes.BLOBHASH, 0),
-            (Opcodes.BLOBBASEFEE, 0),
+            (Opcodes.BLOBBASEFEE, MIN_BASE_FEE_PER_BLOB_GAS),
         ],
     )
     @SyscallHandler.patch("Kakarot_coinbase", COINBASE)
