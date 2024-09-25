@@ -145,7 +145,7 @@ benefit from all of its features.
 
 ```bash
 # Runs a local CairoVM client (or StarknetOS chain)
-make run-katana
+make run-nodes
 
 # Run all tests. This requires a Katana instance and an Anvil instance running in the background: `make run-nodes`
 make test
