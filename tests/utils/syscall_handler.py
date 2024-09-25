@@ -17,11 +17,7 @@ from starkware.starknet.public.abi import (
 )
 
 from kakarot_scripts.utils.uint256 import int_to_uint256, uint256_to_int
-from tests.utils.constants import (
-    ACCOUNT_CLASS_IMPLEMENTATION,
-    CAIRO1_HELPERS_CLASS_HASH,
-    CHAIN_ID,
-)
+from tests.utils.constants import CAIRO1_HELPERS_CLASS_HASH, CHAIN_ID
 
 
 def cairo_keccak(class_hash, calldata):
@@ -196,10 +192,6 @@ class SyscallHandler:
         get_selector_from_name(
             "verify_signature_secp256r1"
         ): cairo_verify_signature_secp256r1,
-        get_selector_from_name("get_implementation"): lambda addr, data: [
-            ACCOUNT_CLASS_IMPLEMENTATION
-        ],
-        get_selector_from_name("set_implementation"): lambda addr, data: [],
         get_selector_from_name("get_cairo1_helpers_class_hash"): lambda addr, data: [
             CAIRO1_HELPERS_CLASS_HASH
         ],
