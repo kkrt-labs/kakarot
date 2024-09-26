@@ -31,6 +31,7 @@ from kakarot_scripts.utils.starknet import deploy as deploy_starknet
 from kakarot_scripts.utils.starknet import (
     dump_declarations,
     dump_deployments,
+    get_balance,
     get_declarations,
 )
 from kakarot_scripts.utils.starknet import get_deployments as get_starknet_deployments
@@ -46,6 +47,7 @@ async def main():
     # %% Declarations
     account = await get_starknet_account()
     logger.info(f"ℹ️  Using account 0x{account.address:064x} as deployer")
+    balance_pref = await get_balance(account.address)
 
     class_hash = {contract: await declare(contract) for contract in DECLARED_CONTRACTS}
     dump_declarations(class_hash)
@@ -123,13 +125,23 @@ async def main():
 
     # %% Pre-EIP155 deployments
     evm_deployments["Multicall3"] = await deploy_with_presigned_tx(
-        MULTICALL3_DEPLOYER, MULTICALL3_SIGNED_TX, name="Multicall3"
+        MULTICALL3_DEPLOYER,
+        MULTICALL3_SIGNED_TX,
+        name="Multicall3",
+        max_fee=int(0.1e18),
     )
     evm_deployments["Arachnid_Proxy"] = await deploy_with_presigned_tx(
-        ARACHNID_PROXY_DEPLOYER, ARACHNID_PROXY_SIGNED_TX, name="Arachnid Proxy"
+        ARACHNID_PROXY_DEPLOYER,
+        ARACHNID_PROXY_SIGNED_TX,
+        name="Arachnid Proxy",
+        max_fee=int(0.1e18),
     )
     evm_deployments["CreateX"] = await deploy_with_presigned_tx(
-        CREATEX_DEPLOYER, CREATEX_SIGNED_TX, amount=0.3, name="CreateX"
+        CREATEX_DEPLOYER,
+        CREATEX_SIGNED_TX,
+        amount=0.3,
+        name="CreateX",
+        max_fee=int(0.2e18),
     )
 
     # %% EVM Deployments
@@ -166,6 +178,10 @@ async def main():
     }
 
     dump_evm_deployments(evm_deployments)
+    balance_after = await get_balance(account.address)
+    logger.info(
+        f"ℹ️  Deployer balance changed from {balance_pref / 1e18} to {balance_after / 1e18} ETH"
+    )
 
 
 # %% Run

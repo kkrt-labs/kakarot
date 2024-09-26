@@ -47,12 +47,12 @@ async def main():
         balance = await get_balance(contract["starknet_contract_address"])
         if balance == 0:
             logger.info(
-                f"ℹ️  No balance to withdraw from EVM contract {contract['evm_address']}"
+                f"ℹ️  No balance to withdraw from EVM contract {contract['evm_contract_address']}"
             )
             continue
 
         logger.info(
-            f"ℹ️  Withdrawing {balance / 1e18} ETH from EVM contract {contract['evm_address']}"
+            f"ℹ️  Withdrawing {balance / 1e18} ETH from EVM contract {contract['evm_contract_address']}"
         )
         current_class = await RPC_CLIENT.get_class_hash_at(
             contract["starknet_contract_address"]
