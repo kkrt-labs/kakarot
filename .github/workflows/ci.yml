@@ -16,14 +16,36 @@ concurrency:
 permissions: read-all
 
 jobs:
-  build:
+  paths-filter:
     runs-on: ubuntu-latest
-    env:
-      CI_COMMIT_MESSAGE: CI Formatting Auto Commit
-      CI_COMMIT_AUTHOR: ${{ github.event.repository.name }} CI
+    outputs:
+      src: ${{ steps.filter.outputs.src }}
+      kakarot_scripts: ${{ steps.filter.outputs.kakarot_scripts }}
+      solidity: ${{ steps.filter.outputs.solidity }}
+      tests: ${{ steps.filter.outputs.tests }}
     steps:
       - uses: actions/checkout@v4
-      # Python setup
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            src:
+              - 'src/**'
+            kakarot_scripts:
+              - 'kakarot_scripts/**'
+            solidity:
+              - 'solidity_contracts/**'
+            tests:
+              - 'tests/**'
+
+  build:
+    runs-on: ubuntu-latest
+    needs: paths-filter
+    if:
+      needs.paths-filter.outputs.src == 'true' ||
+      needs.paths-filter.outputs.kakarot_scripts == 'true'
+    steps:
+      - uses: actions/checkout@v4
       - name: Set up Python 3.10.14
         uses: actions/setup-python@v5
         with:
@@ -73,6 +95,10 @@ jobs:
     runs-on: ubuntu-latest-16-cores
     env:
       PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: python
+    needs: paths-filter
+    if:
+      needs.paths-filter.outputs.src == 'true' ||
+      needs.paths-filter.outputs.tests == 'true'
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python 3.10.14
@@ -126,6 +152,12 @@ jobs:
     env:
       STARKNET_NETWORK: katana
       PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: python
+    needs: paths-filter
+    if:
+      needs.paths-filter.outputs.src == 'true' ||
+      needs.paths-filter.outputs.kakarot_scripts == 'true' ||
+      needs.paths-filter.outputs.solidity == 'true' ||
+      needs.paths-filter.outputs.tests == 'true'
     steps:
       - uses: actions/checkout@v4
       - name: Extract Katana Version
@@ -186,6 +218,8 @@ jobs:
 
   forge-test:
     runs-on: ubuntu-latest
+    needs: paths-filter
+    if: needs.paths-filter.outputs.solidity == 'true'
     steps:
       - uses: actions/checkout@v4
       - name: Install Foundry
@@ -199,7 +233,10 @@ jobs:
 
   ef-tests:
     runs-on: ubuntu-latest-32-cores
-    needs: build
+    needs:
+      - build
+      - paths-filter
+    if: needs.paths-filter.outputs.src == 'true'
     steps:
       - name: Checkout ef-tests
         uses: actions/checkout@v4
@@ -251,7 +288,10 @@ jobs:
 
   resources:
     runs-on: ubuntu-latest
-    needs: ef-tests
+    needs:
+      - ef-tests
+      - paths-filter
+    if: needs.paths-filter.outputs.src == 'true'
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python 3.10.14
