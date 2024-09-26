@@ -502,6 +502,7 @@ async def send_pre_eip155_transaction(
     evm_address: str,
     starknet_address: Union[int, str],
     signed_tx: bytes,
+    max_fee: Optional[int] = None,
 ):
     rlp_decoded = rlp.decode(signed_tx)
     v, r, s = rlp_decoded[-3:]
@@ -533,6 +534,7 @@ async def send_pre_eip155_transaction(
         signature_s=int.from_bytes(s, "big"),
         signature_v=int.from_bytes(v, "big"),
         packed_encoded_unsigned_tx=pack_calldata(unsigned_encoded_tx),
+        max_fee=max_fee,
     )
 
 
@@ -705,7 +707,7 @@ async def deploy_and_fund_evm_address(evm_address: str, amount: float):
     Deploy an EOA linked to the given EVM address and fund it with amount ETH.
     """
     starknet_address = await get_starknet_address(int(evm_address, 16))
-    account_balance = await get_balance(evm_address)
+    account_balance = await eth_balance_of(evm_address)
     if account_balance < amount:
         await fund_address(evm_address, amount - account_balance)
     if not await _contract_exists(starknet_address):
@@ -776,13 +778,13 @@ async def store_bytecode(bytecode: Union[str, bytes], **kwargs):
 
 
 async def deploy_with_presigned_tx(
-    deployer_evm_address: str, signed_tx: bytes, amount=0.1, name=""
+    deployer_evm_address: str, signed_tx: bytes, amount=0.1, name="", max_fee=None
 ):
     deployer_starknet_address = await deploy_and_fund_evm_address(
         deployer_evm_address, amount
     )
     receipt, response, success, gas_used = await send_pre_eip155_transaction(
-        deployer_evm_address, deployer_starknet_address, signed_tx
+        deployer_evm_address, deployer_starknet_address, signed_tx, max_fee
     )
     deployed_address = response[1]
     logger.info(f"✅ {name} Deployed at: 0x{deployed_address:040x}")

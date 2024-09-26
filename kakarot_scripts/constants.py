@@ -193,9 +193,7 @@ try:
     if WEB3.is_connected():
         chain_id = WEB3.eth.chain_id
     else:
-        chain_id = starknet_chain_id % (
-            2**53 if NETWORK["name"] != "starknet-sepolia" else 2**32
-        )
+        chain_id = starknet_chain_id % 2**53
 except (
     requests.exceptions.ConnectionError,
     requests.exceptions.MissingSchema,
