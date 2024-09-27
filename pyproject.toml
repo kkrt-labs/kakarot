@@ -1,58 +1,64 @@
-[tool.poetry]
+[project]
 name = "kakarot"
 version = "0.1.0"
-description = "EVM implementation written in Cairo, a sort of ZK-EVM emulator, leveraging STARK proof system."
-authors = []
+description = "An EVM implementation written in Cairo, a sort of ZK-EVM emulator, leveraging STARK proof system."
 readme = "README.md"
-packages = [{ include = "kakarot_scripts" }, { include = "tests" }]
+requires-python = ">=3.10,<3.11"
+dependencies = [
+  "cairo-lang>=0.13.1",
+  "python-dotenv>=0.21.0",
+  "async-lru>=2.0.4",
+  "toml>=0.10.2",
+  "starknet-py>=0.23.0",
+  "uvloop>=0.20.0",
+]
 
-[tool.poetry.dependencies]
-python = ">=3.10,<3.11"
-cairo-lang = "0.13.1"
-python-dotenv = "^0.21.0"
-async-lru = "^2.0.4"
-toml = "^0.10.2"
-scikit-learn = "^1.5.1"
-seaborn = "^0.13.2"
-boto3 = "^1.35.12"
-starknet-py = "0.23.0"
+[project.scripts]
+compile = "kakarot_scripts.compile_kakarot:main"
+deploy = "kakarot_scripts.deploy_kakarot:main_sync"
+ef_tests = "kakarot_scripts.ef_tests.fetch:generate_tests"
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.1.1"
-pytest-asyncio = "~0.21.0"
-pandas = "^1.5.1"
-matplotlib = "^3.8.2"
-black = "^22.10.0"
-isort = "^5.10.1"
-pytest-xdist = { version = "^3.0.2", extras = ["psutil"] }
-setproctitle = "^1.3.2"
-pysha3 = "^1.0.2"
-web3 = "^6"
-autoflake = "^2.0.0"
-pycryptodome = "^3.16.0"
-rlp = "<=3"
-hypothesis = "^6.65.0"
-case-converter = "^1.1.0"
-requests = "^2.28.2"
-codespell = "^2.2.2"
-eth-account = "^0.13.0"
-eth-abi = "^5.1.0"
-eth-utils = "^2.1.0"
-eth-keys = "^0.4.0"
-ipykernel = "^6.23.1"
-setuptools = "^68.2.0"
-pyperclip = "^1.8.2"
-tabulate = "^0.9.0"
-pytest-env = "^1.1.3"
-amarna = "^0.1.5"
-py-evm = { git = "https://github.com/ethereum/py-evm", branch = "cancun-network-upgrade" }
-openzeppelin-cairo-contracts = "^0.6.1"
-ethereum = { git = "https://github.com/ethereum/execution-specs.git", rev = "744904ebd0ba8c9ce5ae7c5ee9bef3c5d21a38f9" }
-eth-bloom = "^3.0.0"
-trie = "^3.0.0"
-cached-property = "^1.5.2"
-py-ecc = "^7.0.0"
-sympy = "=1.11.1"
+[tool.uv.sources]
+kakarot-scripts = { path = "./kakarot_scripts" }
+ethereum = { git = "https://github.com/ethereum/execution-specs.git" }
+
+[tool.uv]
+dev-dependencies = [
+  "autoflake>=2.0.0",
+  "black>=22.10.0",
+  "cached-property>=1.5.2",
+  "case-converter>=1.1.0",
+  "codespell>=2.2.2",
+  "eth-abi>=5.1.0",
+  "eth-account>=0.13.0",
+  "eth-keys>=0.4.0",
+  "eth-typing==3.5.2",
+  "eth-utils>=2.1.0",
+  "ethereum",
+  "hypothesis==6.100.1",
+  "ipykernel>=6.23.1",
+  "isort>=5.10.1",
+  "matplotlib>=3.8.2",
+  "openzeppelin-cairo-contracts>=0.6.1",
+  "pandas>=1.5.1",
+  "py-ecc>=7.0.0",
+  "pycryptodome>=3.16.0",
+  "pyperclip>=1.8.2",
+  "pysha3>=1.0.2",
+  "pytest-asyncio==0.21.1",
+  "pytest-env>=1.1.3",
+  "pytest==8.1.1",
+  "pytest-xdist==3.5.0",
+  "requests>=2.28.2",
+  "rlp<=3",
+  "scikit-learn>=1.5.1",
+  "seaborn>=0.13.2",
+  "setproctitle>=1.3.2",
+  "setuptools>=68.2.0",
+  "sympy>=1.11.1",
+  "tabulate>=0.9.0",
+  "web3>=6",
+]
 
 [tool.pytest.ini_options]
 norecursedirs = "tests/ef_tests/test_data"
@@ -179,10 +185,6 @@ in_place = true
 remove_unused_variables = true
 remove_all_unused_imports = true
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
-
 [tool.codespell]
 ignore-words = '.codespellignore'
 skip = '.git'
@@ -191,3 +193,10 @@ check-hidden = ''
 
 [tool.bandit]
 exclude_dirs = ["tests"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["kakarot_scripts"]

@@ -38,37 +38,12 @@ func test_should_fail_when_flag_is_not_0_or_1{
 
 func test_should_return_blake2f_compression{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(output_ptr: felt*) {
+}() -> (output_len: felt, output: felt*) {
     alloc_locals;
 
-    local rounds: felt;
-    local h_len: felt;
-    let (h: felt*) = alloc();
-    local m_len: felt;
-    let (m: felt*) = alloc();
-    local t0: felt;
-    local t1: felt;
-    local f: felt;
-    %{
-        ids.rounds = program_input["rounds"]
-        ids.h_len = len(program_input["h"])
-        segments.write_arg(ids.h, program_input["h"])
-        ids.m_len = len(program_input["m"])
-        segments.write_arg(ids.m, program_input["m"])
-        ids.t0 = program_input["t0"]
-        ids.t1 = program_input["t1"]
-        ids.f = program_input["f"]
-    %}
-
     let (local input: felt*) = alloc();
-    Helpers.split_word(rounds, 4, input);
-    memcpy(input + 4, h, h_len);
-    memcpy(input + 68, m, m_len);
-    Helpers.split_word_little(t0, 8, input + 196);
-    Helpers.split_word_little(t1, 8, input + 196 + 8);
-    assert input[212] = f;
+    %{ segments.write_arg(ids.input, program_input["input"]) %}
 
     let (output_len, output, gas, reverted) = PrecompileBlake2f.run(0x09, 213, input);
-    memcpy(output_ptr, output, output_len);
-    return ();
+    return (output_len, output);
 }

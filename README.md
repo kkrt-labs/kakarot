@@ -82,19 +82,14 @@ The set of Cairo programs in this repository are represented below:
 To contribute, please check out
 [the contribution guide](./docs/CONTRIBUTING.md).
 
-The easiest way to get started is to use
-[`devcontainers`](https://containers.dev/):
-
-- either directly from GitHub to have an online VSCode with everything ready
-  ![Codespaces](./docs/img/codespaces.png)
-- or from VSCode, open the project and use "Dev Containers: Rebuild container"
-  (requires Docker on your host machine)
-
-Otherwise, you can proceed with a regular installation on your host. The
-environment setup instructions are available in the
-[contribution guide](./docs/CONTRIBUTING.md).
-
 ## Build
+
+The project uses [uv](https://github.com/astral-sh/uv) to manage python
+dependencies and run commands. To install uv:
+
+```bash
+curl -L https://install.astral.sh | bash
+```
 
 To build the CairoZero files:
 
