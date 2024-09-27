@@ -72,7 +72,6 @@ NETWORKS = {
         "type": NetworkType.DEV,
         "check_interval": 0.01,
         "max_wait": 3,
-        "class_hash": 0x6153CCF69FD20F832C794DF36E19135F0070D0576144F0B47F75A226E4BE530,
         "relayers": [
             {
                 "address": 0xB3FF441A68610B30FD5E2ABBF3A1548EB6BA6F3559F2862BF2DC757E5828CA,
