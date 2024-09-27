@@ -34,6 +34,7 @@ tests/ef_tests/test_data
 !tests/ef_tests/test_data/.gitkeep
 
 bin/
+dist
 
 # test data
 *.pb.gz

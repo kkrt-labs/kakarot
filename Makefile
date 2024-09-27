@@ -17,11 +17,11 @@ BUILD_DIR = build
 SSJ_DIR = $(BUILD_DIR)/ssj
 SSJ_ZIP = dev-artifacts.zip
 
-build: $(SSJ_DIR) check
-	poetry run python ./kakarot_scripts/compile_kakarot.py
+build: $(SSJ_DIR)
+	uv run compile
 
-check:
-	poetry check --lock
+deploy: build build-sol
+	uv run deploy
 
 $(SSJ_DIR): $(SSJ_ZIP)
 	rm -rf $(SSJ_DIR)
@@ -36,20 +36,17 @@ fetch-ef-tests:
 	poetry run python ./kakarot_scripts/ef_tests/fetch.py
 
 setup:
-	poetry install
+	uv sync --all-extras --dev
 
 test: deploy
-	poetry run pytest tests/src -m "not NoCI" --log-cli-level=INFO -n logical --seed 42
-	poetry run pytest tests/end_to_end --seed 42
+	uv run pytest tests/src -m "not NoCI" --log-cli-level=INFO -n logical --seed 42
+	uv run pytest tests/end_to_end --seed 42
 
 test-unit: build-sol
-	poetry run pytest tests/src -m "not NoCI" -n logical --seed 42
+	uv run pytest tests/src -m "not NoCI" -n logical --seed 42
 
 test-end-to-end: deploy
-	poetry run pytest tests/end_to_end --seed 42
-
-deploy: build build-sol
-	poetry run python ./kakarot_scripts/deploy_kakarot.py
+	uv run pytest tests/end_to_end --seed 42
 
 format:
 	trunk check --fix
@@ -64,7 +61,7 @@ clean:
 	mkdir -p $(BUILD_DIR)
 
 check-resources:
-	poetry run python kakarot_scripts/check_resources.py
+	uv run python kakarot_scripts/check_resources.py
 
 build-sol:
 	git submodule update --init --recursive

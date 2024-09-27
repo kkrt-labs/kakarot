@@ -1,11 +1,7 @@
-from typing import cast
-
 import pytest
-from eth._utils.blake2.compression import TMessageBlock, blake2b_compress
+from ethereum.crypto.blake2 import Blake2b
 from hypothesis import given, settings
-from hypothesis.strategies import integers, lists
-
-from tests.utils.helpers import pack_64_bits_little
+from hypothesis.strategies import binary
 
 
 @pytest.mark.slow
@@ -19,36 +15,22 @@ class TestBlake2f:
         output = cairo_run("test_should_fail_when_flag_is_not_0_or_1")
         assert bytes(output) == b"Precompile: flag error"
 
-    @pytest.mark.parametrize("f", [0, 1])
-    @given(
-        rounds=integers(min_value=1, max_value=19),
-        h=lists(integers(min_value=0, max_value=2**8 - 1), min_size=64, max_size=64),
-        m=lists(integers(min_value=0, max_value=2**8 - 1), min_size=128, max_size=128),
-        t0=integers(min_value=0, max_value=2**64 - 1),
-        t1=integers(min_value=0, max_value=2**64 - 1),
-    )
+    @given(data=binary(min_size=213, max_size=213))
     @settings(max_examples=5)
-    def test_should_return_blake2f_compression(
-        self, cairo_run, f, rounds, h, m, t0, t1
-    ):
-        h_starting_state = [
-            pack_64_bits_little(h[i * 8 : (i + 1) * 8]) for i in range(8)
-        ]
-
-        # When
-        output = cairo_run(
-            "test_should_return_blake2f_compression",
-            rounds=rounds,
-            h=h,
-            m=m,
-            t0=t0,
-            t1=t1,
-            f=f,
+    def test_should_return_blake2f_compression(self, cairo_run, data):
+        # The first 4 bytes are the number of rounds, so we just limit this to 3 rounds at most
+        # to save time
+        # The 213th byte is the flag, so we limit it to 0 or 1
+        data = (
+            (int.from_bytes(data[:4], "big") % 3).to_bytes(4, "big")
+            + data[4:212]
+            + (data[212] % 2).to_bytes(1, "big")
+        )
+        output_len, output = cairo_run(
+            "test_should_return_blake2f_compression", input=data
         )
 
-        # Then
-        compress = blake2b_compress(
-            rounds, cast(TMessageBlock, h_starting_state), m, (t0, t1), bool(f)
+        blake2b = Blake2b()
+        assert bytes(output[:output_len]) == blake2b.compress(
+            *blake2b.get_blake2_parameters(data)
         )
-        expected = [int(x) for x in compress]
-        assert output == expected

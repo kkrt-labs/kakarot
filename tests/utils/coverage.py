@@ -4,13 +4,10 @@ Copied from cairo_coverage.
 
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Any, DefaultDict, Dict, List, Optional, Set
+from typing import DefaultDict, List, Optional, Set
 
 from starkware.cairo.lang.compiler.instruction import Instruction
-from starkware.cairo.lang.compiler.program import ProgramBase
-from starkware.cairo.lang.vm.builtin_runner import BuiltinRunner
-from starkware.cairo.lang.vm.relocatable import MaybeRelocatable
-from starkware.cairo.lang.vm.vm_core import RunContext, VirtualMachine
+from starkware.cairo.lang.vm.vm_core import VirtualMachine
 
 
 @dataclass
@@ -25,10 +22,7 @@ class CoverageFile:
         self.missed = sorted(list(self.statements - self.covered))
 
 
-def report_runs(
-    excluded_file: Optional[Set[str]] = None,
-    print_summary: bool = True,
-):
+def report_runs(excluded_file: Optional[Set[str]] = None):
     if excluded_file is None:
         excluded_file = set()
     report_dict = VmWithCoverage.covered  # Get the infos of all the covered files.
@@ -57,23 +51,9 @@ class VmWithCoverage(VirtualMachine):
     covered: DefaultDict[str, List[int]] = defaultdict(list)
     statements: DefaultDict[str, List[int]] = defaultdict(list)
 
-    def __init__(
-        self,
-        program: ProgramBase,
-        run_context: RunContext,
-        hint_locals: Dict[str, Any],
-        static_locals: Optional[Dict[str, Any]] = None,
-        builtin_runners: Optional[Dict[str, BuiltinRunner]] = None,
-        program_base: Optional[MaybeRelocatable] = None,
-    ):
-        super().__init__(
-            program=program,
-            run_context=run_context,
-            hint_locals=hint_locals,
-            static_locals=static_locals,
-            builtin_runners=builtin_runners,
-            program_base=program_base,
-        )
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
         self.old_end_run = (
             super().end_run
         )  # Save the old end run function to wrap it afterwards.

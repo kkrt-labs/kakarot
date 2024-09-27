@@ -1,6 +1,7 @@
 # %% Imports
 import logging
-from asyncio import run
+
+from uvloop import run
 
 from kakarot_scripts.constants import (
     ARACHNID_PROXY_DEPLOYER,
@@ -185,5 +186,9 @@ async def main():
 
 
 # %% Run
-if __name__ == "__main__":
+def main_sync():
     run(main())
+
+
+if __name__ == "__main__":
+    main_sync()

@@ -32,11 +32,8 @@ However, we ask that you follow these guidelines when contributing:
 To get started on Kakarot, you'll need python3.10, as well as Starknet-related
 libraries, e.g. `cairo-lang`.
 
-- Install [pyenv](https://github.com/pyenv/pyenv) to manage your Python versions
-  (and don't forget to
-  [setup your shell](https://github.com/pyenv/pyenv?tab=readme-ov-file#set-up-your-shell-environment-for-pyenv))
-- Download the Python version used for Kakarot using pyenv: `pyenv install 3.10`
-- Install [poetry](https://python-poetry.org/docs/)
+- Install [uv](https://github.com/astral-sh/uv) to manage python dependencies
+  and run commands
 - Install
   [cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html) to
   manage our Rust dependencies
@@ -71,40 +68,37 @@ To set up a development environment, please follow these steps:
    git clone https://github.com/kkrt-labs/kakarot && cd kakarot
    ```
 
-2. Create and activate a virtual environment specifically for your Python
-   project by running `poetry shell`.
-
-3. Install dependencies
+2. Install dependencies
 
    ```sh
    make setup
    ```
 
-4. Install katana
+3. Install katana
 
    ```sh
    make install-katana
    ```
 
-5. Build the Solidity contracts
+4. Build the Solidity contracts
 
    ```sh
    make build-sol
    ```
 
-6. Copy the default environment variables
+5. Copy the default environment variables
 
    ```sh
    cp .env.example .env
    ```
 
-7. Start a local katana instance
+6. Start a local katana instance
 
    ```sh
    make run-katana
    ```
 
-8. Run tests
+7. Run tests
 
    ```sh
    make test
@@ -120,10 +114,6 @@ Common caveats:
   ln -s <YOUR_PATH_TO_YOUR_PYTHON_VENV_BINARIES>/starknet-compile-deprecated <YOUR_PATH_TO_LOCAL_BINARIES>/starknet-compile
   # example: ln -s /Users/eliastazartes/code/kakarot/.venv/bin/starknet-compile-deprecated /usr/local/bin/starknet-compile
   ```
-
-  If you followed the instructions above, you can run
-  `poetry show cairo-lang -v` to find the path to your cairo-lang dependency,
-  and the binaries should be in the `bin` directory.
 
 - Mac M1 chips are subject to some quirks/bugs with regards to some
   cryptographic libraries used by `cairo-lang`.
