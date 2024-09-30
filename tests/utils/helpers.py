@@ -32,38 +32,21 @@ def rlp_encode_signed_data(tx: dict) -> bytes:
         rlp_serializer = (
             typed_transaction.transaction.__class__._unsigned_transaction_serializer
         )
-        encoded_unsigned_tx = [
+        return [
             typed_transaction.transaction_type,
             *rlp.encode(rlp_serializer.from_dict(sanitized_transaction)),
         ]
-
-        return encoded_unsigned_tx
     else:
-        legacy_tx = (
-            [
-                tx["nonce"],
-                tx["gasPrice"],
-                tx["gas"],
-                int(tx["to"], 16),
-                tx["value"],
-                tx["data"],
-                tx["chainId"],
-                0,
-                0,
-            ]
-            if "chainId" in tx
-            else [
-                tx["nonce"],
-                tx["gasPrice"],
-                tx["gas"],
-                int(tx["to"], 16),
-                tx["value"],
-                tx["data"],
-            ]
-        )
-        encoded_unsigned_tx = rlp.encode(legacy_tx)
+        legacy_tx = [
+            tx["nonce"],
+            tx["gasPrice"],
+            tx["gas"] if "gas" in tx else tx["gasLimit"],
+            bytes.fromhex(f"{int(tx['to'], 16):040x}"),
+            tx["value"],
+            tx["data"],
+        ] + ([tx["chainId"], 0, 0] if "chainId" in tx else [])
 
-        return encoded_unsigned_tx
+        return rlp.encode(legacy_tx)
 
 
 def hex_string_to_bytes_array(h: str):
