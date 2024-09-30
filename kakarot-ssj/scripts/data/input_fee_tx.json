@@ -1,0 +1,19 @@
+{
+  "nonce": "0x0",
+  "maxPriorityFeePerGas": "0x0",
+  "maxFeePerGas": "0x3b9aca00",
+  "gasLimit": "0x1e8480",
+  "to": "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984",
+  "value": "0x016345785d8a0000",
+  "data": "0xabcdef",
+  "accessList": [
+    [
+      "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984",
+      [
+        "0xde9fbe35790b85c23f42b7430c78f122636750cc217a534c80a9a0520969fa65",
+        "0xd5362e94136f76bfc8dad0b510b94561af7a387f1a9d0d45e777c11962e5bd94"
+      ]
+    ]
+  ],
+  "chainId": "0x4b4b5254"
+}

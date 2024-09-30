@@ -1,0 +1,26 @@
+name: CI
+
+permissions: read-all
+
+on: [pull_request]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+    with:
+      artifact-name: kakarot-ssj-build
+
+  tests-unit:
+    uses: ./.github/workflows/tests-unit.yml
+    with:
+      run-fmt-check: true
+
+  ef-tests:
+    uses: ./.github/workflows/ef-tests.yml
+    needs: [build]
+    with:
+      artifact-name: kakarot-ssj-build

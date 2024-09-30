@@ -1,0 +1,11 @@
+{
+  "nonce": "0x1",
+  "maxPriorityFeePerGas": "0x64",
+  "maxFeePerGas": "0x3e8",
+  "gasLimit": "0x64c9",
+  "to": "0xcccccccccccccccccccccccccccccccccccccccc",
+  "value": "0x0",
+  "data": "0x00",
+  "accessList": [],
+  "chainId": "0x4b4b5254"
+}

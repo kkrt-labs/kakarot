@@ -1,0 +1,17 @@
+[workspace]
+members = ["crates/*"]
+
+[workspace.package]
+description = "Kakarot is an (zk)-Ethereum Virtual Machine implementation written in Cairo."
+documentation = "https://www.kakarot.org/"
+cairo-version = "2.8.2"
+version = "0.1.0"
+readme = "README.md"
+repository = "https://github.com/kkrt-labs/kakarot-ssj/"
+license-file = "LICENSE"
+
+[workspace.dependencies]
+starknet = "2.8.2"
+
+[workspace.tool.fmt]
+sort-module-level-items = true

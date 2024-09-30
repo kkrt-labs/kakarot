@@ -1,0 +1,10 @@
+.DS_Store
+.env
+target
+.idea/
+node_modules/
+*.snfoundry_cache
+cache/
+
+scripts/libcairo_native_runtime.a
+scripts/__pycache__
