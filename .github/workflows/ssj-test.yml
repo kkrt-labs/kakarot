@@ -12,18 +12,18 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  ssj-build:
     uses: ./.github/workflows/ssj-build.yml
     with:
       artifact-name: kakarot-ssj-build
 
-  tests-unit:
+  ssj-tests-unit:
     uses: ./.github/workflows/ssj-tests-unit.yml
     with:
       run-fmt-check: true
 
-  ef-tests:
+  ssj-ef-tests:
     uses: ./.github/workflows/ssj-ef-tests.yml
-    needs: [build]
+    needs: [ssj-build]
     with:
       artifact-name: kakarot-ssj-build

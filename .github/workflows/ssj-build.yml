@@ -10,7 +10,7 @@ on:
 permissions: read-all
 
 jobs:
-  build:
+  ssj-build:
     runs-on: ubuntu-latest
     env:
       CI_COMMIT_MESSAGE: CI Formatting Auto Commit
