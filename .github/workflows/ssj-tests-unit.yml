@@ -17,6 +17,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: foundry-rs/setup-snfoundry@v3
       - uses: software-mansion/setup-scarb@v1
+        with:
+          tool-versions: ./kakarot-ssj/.tool-versions
 
       - name: Run format check
         if: inputs.run-fmt-check
