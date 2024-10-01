@@ -13,6 +13,8 @@ jobs:
         uses: actions/checkout@v4
       - name: Set up Scarb
         uses: software-mansion/setup-scarb@v1
+        with:
+          tool-version: ./.tool-versions
       - name: Build contracts
         run: |
           scarb build -p contracts
