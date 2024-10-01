@@ -16,38 +16,13 @@ jobs:
       PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: python
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python 3.10.14
-        uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@v2
         with:
-          python-version: 3.10.14
-      - name: Load cached Poetry installation
-        id: cached-poetry
-        uses: actions/cache@v4
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      - uses: actions/setup-python@v5
         with:
-          path: ~/.local
-          key: poetry-${{ runner.os }}
-      - name: Install Poetry
-        if: steps.cached-poetry.outputs.cache-hit != 'true'
-        uses: snok/install-poetry@v1
-        with:
-          virtualenvs-create: true
-          virtualenvs-in-project: true
-          virtualenvs-path: .venv
-          installer-parallel: true
-      - name: Enforce poetry config
-        run: |
-          poetry config virtualenvs.in-project true
-          poetry config virtualenvs.create true
-          poetry config virtualenvs.path .venv
-      - name: Load cached venv
-        id: cached-poetry-dependencies
-        uses: actions/cache@v4
-        with:
-          path: .venv
-          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
-      - name: Install dependencies
-        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: make setup
+          python-version-file: .python-version
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
