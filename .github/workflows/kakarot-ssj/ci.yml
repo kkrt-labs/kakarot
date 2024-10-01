@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    paths:
+      - kakarot-ssj/**
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -4,7 +4,9 @@ on:
   push:
     branches:
       - main
-  pull_request: {}
+  pull_request:
+    paths:
+      - kakarot0/**
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
