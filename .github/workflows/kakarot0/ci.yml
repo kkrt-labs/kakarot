@@ -32,7 +32,7 @@ jobs:
         with:
           filters: |
             src:
-              - 'src/**'
+              - 'kakarot0/src/**'
             kakarot_scripts:
               - 'kakarot_scripts/**'
             solidity:

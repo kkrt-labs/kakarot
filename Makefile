@@ -11,11 +11,13 @@ KATANA_VERSION = v1.0.0-alpha.14
 BUILD_DIR = build
 SSJ_DIR = $(BUILD_DIR)/ssj
 
-
 build-ssj:
 	@echo "Building Kakarot SSJ"
 	@mkdir -p $(SSJ_DIR)
-	@cd kakarot-ssj && scarb build && cp -r target/dev/contracts* ../$(SSJ_DIR)
+	@cd kakarot-ssj && scarb build -p contracts && find target/dev -type f -name '*contracts*' | grep -vE 'test|mock|Mock' | xargs -I {} cp {} ../$(SSJ_DIR)
+
+test-unit-ssj:
+	@cd kakarot-ssj && scarb test
 
 build: build-ssj
 	uv run compile

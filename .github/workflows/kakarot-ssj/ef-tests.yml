@@ -26,21 +26,21 @@ jobs:
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
-            target/
+            kakarot-ssj/target/
             ./libcairo_native_runtime.a
           key:
             ${{ runner.os }}-cairo-native-${{ hashFiles('**/Cargo.lock',
             'scripts/setup_cairo_native.sh') }}
 
       - name: Make setup script executable
-        run: chmod +x ./scripts/setup_cairo_native.sh
+        run: chmod +x ./kakarot-ssj/scripts/setup_cairo_native.sh
 
       - name: Setup Cairo Native
         run: |
           if [[ "${{ steps.cache-cairo-native.outputs.cache-hit }}" == 'true' ]]; then
-            sudo ./scripts/setup_cairo_native.sh -s
+            sudo ./kakarot-ssj/scripts/setup_cairo_native.sh -s
           else
-            sudo ./scripts/setup_cairo_native.sh
+            sudo ./kakarot-ssj/scripts/setup_cairo_native.sh
           fi
 
       - name: Set Environment Variables
