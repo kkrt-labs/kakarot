@@ -14,14 +14,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-ENV POETRY_NO_INTERACTION=1 \
-    POETRY_VIRTUALENVS_IN_PROJECT=1 \
-    POETRY_VIRTUALENVS_CREATE=1 \
-    VIRTUAL_ENV=/app/kakarot/.venv \
+ENV VIRTUAL_ENV=/app/kakarot/.venv \
     PATH="/app/kakarot/.venv/bin:/root/.local/bin:$PATH"
 
 RUN --mount=type=cache,target=/root/.cache \
-    curl -sSL https://install.python-poetry.org | python3 -
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+
+RUN uv venv
 
 WORKDIR /app/kakarot
 
@@ -52,19 +51,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ARG GITHUB_TOKEN
 ENV GITHUB_TOKEN=${GITHUB_TOKEN}
 
-# install dependencies
-COPY poetry.lock .
 COPY pyproject.toml .
 COPY kakarot_scripts ./kakarot_scripts
 COPY README.md .
 COPY tests ./tests
-
-RUN --mount=type=cache,target=/root/.cache \
-    poetry install
-
-# split install in two steps to leverage docker cache
-COPY . .
-
 
 # Install asdf for multiple scarb versions
 RUN git clone --depth 1 https://github.com/asdf-vm/asdf.git "$HOME/.asdf" && \
@@ -90,19 +80,16 @@ COPY --from=builder /app/kakarot/tests ./tests/
 
 # Cairo Smart contracts are used in deploy_kakarot.py
 # To limit the probability of this Dockerfile to break, we copy the entire src and not individual files
-COPY --from=builder /app/kakarot/src ./src/
+COPY --from=builder /app/kakarot/kakarot0/src ./src/
 
 # Default Solidity contracts are also used in deploy_kakarot.py
 COPY --from=builder /app/kakarot/solidity_contracts ./solidity_contracts/
 
 COPY --from=builder /app/kakarot/Makefile .
-COPY --from=builder /app/kakarot/poetry.lock .
+COPY --from=builder /app/kakarot/uv.lock .
 COPY --from=builder /app/kakarot/pyproject.toml .
 COPY --from=builder /app/kakarot/foundry.toml .
 COPY --from=builder /app/kakarot/README.md .
 
-RUN --mount=type=cache,target=/root/.cache \
-    poetry install --without dev
-
 # Deploy kakarot
-CMD ["python", "kakarot_scripts/deploy_kakarot.py"]
+CMD ["uv", "run", "python", "kakarot_scripts/deploy_kakarot.py"]
