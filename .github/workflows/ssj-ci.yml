@@ -1,4 +1,4 @@
-name: CI
+name: SSJ-CI
 
 on:
   push:
@@ -11,7 +11,7 @@ env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ssj-${{ github.ref }}
   cancel-in-progress: true
 
 permissions: read-all

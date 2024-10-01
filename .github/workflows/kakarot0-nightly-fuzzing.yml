@@ -1,4 +1,4 @@
-name: NIGHTLY-FUZZING
+name: kakarot0-NIGHTLY-FUZZING
 
 on:
   schedule:

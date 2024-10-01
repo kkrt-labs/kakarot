@@ -1,4 +1,4 @@
-name: Trunk
+name: SSJ-Trunk
 
 on: [pull_request]
 

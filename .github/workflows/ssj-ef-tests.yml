@@ -1,4 +1,4 @@
-name: EF-Tests
+name: SSJ-EF-Tests
 
 on:
   workflow_call:

@@ -1,9 +1,9 @@
-name: Trunk
+name: kakarot0-Trunk
 
 on: [pull_request]
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: kakarot0-${{ github.ref }}
   cancel-in-progress: true
 
 permissions: read-all
