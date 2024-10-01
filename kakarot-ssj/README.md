@@ -100,8 +100,8 @@ scarb test
 
 ### Format
 
-The project uses [trunk](https://trunk.io/) for everything except cairo files. If you
-don't have it installed already, you can do:
+The project uses [trunk](https://trunk.io/) for everything except cairo files.
+If you don't have it installed already, you can do:
 
 ```bash
 curl https://get.trunk.io -fsSL | bash

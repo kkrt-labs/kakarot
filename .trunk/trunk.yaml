@@ -69,13 +69,14 @@ lint:
       paths: [uv.lock]
     - linters: [ALL]
       paths:
-        - cairo1_contracts
         - logs*
         - lib*
         - resources*
+        - kakarot0/cairo1_contracts
         - tests/ef_tests/test_data
         - .katana/messaging_config.json
         - deployments
+        - kakarot-ssj
     - linters: [solidity]
       paths:
         - solidity_contracts/src/UniswapV2/**/*.sol

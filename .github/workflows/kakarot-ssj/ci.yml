@@ -16,17 +16,17 @@ permissions: read-all
 
 jobs:
   build:
-    uses: ./.github/workflows/build.yml
+    uses: ./.github/workflows/kakarot-ssj/build.yml
     with:
       artifact-name: kakarot-ssj-build
 
   tests-unit:
-    uses: ./.github/workflows/tests-unit.yml
+    uses: ./.github/workflows/kakarot-ssj/tests-unit.yml
     with:
       run-fmt-check: false
 
   ef-tests:
-    uses: ./.github/workflows/ef-tests.yml
+    uses: ./.github/workflows/kakarot-ssj/ef-tests.yml
     needs: [build]
     with:
       artifact-name: kakarot-ssj-build
