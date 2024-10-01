@@ -218,8 +218,8 @@ COINBASE = int(
     or "0x20eB005C0b9c906691F885eca5895338E15c36De",  # Defaults to faucet on appchain sepolia
     16,
 )
-CAIRO_ZERO_DIR = Path("src")
-CAIRO_DIR = Path("cairo1_contracts")
+CAIRO_ZERO_DIR = Path("kakarot0/src")
+CAIRO_DIR = Path("kakarot0/cairo1_contracts")
 TESTS_DIR = Path("tests")
 
 CONTRACTS = {

@@ -38,7 +38,7 @@ logger = logging.getLogger()
 
 
 def cairo_compile(path):
-    module_reader = get_module_reader(cairo_path=["src"])
+    module_reader = get_module_reader(cairo_path=["kakarot0/src"])
 
     pass_manager = starknet_pass_manager(
         prime=DEFAULT_PRIME,
