@@ -23,7 +23,7 @@ jobs:
         uses: software-mansion/setup-scarb@v1
 
       - name: Build contracts
-        run: scarb build -p contracts
+        run: cd kakarot-ssj/ && scarb build -p contracts
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
