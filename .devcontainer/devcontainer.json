@@ -21,14 +21,15 @@
         "ms-python.vscode-pylance",
         "starkware.cairo",
         "ericglau.cairo-ls",
-        "trunk.io"
+        "trunk.io",
+        "starkware.cairo1"
       ]
     }
   },
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
   // "forwardPorts": [],
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && curl -L https://foundry.paradigm.xyz | bash && /home/vscode/.foundry/bin/foundryup && make setup",
+  "postCreateCommand": "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && curl -L https://foundry.paradigm.xyz | bash && /home/vscode/.foundry/bin/foundryup && curl -LsSf https://astral.sh/uv/install.sh | sh && . $HOME/.cargo/env && uv venv && make setup && curl --proto '=https' --tlsv1.2 -sSf https://docs.swmansion.com/scarb/install.sh | sh",
   // Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
   "remoteUser": "vscode",
   "features": {
