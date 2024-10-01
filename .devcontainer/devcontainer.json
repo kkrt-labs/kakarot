@@ -12,8 +12,8 @@
         "python.formatting.blackPath": "/usr/local/py-utils/bin/black",
         "python.formatting.yapfPath": "/usr/local/py-utils/bin/yapf",
         "editor.defaultFormatter": "trunk.io",
-        "cairols.sourceDir": "src",
-        "cairols.cairoPath": ["src", "tests"]
+        "cairols.sourceDir": "kakarot0/src",
+        "cairols.cairoPath": ["kakarot0/src", "tests"]
       },
       // Add the IDs of extensions you want installed when the container is created.
       "extensions": [
