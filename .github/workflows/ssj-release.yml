@@ -14,7 +14,7 @@ jobs:
       - name: Set up Scarb
         uses: software-mansion/setup-scarb@v1
         with:
-          tool-versions: ./.tool-versions
+          tool-versions: ./kakarot-ssj/.tool-versions
       - name: Build contracts
         run: |
           scarb build -p contracts
