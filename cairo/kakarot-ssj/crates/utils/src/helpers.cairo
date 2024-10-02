@@ -8,11 +8,8 @@ use core::panic_with_felt252;
 use core::pedersen::PedersenTrait;
 use core::starknet::{EthAddress, ContractAddress, ClassHash};
 use core::traits::TryInto;
-use core::traits::{DivRem};
 use crate::constants::{CONTRACT_ADDRESS_PREFIX, MAX_ADDRESS};
 use crate::constants::{POW_2, POW_256_1, POW_256_REV};
-use crate::math::{Bitshift, WrappingBitshift};
-
 use crate::traits::array::{ArrayExtTrait};
 use crate::traits::{U256TryIntoContractAddress, EthAddressIntoU256, BoolIntoNumeric};
 

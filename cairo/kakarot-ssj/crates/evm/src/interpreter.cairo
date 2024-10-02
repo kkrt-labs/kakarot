@@ -1,6 +1,6 @@
 use contracts::kakarot_core::KakarotCore;
 use contracts::kakarot_core::interface::IKakarotCore;
-use core::num::traits::{Bounded, Zero};
+use core::num::traits::Zero;
 use core::ops::SnapshotDeref;
 use core::starknet::EthAddress;
 use core::starknet::storage::{StoragePointerReadAccess};

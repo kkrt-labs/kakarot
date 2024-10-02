@@ -4,6 +4,7 @@ use crate::errors::EVMError;
 use utils::eth_transaction::common::TxKindTrait;
 use utils::eth_transaction::eip2930::{AccessListItem};
 use utils::eth_transaction::transaction::{Transaction, TransactionTrait};
+use utils::helpers::bytes_32_words_size;
 use utils::helpers;
 
 //! Gas costs for EVM operations
@@ -153,7 +154,7 @@ pub fn calculate_message_call_gas(
 /// * `total_gas_cost` - The gas cost for storing data in memory.
 pub fn calculate_memory_gas_cost(size_in_bytes: usize) -> u64 {
     let _512: NonZero<u64> = 512_u64.try_into().unwrap();
-    let size_in_words = (size_in_bytes + 31) / 32;
+    let size_in_words = bytes_32_words_size(size_in_bytes);
     let linear_cost = size_in_words.into() * MEMORY;
 
     let (q0, r0) = DivRem::div_rem(size_in_words.into(), _512);

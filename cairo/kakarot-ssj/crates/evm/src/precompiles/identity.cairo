@@ -1,6 +1,7 @@
 use core::starknet::EthAddress;
 use crate::errors::EVMError;
 use crate::precompiles::Precompile;
+use utils::helpers::bytes_32_words_size;
 
 const BASE_COST: u64 = 15;
 const COST_PER_WORD: u64 = 3;
@@ -12,8 +13,8 @@ pub impl Identity of Precompile {
     }
 
     fn exec(input: Span<u8>) -> Result<(u64, Span<u8>), EVMError> {
-        let data_word_size = ((input.len() + 31) / 32).into();
-        let gas = BASE_COST + data_word_size * COST_PER_WORD;
+        let data_word_size = bytes_32_words_size(input.len());
+        let gas = BASE_COST + data_word_size.into() * COST_PER_WORD;
 
         return Result::Ok((gas, input));
     }

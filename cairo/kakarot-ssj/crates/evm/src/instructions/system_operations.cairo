@@ -66,7 +66,11 @@ pub impl SystemOperations of SystemOperationsTrait {
             memory_expansion.expansion_cost,
             access_gas_cost + transfer_gas_cost + create_gas_cost
         )?;
-        self.charge_gas(message_call_gas.cost + memory_expansion.expansion_cost)?;
+        let total_cost = message_call_gas
+            .cost
+            .checked_add(memory_expansion.expansion_cost)
+            .ok_or(EVMError::OutOfGas)?;
+        self.charge_gas(total_cost)?;
         // Only the transfer gas is left to charge.
 
         let read_only = self.message().read_only;
@@ -213,7 +217,11 @@ pub impl SystemOperations of SystemOperationsTrait {
         let message_call_gas = gas::calculate_message_call_gas(
             0, gas, self.gas_left(), memory_expansion.expansion_cost, access_gas_cost
         )?;
-        self.charge_gas(message_call_gas.cost + memory_expansion.expansion_cost)?;
+        let total_cost = message_call_gas
+            .cost
+            .checked_add(memory_expansion.expansion_cost)
+            .ok_or(EVMError::OutOfGas)?;
+        self.charge_gas(total_cost)?;
 
         self
             .generic_call(

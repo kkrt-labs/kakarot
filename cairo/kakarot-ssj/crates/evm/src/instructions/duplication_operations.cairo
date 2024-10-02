@@ -8,8 +8,9 @@ use crate::stack::StackTrait;
 
 /// Generic DUP operation
 #[inline(always)]
-fn exec_dup_i(ref self: VM, i: u8) -> Result<(), EVMError> {
+fn exec_dup_i(ref self: VM, i: NonZero<u8>) -> Result<(), EVMError> {
     self.charge_gas(gas::VERYLOW)?;
+    let i: u8 = i.into();
     let item = self.stack.peek_at((i - 1).into())?;
     self.stack.push(item)
 }

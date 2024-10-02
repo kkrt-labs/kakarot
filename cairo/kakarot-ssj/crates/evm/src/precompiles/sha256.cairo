@@ -2,6 +2,7 @@ use core::sha256::compute_sha256_u32_array;
 use core::starknet::EthAddress;
 use crate::errors::EVMError;
 use crate::precompiles::Precompile;
+use utils::helpers::bytes_32_words_size;
 use utils::math::Bitshift;
 use utils::traits::bytes::{FromBytes, ToBytes};
 
@@ -15,8 +16,8 @@ pub impl Sha256 of Precompile {
     }
 
     fn exec(mut input: Span<u8>) -> Result<(u64, Span<u8>), EVMError> {
-        let data_word_size = ((input.len() + 31) / 32).into();
-        let gas = BASE_COST + data_word_size * COST_PER_WORD;
+        let data_word_size = bytes_32_words_size(input.len());
+        let gas = BASE_COST + data_word_size.into() * COST_PER_WORD;
 
         let mut sha256_input: Array<u32> = array![];
         while let Option::Some(bytes4) = input.multi_pop_front::<4>() {

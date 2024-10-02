@@ -1,5 +1,6 @@
 use core::num::traits::OverflowingAdd;
 use core::num::traits::Zero;
+use core::num::traits::{CheckedAdd, CheckedSub};
 use crate::errors::{ensure, EVMError};
 use crate::gas;
 use crate::memory::MemoryTrait;
@@ -79,12 +80,17 @@ pub impl EnvironmentInformationImpl of EnvironmentInformationTrait {
         let calldata_len = calldata.len();
 
         // All bytes after the end of the calldata are set to 0.
-        if offset >= calldata_len {
-            return self.stack.push(0);
-        }
+        let bytes_len = match calldata_len.checked_sub(offset) {
+            Option::None => { return self.stack.push(0); },
+            Option::Some(remaining_len) => {
+                if remaining_len == 0 {
+                    return self.stack.push(0);
+                }
+                core::cmp::min(32, remaining_len)
+            }
+        };
 
         // Slice the calldata
-        let bytes_len = core::cmp::min(32, calldata_len - offset);
         let sliced = calldata.slice(offset, bytes_len);
 
         let mut data_to_load: u256 = sliced
@@ -122,7 +128,13 @@ pub impl EnvironmentInformationImpl of EnvironmentInformationTrait {
             self.memory.size(), [(dest_offset, size)].span()
         )?;
         self.memory.ensure_length(memory_expansion.new_size);
-        self.charge_gas(gas::VERYLOW + copy_gas_cost + memory_expansion.expansion_cost)?;
+
+        let total_cost = gas::VERYLOW
+            .checked_add(copy_gas_cost)
+            .ok_or(EVMError::OutOfGas)?
+            .checked_add(memory_expansion.expansion_cost)
+            .ok_or(EVMError::OutOfGas)?;
+        self.charge_gas(total_cost)?;
 
         let calldata: Span<u8> = self.message().data;
         copy_bytes_to_memory(ref self, calldata, dest_offset, offset, size);
@@ -152,7 +164,13 @@ pub impl EnvironmentInformationImpl of EnvironmentInformationTrait {
             self.memory.size(), [(dest_offset, size)].span()
         )?;
         self.memory.ensure_length(memory_expansion.new_size);
-        self.charge_gas(gas::VERYLOW + copy_gas_cost + memory_expansion.expansion_cost)?;
+
+        let total_cost = gas::VERYLOW
+            .checked_add(copy_gas_cost)
+            .ok_or(EVMError::OutOfGas)?
+            .checked_add(memory_expansion.expansion_cost)
+            .ok_or(EVMError::OutOfGas)?;
+        self.charge_gas(total_cost)?;
 
         let bytecode: Span<u8> = self.message().code;
 
@@ -208,7 +226,12 @@ pub impl EnvironmentInformationImpl of EnvironmentInformationTrait {
             self.accessed_addresses.add(evm_address);
             gas::COLD_ACCOUNT_ACCESS_COST
         };
-        self.charge_gas(access_gas_cost + copy_gas_cost + memory_expansion.expansion_cost)?;
+        let total_cost = access_gas_cost
+            .checked_add(copy_gas_cost)
+            .ok_or(EVMError::OutOfGas)?
+            .checked_add(memory_expansion.expansion_cost)
+            .ok_or(EVMError::OutOfGas)?;
+        self.charge_gas(total_cost)?;
 
         let bytecode = self.env.state.get_account(evm_address).code;
         copy_bytes_to_memory(ref self, bytecode, dest_offset, offset, size);
@@ -246,7 +269,12 @@ pub impl EnvironmentInformationImpl of EnvironmentInformationTrait {
             self.memory.size(), [(dest_offset, size)].span()
         )?;
         self.memory.ensure_length(memory_expansion.new_size);
-        self.charge_gas(gas::VERYLOW + copy_gas_cost + memory_expansion.expansion_cost)?;
+        let total_cost = gas::VERYLOW
+            .checked_add(copy_gas_cost)
+            .ok_or(EVMError::OutOfGas)?
+            .checked_add(memory_expansion.expansion_cost)
+            .ok_or(EVMError::OutOfGas)?;
+        self.charge_gas(total_cost)?;
 
         let data_to_copy: Span<u8> = return_data.slice(offset, size);
         self.memory.store_n(data_to_copy, dest_offset);
@@ -287,10 +315,9 @@ pub impl EnvironmentInformationImpl of EnvironmentInformationTrait {
 fn copy_bytes_to_memory(
     ref self: VM, bytes: Span<u8>, dest_offset: usize, offset: usize, size: usize
 ) {
-    let bytes_slice = if offset < bytes.len() {
-        bytes.slice(offset, core::cmp::min(size, bytes.len() - offset))
-    } else {
-        [].span()
+    let bytes_slice = match bytes.len().checked_sub(offset) {
+        Option::Some(remaining) => bytes.slice(offset, core::cmp::min(size, remaining)),
+        Option::None => [].span()
     };
 
     self.memory.store_padded_segment(dest_offset, size, bytes_slice);

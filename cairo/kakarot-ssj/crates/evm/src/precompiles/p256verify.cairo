@@ -57,35 +57,11 @@ pub impl P256Verify of Precompile {
             return Result::Ok((gas, [].span()));
         }
 
-        let message_hash = input.slice(0, 32);
-        let message_hash = match message_hash.from_be_bytes() {
-            Option::Some(message_hash) => message_hash,
-            Option::None => { return Result::Ok((gas, [].span())); }
-        };
-
-        let r: Option<u256> = input.slice(32, 32).from_be_bytes();
-        let r = match r {
-            Option::Some(r) => r,
-            Option::None => { return Result::Ok((gas, [].span())); }
-        };
-
-        let s: Option<u256> = input.slice(64, 32).from_be_bytes();
-        let s = match s {
-            Option::Some(s) => s,
-            Option::None => { return Result::Ok((gas, [].span())); }
-        };
-
-        let x: Option<u256> = input.slice(96, 32).from_be_bytes();
-        let x = match x {
-            Option::Some(x) => x,
-            Option::None => { return Result::Ok((gas, [].span())); }
-        };
-
-        let y: Option<u256> = input.slice(128, 32).from_be_bytes();
-        let y = match y {
-            Option::Some(y) => y,
-            Option::None => { return Result::Ok((gas, [].span())); }
-        };
+        let message_hash: u256 = input.slice(0, 32).from_be_bytes().unwrap();
+        let r: u256 = input.slice(32, 32).from_be_bytes().unwrap();
+        let s: u256 = input.slice(64, 32).from_be_bytes().unwrap();
+        let x: u256 = input.slice(96, 32).from_be_bytes().unwrap();
+        let y: u256 = input.slice(128, 32).from_be_bytes().unwrap();
 
         let public_key: Option<Secp256r1Point> = Secp256Trait::secp256_ec_new_syscall(x, y)
             .unwrap_syscall();

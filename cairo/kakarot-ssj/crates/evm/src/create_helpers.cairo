@@ -1,4 +1,5 @@
 use core::num::traits::Bounded;
+use core::num::traits::CheckedAdd;
 use core::num::traits::Zero;
 use core::starknet::EthAddress;
 use crate::errors::{ensure, EVMError};
@@ -18,7 +19,6 @@ use utils::set::SetTrait;
 use utils::traits::{
     BoolIntoNumeric, EthAddressIntoU256, U256TryIntoResult, SpanU8TryIntoResultEthAddress
 };
-
 /// Helper struct to prepare CREATE and CREATE2 opcodes
 #[derive(Drop)]
 pub struct CreateArgs {
@@ -46,13 +46,20 @@ pub impl CreateHelpersImpl of CreateHelpers {
         self.memory.ensure_length(memory_expansion.new_size);
         let init_code_gas = gas::init_code_cost(size);
         let charged_gas = match create_type {
-            CreateType::Create => gas::CREATE + memory_expansion.expansion_cost + init_code_gas,
+            CreateType::Create => gas::CREATE
+                .checked_add(memory_expansion.expansion_cost)
+                .ok_or(EVMError::OutOfGas)?
+                .checked_add(init_code_gas)
+                .ok_or(EVMError::OutOfGas)?,
             CreateType::Create2 => {
                 let calldata_words = bytes_32_words_size(size);
                 gas::CREATE
-                    + gas::KECCAK256WORD * calldata_words.into()
-                    + memory_expansion.expansion_cost
-                    + init_code_gas
+                    .checked_add(gas::KECCAK256WORD * calldata_words.into())
+                    .ok_or(EVMError::OutOfGas)?
+                    .checked_add(memory_expansion.expansion_cost)
+                    .ok_or(EVMError::OutOfGas)?
+                    .checked_add(init_code_gas)
+                    .ok_or(EVMError::OutOfGas)?
             },
         };
         self.charge_gas(charged_gas)?;

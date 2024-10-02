@@ -1,6 +1,7 @@
 use core::cmp::min;
 //! SHA3.
 use core::keccak::{cairo_keccak};
+use core::num::traits::CheckedAdd;
 
 // Internal imports
 use crate::errors::EVMError;
@@ -11,7 +12,6 @@ use crate::stack::StackTrait;
 use utils::helpers::bytes_32_words_size;
 use utils::traits::array::ArrayExtTrait;
 use utils::traits::integer::U256Trait;
-
 #[generate_trait]
 pub impl Sha3Impl of Sha3Trait {
     /// SHA3 operation : Hashes n bytes in memory at a given offset in memory
@@ -32,7 +32,12 @@ pub impl Sha3Impl of Sha3Trait {
         let word_gas_cost = gas::KECCAK256WORD * words_size;
         let memory_expansion = gas::memory_expansion(self.memory.size(), [(offset, size)].span())?;
         self.memory.ensure_length(memory_expansion.new_size);
-        self.charge_gas(gas::KECCAK256 + word_gas_cost + memory_expansion.expansion_cost)?;
+        let total_cost = gas::KECCAK256
+            .checked_add(word_gas_cost)
+            .ok_or(EVMError::OutOfGas)?
+            .checked_add(memory_expansion.expansion_cost)
+            .ok_or(EVMError::OutOfGas)?;
+        self.charge_gas(total_cost)?;
 
         let mut to_hash: Array<u64> = Default::default();
 

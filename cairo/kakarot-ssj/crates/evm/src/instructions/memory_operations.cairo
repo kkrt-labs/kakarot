@@ -1,4 +1,5 @@
 use core::cmp::max;
+use core::num::traits::CheckedAdd;
 use crate::backend::starknet_backend::fetch_original_storage;
 //! Stack Memory Storage and Flow Operations.
 use crate::errors::{EVMError, ensure};
@@ -9,7 +10,6 @@ use crate::stack::StackTrait;
 use crate::state::StateTrait;
 use utils::helpers::bytes_32_words_size;
 use utils::set::SetTrait;
-
 #[inline(always)]
 fn jump(ref self: VM, index: usize) -> Result<(), EVMError> {
     match self.message().code.get(index) {
@@ -42,7 +42,10 @@ pub impl MemoryOperation of MemoryOperationTrait {
 
         let memory_expansion = gas::memory_expansion(self.memory.size(), [(offset, 32)].span())?;
         self.memory.ensure_length(memory_expansion.new_size);
-        self.charge_gas(gas::VERYLOW + memory_expansion.expansion_cost)?;
+        let total_cost = gas::VERYLOW
+            .checked_add(memory_expansion.expansion_cost)
+            .ok_or(EVMError::OutOfGas)?;
+        self.charge_gas(total_cost)?;
 
         let result = self.memory.load(offset);
         self.stack.push(result)
@@ -58,7 +61,10 @@ pub impl MemoryOperation of MemoryOperationTrait {
         let value: u256 = self.stack.pop()?;
         let memory_expansion = gas::memory_expansion(self.memory.size(), [(offset, 32)].span())?;
         self.memory.ensure_length(memory_expansion.new_size);
-        self.charge_gas(gas::VERYLOW + memory_expansion.expansion_cost)?;
+        let total_cost = gas::VERYLOW
+            .checked_add(memory_expansion.expansion_cost)
+            .ok_or(EVMError::OutOfGas)?;
+        self.charge_gas(total_cost)?;
 
         self.memory.store(value, offset);
         Result::Ok(())
@@ -74,7 +80,10 @@ pub impl MemoryOperation of MemoryOperationTrait {
 
         let memory_expansion = gas::memory_expansion(self.memory.size(), [(offset, 1)].span())?;
         self.memory.ensure_length(memory_expansion.new_size);
-        self.charge_gas(gas::VERYLOW + memory_expansion.expansion_cost)?;
+        let total_cost = gas::VERYLOW
+            .checked_add(memory_expansion.expansion_cost)
+            .ok_or(EVMError::OutOfGas)?;
+        self.charge_gas(total_cost)?;
 
         self.memory.store_byte(value, offset);
 
@@ -294,8 +303,12 @@ pub impl MemoryOperation of MemoryOperationTrait {
             self.memory.size(), [(max(dest_offset, source_offset), size)].span()
         )?;
         self.memory.ensure_length(memory_expansion.new_size);
-        //TODO: handle add overflows
-        self.charge_gas(gas::VERYLOW + copy_gas_cost + memory_expansion.expansion_cost)?;
+        let total_cost = gas::VERYLOW
+            .checked_add(copy_gas_cost)
+            .ok_or(EVMError::OutOfGas)?
+            .checked_add(memory_expansion.expansion_cost)
+            .ok_or(EVMError::OutOfGas)?;
+        self.charge_gas(total_cost)?;
 
         if size == 0 {
             return Result::Ok(());
