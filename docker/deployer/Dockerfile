@@ -18,9 +18,10 @@ ENV VIRTUAL_ENV=/app/kakarot/.venv \
     PATH="/app/kakarot/.venv/bin:/root/.local/bin:$PATH"
 
 RUN --mount=type=cache,target=/root/.cache \
-    curl -LsSf https://astral.sh/uv/install.sh | sh
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
-RUN uv venv
+RUN --mount=type=cache,target=/root/.cache \
+curl -LsSf https://astral.sh/uv/install.sh | sh
 
 WORKDIR /app/kakarot
 
@@ -51,22 +52,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ARG GITHUB_TOKEN
 ENV GITHUB_TOKEN=${GITHUB_TOKEN}
 
-COPY pyproject.toml .
-COPY kakarot_scripts ./kakarot_scripts
-COPY README.md .
-COPY tests ./tests
+COPY . .
+
+SHELL ["/bin/bash", "-c"]
+RUN  source "$HOME/.cargo/env" && uv venv && uv pip install -e .
 
 # Install asdf for multiple scarb versions
 RUN git clone --depth 1 https://github.com/asdf-vm/asdf.git "$HOME/.asdf" && \
     echo ". $HOME/.asdf/asdf.sh" >> "$HOME/.bashrc" && \
     echo ". $HOME/.asdf/asdf.sh" >> "$HOME/.profile"
 
-SHELL ["/bin/bash", "-c"]
-RUN source "$HOME/.asdf/asdf.sh" && asdf plugin add scarb && asdf install scarb 0.7.0  && asdf install scarb 2.6.5
-
+RUN source "$HOME/.asdf/asdf.sh" && asdf plugin add scarb && asdf install scarb 0.7.0  && asdf install scarb 2.6.5 && asdf install scarb 2.8.3
 
 RUN --mount=type=cache,target=/root/.cache \
-    source "$HOME/.asdf/asdf.sh" && make fetch-ssj-artifacts && make build && make build-sol
+    source "$HOME/.asdf/asdf.sh" && source "$HOME/.cargo/env" && make build-ssj && make build && make build-sol
 
 
 ############################################
@@ -77,6 +76,7 @@ FROM base as deployer
 COPY --from=builder /app/kakarot/build ./build/
 COPY --from=builder /app/kakarot/kakarot_scripts/ ./kakarot_scripts/
 COPY --from=builder /app/kakarot/tests ./tests/
+COPY --from=builder /app/kakarot/.venv ./.venv
 
 # Cairo Smart contracts are used in deploy_kakarot.py
 # To limit the probability of this Dockerfile to break, we copy the entire src and not individual files
@@ -92,4 +92,4 @@ COPY --from=builder /app/kakarot/foundry.toml .
 COPY --from=builder /app/kakarot/README.md .
 
 # Deploy kakarot
-CMD ["uv", "run", "python", "kakarot_scripts/deploy_kakarot.py"]
+CMD ["uv", "run", "deploy"]
