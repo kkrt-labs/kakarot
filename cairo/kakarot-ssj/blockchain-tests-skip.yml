@@ -1,3 +1,12 @@
+# List of test directories to completely skip
+# trunk-ignore(yamllint/empty-values)
+directories:
+
+# List of file names to be skipped
+# The first level corresponds to the directory, the second to the list of file names to ignore.
+# trunk-ignore(yamllint/empty-values)
+filename:
+
 testname:
   stEIP1153-transientStorage:
       - transStorageOK_d3g0v0_Cancun
