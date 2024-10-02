@@ -75,7 +75,7 @@ As Kakarot is a contract that is deployed on Starknet and is not a client that
 can directly manipulate a storage database, our approach differs from one of a
 traditional client. We do not directly manipulate tries. Instead, we have access
 to contracts storage on the Starknet blockchain, that we can query using
-syscalls to read and update the value of a of a storage slot.
+syscalls to read and update the value of a storage slot.
 
 There are two different ways of handling Storage in Kakarot.
 
@@ -105,7 +105,7 @@ This design has some limitations:
 
 - We perform a `call_contract_syscall` for each SLOAD/SSTORE operation that is
   committed to Starknet, which has an extra overhead compared to directly
-  modifying the current contract's storage . Given that only KakarotCore can
+  modifying the current contract's storage. Given that only KakarotCore can
   modify the storage of a Kakarot contract, we could directly store the whole
   world state in the main Kakarot contract storage.
 - It adds external entrypoints with admin rights to read and write from storage
@@ -171,7 +171,7 @@ compatibility with Starknet.
 ### Tracking and reverting storage changes
 
 The storage mechanism presented in the [Local State](./local_state.md) section
-enable us to revert storage changes by using a concept similar to Geth's
+enables us to revert storage changes by using a concept similar to Geth's
 journal. Each storage change will be stored in a `StateChangeLog` implemented
 using a `Felt252Dict` data structure, that will associate each modified storage
 address to its new value. This allows us to perform three things:

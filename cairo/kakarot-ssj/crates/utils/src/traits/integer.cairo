@@ -186,11 +186,9 @@ pub impl BitsUsedImpl<
         if self == Zero::zero() {
             return 0;
         }
-        let two: T = One::one() + One::one();
-        let eight: T = two * two * two;
 
         let bytes_used = self.bytes_used();
-        let last_byte = self.shr(eight * (bytes_used.into() - One::one()));
+        let last_byte = self.shr(8_u32 * (bytes_used.into() - One::one()));
 
         // safe unwrap since we know at most 8 bits are used
         let bits_used: u8 = bits_used_internal::bits_used_in_byte(last_byte.try_into().unwrap());

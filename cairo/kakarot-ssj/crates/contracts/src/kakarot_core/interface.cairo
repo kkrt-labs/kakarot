@@ -9,7 +9,7 @@ pub trait IKakarotCore<TContractState> {
     /// Gets the native token used by the Kakarot smart contract
     fn get_native_token(self: @TContractState) -> ContractAddress;
 
-    /// Deterministically computes a Starknet address for an given EVM address
+    /// Deterministically computes a Starknet address for a given EVM address
     /// The address is computed as the Starknet address corresponding to the deployment of an EOA,
     /// Using its EVM address as salt, and KakarotCore as deployer.
     fn compute_starknet_address(self: @TContractState, evm_address: EthAddress) -> ContractAddress;
@@ -59,7 +59,7 @@ pub trait IExtendedKakarotCore<TContractState> {
     /// Gets the native token used by the Kakarot smart contract
     fn get_native_token(self: @TContractState) -> ContractAddress;
 
-    /// Deterministically computes a Starknet address for an given EVM address
+    /// Deterministically computes a Starknet address for a given EVM address
     /// The address is computed as the Starknet address corresponding to the deployment of an EOA,
     /// Using its EVM address as salt, and KakarotCore as deployer.
     fn compute_starknet_address(self: @TContractState, evm_address: EthAddress) -> ContractAddress;

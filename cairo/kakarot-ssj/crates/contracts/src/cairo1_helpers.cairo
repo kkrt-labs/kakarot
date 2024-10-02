@@ -88,7 +88,7 @@ pub trait IHelpers<T> {
     /// * The recovered Ethereum address.
     fn recover_eth_address(self: @T, msg_hash: u256, signature: Signature) -> (bool, EthAddress);
 
-    /// Performs signature verification in the secp256r1 ellipitic curve.
+    /// Performs signature verification in the secp256r1 elliptic curve.
     ///
     /// # Arguments
     ///

@@ -19,7 +19,7 @@ use crate::model::account::{Account, AccountTrait};
 use crate::model::vm::{VM, VMTrait};
 use crate::model::{
     Message, Environment, Transfer, ExecutionSummary, ExecutionResult, ExecutionResultTrait,
-    ExecutionResultStatus, AddressTrait, TransactionResult, TransactionResultTrait, Address
+    ExecutionResultStatus, AddressTrait, TransactionResult, Address
 };
 use crate::precompiles::Precompiles;
 use crate::precompiles::eth_precompile_addresses;
@@ -108,7 +108,7 @@ pub impl EVMImpl of EVMTrait {
             let mut sender_account = env.state.get_account(origin.evm);
 
             // Charge the intrinsic gas to the sender so that it's not available for the execution
-            // of the transaction but don't trigger any actual transfer, as only the actual consumde
+            // of the transaction but don't trigger any actual transfer, as only the actual consumed
             // gas is charged at the end of the transaction
             sender_account.set_balance(sender_account.balance() - max_fee.into());
 

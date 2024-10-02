@@ -1,5 +1,5 @@
 use core::integer::{u512};
-use core::num::traits::{Zero, One, BitSize, OverflowingAdd, OverflowingMul};
+use core::num::traits::{Zero, One, BitSize, OverflowingAdd, OverflowingMul, Bounded};
 use core::panic_with_felt252;
 use core::traits::{BitAnd};
 
@@ -203,7 +203,7 @@ pub trait Bitshift<T> {
     ///
     /// Panics if the shift is greater than 255.
     /// Panics if the result overflows the type T.
-    fn shl(self: T, shift: T) -> T;
+    fn shl(self: T, shift: usize) -> T;
 
     /// Shift a number right by a given number of bits.
     ///
@@ -219,7 +219,7 @@ pub trait Bitshift<T> {
     /// # Panics
     ///
     /// Panics if the shift is greater than 255.
-    fn shr(self: T, shift: T) -> T;
+    fn shr(self: T, shift: usize) -> T;
 }
 
 impl BitshiftImpl<
@@ -236,24 +236,26 @@ impl BitshiftImpl<
     +PartialOrd<T>,
     +BitSize<T>,
     +TryInto<usize, T>,
+    +TryInto<T, usize>,
+    +TryInto<u256, T>,
 > of Bitshift<T> {
-    fn shl(self: T, shift: T) -> T {
+    fn shl(self: T, shift: usize) -> T {
         // if we shift by more than nb_bits of T, the result is 0
         // we early return to save gas and prevent unexpected behavior
-        if shift > BitSize::<T>::bits().try_into().unwrap() - One::one() {
+        if shift > BitSize::<T>::bits() - One::one() {
             panic_with_felt252('mul Overflow');
         }
         let two = One::one() + One::one();
-        self * two.pow(shift)
+        self * two.pow(shift.try_into().expect('mul Overflow'))
     }
 
-    fn shr(self: T, shift: T) -> T {
+    fn shr(self: T, shift: usize) -> T {
         // early return to save gas if shift > nb_bits of T
-        if shift > BitSize::<T>::bits().try_into().unwrap() - One::one() {
+        if shift > BitSize::<T>::bits() - One::one() {
             panic_with_felt252('mul Overflow');
         }
         let two = One::one() + One::one();
-        self / two.pow(shift)
+        self / two.pow(shift.try_into().expect('mul Overflow'))
     }
 }
 
@@ -270,7 +272,7 @@ pub trait WrappingBitshift<T> {
     /// # Returns
     ///
     /// The result of shifting `self` left by `shift` bits, wrapped if necessary
-    fn wrapping_shl(self: T, shift: T) -> T;
+    fn wrapping_shl(self: T, shift: usize) -> T;
 
     /// Shift a number right by a given number of bits.
     /// If the shift is greater than 255, the result is 0.
@@ -283,7 +285,7 @@ pub trait WrappingBitshift<T> {
     /// # Returns
     ///
     /// The result of shifting `self` right by `shift` bits, or 0 if shift > 255
-    fn wrapping_shr(self: T, shift: T) -> T;
+    fn wrapping_shr(self: T, shift: usize) -> T;
 }
 
 pub impl WrappingBitshiftImpl<
@@ -300,21 +302,25 @@ pub impl WrappingBitshiftImpl<
     +OverflowingMul<T>,
     +WrappingExponentiation<T>,
     +BitSize<T>,
+    +Bounded<T>,
     +TryInto<usize, T>,
+    +TryInto<T, usize>,
+    +TryInto<u256, T>,
+    +Into<T, u256>
 > of WrappingBitshift<T> {
-    fn wrapping_shl(self: T, shift: T) -> T {
+    fn wrapping_shl(self: T, shift: usize) -> T {
         let two = One::<T>::one() + One::<T>::one();
-        let (result, _) = self.overflowing_mul(two.wrapping_pow(shift));
+        let (result, _) = self.overflowing_mul(two.wrapping_pow(shift.try_into().unwrap()));
         result
     }
 
-    fn wrapping_shr(self: T, shift: T) -> T {
+    fn wrapping_shr(self: T, shift: usize) -> T {
         let two = One::<T>::one() + One::<T>::one();
 
-        if shift > BitSize::<T>::bits().try_into().unwrap() - One::one() {
+        if shift > BitSize::<T>::bits() - One::one() {
             return Zero::zero();
         }
-        self / two.pow(shift)
+        self / two.pow(shift.try_into().unwrap())
     }
 }
 

@@ -23,8 +23,10 @@ pub impl Sha3Impl of Sha3Trait {
     ///
     /// # Specification: https://www.evm.codes/#20?fork=shanghai
     fn exec_sha3(ref self: VM) -> Result<(), EVMError> {
-        let offset: usize = self.stack.pop_usize()?;
-        let mut size: usize = self.stack.pop_usize()?;
+        let offset: usize = self.stack.pop_saturating_usize()?;
+        let mut size: usize = self
+            .stack
+            .pop_usize()?; // Any size bigger than a usize would MemoryOOG.
 
         let words_size = bytes_32_words_size(size).into();
         let word_gas_cost = gas::KECCAK256WORD * words_size;

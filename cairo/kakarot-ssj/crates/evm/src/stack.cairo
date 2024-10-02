@@ -186,7 +186,8 @@ impl StackImpl of StackTrait {
         Result::Ok(item.low)
     }
 
-    /// Calls `Stack::pop` and converts it to usize
+    /// Calls `Stack::pop` and converts it to an EthAddress
+    /// If the value is bigger than an EthAddress, it will be truncated to keep the lower 160 bits.
     ///
     /// # Errors
     ///

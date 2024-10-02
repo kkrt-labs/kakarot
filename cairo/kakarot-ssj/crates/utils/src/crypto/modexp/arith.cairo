@@ -300,7 +300,7 @@ pub fn mod_inv(x: Word) -> Word {
             break;
         }
 
-        let mask: u64 = 1_u64.shl(i.into()) - 1;
+        let mask: u64 = 1_u64.shl(i) - 1;
         let xy = x.wrapping_mul(y) & mask;
         let q = (mask + 1) / 2;
         if xy >= q {
@@ -310,7 +310,7 @@ pub fn mod_inv(x: Word) -> Word {
     };
 
     let xy = x.wrapping_mul(y);
-    let q = 1_u64.wrapping_shl((WORD_BITS - 1).into());
+    let q = 1_u64.wrapping_shl((WORD_BITS - 1));
     if xy >= q {
         y += q;
     }
@@ -415,7 +415,7 @@ pub fn borrowing_sub(x: Word, y: Word, borrow: bool) -> (Word, bool) {
 /// The double word obtained by joining `hi` and `lo`
 pub fn join_as_double(hi: Word, lo: Word) -> DoubleWord {
     let hi: DoubleWord = hi.into();
-    (hi.shl(WORD_BITS.into())).into() + lo.into()
+    hi.shl(WORD_BITS).into() + lo.into()
 }
 
 /// Computes `x^2`, storing the result in `out`.
@@ -457,14 +457,14 @@ fn big_sq(ref x: MPNat, ref out: Felt252Vec<Word>) {
             }
 
             out.set(i + j, res.as_u64());
-            c = new_c + res.shr(WORD_BITS.into());
+            c = new_c + res.shr(WORD_BITS);
 
             j += 1;
         };
 
         let (sum, carry) = carrying_add(out[i + s], c.as_u64(), false);
         out.set(i + s, sum);
-        out.set(i + s + 1, (c.shr(WORD_BITS.into()) + (carry.into())).as_u64());
+        out.set(i + s + 1, (c.shr(WORD_BITS) + (carry.into())).as_u64());
 
         i += 1;
     }
@@ -482,8 +482,8 @@ pub fn in_place_shl(ref a: Felt252Vec<Word>, shift: u32) -> Word {
         }
 
         let mut a_digit = a[i];
-        let carry = a_digit.wrapping_shr(carry_shift.into());
-        a_digit = a_digit.wrapping_shl(shift.into()) | c;
+        let carry = a_digit.wrapping_shr(carry_shift);
+        a_digit = a_digit.wrapping_shl(shift) | c;
         a.set(i, a_digit);
 
         c = carry;
@@ -508,8 +508,8 @@ pub fn in_place_shr(ref a: Felt252Vec<Word>, shift: u32) -> Word {
         let j = i - 1;
 
         let mut a_digit = a[j];
-        let borrow = a_digit.wrapping_shl(borrow_shift.into());
-        a_digit = a_digit.wrapping_shr(shift.into()) | b;
+        let borrow = a_digit.wrapping_shl(borrow_shift);
+        a_digit = a_digit.wrapping_shr(shift) | b;
         a.set(j, a_digit);
 
         b = borrow;
@@ -574,7 +574,7 @@ pub fn in_place_mul_sub(ref a: Felt252Vec<Word>, ref x: Felt252Vec<Word>, y: Wor
             + offset_carry.into()
             - ((x_digit.into()) * (y.into()));
 
-        let new_offset_carry = (offset_sum.shr(WORD_BITS.into())).as_u64();
+        let new_offset_carry = (offset_sum.shr(WORD_BITS)).as_u64();
         let new_x = offset_sum.as_u64();
         offset_carry = new_offset_carry;
         a.set(i, new_x);
@@ -661,7 +661,7 @@ mod tests {
         let mut result = mp_nat_to_u128(ref x);
 
         let mask = BASE.wrapping_pow(x.digits.len().into()).wrapping_sub(1);
-        assert_eq!(result, n.wrapping_shl(shift.into()) & mask);
+        assert_eq!(result, n.wrapping_shl(shift) & mask);
     }
 
     fn check_in_place_shr(n: u128, shift: u32) {
@@ -669,7 +669,7 @@ mod tests {
         in_place_shr(ref x.digits, shift);
         let mut result = mp_nat_to_u128(ref x);
 
-        assert_eq!(result, n.wrapping_shr(shift.into()));
+        assert_eq!(result, n.wrapping_shr(shift));
     }
 
     fn check_mod_inv(n: Word) {

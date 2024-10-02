@@ -50,7 +50,7 @@ pub impl U8SpanExImpl of U8SpanExTrait {
                 Option::Some(byte) => {
                     let byte: u64 = (*byte.unbox()).into();
                     // Accumulate pending_word in a little endian manner
-                    byte.shl(8_u64 * byte_counter.into())
+                    byte.shl(8_u32 * byte_counter.into())
                 },
                 Option::None => { break; },
             };
@@ -69,7 +69,7 @@ pub impl U8SpanExImpl of U8SpanExTrait {
                 last_input_word += match self.get(full_u64_word_count * 8 + byte_counter.into()) {
                     Option::Some(byte) => {
                         let byte: u64 = (*byte.unbox()).into();
-                        byte.shl(8_u64 * byte_counter.into())
+                        byte.shl(8_u32 * byte_counter.into())
                     },
                     Option::None => { break; },
                 };
@@ -246,17 +246,13 @@ pub impl ToBytesImpl<
     fn to_be_bytes(self: T) -> Span<u8> {
         let bytes_used = self.bytes_used();
 
-        let one = One::<T>::one();
-        let two = one + one;
-        let eight = two * two * two;
-
         // 0xFF
         let mask = Bounded::<u8>::MAX.into();
 
         let mut bytes: Array<u8> = Default::default();
         for i in 0
             ..bytes_used {
-                let val = Bitshift::<T>::shr(self, eight * (bytes_used - i - 1).into());
+                let val = Bitshift::<T>::shr(self, 8_u32 * (bytes_used.into() - i.into() - 1));
                 bytes.append((val & mask).try_into().unwrap());
             };
 
@@ -270,9 +266,6 @@ pub impl ToBytesImpl<
 
     fn to_le_bytes(mut self: T) -> Span<u8> {
         let bytes_used = self.bytes_used();
-        let one = One::<T>::one();
-        let two = one + one;
-        let eight = two * two * two;
 
         // 0xFF
         let mask = Bounded::<u8>::MAX.into();
@@ -281,7 +274,7 @@ pub impl ToBytesImpl<
 
         for i in 0
             ..bytes_used {
-                let val = self.shr(eight * i.into());
+                let val = self.shr(8_u32 * i.into());
                 bytes.append((val & mask).try_into().unwrap());
             };
 
@@ -526,7 +519,7 @@ pub impl ByteArrayExt of ByteArrayExTrait {
                 Option::Some(byte) => {
                     let byte: u64 = byte.into();
                     // Accumulate pending_word in a little endian manner
-                    byte.shl(8_u64 * byte_counter.into())
+                    byte.shl(8_u32 * byte_counter.into())
                 },
                 Option::None => { break; },
             };
@@ -546,7 +539,7 @@ pub impl ByteArrayExt of ByteArrayExTrait {
                 last_input_word += match self.at(full_u64_word_count * 8 + byte_counter.into()) {
                     Option::Some(byte) => {
                         let byte: u64 = byte.into();
-                        byte.shl(8_u64 * byte_counter.into())
+                        byte.shl(8_u32 * byte_counter.into())
                     },
                     Option::None => { break; },
                 };

@@ -54,7 +54,7 @@ fn rotate_right(value: u64, n: u32) -> u64 {
         let bits = BitSize::<u64>::bits(); // The number of bits in a u64
         let n = n % bits; // Ensure n is less than 64
 
-        let res = value.wrapping_shr(n.into()) | value.wrapping_shl((bits - n).into());
+        let res = value.wrapping_shr(n) | value.wrapping_shl((bits - n));
         res
     }
 }

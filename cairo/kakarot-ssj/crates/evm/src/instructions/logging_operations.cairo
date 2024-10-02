@@ -61,11 +61,13 @@ fn exec_log_i(ref self: VM, topics_len: u8) -> Result<(), EVMError> {
 
     // TODO(optimization): check benefits of n `pop` instead of `pop_n`
     let offset = self.stack.pop_saturating_usize()?;
-    let size = self.stack.pop_usize()?;
+    let size = self.stack.pop_usize()?; // Any size bigger than a usize would MemoryOOG.
     let topics: Array<u256> = self.stack.pop_n(topics_len.into())?;
 
     let memory_expansion = gas::memory_expansion(self.memory.size(), [(offset, size)].span())?;
     self.memory.ensure_length(memory_expansion.new_size);
+
+    // TODO: avoid addition overflows here. We should use checked arithmetic.
     self
         .charge_gas(
             gas::LOG

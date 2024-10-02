@@ -30,9 +30,9 @@ pub impl SystemOperations of SystemOperationsTrait {
         let to = self.stack.pop_eth_address()?;
         let value = self.stack.pop()?;
         let args_offset = self.stack.pop_saturating_usize()?;
-        let args_size = self.stack.pop_usize()?;
+        let args_size = self.stack.pop_usize()?; // Any size bigger than a usize would MemoryOOG.
         let ret_offset = self.stack.pop_saturating_usize()?;
-        let ret_size = self.stack.pop_usize()?;
+        let ret_size = self.stack.pop_usize()?; // Any size bigger than a usize would MemoryOOG.
 
         // GAS
         let memory_expansion = gas::memory_expansion(
@@ -109,9 +109,9 @@ pub impl SystemOperations of SystemOperationsTrait {
         let code_address = self.stack.pop_eth_address()?;
         let value = self.stack.pop()?;
         let args_offset = self.stack.pop_saturating_usize()?;
-        let args_size = self.stack.pop_usize()?;
+        let args_size = self.stack.pop_usize()?; // Any size bigger than a usize would MemoryOOG.
         let ret_offset = self.stack.pop_saturating_usize()?;
-        let ret_size = self.stack.pop_usize()?;
+        let ret_size = self.stack.pop_usize()?; // Any size bigger than a usize would MemoryOOG.
 
         let to = self.message().target.evm;
 
@@ -193,9 +193,9 @@ pub impl SystemOperations of SystemOperationsTrait {
         let gas = self.stack.pop_saturating_u64()?;
         let code_address = self.stack.pop_eth_address()?;
         let args_offset = self.stack.pop_saturating_usize()?;
-        let args_size = self.stack.pop_usize()?;
+        let args_size = self.stack.pop_usize()?; // Any size bigger than a usize would MemoryOOG.
         let ret_offset = self.stack.pop_saturating_usize()?;
-        let ret_size = self.stack.pop_usize()?;
+        let ret_size = self.stack.pop_usize()?; // Any size bigger than a usize would MemoryOOG.
 
         // GAS
         let memory_expansion = gas::memory_expansion(
@@ -246,9 +246,9 @@ pub impl SystemOperations of SystemOperationsTrait {
         let gas = self.stack.pop_saturating_u64()?;
         let to = self.stack.pop_eth_address()?;
         let args_offset = self.stack.pop_saturating_usize()?;
-        let args_size = self.stack.pop_usize()?;
+        let args_size = self.stack.pop_usize()?; // Any size bigger than a usize would MemoryOOG.
         let ret_offset = self.stack.pop_saturating_usize()?;
-        let ret_size = self.stack.pop_usize()?;
+        let ret_size = self.stack.pop_usize()?; // Any size bigger than a usize would MemoryOOG.
 
         // GAS
         let memory_expansion = gas::memory_expansion(
@@ -293,7 +293,7 @@ pub impl SystemOperations of SystemOperationsTrait {
     /// # Specification: https://www.evm.codes/#fd?fork=shanghai
     fn exec_revert(ref self: VM) -> Result<(), EVMError> {
         let offset = self.stack.pop_saturating_usize()?;
-        let size = self.stack.pop_usize()?;
+        let size = self.stack.pop_usize()?; // Any size bigger than a usize would MemoryOOG.
 
         let memory_expansion = gas::memory_expansion(self.memory.size(), [(offset, size)].span())?;
         self.memory.ensure_length(memory_expansion.new_size);

@@ -1,5 +1,6 @@
 //! Block Information.
 
+use core::num::traits::SaturatingAdd;
 use core::starknet::SyscallResultTrait;
 use core::starknet::syscalls::get_block_hash_syscall;
 
@@ -20,7 +21,9 @@ pub impl BlockInformation of BlockInformationTrait {
     fn exec_blockhash(ref self: VM) -> Result<(), EVMError> {
         self.charge_gas(gas::BLOCKHASH)?;
 
-        let block_number = self.stack.pop_u64()?;
+        // Saturate to MAX_U64 to avoid a revert when the hash requested is too big. It should just
+        // push 0.
+        let block_number = self.stack.pop_saturating_u64()?;
         let current_block = self.env.block_number;
 
         // If input block number is lower than current_block - 256, return 0
@@ -31,7 +34,8 @@ pub impl BlockInformation of BlockInformationTrait {
         // TODO: monitor the changes in the `get_block_hash_syscall` syscall.
         // source:
         // https://docs.starknet.io/documentation/architecture_and_concepts/Smart_Contracts/system-calls-cairo1/#get_block_hash
-        if block_number + 10 > current_block || block_number + 256 < current_block {
+        if block_number.saturating_add(10) > current_block
+            || block_number.saturating_add(256) < current_block {
             return self.stack.push(0);
         }
 

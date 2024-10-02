@@ -36,7 +36,9 @@ pub impl MemoryOperation of MemoryOperationTrait {
     /// MLOAD operation.
     /// Load word from memory and push to stack.
     fn exec_mload(ref self: VM) -> Result<(), EVMError> {
-        let offset: usize = self.stack.pop_usize()?;
+        let offset: usize = self
+            .stack
+            .pop_usize()?; // Any offset bigger than a usize would MemoryOOG.
 
         let memory_expansion = gas::memory_expansion(self.memory.size(), [(offset, 32)].span())?;
         self.memory.ensure_length(memory_expansion.new_size);
@@ -50,7 +52,9 @@ pub impl MemoryOperation of MemoryOperationTrait {
     /// Save word to memory.
     /// # Specification: https://www.evm.codes/#52?fork=shanghai
     fn exec_mstore(ref self: VM) -> Result<(), EVMError> {
-        let offset: usize = self.stack.pop_usize()?;
+        let offset: usize = self
+            .stack
+            .pop_usize()?; // Any offset bigger than a usize would MemoryOOG.
         let value: u256 = self.stack.pop()?;
         let memory_expansion = gas::memory_expansion(self.memory.size(), [(offset, 32)].span())?;
         self.memory.ensure_length(memory_expansion.new_size);
@@ -64,7 +68,7 @@ pub impl MemoryOperation of MemoryOperationTrait {
     /// Save single byte to memory
     /// # Specification: https://www.evm.codes/#53?fork=shanghai
     fn exec_mstore8(ref self: VM) -> Result<(), EVMError> {
-        let offset = self.stack.pop_saturating_usize()?;
+        let offset = self.stack.pop_usize()?; // Any offset bigger than a usize would MemoryOOG.
         let value = self.stack.pop()?;
         let value: u8 = (value.low & 0xFF).try_into().unwrap();
 
@@ -188,7 +192,9 @@ pub impl MemoryOperation of MemoryOperationTrait {
     /// The new pc target has to be a JUMPDEST opcode.
     /// # Specification: https://www.evm.codes/#57?fork=shanghai
     fn exec_jumpi(ref self: VM) -> Result<(), EVMError> {
-        let index = self.stack.pop_usize()?;
+        let index = self
+            .stack
+            .pop_saturating_usize()?; // Saturate because if b is 0, we skip the jump but don't want to fail here.
         let b = self.stack.pop()?;
 
         self.charge_gas(gas::HIGH)?;
@@ -280,7 +286,7 @@ pub impl MemoryOperation of MemoryOperationTrait {
     fn exec_mcopy(ref self: VM) -> Result<(), EVMError> {
         let dest_offset = self.stack.pop_saturating_usize()?;
         let source_offset = self.stack.pop_saturating_usize()?;
-        let size = self.stack.pop_usize()?;
+        let size = self.stack.pop_usize()?; // Any size bigger than a usize would MemoryOOG.
 
         let words_size = bytes_32_words_size(size).into();
         let copy_gas_cost = gas::COPY * words_size;
@@ -288,6 +294,7 @@ pub impl MemoryOperation of MemoryOperationTrait {
             self.memory.size(), [(max(dest_offset, source_offset), size)].span()
         )?;
         self.memory.ensure_length(memory_expansion.new_size);
+        //TODO: handle add overflows
         self.charge_gas(gas::VERYLOW + copy_gas_cost + memory_expansion.expansion_cost)?;
 
         if size == 0 {

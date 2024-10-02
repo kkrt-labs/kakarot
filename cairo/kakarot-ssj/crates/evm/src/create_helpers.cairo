@@ -40,7 +40,7 @@ pub impl CreateHelpersImpl of CreateHelpers {
     fn prepare_create(ref self: VM, create_type: CreateType) -> Result<CreateArgs, EVMError> {
         let value = self.stack.pop()?;
         let offset = self.stack.pop_saturating_usize()?;
-        let size = self.stack.pop_usize()?;
+        let size = self.stack.pop_usize()?; // Any size bigger than a usize would MemoryOOG.
 
         let memory_expansion = gas::memory_expansion(self.memory.size(), [(offset, size)].span())?;
         self.memory.ensure_length(memory_expansion.new_size);

@@ -132,6 +132,7 @@ pub impl ComparisonAndBitwiseOperations of ComparisonAndBitwiseOperationsTrait {
         if i > 31 {
             return self.stack.push(0);
         }
+        let i: usize = i.try_into().unwrap(); // Safe because i <= 31
 
         // Right shift value by offset bits and then take the least significant byte.
         let result = x.shr((31 - i) * 8) & 0xFF;
@@ -150,7 +151,7 @@ pub impl ComparisonAndBitwiseOperations of ComparisonAndBitwiseOperationsTrait {
         if shift > 255 {
             return self.stack.push(0);
         }
-
+        let shift: usize = shift.try_into().unwrap(); // Safe because shift <= 255
         let result = val.wrapping_shl(shift);
         self.stack.push(result)
     }
@@ -163,6 +164,11 @@ pub impl ComparisonAndBitwiseOperations of ComparisonAndBitwiseOperationsTrait {
         let shift = *popped[0];
         let value = *popped[1];
 
+        // if shift is bigger than 255 return 0
+        if shift > 255 {
+            return self.stack.push(0);
+        }
+        let shift: usize = shift.try_into().unwrap(); // Safe because shift <= 255
         let result = value.wrapping_shr(shift);
         self.stack.push(result)
     }
@@ -187,6 +193,7 @@ pub impl ComparisonAndBitwiseOperations of ComparisonAndBitwiseOperationsTrait {
         if (shift >= 256) {
             self.stack.push(sign)
         } else {
+            let shift: usize = shift.try_into().unwrap(); // Safe because shift <= 256
             // XORing with sign before and after the shift propagates the sign bit of the operation
             let result = (sign ^ value.value).shr(shift) ^ sign;
             self.stack.push(result)

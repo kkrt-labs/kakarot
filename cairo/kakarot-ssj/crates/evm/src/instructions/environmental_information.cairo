@@ -72,7 +72,8 @@ pub impl EnvironmentInformationImpl of EnvironmentInformationTrait {
     fn exec_calldataload(ref self: VM) -> Result<(), EVMError> {
         self.charge_gas(gas::VERYLOW)?;
 
-        let offset: usize = self.stack.pop_usize()?;
+        // Don't error out if the offset is too big. It should just push 0.
+        let offset: usize = self.stack.pop_saturating_usize()?;
 
         let calldata = self.message().data;
         let calldata_len = calldata.len();
@@ -113,7 +114,7 @@ pub impl EnvironmentInformationImpl of EnvironmentInformationTrait {
     fn exec_calldatacopy(ref self: VM) -> Result<(), EVMError> {
         let dest_offset = self.stack.pop_saturating_usize()?;
         let offset = self.stack.pop_saturating_usize()?;
-        let size = self.stack.pop_usize()?;
+        let size = self.stack.pop_usize()?; // Any size bigger than a usize would MemoryOOG.
 
         let words_size = bytes_32_words_size(size).into();
         let copy_gas_cost = gas::COPY * words_size;
@@ -143,7 +144,7 @@ pub impl EnvironmentInformationImpl of EnvironmentInformationTrait {
     fn exec_codecopy(ref self: VM) -> Result<(), EVMError> {
         let dest_offset = self.stack.pop_saturating_usize()?;
         let offset = self.stack.pop_saturating_usize()?;
-        let size = self.stack.pop_usize()?;
+        let size = self.stack.pop_usize()?; // Any size bigger than a usize would MemoryOOG.
 
         let words_size = bytes_32_words_size(size).into();
         let copy_gas_cost = gas::COPY * words_size;
@@ -192,7 +193,7 @@ pub impl EnvironmentInformationImpl of EnvironmentInformationTrait {
         let evm_address = self.stack.pop_eth_address()?;
         let dest_offset = self.stack.pop_saturating_usize()?;
         let offset = self.stack.pop_saturating_usize()?;
-        let size = self.stack.pop_usize()?;
+        let size = self.stack.pop_usize()?; // Any size bigger than a usize would MemoryOOG.
 
         // GAS
         let words_size = bytes_32_words_size(size).into();
@@ -229,7 +230,7 @@ pub impl EnvironmentInformationImpl of EnvironmentInformationTrait {
     fn exec_returndatacopy(ref self: VM) -> Result<(), EVMError> {
         let dest_offset = self.stack.pop_saturating_usize()?;
         let offset = self.stack.pop_saturating_usize()?;
-        let size = self.stack.pop_usize()?;
+        let size = self.stack.pop_usize()?; // Any size bigger than a usize would MemoryOOG.
         let return_data: Span<u8> = self.return_data();
 
         let (last_returndata_index, overflow) = offset.overflowing_add(size);
@@ -549,7 +550,7 @@ mod tests {
 
 
     #[test]
-    fn test_calldataload_with_offset_conversion_error() {
+    fn test_calldataload_with_offset_bigger_usize_succeeds() {
         // Given
         let calldata = u256_to_bytes_array(
             0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
@@ -562,8 +563,8 @@ mod tests {
         let result = vm.exec_calldataload();
 
         // Then
-        assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), EVMError::TypeConversionError(TYPE_CONVERSION_ERROR));
+        assert!(result.is_ok());
+        assert_eq!(vm.stack.pop().unwrap(), 0);
     }
 
     // *************************************************************************

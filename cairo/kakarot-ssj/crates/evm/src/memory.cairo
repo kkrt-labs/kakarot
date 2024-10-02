@@ -89,7 +89,7 @@ impl MemoryImpl of MemoryTrait {
 
         // First erase byte value at offset, then set the new value using bitwise ops
         let word: u128 = self.items.get(chunk_index.into());
-        let new_word = (word & ~mask) | (value.into().shl(right_offset.into() * 8));
+        let new_word = (word & ~mask) | (value.into().shl(right_offset * 8));
         self.items.insert(chunk_index.into(), new_word);
     }
 

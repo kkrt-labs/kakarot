@@ -323,7 +323,7 @@ pub impl MPNatTraitImpl of MPNatTrait {
 
             in_place_shr(ref b.digits, 1);
 
-            res.digits.set(wordpos, res.digits[wordpos] | (x.shl(bitpos.into())));
+            res.digits.set(wordpos, res.digits[wordpos] | (x.shl(bitpos)));
 
             bitpos += 1;
             if bitpos == WORD_BITS {
@@ -404,7 +404,7 @@ pub impl MPNatTraitImpl of MPNatTrait {
             let mut digits = Felt252VecImpl::new();
             digits.expand(trailing_zeros + 1).unwrap();
             let mut tmp = MPNat { digits };
-            tmp.digits.set(trailing_zeros, 1_u64.shl(additional_zero_bits.into()));
+            tmp.digits.set(trailing_zeros, 1_u64.shl(additional_zero_bits));
             tmp
         };
 
@@ -415,7 +415,7 @@ pub impl MPNatTraitImpl of MPNatTrait {
             digits.expand(num_digits).unwrap();
             let mut tmp = MPNat { digits };
             if additional_zero_bits > 0 {
-                tmp.digits.set(0, modulus.digits[trailing_zeros].shr(additional_zero_bits.into()));
+                tmp.digits.set(0, modulus.digits[trailing_zeros].shr(additional_zero_bits));
                 let mut i = 1;
                 loop {
                     if i == num_digits {
@@ -429,10 +429,9 @@ pub impl MPNatTraitImpl of MPNatTrait {
                             i - 1,
                             tmp.digits[i
                                 - 1]
-                                + (d & power_of_two_mask)
-                                    .shl((WORD_BITS - additional_zero_bits).into())
+                                + (d & power_of_two_mask).shl(WORD_BITS - additional_zero_bits)
                         );
-                    tmp.digits.set(i, d.shr(additional_zero_bits.into()));
+                    tmp.digits.set(i, d.shr(additional_zero_bits));
 
                     i += 1;
                 };
