@@ -10,7 +10,7 @@ endif
 KKRT_SSJ_RELEASE_ID = 176384150
 # Kakarot SSJ artifacts for precompiles.
 KKRT_SSJ_BUILD_ARTIFACT_URL = $(shell curl -L https://api.github.com/repos/kkrt-labs/kakarot-ssj/releases/${KKRT_SSJ_RELEASE_ID} | jq -r '.assets[0].browser_download_url')
-KATANA_VERSION = v1.0.0-alpha.12
+KATANA_VERSION = v1.0.0-alpha.13
 ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
 BUILD_DIR = build
