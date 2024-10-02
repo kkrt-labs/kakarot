@@ -3,7 +3,7 @@ name: SSJ-Trunk
 on: [pull_request]
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ssj-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions: read-all

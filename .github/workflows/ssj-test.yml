@@ -8,7 +8,7 @@ on:
       - cairo/kakarot-ssj/**
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ssj-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
