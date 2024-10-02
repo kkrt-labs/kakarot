@@ -24,6 +24,7 @@ jobs:
       solidity: ${{ steps.filter.outputs.solidity }}
       tests: ${{ steps.filter.outputs.tests }}
       makefile: ${{ steps.filter.outputs.makefile }}
+      rust: ${{ steps.filter.outputs.rust }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -40,6 +41,8 @@ jobs:
               - 'tests/**'
             makefile:
               - 'Makefile'
+            rust:
+              - 'rust-toolchain'
 
   build:
     runs-on: ubuntu-latest
@@ -47,7 +50,8 @@ jobs:
     if:
       needs.paths-filter.outputs.src == 'true' ||
       needs.paths-filter.outputs.kakarot_scripts == 'true' ||
-      needs.paths-filter.outputs.makefile == 'true'
+      needs.paths-filter.outputs.makefile == 'true' ||
+      needs.paths-filter.outputs.rust == 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v2
@@ -110,7 +114,8 @@ jobs:
       needs.paths-filter.outputs.kakarot_scripts == 'true' ||
       needs.paths-filter.outputs.solidity == 'true' ||
       needs.paths-filter.outputs.tests == 'true' ||
-      needs.paths-filter.outputs.makefile == 'true'
+      needs.paths-filter.outputs.makefile == 'true' ||
+      needs.paths-filter.outputs.rust == 'true'
     steps:
       - uses: actions/checkout@v4
       - name: Extract Katana Version
