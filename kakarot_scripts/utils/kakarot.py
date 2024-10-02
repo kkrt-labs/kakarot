@@ -5,8 +5,8 @@ from pathlib import Path
 from types import MethodType
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
-import uvloop
 import rlp
+import uvloop
 from async_lru import alru_cache
 from eth_abi import decode
 from eth_abi.exceptions import InsufficientDataBytes
