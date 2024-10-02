@@ -7,6 +7,10 @@ directories:
 # trunk-ignore(yamllint/empty-values)
 filename:
 
+# Keeping some skipped tests because of a probable memory leak somewhere
+# causing cargo test to just crash at some point
+regex:
+
 testname:
   stEIP1153-transientStorage:
       - transStorageOK_d3g0v0_Cancun
