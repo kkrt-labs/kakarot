@@ -61,13 +61,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           sparse-checkout: |
-            cairo/kakarot-ssj/blockchain-tests-skip.yml
+            ./cairo/kakarot-ssj/blockchain-tests-skip.yml
           sparse-checkout-cone-mode: false
           path: skip-file
 
       - name: Setup ef-tests
         run: |
-          mv skip-file/blockchain-tests-skip.yml ef-tests/blockchain-tests-skip.yml
+          mv skip-file/cairo/kakarot-ssj/blockchain-tests-skip.yml ef-tests/blockchain-tests-skip.yml
           cd ef-tests
           mkdir -p build/common
           make setup setup-kakarot-v0
