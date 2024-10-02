@@ -16,9 +16,6 @@ build-ssj:
 	@mkdir -p $(SSJ_DIR)
 	@cd kakarot-ssj && scarb build -p contracts && find target/dev -type f -name '*contracts*' | grep -vE 'test|mock|Mock' | xargs -I {} cp {} ../$(SSJ_DIR)
 
-test-unit-ssj:
-	@cd kakarot-ssj && scarb test
-
 build: build-ssj
 	uv run compile
 
