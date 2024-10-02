@@ -56,7 +56,6 @@ async def main():
     # %% Starknet Deployments
     class_hash = get_declarations()
     starknet_deployments = get_starknet_deployments()
-    evm_deployments = get_evm_deployments()
 
     if NETWORK["type"] is not NetworkType.PROD:
         starknet_deployments["EVM"] = await deploy_starknet(
@@ -125,6 +124,7 @@ async def main():
     dump_deployments(starknet_deployments)
 
     # %% Pre-EIP155 deployments
+    evm_deployments = get_evm_deployments()
     evm_deployments["Multicall3"] = await deploy_with_presigned_tx(
         MULTICALL3_DEPLOYER,
         MULTICALL3_SIGNED_TX,
