@@ -61,7 +61,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           sparse-checkout: |
-            ./cairo/kakarot-ssj/blockchain-tests-skip.yml
+            cairo/kakarot-ssj/blockchain-tests-skip.yml
           sparse-checkout-cone-mode: false
           path: skip-file
 
