@@ -34,9 +34,10 @@ libraries, e.g. `cairo-lang`.
 
 - Install [uv](https://github.com/astral-sh/uv) to manage python dependencies
   and run commands
+- Install [jq](https://jqlang.github.io/jq/) to process JSON from the CLI
 - Install
   [cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html) to
-  manage our Rust dependencies
+  manage our Rust dependencies.
 - Install [docker](https://docs.docker.com/get-docker/) to build some
   experimental solidity contracts that require a custom solc compiler
 - Install [foundry](https://book.getfoundry.sh/getting-started/installation) to

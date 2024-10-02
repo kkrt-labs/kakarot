@@ -79,7 +79,7 @@ The set of Cairo programs in this repository are represented below:
 
 ## Getting started
 
-To contribute, please check out
+To contribute and setup your development environment, please check out
 [the contribution guide](./docs/CONTRIBUTING.md).
 
 ## Build
