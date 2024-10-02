@@ -72,11 +72,10 @@ lint:
         - logs*
         - lib*
         - resources*
-        - cairo1_contracts
         - tests/ef_tests/test_data
         - .katana/messaging_config.json
         - deployments
-        - cairo/kakarot-ssj
+        - cairo/**
     - linters: [solidity]
       paths:
         - solidity_contracts/src/UniswapV2/**/*.sol
