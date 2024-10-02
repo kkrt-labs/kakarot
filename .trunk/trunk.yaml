@@ -72,7 +72,7 @@ lint:
         - logs*
         - lib*
         - resources*
-        - kakarot0/cairo1_contracts
+        - cairo1_contracts
         - tests/ef_tests/test_data
         - .katana/messaging_config.json
         - deployments

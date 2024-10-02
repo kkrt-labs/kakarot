@@ -219,7 +219,7 @@ COINBASE = int(
     16,
 )
 CAIRO_ZERO_DIR = Path("kakarot0/src")
-CAIRO_DIR = Path("kakarot0/cairo1_contracts")
+CAIRO_DIR = Path("cairo1_contracts")
 TESTS_DIR = Path("tests")
 
 CONTRACTS = {
