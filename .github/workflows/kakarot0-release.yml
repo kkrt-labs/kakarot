@@ -1,5 +1,5 @@
 # trunk-ignore-all(checkov/CKV2_GHA_1)
-name: kakarot0-Release
+name: cairo-zero-Release
 
 on:
   release:

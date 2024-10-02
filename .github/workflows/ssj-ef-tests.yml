@@ -26,21 +26,21 @@ jobs:
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
-            kakarot-ssj/target/
+            cairo/kakarot-ssj/target/
             ./libcairo_native_runtime.a
           key:
             ${{ runner.os }}-cairo-native-${{ hashFiles('**/Cargo.lock',
             'scripts/setup_cairo_native.sh') }}
 
       - name: Make setup script executable
-        run: chmod +x ./kakarot-ssj/scripts/setup_cairo_native.sh
+        run: chmod +x ./cairo/kakarot-ssj/scripts/setup_cairo_native.sh
 
       - name: Setup Cairo Native
         run: |
           if [[ "${{ steps.cache-cairo-native.outputs.cache-hit }}" == 'true' ]]; then
-            sudo ./kakarot-ssj/scripts/setup_cairo_native.sh -s
+            sudo ./cairo/kakarot-ssj/scripts/setup_cairo_native.sh -s
           else
-            sudo ./kakarot-ssj/scripts/setup_cairo_native.sh
+            sudo ./cairo/kakarot-ssj/scripts/setup_cairo_native.sh
           fi
 
       - name: Set Environment Variables
@@ -61,7 +61,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           sparse-checkout: |
-            ./kakarot-ssj/blockchain-tests-skip.yml
+            ./cairo/kakarot-ssj/blockchain-tests-skip.yml
           sparse-checkout-cone-mode: false
           path: skip-file
 

@@ -18,11 +18,11 @@ jobs:
       - uses: foundry-rs/setup-snfoundry@v3
       - uses: software-mansion/setup-scarb@v1
         with:
-          tool-versions: ./kakarot-ssj/.tool-versions
+          tool-versions: ./cairo/kakarot-ssj/.tool-versions
 
       - name: Run format check
         if: inputs.run-fmt-check
-        run: cd kakarot-ssj && scarb fmt --check
+        run: cd cairo/kakarot-ssj && scarb fmt --check
 
       - name: Run tests
-        run: cd kakarot-ssj && scarb test
+        run: cd cairo/kakarot-ssj && scarb test

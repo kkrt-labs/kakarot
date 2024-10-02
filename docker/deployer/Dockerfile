@@ -80,7 +80,7 @@ COPY --from=builder /app/kakarot/.venv ./.venv
 
 # Cairo Smart contracts are used in deploy_kakarot.py
 # To limit the probability of this Dockerfile to break, we copy the entire src and not individual files
-COPY --from=builder /app/kakarot/kakarot0/src ./src/
+COPY --from=builder /app/kakarot/cairo_zero/ ./cairo_zero/
 
 # Default Solidity contracts are also used in deploy_kakarot.py
 COPY --from=builder /app/kakarot/solidity_contracts ./solidity_contracts/

@@ -14,7 +14,7 @@ SSJ_DIR = $(BUILD_DIR)/ssj
 build-ssj:
 	@echo "Building Kakarot SSJ"
 	@mkdir -p $(SSJ_DIR)
-	@cd kakarot-ssj && scarb build -p contracts && find target/dev -type f -name '*contracts*' | grep -vE 'test|mock|Mock' | xargs -I {} cp {} ../$(SSJ_DIR)
+	@cd cairo/kakarot-ssj && scarb build -p contracts && find target/dev -type f -name '*contracts*' | grep -vE 'test|mock|Mock' | xargs -I {} cp {} ../../$(SSJ_DIR)
 
 build: build-ssj
 	uv run compile

@@ -1,9 +1,9 @@
-name: kakarot0-Trunk
+name: cairo-zero-Trunk
 
 on: [pull_request]
 
 concurrency:
-  group: kakarot0-${{ github.ref }}
+  group: cairo-zero-${{ github.ref }}
   cancel-in-progress: true
 
 permissions: read-all

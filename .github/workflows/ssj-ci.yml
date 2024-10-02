@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - kakarot-ssj/**
+      - cairo/kakarot-ssj/**
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -20,7 +20,7 @@ jobs:
   ssj-build:
     uses: ./.github/workflows/ssj-build.yml
     with:
-      artifact-name: kakarot-ssj-build
+      artifact-name: ssj-build
 
   ssj-tests-unit:
     uses: ./.github/workflows/ssj-tests-unit.yml
@@ -31,7 +31,7 @@ jobs:
     uses: ./.github/workflows/ssj-ef-tests.yml
     needs: [ssj-build]
     with:
-      artifact-name: kakarot-ssj-build
+      artifact-name: ssj-build
 
   ssj-resources:
     runs-on: ubuntu-latest

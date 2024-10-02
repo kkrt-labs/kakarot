@@ -5,7 +5,7 @@ permissions: read-all
 on:
   pull_request:
     paths:
-      - kakarot-ssj/**
+      - cairo/kakarot-ssj/**
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -15,7 +15,7 @@ jobs:
   ssj-build:
     uses: ./.github/workflows/ssj-build.yml
     with:
-      artifact-name: kakarot-ssj-build
+      artifact-name: ssj-build
 
   ssj-tests-unit:
     uses: ./.github/workflows/ssj-tests-unit.yml
@@ -26,4 +26,4 @@ jobs:
     uses: ./.github/workflows/ssj-ef-tests.yml
     needs: [ssj-build]
     with:
-      artifact-name: kakarot-ssj-build
+      artifact-name: ssj-build

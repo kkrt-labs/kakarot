@@ -191,7 +191,7 @@ check-filenames = ''
 check-hidden = ''
 
 [tool.bandit]
-exclude_dirs = ["tests", "kakarot0/tests"]
+exclude_dirs = ["tests"]
 
 [build-system]
 requires = ["hatchling"]

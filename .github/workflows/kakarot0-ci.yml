@@ -1,4 +1,4 @@
-name: kakarot0-CI
+name: cairo-zero-CI
 
 on:
   push:
@@ -6,13 +6,13 @@ on:
       - main
   pull_request:
     paths:
-      - kakarot0/**
+      - cairo_zero/**
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 concurrency:
-  group: kakarot0-${{ github.ref }}
+  group: cairo-zero-${{ github.ref }}
   cancel-in-progress: true
 
 permissions: read-all
@@ -34,7 +34,7 @@ jobs:
         with:
           filters: |
             src:
-              - 'kakarot0/src/**'
+              - 'cairo_zero/**'
             kakarot_scripts:
               - 'kakarot_scripts/**'
             solidity:

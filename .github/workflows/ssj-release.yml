@@ -14,12 +14,12 @@ jobs:
       - name: Set up Scarb
         uses: software-mansion/setup-scarb@v1
         with:
-          tool-versions: ./kakarot-ssj/.tool-versions
+          tool-versions: ./cairo/kakarot-ssj/.tool-versions
       - name: Build contracts
         run: |
           scarb build -p contracts
       - name: Zip dev artifacts
-        run: zip -rj kakarot-ssj-build.zip target/dev
+        run: zip -rj kakarot-ssj-build.zip cairo/kakarot-ssj/target/dev
       - name: Upload artifacts to release
         uses: svenstaro/upload-release-action@v2
         with:

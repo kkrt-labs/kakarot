@@ -76,7 +76,7 @@ lint:
         - tests/ef_tests/test_data
         - .katana/messaging_config.json
         - deployments
-        - kakarot-ssj
+        - cairo/kakarot-ssj
     - linters: [solidity]
       paths:
         - solidity_contracts/src/UniswapV2/**/*.sol
