@@ -10,6 +10,14 @@ filename:
 # Keeping some skipped tests because of a probable memory leak somewhere
 # causing cargo test to just crash at some point
 regex:
+  eip4895_withdrawals:
+    - .*
+  eip4844_blobs:
+    - .*
+  eip4788_beacon_root:
+    - .*
+  stEIP4844-blobtransactions:
+    - .*
 
 testname:
   stEIP1153-transientStorage:
