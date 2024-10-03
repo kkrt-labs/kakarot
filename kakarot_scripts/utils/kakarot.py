@@ -6,6 +6,7 @@ from types import MethodType
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
 import rlp
+import uvloop
 from async_lru import alru_cache
 from eth_abi import decode
 from eth_abi.exceptions import InsufficientDataBytes
@@ -178,32 +179,8 @@ async def get_contract(
     return contract
 
 
-def get_contract_sync(
-    contract_app: str,
-    contract_name: str,
-    address=None,
-    caller_eoa: Optional[Account] = None,
-) -> Web3Contract:
-
-    artifacts = get_solidity_artifacts(contract_app, contract_name)
-
-    contract = cast(
-        Web3Contract,
-        WEB3.eth.contract(
-            address=to_checksum_address(address) if address is not None else address,
-            abi=artifacts["abi"],
-            bytecode=artifacts["bytecode"]["object"],
-        ),
-    )
-    contract.bytecode_runtime = HexBytes(artifacts["bytecode_runtime"]["object"])
-
-    try:
-        for fun in contract.functions:
-            setattr(contract, fun, MethodType(_wrap_kakarot(fun, caller_eoa), contract))
-    except NoABIFunctionsFound:
-        pass
-    contract.events.parse_events = MethodType(_parse_events, contract.events)
-    return contract
+def get_contract_sync(*args, **kwargs) -> Web3Contract:
+    return uvloop.run(get_contract(*args, **kwargs))
 
 
 @alru_cache()
@@ -301,16 +278,6 @@ async def deploy(
     logger.info(f"✅ {contract_name} deployed at: {contract.address}")
 
     return contract
-
-
-async def deploy_details(
-    contract_app: str, contract_name: str, *args, **kwargs
-) -> Web3Contract:
-    contract = await deploy(contract_app, contract_name, *args, **kwargs)
-    return {
-        "address": int(contract.address, 16),
-        "starknet_address": contract.starknet_address,
-    }
 
 
 def dump_deployments(deployments):

@@ -42,7 +42,6 @@ dev-dependencies = [
   "openzeppelin-cairo-contracts>=0.6.1",
   "pandas>=1.5.1",
   "py-ecc>=7.0.0",
-  "pycryptodome>=3.16.0",
   "pyperclip>=1.8.2",
   "pysha3>=1.0.2",
   "pytest-asyncio==0.21.1",

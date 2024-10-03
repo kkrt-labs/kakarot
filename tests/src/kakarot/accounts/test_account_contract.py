@@ -136,7 +136,7 @@ class TestAccountContract:
                 ),
             ):
                 with cairo_error(message="Value is not empty"):
-                    output_len, output = cairo_run("test__bytecode")
+                    cairo_run("test__bytecode")
 
     class TestNonce:
         @SyscallHandler.patch("Ownable_owner", 0xDEAD)

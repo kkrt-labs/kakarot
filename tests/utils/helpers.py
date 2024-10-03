@@ -20,7 +20,26 @@ PERMIT_TYPEHASH = keccak(
 )
 
 
-def rlp_encode_signed_data(tx: dict) -> bytes:
+def to_int(v: Union[str, int]) -> int:
+    if isinstance(v, str):
+        if v.startswith("0x"):
+            return int(v, 16)
+        return int(v)
+    return v
+
+
+def to_bytes(v: Union[str, bytes, list[int]]) -> bytes:
+    if isinstance(v, bytes):
+        return v
+    elif isinstance(v, str):
+        if v.startswith("0x"):
+            return bytes.fromhex(v[2:])
+        return v.encode()
+    else:
+        return bytes(v)
+
+
+def rlp_encode_signed_data(tx: dict):
     if "type" in tx:
         typed_transaction = TypedTransaction.from_dict(tx)
 
@@ -38,13 +57,13 @@ def rlp_encode_signed_data(tx: dict) -> bytes:
         ]
     else:
         legacy_tx = [
-            tx["nonce"],
-            tx["gasPrice"],
-            tx["gas"] if "gas" in tx else tx["gasLimit"],
-            bytes.fromhex(f"{int(tx['to'], 16):040x}"),
-            tx["value"],
-            tx["data"],
-        ] + ([tx["chainId"], 0, 0] if "chainId" in tx else [])
+            to_int(tx["nonce"]),
+            to_int(tx["gasPrice"]),
+            to_int(tx["gas"] if "gas" in tx else tx["gasLimit"]),
+            bytes.fromhex(f"{to_int(tx['to']):040x}") if tx["to"] else b"",
+            to_int(tx["value"]),
+            to_bytes(tx["data"]),
+        ] + ([to_int(tx["chainId"]), 0, 0] if "chainId" in tx else [])
 
         return rlp.encode(legacy_tx)
 
