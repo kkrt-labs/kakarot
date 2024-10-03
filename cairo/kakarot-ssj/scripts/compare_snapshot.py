@@ -2,8 +2,6 @@ import json
 import logging
 import os
 import re
-
-# trunk-ignore(bandit/B404)
 import subprocess
 import tempfile
 import zipfile
@@ -42,7 +40,6 @@ def get_previous_snapshot():
 
     # Fetch the list of workflow runs
     cmd = f"curl -s -H 'Authorization: token {GITHUB_TOKEN}' -H 'Accept: application/vnd.github.v3+json' 'https://api.github.com/repos/{REPO}/actions/runs?branch=main&per_page=100'"
-    # trunk-ignore(bandit/B602)
     result = subprocess.check_output(cmd, shell=True)
     runs = json.loads(result)
 
@@ -63,7 +60,6 @@ def get_previous_snapshot():
     # Fetch the artifacts for that run
     run_id = latest_successful_run["id"]
     cmd = f"curl -s -H 'Authorization: token {GITHUB_TOKEN}' -H 'Accept: application/vnd.github.v3+json' 'https://api.github.com/repos/{REPO}/actions/runs/{run_id}/artifacts'"
-    # trunk-ignore(bandit/B602)
     result = subprocess.check_output(cmd, shell=True)
     artifacts = json.loads(result)
 
@@ -85,7 +81,6 @@ def get_previous_snapshot():
 
     archive_name = temp_dir / "gas_snapshot.zip"
     cmd = f"curl -s -L -o {archive_name} -H 'Authorization: token {GITHUB_TOKEN}' -H 'Accept: application/vnd.github.v3+json' '{snapshot_artifact['archive_download_url']}'"
-    # trunk-ignore(bandit/B602)
     subprocess.check_call(cmd, shell=True)
     with zipfile.ZipFile(archive_name, "r") as archive:
         archive.extractall(temp_dir)
@@ -95,8 +90,6 @@ def get_previous_snapshot():
 
 def get_current_gas_snapshot():
     """Execute command and return current gas snapshots."""
-    # trunk-ignore(bandit/B602)
-    # trunk-ignore(bandit/B607)
     output = subprocess.check_output("scarb test", shell=True).decode("utf-8")
     pattern = r"test ([\w\:]+).*gas usage est\.\: (\d+)"
     matches = re.findall(pattern, output)

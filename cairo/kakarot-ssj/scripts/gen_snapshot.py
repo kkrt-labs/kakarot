@@ -1,12 +1,8 @@
 import json
 import re
-
-# trunk-ignore(bandit/B404)
 import subprocess
 
 # Execute the command and capture the output
-# trunk-ignore(bandit/B602)
-# trunk-ignore(bandit/B607)
 output = subprocess.check_output("scarb cairo-test", shell=True).decode("utf-8")
 
 # Use regex to capture test names and their associated gas usage
