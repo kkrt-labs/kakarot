@@ -30,7 +30,7 @@ jobs:
       - name: Run tests
         env:
           HYPOTHESIS_PROFILE: nightly
-        run: make test-unit
+        run: make test-unit-cairo-zero
       - name: Upload coverage report to codecov
         uses: codecov/codecov-action@v3
         with:

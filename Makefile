@@ -28,12 +28,27 @@ fetch-ef-tests:
 setup:
 	uv sync --all-extras --dev
 
-test: deploy
-	uv run pytest tests/src -m "not NoCI" --log-cli-level=INFO -n logical --seed 42
+test-cairo-zero: deploy
+	uv run pytest cairo_zero/tests/src  -m "not NoCI" --log-cli-level=INFO -n logical --seed 42
 	uv run pytest tests/end_to_end --seed 42
 
-test-unit: build-sol
-	uv run pytest tests/src -m "not NoCI" -n logical --seed 42
+test-unit-cairo-zero: build-sol
+	uv run pytest cairo_zero/tests/src -m "not NoCI" -n logical --seed 42
+
+test-unit-cairo:
+	@PACKAGE="$(word 2,$(MAKECMDGOALS))" && \
+	FILTER="$(word 3,$(MAKECMDGOALS))" && cd cairo/kakarot-ssj && \
+	if [ -z "$$PACKAGE" ] && [ -z "$$FILTER" ]; then \
+		scarb test; \
+	elif [ -n "$$PACKAGE" ] && [ -z "$$FILTER" ]; then \
+		scarb test -p $$PACKAGE; \
+	elif [ -n "$$PACKAGE" ] && [ -n "$$FILTER" ]; then \
+		uv run scripts/run_filtered_tests.py $$PACKAGE $$FILTER; \
+	else \
+		echo "Usage: make test-unit-cairo [PACKAGE] [FILTER]"; \
+		exit 1; \
+	fi
+
 
 test-end-to-end: deploy
 	uv run pytest tests/end_to_end --seed 42

@@ -220,13 +220,15 @@ COINBASE = int(
 )
 CAIRO_ZERO_DIR = Path("cairo_zero")
 CAIRO_DIR = Path("cairo")
-TESTS_DIR = Path("tests")
+TESTS_DIR_CAIRO_ZERO = Path("cairo_zero/tests")
+TESTS_DIR_END_TO_END = Path("tests")
 
 CONTRACTS = {
     p.stem: p
     for p in (
         list(CAIRO_ZERO_DIR.glob("**/*.cairo"))
-        + list(TESTS_DIR.glob("**/*.cairo"))
+        + list(TESTS_DIR_CAIRO_ZERO.glob("**/*.cairo"))
+        + list(TESTS_DIR_END_TO_END.glob("**/*.cairo"))
         + [x for x in list(CAIRO_DIR.glob("**/*.cairo")) if "kakarot-ssj" not in str(x)]
     )
 }

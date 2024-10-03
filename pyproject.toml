@@ -67,6 +67,10 @@ filterwarnings = [
   "ignore:abi:DeprecationWarning",                                                        # from web3
   "ignore::marshmallow.warnings.RemovedInMarshmallow4Warning",                            # from marshmallow
 ]
+pythonpath = [
+    ".",
+    "tests"
+]
 asyncio_mode = "auto"
 markers = [
   "ArithmeticOperations",
@@ -191,7 +195,7 @@ check-filenames = ''
 check-hidden = ''
 
 [tool.bandit]
-exclude_dirs = ["tests"]
+exclude_dirs = ["tests", "cairo_zero/tests"]
 
 [build-system]
 requires = ["hatchling"]
