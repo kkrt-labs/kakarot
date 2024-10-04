@@ -24,14 +24,14 @@ const main = async () => {
   const { Transaction, Wallet } = ethers;
   const { decodeRlp, getBytes } = ethers;
 
-  if (!process.env.PRIVATE_KEY) {
+  if (!process.env.PRIVATE_KEY_RLP_SCRIPT) {
     console.log(
-      "missing private key in environment, please provide PRIVATE_KEY environment variable",
+      "missing private key in environment, please provide PRIVATE_KEY_RLP_SCRIPT environment variable",
     );
     process.exit(1);
   }
 
-  const wallet = new Wallet(process.env.PRIVATE_KEY);
+  const wallet = new Wallet(process.env.PRIVATE_KEY_RLP_SCRIPT);
   console.log("address of the wallet is", wallet.address);
 
   let tx_type = parseInt(
