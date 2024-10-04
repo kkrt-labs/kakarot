@@ -386,7 +386,7 @@ namespace Kakarot {
     //         but isn't part of Kakarot system
     // Also mitigates re-entrancy risk with the Cairo Interop module
     // @dev Raise if the declared corresponding evm address (retrieved with get_evm_address)
-    //      does not recomputes into to the actual caller address
+    //      does not recomputes into the actual caller address
     func safe_get_evm_address{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
