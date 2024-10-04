@@ -21,7 +21,7 @@ class TestRLP:
                 expected_len,
                 expected_offset,
             ] = codec.consume_length_prefix(encoded_data, 0)
-            expected_type = 0 if rlp_type == bytes else 1
+            expected_type = 0 if rlp_type is bytes else 1
 
             output = cairo_run("test__decode_type", data=list(encoded_data))
 
