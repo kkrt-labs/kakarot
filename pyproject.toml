@@ -67,10 +67,7 @@ filterwarnings = [
   "ignore:abi:DeprecationWarning",                                                        # from web3
   "ignore::marshmallow.warnings.RemovedInMarshmallow4Warning",                            # from marshmallow
 ]
-pythonpath = [
-    ".",
-    "tests"
-]
+pythonpath = [".", "tests"]
 asyncio_mode = "auto"
 markers = [
   "ArithmeticOperations",
