@@ -240,12 +240,12 @@ pub fn big_wrapping_pow(
 
             big_wrapping_mul(ref result, ref tmp, ref scratch_space);
             result.digits.copy_from_vec_le(ref scratch_space).unwrap();
-            scratch_space.reset(); // zero-out the scatch space
+            scratch_space.reset(); // zero-out the scratch space
 
             if (b & mask) != 0 {
                 big_wrapping_mul(ref result, ref base, ref scratch_space);
                 result.digits.copy_from_vec_le(ref scratch_space).unwrap();
-                scratch_space.reset(); // zero-out the scatch space
+                scratch_space.reset(); // zero-out the scratch space
             }
 
             mask = mask.shr(1);

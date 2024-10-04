@@ -45,13 +45,12 @@ profile*.png
 *.air_private_input.json
 *.air_public_input.json
 
-cairo/kakarot-ssj/.DS_Store
-cairo/kakarot-ssj/.idea/
-cairo/kakarot-ssj/node_modules/
-cairo/kakarot-ssj/*.snfoundry_cache
+.DS_Store
+.idea
+node_modules
+*.snfoundry_cache
 cairo/kakarot-ssj/target
 cairo/kakarot-ssj/cache/
 cairo/kakarot-ssj/scripts/libcairo_native_runtime.a
-cairo/kakarot-ssj/scripts/__pycache__
-cairo/kakarot-ssj/*__pycache__
-cairo/kakarot-ssj/*.snfoundry
+__pycache__
+*.snfoundry

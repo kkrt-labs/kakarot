@@ -67,6 +67,12 @@ lint:
       paths: [tests, docker]
     - linters: [codespell]
       paths: [uv.lock]
+    - linters: [cairo]
+      paths:
+        - cairo/mock_pragma
+        - cairo/token
+        - cairo/utils
+        - cairo/kakarot-ssj/crates
     - linters: [ALL]
       paths:
         - logs*
@@ -75,10 +81,6 @@ lint:
         - tests/ef_tests/test_data
         - .katana/messaging_config.json
         - deployments
-        - cairo/mock_pragma
-        - cairo/token
-        - cairo/utils
-        - cairo/kakarot-ssj/crates
     - linters: [solidity]
       paths:
         - solidity_contracts/src/UniswapV2/**/*.sol

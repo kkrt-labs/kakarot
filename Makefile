@@ -23,7 +23,7 @@ deploy: build build-sol
 	uv run deploy
 
 fetch-ef-tests:
-	uv run python ./kakarot_scripts/ef_tests/fetch.py
+	uv run ef_tests
 
 setup:
 	uv sync --all-extras --dev
