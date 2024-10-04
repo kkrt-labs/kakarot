@@ -153,7 +153,7 @@ namespace Internals {
         return ();
     }
 
-    // @notice Commit the account to the storage backend at given address
+    // @notice Commit the account to the storage backend at a given address
     // @dev Account is deployed here if it doesn't exist already
     // @dev Works on model.Account to make sure only finalized accounts are committed.
     // @dev If the contract received funds after a selfdestruct in its creation, the funds are burnt.
@@ -186,7 +186,7 @@ namespace Internals {
             tempvar range_check_ptr = range_check_ptr;
         }
 
-        // @dev: EIP-6780 - If selfdestruct on an account created, dont commit data
+        // @dev: EIP-6780 - If selfdestruct on an account created, don't commit data
         // and burn any leftover balance.
         let is_created_selfdestructed = self.created * self.selfdestruct;
         if (is_created_selfdestructed != 0) {

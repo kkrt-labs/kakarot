@@ -27,7 +27,7 @@ _de facto_ so-called _zkEVM_.
 
 While some zkEVM implementations (see for example
 [Scroll](https://github.com/scroll-tech/zkevm-circuits) or
-[Taiko](https://github.com/taikoxyz/taiko-geth)) try to prove existing EVM
+[Taiko](https://github.com/taikoxyz/taiko-geth)) tries to prove existing EVM
 implementations (mainly Geth), Kakarot is like another new Geth, but provable by
 design, simply because it runs on the CairoVM.
 
