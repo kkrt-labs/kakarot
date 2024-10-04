@@ -3,9 +3,9 @@ use crate::errors::{RLPError, EthTransactionError, RLPErrorTrait};
 use crate::eth_transaction::common::{TxKind, TxKindTrait};
 use crate::eth_transaction::eip1559::{TxEip1559, TxEip1559Trait};
 use crate::eth_transaction::eip2930::{AccessListItem, TxEip2930, TxEip2930Trait};
-use crate::eth_transaction::legacy::TxLegacy;
+use crate::eth_transaction::legacy::{TxLegacy, TxLegacyTrait};
 use crate::eth_transaction::tx_type::{TxType};
-use crate::rlp::{RLPItem, RLPTrait, RLPHelpersTrait};
+use crate::rlp::{RLPItem, RLPTrait};
 use crate::traits::bytes::U8SpanExTrait;
 use crate::traits::{DefaultSignature};
 
@@ -237,7 +237,7 @@ pub impl _TransactionUnsigned of TransactionUnsignedTrait {
         ref encoded_tx_data: Span<u8>
     ) -> Result<TransactionUnsigned, EthTransactionError> {
         let rlp_decoded_data = RLPTrait::decode(encoded_tx_data);
-        let rlp_decoded_data = rlp_decoded_data.map_err()?;
+        let mut rlp_decoded_data = rlp_decoded_data.map_err()?;
 
         if (rlp_decoded_data.len() != 1) {
             return Result::Err(
@@ -245,51 +245,14 @@ pub impl _TransactionUnsigned of TransactionUnsignedTrait {
             );
         }
 
-        let rlp_decoded_data = *rlp_decoded_data.at(0);
-        let legacy_tx: TxLegacy = match rlp_decoded_data {
+        let rpl_item = *rlp_decoded_data.at(0);
+        let legacy_tx: TxLegacy = match rpl_item {
             RLPItem::String => { Result::Err(EthTransactionError::ExpectedRLPItemToBeList)? },
             RLPItem::List(mut val) => {
                 if (val.len() != 9) {
                     return Result::Err(EthTransactionError::LegacyTxWrongPayloadLength(val.len()));
                 }
-
-                let boxed_fields = val
-                    .multi_pop_front::<7>()
-                    .ok_or(EthTransactionError::RLPError(RLPError::InputTooShort))?;
-                let [
-                    nonce_encoded,
-                    gas_price_encoded,
-                    gas_limit_encoded,
-                    to_encoded,
-                    value_encoded,
-                    input_encoded,
-                    chain_id_encoded
-                ] =
-                    (*boxed_fields)
-                    .unbox();
-
-                let nonce = nonce_encoded.parse_u64_from_string().map_err()?;
-                let gas_price = gas_price_encoded.parse_u128_from_string().map_err()?;
-                let gas_limit = gas_limit_encoded.parse_u64_from_string().map_err()?;
-                let to = to_encoded.try_parse_address_from_string().map_err()?;
-                let value = value_encoded.parse_u256_from_string().map_err()?;
-                let input = input_encoded.parse_bytes_from_string().map_err()?;
-                let chain_id = chain_id_encoded.parse_u64_from_string().map_err()?;
-
-                let transact_to = match to {
-                    Option::Some(to) => { TxKind::Call(to) },
-                    Option::None => { TxKind::Create }
-                };
-
-                TxLegacy {
-                    nonce,
-                    gas_price,
-                    gas_limit,
-                    to: transact_to,
-                    value,
-                    input,
-                    chain_id: Option::Some(chain_id),
-                }
+                TxLegacyTrait::decode_fields(ref val)?
             }
         };
 

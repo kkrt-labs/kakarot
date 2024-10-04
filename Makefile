@@ -43,7 +43,7 @@ test-unit-cairo:
 	elif [ -n "$$PACKAGE" ] && [ -z "$$FILTER" ]; then \
 		scarb test -p $$PACKAGE; \
 	elif [ -n "$$PACKAGE" ] && [ -n "$$FILTER" ]; then \
-		uv run scripts/run_filtered_tests.py $$PACKAGE $$FILTER; \
+		uv run scripts/run_filtered_tests.py scarb test -p $$PACKAGE $$FILTER; \
 	else \
 		echo "Usage: make test-unit-cairo [PACKAGE] [FILTER]"; \
 		exit 1; \

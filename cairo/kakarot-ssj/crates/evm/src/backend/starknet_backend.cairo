@@ -244,18 +244,23 @@ fn commit_storage(ref self: State) -> Result<(), EVMError> {
 
 #[cfg(test)]
 mod tests {
-    use core::starknet::ClassHash;
+    use core::starknet::{ClassHash};
     use crate::backend::starknet_backend;
-    use crate::model::Address;
     use crate::model::account::Account;
+    use crate::model::{Address, Event};
     use crate::state::{State, StateTrait};
     use crate::test_utils::{
         setup_test_environment, uninitialized_account, account_contract, register_account
     };
     use crate::test_utils::{evm_address};
-    use snforge_std::{test_address, start_mock_call, get_class_hash};
-    use snforge_utils::snforge_utils::{assert_not_called, assert_called};
-    use super::commit_storage;
+    use snforge_std::{
+        test_address, start_mock_call, get_class_hash, spy_events, EventSpyTrait,
+        Event as StarknetEvent
+    };
+    use snforge_utils::snforge_utils::{
+        assert_not_called, assert_called, EventsFilterBuilderTrait, ContractEventsTrait
+    };
+    use super::{commit_storage, emit_events};
     use utils::helpers::compute_starknet_address;
     use utils::traits::bytes::U8SpanExTrait;
 
@@ -273,6 +278,18 @@ mod tests {
             is_created: is_created,
         }
     }
+
+    // Implementation to convert an `Event` into a serialized `StarknetEvent`
+    impl EventIntoStarknetEvent of Into<Event, StarknetEvent> {
+        fn into(self: Event) -> StarknetEvent {
+            let mut serialized_keys = array![];
+            let mut serialized_data = array![];
+            Serde::<Array<u256>>::serialize(@self.keys, ref serialized_keys);
+            Serde::<Array<u8>>::serialize(@self.data, ref serialized_data);
+            StarknetEvent { keys: serialized_keys, data: serialized_data }
+        }
+    }
+
 
     mod test_commit_storage {
         use snforge_std::start_mock_call;
@@ -478,6 +495,47 @@ mod tests {
         assert_called(starknet_address, selector!("write_bytecode"));
         assert_called(starknet_address, selector!("set_code_hash"));
         assert_called(starknet_address, selector!("set_nonce"));
+    }
+
+    #[test]
+    fn test_emit_events() {
+        // Initialize the state
+        let mut state: State = Default::default();
+
+        // Prepare a list of events with different combinations of keys and data
+        let evm_events = array![
+            Event { keys: array![], data: array![] }, // Empty event
+            Event { keys: array![1.into()], data: array![2, 3] }, // Single key, multiple data
+            Event {
+                keys: array![4.into(), 5.into()], data: array![6]
+            }, // Multiple keys, single data
+            Event {
+                keys: array![7.into(), 8.into(), 9.into()], data: array![10, 11, 12, 13]
+            } // Multiple keys and data
+        ];
+
+        // Add each event to the state
+        for event in evm_events.clone() {
+            state.add_event(event);
+        };
+
+        // Emit the events and assert that no events are left in the state
+        let mut spy = spy_events();
+        emit_events(ref state).expect('emit events failed');
+        assert!(state.events.is_empty());
+
+        // Capture emitted events
+        let contract_events = EventsFilterBuilderTrait::from_events(@spy.get_events())
+            .with_contract_address(test_address())
+            .build();
+
+        // Assert that each original event was emitted as expected
+        for event in evm_events {
+            let starknet_event = EventIntoStarknetEvent::into(
+                event
+            ); // Convert to StarkNet event format
+            contract_events.assert_emitted(@starknet_event);
+        };
     }
 }
 // #[test]

@@ -1,5 +1,8 @@
+use crate::errors::{RLPError, EthTransactionError, RLPErrorTrait};
 use crate::eth_transaction::common::TxKind;
+use crate::rlp::{RLPItem, RLPHelpersTrait};
 use crate::traits::SpanDefault;
+use crate::traits::{DefaultSignature};
 
 
 #[derive(Copy, Drop, Debug, Default, PartialEq, Serde)]
@@ -36,4 +39,58 @@ pub struct TxLegacy {
     /// data: An unlimited size byte array specifying the
     /// input data of the message call.
     pub input: Span<u8>,
+}
+
+#[generate_trait]
+pub impl _impl of TxLegacyTrait {
+    /// Decodes the RLP-encoded fields into a TxLegacy struct.
+    ///
+    /// # Arguments
+    ///
+    /// * `data` - A span of RLPItems containing the encoded transaction fields
+    ///
+    /// # Returns
+    ///
+    /// A Result containing either the decoded TxLegacy struct or an EthTransactionError
+    fn decode_fields(ref data: Span<RLPItem>) -> Result<TxLegacy, EthTransactionError> {
+        let boxed_fields = data
+            .multi_pop_front::<7>()
+            .ok_or(EthTransactionError::RLPError(RLPError::InputTooShort))?;
+        let [
+            nonce_encoded,
+            gas_price_encoded,
+            gas_limit_encoded,
+            to_encoded,
+            value_encoded,
+            input_encoded,
+            chain_id_encoded
+        ] =
+            (*boxed_fields)
+            .unbox();
+
+        let nonce = nonce_encoded.parse_u64_from_string().map_err()?;
+        let gas_price = gas_price_encoded.parse_u128_from_string().map_err()?;
+        let gas_limit = gas_limit_encoded.parse_u64_from_string().map_err()?;
+        let to = to_encoded.try_parse_address_from_string().map_err()?;
+        let value = value_encoded.parse_u256_from_string().map_err()?;
+        let input = input_encoded.parse_bytes_from_string().map_err()?;
+        let chain_id = chain_id_encoded.parse_u64_from_string().map_err()?;
+
+        let transact_to = match to {
+            Option::Some(to) => { TxKind::Call(to) },
+            Option::None => { TxKind::Create }
+        };
+
+        Result::Ok(
+            TxLegacy {
+                nonce,
+                gas_price,
+                gas_limit,
+                to: transact_to,
+                value,
+                input,
+                chain_id: Option::Some(chain_id),
+            }
+        )
+    }
 }

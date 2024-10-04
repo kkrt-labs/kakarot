@@ -32,21 +32,22 @@ pub impl U8SpanExImpl of U8SpanExTrait {
     ///   - A usize representing the number of bytes in the last word
     fn to_u64_words(self: Span<u8>) -> (Array<u64>, u64, usize) {
         let nonzero_8: NonZero<u32> = 8_u32.try_into().unwrap();
-        let (full_u64_word_count, last_input_num_bytes) = DivRem::div_rem(self.len(), nonzero_8);
+        let (_, last_input_num_bytes) = DivRem::div_rem(self.len(), nonzero_8);
 
-        let mut u64_words: Array<u64> = Default::default();
+        let mut u64_words: Array<u64> = array![];
+        let mut word_index = 0;
         let mut byte_counter: u8 = 0;
         let mut pending_word: u64 = 0;
-        let mut u64_word_counter: usize = 0;
 
-        while u64_word_counter != full_u64_word_count {
+        // Iterate until we have iterated over all the full words and the last word
+        while true {
             if byte_counter == 8 {
                 u64_words.append(pending_word);
+                word_index += 8;
                 byte_counter = 0;
                 pending_word = 0;
-                u64_word_counter += 1;
             }
-            pending_word += match self.get(u64_word_counter * 8 + byte_counter.into()) {
+            pending_word += match self.get(word_index + byte_counter.into()) {
                 Option::Some(byte) => {
                     let byte: u64 = (*byte.unbox()).into();
                     // Accumulate pending_word in a little endian manner
@@ -56,25 +57,7 @@ pub impl U8SpanExImpl of U8SpanExTrait {
             };
             byte_counter += 1;
         };
-
-        // Fill the last input word
-        let mut last_input_word: u64 = 0;
-
-        // We enter a second loop for clarity.
-        // O(2n) should be okay
-        // We might want to regroup every computation into a single loop with appropriate `if`
-        // branching For optimisation
-        for byte_counter in 0
-            ..last_input_num_bytes {
-                last_input_word += match self.get(full_u64_word_count * 8 + byte_counter.into()) {
-                    Option::Some(byte) => {
-                        let byte: u64 = (*byte.unbox()).into();
-                        byte.shl(8_u32 * byte_counter.into())
-                    },
-                    Option::None => { break; },
-                };
-            };
-
+        let last_input_word: u64 = pending_word;
         (u64_words, last_input_word, last_input_num_bytes)
     }
 
@@ -225,6 +208,24 @@ pub trait ToBytes<T> {
     fn to_le_bytes_padded(self: T) -> Span<u8>;
 }
 
+pub impl U8ToBytes of ToBytes<u8> {
+    fn to_be_bytes(self: u8) -> Span<u8> {
+        [self].span()
+    }
+
+    fn to_be_bytes_padded(self: u8) -> Span<u8> {
+        self.to_be_bytes()
+    }
+
+    fn to_le_bytes(self: u8) -> Span<u8> {
+        [self].span()
+    }
+
+    fn to_le_bytes_padded(self: u8) -> Span<u8> {
+        self.to_le_bytes()
+    }
+}
+
 pub impl ToBytesImpl<
     T,
     +Zero<T>,
@@ -232,11 +233,12 @@ pub impl ToBytesImpl<
     +Add<T>,
     +Sub<T>,
     +Mul<T>,
+    +Div<T>,
     +BitAnd<T>,
     +Bitshift<T>,
     +BitSize<T>,
     +BytesUsedTrait<T>,
-    +Into<u8, T>,
+    +Into<u16, T>,
     +TryInto<T, u8>,
     +Copy<T>,
     +Drop<T>,
@@ -244,19 +246,9 @@ pub impl ToBytesImpl<
     +PartialEq<T>
 > of ToBytes<T> {
     fn to_be_bytes(self: T) -> Span<u8> {
-        let bytes_used = self.bytes_used();
-
-        // 0xFF
-        let mask = Bounded::<u8>::MAX.into();
-
-        let mut bytes: Array<u8> = Default::default();
-        for i in 0
-            ..bytes_used {
-                let val = Bitshift::<T>::shr(self, 8_u32 * (bytes_used.into() - i.into() - 1));
-                bytes.append((val & mask).try_into().unwrap());
-            };
-
-        bytes.span()
+        // U8 type is handled in another impl.
+        let be_bytes = to_be_bytes_recursive(self);
+        be_bytes.span()
     }
 
     fn to_be_bytes_padded(mut self: T) -> Span<u8> {
@@ -265,17 +257,21 @@ pub impl ToBytesImpl<
     }
 
     fn to_le_bytes(mut self: T) -> Span<u8> {
+        // U8 type is handled in another impl.
+
         let bytes_used = self.bytes_used();
 
         // 0xFF
-        let mask = Bounded::<u8>::MAX.into();
+        let mask: u16 = Bounded::<u8>::MAX.into();
+        let mask: T = mask.into();
 
         let mut bytes: Array<u8> = Default::default();
+        let mut value = self;
 
-        for i in 0
+        for _ in 0
             ..bytes_used {
-                let val = self.shr(8_u32 * i.into());
-                bytes.append((val & mask).try_into().unwrap());
+                bytes.append((value & mask).try_into().unwrap());
+                value = value / 256_u16.into();
             };
 
         bytes.span()
@@ -285,6 +281,46 @@ pub impl ToBytesImpl<
         let padding = (BitSize::<T>::bits() / 8);
         self.to_le_bytes().slice_right_padded(0, padding)
     }
+}
+
+// Helper function to recursively build the bytes
+fn to_be_bytes_recursive<
+    T,
+    +Zero<T>,
+    +One<T>,
+    +Add<T>,
+    +Sub<T>,
+    +Mul<T>,
+    +Div<T>,
+    +BitAnd<T>,
+    +Bitshift<T>,
+    +BitSize<T>,
+    +BytesUsedTrait<T>,
+    +Into<u16, T>,
+    +TryInto<T, u8>,
+    +Copy<T>,
+    +Drop<T>,
+    +core::ops::AddAssign<T, T>,
+    +PartialEq<T>
+>(
+    value: T
+) -> Array<u8> {
+    // Base case: if value is 0, unpile the call stack
+    if value == 0_u16.into() {
+        return array![];
+    }
+
+    // 0xFF
+    let mask: u16 = Bounded::<u8>::MAX.into();
+    let mask: T = mask.into();
+
+    // Get the least significant byte
+    let byte: u8 = (value & mask).try_into().unwrap();
+
+    // Recurse with the value shifted right by 8 bits
+    let mut be_bytes = to_be_bytes_recursive(value / (256_u16.into()));
+    be_bytes.append(byte);
+    return be_bytes;
 }
 
 pub trait FromBytes<T> {
@@ -380,7 +416,7 @@ pub impl FromBytesImpl<
         Option::Some(result)
     }
 
-    fn from_le_bytes(self: Span<u8>) -> Option<T> {
+    fn from_le_bytes(mut self: Span<u8>) -> Option<T> {
         let byte_size = ByteSize::<T>::byte_size();
 
         if self.len() != byte_size {
@@ -388,16 +424,19 @@ pub impl FromBytesImpl<
         }
 
         let mut result: T = Zero::zero();
-        let mut i = self.len();
-        while i != 0 {
-            i -= 1;
-            let tmp = result * 256_u16.into();
-            result = tmp + (*self[i]).into();
+        loop {
+            match self.pop_back() {
+                Option::None => { break; },
+                Option::Some(byte) => {
+                    let tmp = result * 256_u16.into();
+                    result = tmp + (*byte).into();
+                }
+            };
         };
         Option::Some(result)
     }
 
-    fn from_le_bytes_partial(self: Span<u8>) -> Option<T> {
+    fn from_le_bytes_partial(mut self: Span<u8>) -> Option<T> {
         let byte_size = ByteSize::<T>::byte_size();
 
         if self.len() > byte_size {
@@ -405,11 +444,14 @@ pub impl FromBytesImpl<
         }
 
         let mut result: T = Zero::zero();
-        let mut i = self.len();
-        while i != 0 {
-            i -= 1;
-            let tmp = result * 256_u16.into();
-            result = tmp + (*self[i]).into();
+        loop {
+            match self.pop_back() {
+                Option::None => { break; },
+                Option::Some(byte) => {
+                    let tmp = result * 256_u16.into();
+                    result = tmp + (*byte).into();
+                }
+            };
         };
         Option::Some(result)
     }
@@ -483,69 +525,6 @@ pub impl ByteArrayExt of ByteArrayExTrait {
             output.append(self[i]);
         };
         output.span()
-    }
-
-
-    /// Transforms a ByteArray into an Array of u64 full words, a pending u64 word and its length in
-    /// bytes
-    /// # Arguments
-    /// * `self` - The ByteArray to transform
-    /// # Returns
-    /// * A tuple containing:
-    ///   - An Array<u64> of full words
-    ///   - A u64 representing the last (potentially partial) word
-    ///   - A usize representing the number of bytes in the last word
-    fn to_u64_words(self: ByteArray) -> (Array<u64>, u64, usize) {
-        // We pass it by value because we want to take ownership, but we snap it
-        // because `at` takes a snap and if this snap is automatically done by
-        // the compiler in the loop, it won't compile
-        let self = @self;
-        let nonzero_8: NonZero<u32> = 8_u32.try_into().unwrap();
-        let (full_u64_word_count, last_input_num_bytes) = DivRem::div_rem(self.len(), nonzero_8);
-
-        let mut u64_words: Array<u64> = Default::default();
-        let mut byte_counter: u8 = 0;
-        let mut pending_word: u64 = 0;
-        let mut u64_word_counter: usize = 0;
-
-        while u64_word_counter != full_u64_word_count {
-            if byte_counter == 8 {
-                u64_words.append(pending_word);
-                byte_counter = 0;
-                pending_word = 0;
-                u64_word_counter += 1;
-            }
-            pending_word += match self.at(u64_word_counter * 8 + byte_counter.into()) {
-                Option::Some(byte) => {
-                    let byte: u64 = byte.into();
-                    // Accumulate pending_word in a little endian manner
-                    byte.shl(8_u32 * byte_counter.into())
-                },
-                Option::None => { break; },
-            };
-            byte_counter += 1;
-        };
-
-        // Fill the last input word
-        let mut last_input_word: u64 = 0;
-
-        // We enter a second loop for clarity.
-        // O(2n) should be okay
-        // We might want to regroup every computation into a single loop with appropriate `if`
-        // branching For optimisation
-
-        for byte_counter in 0
-            ..last_input_num_bytes {
-                last_input_word += match self.at(full_u64_word_count * 8 + byte_counter.into()) {
-                    Option::Some(byte) => {
-                        let byte: u64 = byte.into();
-                        byte.shl(8_u32 * byte_counter.into())
-                    },
-                    Option::None => { break; },
-                };
-            };
-
-        (u64_words, last_input_word, last_input_num_bytes)
     }
 }
 
@@ -669,29 +648,6 @@ mod tests {
             for i in 0..arr.len() {
                 assert(*arr[i] == res[i], 'byte mismatch');
             };
-        }
-
-
-        #[test]
-        fn test_bytearray_to_64_words_partial() {
-            let input = ByteArrayExTrait::from_bytes([0x01, 0x02, 0x03, 0x04, 0x05, 0x06].span());
-            let (u64_words, pending_word, pending_word_len) = input.to_u64_words();
-            assert(pending_word == 6618611909121, 'wrong pending word');
-            assert(pending_word_len == 6, 'wrong pending word length');
-            assert(u64_words.len() == 0, 'wrong u64 words length');
-        }
-
-        #[test]
-        fn test_bytearray_to_64_words_full() {
-            let input = ByteArrayExTrait::from_bytes(
-                [0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08].span()
-            );
-            let (u64_words, pending_word, pending_word_len) = input.to_u64_words();
-
-            assert(pending_word == 0, 'wrong pending word');
-            assert(pending_word_len == 0, 'wrong pending word length');
-            assert(u64_words.len() == 1, 'wrong u64 words length');
-            assert(*u64_words[0] == 578437695752307201, 'wrong u64 words length');
         }
     }
 

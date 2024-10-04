@@ -53,3 +53,5 @@ cairo/kakarot-ssj/target
 cairo/kakarot-ssj/cache/
 cairo/kakarot-ssj/scripts/libcairo_native_runtime.a
 cairo/kakarot-ssj/scripts/__pycache__
+cairo/kakarot-ssj/*__pycache__
+cairo/kakarot-ssj/*.snfoundry

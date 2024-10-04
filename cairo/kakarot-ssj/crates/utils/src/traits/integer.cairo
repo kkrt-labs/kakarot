@@ -245,6 +245,7 @@ pub(crate) mod bits_used_internal {
 mod tests {
     mod u8_test {
         use crate::math::Bitshift;
+        use crate::traits::bytes::{ToBytes, FromBytes};
         use super::super::BitsUsed;
 
         #[test]
@@ -261,6 +262,22 @@ mod tests {
 
                 i -= 1;
             };
+        }
+
+        #[test]
+        fn test_u8_to_le_bytes() {
+            let input: u8 = 0xf4;
+            let res: Span<u8> = input.to_le_bytes();
+
+            assert_eq!(res, [0xf4].span());
+        }
+
+        #[test]
+        fn test_u8_to_le_bytes_padded() {
+            let input: u8 = 0xf4;
+            let res: Span<u8> = input.to_le_bytes_padded();
+
+            assert_eq!(res, [0xf4].span());
         }
     }
 
@@ -295,7 +312,7 @@ mod tests {
         }
 
         #[test]
-        fn test_u32_from_be_bytes_partial_full() {
+        fn test_u32_from_be_bytes_partial() {
             let input: Array<u8> = array![0xf4, 0x32, 0x15, 0x62];
             let res: Option<u32> = input.span().from_be_bytes_partial();
 
@@ -430,11 +447,7 @@ mod tests {
             let input: u32 = 0xf4321562;
             let res: Span<u8> = input.to_be_bytes();
 
-            assert_eq!(res.len(), 4);
-            assert_eq!(*res[0], 0xf4);
-            assert_eq!(*res[1], 0x32);
-            assert_eq!(*res[2], 0x15);
-            assert_eq!(*res[3], 0x62);
+            assert_eq!(res, [0xf4, 0x32, 0x15, 0x62].span());
         }
 
         #[test]
@@ -451,12 +464,12 @@ mod tests {
 
         #[test]
         fn test_u32_to_bytes_leading_zeros() {
-            let input: u32 = 0x00f432;
+            let input: u32 = 0x001234;
             let res: Span<u8> = input.to_be_bytes();
 
             assert_eq!(res.len(), 2);
-            assert_eq!(*res[0], 0xf4);
-            assert_eq!(*res[1], 0x32);
+            assert_eq!(*res[0], 0x12);
+            assert_eq!(*res[1], 0x34);
         }
 
         #[test]
@@ -468,6 +481,43 @@ mod tests {
             assert_eq!(result, expected);
         }
 
+        #[test]
+        fn test_u32_to_le_bytes_full() {
+            let input: u32 = 0xf4321562;
+            let res: Span<u8> = input.to_le_bytes();
+
+            assert_eq!(res, [0x62, 0x15, 0x32, 0xf4].span());
+        }
+
+        #[test]
+        fn test_u32_to_le_bytes_partial() {
+            let input: u32 = 0xf43215;
+            let res: Span<u8> = input.to_le_bytes();
+
+            assert_eq!(res.len(), 3);
+            assert_eq!(*res[0], 0x15);
+            assert_eq!(*res[1], 0x32);
+            assert_eq!(*res[2], 0xf4);
+        }
+
+        #[test]
+        fn test_u32_to_le_bytes_leading_zeros() {
+            let input: u32 = 0x00f432;
+            let res: Span<u8> = input.to_le_bytes();
+
+            assert_eq!(res.len(), 2);
+            assert_eq!(*res[0], 0x32);
+            assert_eq!(*res[1], 0xf4);
+        }
+
+        #[test]
+        fn test_u32_to_le_bytes_padded() {
+            let input: u32 = 7;
+            let result = input.to_le_bytes_padded();
+            let expected = [7, 0x0, 0x0, 0x0].span();
+
+            assert_eq!(result, expected);
+        }
 
         #[test]
         fn test_u32_bytes_used() {
@@ -552,6 +602,30 @@ mod tests {
 
             assert_eq!(result, expected);
         }
+
+        #[test]
+        fn test_u64_to_le_bytes_full() {
+            let input: u64 = 0xf432156278901234;
+            let res: Span<u8> = input.to_le_bytes();
+
+            assert_eq!(res, [0x34, 0x12, 0x90, 0x78, 0x62, 0x15, 0x32, 0xf4].span());
+        }
+
+        #[test]
+        fn test_u64_to_le_bytes_partial() {
+            let input: u64 = 0xf43215;
+            let res: Span<u8> = input.to_le_bytes();
+
+            assert_eq!(res, [0x15, 0x32, 0xf4].span());
+        }
+
+        #[test]
+        fn test_u64_to_le_bytes_padded() {
+            let input: u64 = 0xf43215;
+            let res: Span<u8> = input.to_le_bytes_padded();
+
+            assert_eq!(res, [0x15, 0x32, 0xf4, 0x00, 0x00, 0x00, 0x00, 0x00].span());
+        }
     }
 
     mod u128_test {
@@ -605,10 +679,75 @@ mod tests {
 
             assert_eq!(result, expected);
         }
+
+        #[test]
+        fn test_u128_to_le_bytes_full() {
+            let input: u128 = 0xf432156278901234deadbeefcafebabe;
+            let res: Span<u8> = input.to_le_bytes();
+
+            assert_eq!(
+                res,
+                [
+                    0xbe,
+                    0xba,
+                    0xfe,
+                    0xca,
+                    0xef,
+                    0xbe,
+                    0xad,
+                    0xde,
+                    0x34,
+                    0x12,
+                    0x90,
+                    0x78,
+                    0x62,
+                    0x15,
+                    0x32,
+                    0xf4
+                ].span()
+            );
+        }
+
+        #[test]
+        fn test_u128_to_le_bytes_partial() {
+            let input: u128 = 0xf43215;
+            let res: Span<u8> = input.to_le_bytes();
+
+            assert_eq!(res, [0x15, 0x32, 0xf4].span());
+        }
+
+        #[test]
+        fn test_u128_to_le_bytes_padded() {
+            let input: u128 = 0xf43215;
+            let res: Span<u8> = input.to_le_bytes_padded();
+
+            assert_eq!(
+                res,
+                [
+                    0x15,
+                    0x32,
+                    0xf4,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00
+                ].span()
+            );
+        }
     }
 
     mod u256_test {
         use crate::math::Bitshift;
+        use crate::traits::bytes::{ToBytes};
         use crate::traits::integer::{U256Trait};
         use super::super::{BitsUsed, BytesUsedTrait};
 
@@ -658,12 +797,204 @@ mod tests {
         }
 
         #[test]
-        fn test_u64_bits_used() {
+        fn test_u256_bits_used() {
             let input: u256 = 7;
             let result = input.bits_used();
             let expected = 3;
 
             assert_eq!(result, expected);
+        }
+
+        #[test]
+        fn test_u256_to_be_bytes_full() {
+            let input: u256 = 0xf432156278901234deadbeefcafebabe0123456789abcdef0fedcba987654321;
+            let res: Span<u8> = input.to_be_bytes();
+
+            assert_eq!(
+                res,
+                [
+                    0xf4,
+                    0x32,
+                    0x15,
+                    0x62,
+                    0x78,
+                    0x90,
+                    0x12,
+                    0x34,
+                    0xde,
+                    0xad,
+                    0xbe,
+                    0xef,
+                    0xca,
+                    0xfe,
+                    0xba,
+                    0xbe,
+                    0x01,
+                    0x23,
+                    0x45,
+                    0x67,
+                    0x89,
+                    0xab,
+                    0xcd,
+                    0xef,
+                    0x0f,
+                    0xed,
+                    0xcb,
+                    0xa9,
+                    0x87,
+                    0x65,
+                    0x43,
+                    0x21
+                ].span()
+            );
+        }
+
+        #[test]
+        fn test_u256_to_be_bytes_partial() {
+            let input: u256 = 0xf43215;
+            let res: Span<u8> = input.to_be_bytes();
+
+            assert_eq!(res, [0xf4, 0x32, 0x15].span());
+        }
+
+        #[test]
+        fn test_u256_to_be_bytes_padded() {
+            let input: u256 = 0xf43215;
+            let res: Span<u8> = input.to_be_bytes_padded();
+
+            assert_eq!(
+                res,
+                [
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0xf4,
+                    0x32,
+                    0x15
+                ].span()
+            );
+        }
+
+        #[test]
+        fn test_u256_to_le_bytes_full() {
+            let input: u256 = 0xf432156278901234deadbeefcafebabe0123456789abcdef0fedcba987654321;
+            let res: Span<u8> = input.to_le_bytes();
+
+            assert_eq!(
+                res,
+                [
+                    0x21,
+                    0x43,
+                    0x65,
+                    0x87,
+                    0xa9,
+                    0xcb,
+                    0xed,
+                    0x0f,
+                    0xef,
+                    0xcd,
+                    0xab,
+                    0x89,
+                    0x67,
+                    0x45,
+                    0x23,
+                    0x01,
+                    0xbe,
+                    0xba,
+                    0xfe,
+                    0xca,
+                    0xef,
+                    0xbe,
+                    0xad,
+                    0xde,
+                    0x34,
+                    0x12,
+                    0x90,
+                    0x78,
+                    0x62,
+                    0x15,
+                    0x32,
+                    0xf4
+                ].span()
+            );
+        }
+
+        #[test]
+        fn test_u256_to_le_bytes_partial() {
+            let input: u256 = 0xf43215;
+            let res: Span<u8> = input.to_le_bytes();
+
+            assert_eq!(res, [0x15, 0x32, 0xf4].span());
+        }
+
+        #[test]
+        fn test_u256_to_le_bytes_padded() {
+            let input: u256 = 0xf43215;
+            let res: Span<u8> = input.to_le_bytes_padded();
+
+            assert_eq!(
+                res,
+                [
+                    0x15,
+                    0x32,
+                    0xf4,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00
+                ].span()
+            );
         }
     }
 }

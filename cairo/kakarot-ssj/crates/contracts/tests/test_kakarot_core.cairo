@@ -18,7 +18,7 @@ use evm::test_utils::chain_id;
 use evm::test_utils;
 use snforge_std::{
     declare, DeclareResultTrait, start_cheat_caller_address, spy_events, EventSpyTrait,
-    cheat_caller_address, CheatSpan, store
+    cheat_caller_address, CheatSpan, store, load
 };
 use snforge_utils::snforge_utils::{EventsFilterBuilderTrait, ContractEventsTrait};
 use starknet::storage::StorageTrait;
@@ -157,6 +157,49 @@ fn test_kakarot_core_upgrade_contract() {
     }
         .version();
     assert(version == 1, 'version is not 1');
+}
+
+#[test]
+fn test_kakarot_core_get_starknet_address() {
+    let (_, kakarot_core) = contract_utils::setup_contracts_for_testing();
+    let mut kakarot_state = KakarotCore::unsafe_new_contract_state();
+
+    let registered_evm_address = test_utils::evm_address();
+    let registered_starknet_address = test_utils::starknet_address();
+    let registered_map_entry_address = kakarot_state
+        .snapshot_deref()
+        .storage()
+        .Kakarot_evm_to_starknet_address
+        .entry(registered_evm_address)
+        .deref()
+        .__storage_pointer_address__;
+    // store the registered address in the mapping
+    store(
+        kakarot_core.contract_address,
+        registered_map_entry_address.into(),
+        [registered_starknet_address.into()].span()
+    );
+    // when the address is registered in the mapping, it's returned
+    assert_eq!(
+        kakarot_core.get_starknet_address(registered_evm_address), registered_starknet_address
+    );
+
+    let unregistered_evm_address = test_utils::other_evm_address();
+    let unregistered_map_entry_address = kakarot_state
+        .snapshot_deref()
+        .storage()
+        .Kakarot_evm_to_starknet_address
+        .entry(unregistered_evm_address)
+        .deref()
+        .__storage_pointer_address__;
+    let map_data = load(kakarot_core.contract_address, unregistered_map_entry_address.into(), 1);
+    // when the map entry is empty
+    assert_eq!(*map_data[0], 0);
+    // then an unregistered address should return the same as compute_starknet_address
+    assert_eq!(
+        kakarot_core.get_starknet_address(unregistered_evm_address),
+        kakarot_core.compute_starknet_address(unregistered_evm_address)
+    );
 }
 
 #[test]

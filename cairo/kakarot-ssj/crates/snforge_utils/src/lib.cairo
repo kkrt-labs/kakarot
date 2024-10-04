@@ -150,7 +150,7 @@ pub mod snforge_utils {
     /// A wrapper structure on an array of events emitted by a given contract.
     #[derive(Drop, Clone)]
     pub struct ContractEvents {
-        pub events: Array<Event>
+        pub events: Span<Event>
     }
 
     pub trait EventsFilterTrait {
@@ -246,33 +246,33 @@ pub mod snforge_utils {
                         }
                     };
 
-            ContractEvents { events: filtered_events }
+            ContractEvents { events: filtered_events.span() }
         }
     }
 
     pub trait ContractEventsTrait {
         fn assert_emitted<T, impl TEvent: starknet::Event<T>, impl TDrop: Drop<T>>(
-            self: ContractEvents, event: @T
+            self: @ContractEvents, event: @T
         );
         fn assert_not_emitted<T, impl TEvent: starknet::Event<T>, impl TDrop: Drop<T>>(
-            self: ContractEvents, event: @T
+            self: @ContractEvents, event: @T
         );
     }
 
     impl ContractEventsTraitImpl of ContractEventsTrait {
         fn assert_emitted<T, impl TEvent: starknet::Event<T>, impl TDrop: Drop<T>>(
-            self: ContractEvents, event: @T
+            self: @ContractEvents, event: @T
         ) {
             let mut expected_keys = array![];
             let mut expected_data = array![];
             event.append_keys_and_data(ref expected_keys, ref expected_data);
 
+            let contract_events = (*self.events);
             let mut found = false;
             for i in 0
-                ..self
-                    .events
+                ..contract_events
                     .len() {
-                        let event = self.events.at(i);
+                        let event = contract_events.at(i);
                         if event.keys == @expected_keys && event.data == @expected_data {
                             found = true;
                             break;
@@ -283,17 +283,17 @@ pub mod snforge_utils {
         }
 
         fn assert_not_emitted<T, impl TEvent: starknet::Event<T>, impl TDrop: Drop<T>>(
-            self: ContractEvents, event: @T
+            self: @ContractEvents, event: @T
         ) {
             let mut expected_keys = array![];
             let mut expected_data = array![];
             event.append_keys_and_data(ref expected_keys, ref expected_data);
 
+            let contract_events = (*self.events);
             for i in 0
-                ..self
-                    .events
+                ..contract_events
                     .len() {
-                        let event = self.events.at(i);
+                        let event = contract_events.at(i);
                         assert(
                             event.keys != @expected_keys || event.data != @expected_data,
                             'Unexpected event was emitted'

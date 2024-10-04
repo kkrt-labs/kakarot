@@ -26,7 +26,6 @@ def filter_file(file_path, filter_string):
     def replace_func(match):
         full_match = match.group(0)
         func_name = match.group(1)
-
         if filter_string.lower() in func_name.lower():
             return full_match
         else:
