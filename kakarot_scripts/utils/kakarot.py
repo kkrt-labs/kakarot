@@ -270,7 +270,7 @@ async def deploy(
         evm_address = int(receipt.contractAddress or receipt.to, 16)
         starknet_address = (
             await _call_starknet("kakarot", "get_starknet_address", evm_address)
-        ).contract_address
+        ).starknet_address
     else:
         starknet_address, evm_address = response
     contract.address = Web3.to_checksum_address(f"0x{evm_address:040x}")

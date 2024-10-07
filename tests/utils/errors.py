@@ -34,7 +34,7 @@ def cairo_error(message=None):
             yield e
         if message is None:
             return
-        if type(e.value) == ClientError:
+        if e.value is ClientError:
             error = re.search(r"Error message: (.*)", str(e.value.data["revert_error"]))
         else:
             error = re.search(r"Error message: (.*)", str(e.value))

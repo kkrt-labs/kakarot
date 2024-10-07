@@ -51,7 +51,7 @@ NETWORKS = {
         "type": NetworkType.STAGING,
         "chain_id": StarknetChainId.SEPOLIA,
         "check_interval": 1,
-        "max_wait": 10,
+        "max_wait": 20,
         "class_hash": 0x061DAC032F228ABEF9C6626F995015233097AE253A7F72D68552DB02F2971B8F,
         "voyager_api_url": "https://sepolia-api.voyager.online/beta",
     },
@@ -202,12 +202,7 @@ except (
         f"⚠️  Could not get chain Id from {NETWORK['rpc_url']}: {e}, defaulting to KKRT"
     )
     starknet_chain_id = int.from_bytes(b"KKRT", "big")
-    chain_id = starknet_chain_id % (
-        # TODO: remove once Kakarot is redeployed on sepolia
-        2**53
-        if NETWORK["name"] != "starknet-sepolia"
-        else 2**32
-    )
+    chain_id = starknet_chain_id % 2**53
 
 
 class ChainId(IntEnum):
