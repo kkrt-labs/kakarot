@@ -249,9 +249,11 @@ def get_artifact(contract_name):
         return Artifact(sierra=None, casm=artifacts[0])
 
     # Cairo 1 artifacts
-    artifacts = list(CAIRO_DIR.glob(f"**/*{contract_name}.*.json")) or list(
-        BUILD_DIR_SSJ.glob(f"**/*{contract_name}.*.json")
-    )
+    artifacts = [
+        artifact
+        for artifact in list(CAIRO_DIR.glob(f"**/*{contract_name}.*.json"))
+        if "test" not in str(artifact)
+    ] or list(BUILD_DIR_SSJ.glob(f"**/*{contract_name}.*.json"))
     if artifacts:
         sierra, casm = (
             artifacts

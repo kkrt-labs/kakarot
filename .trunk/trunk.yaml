@@ -67,9 +67,14 @@ lint:
       paths: [tests, docker]
     - linters: [codespell]
       paths: [uv.lock]
+    - linters: [cairo]
+      paths:
+        - cairo/mock_pragma
+        - cairo/token
+        - cairo/utils
+        - cairo/kakarot-ssj/crates
     - linters: [ALL]
       paths:
-        - cairo1_contracts
         - logs*
         - lib*
         - resources*

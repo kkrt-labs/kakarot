@@ -1,0 +1,25 @@
+[package]
+name = "utils"
+version = "0.1.0"
+edition = "2024_07"
+
+# See more keys and their definitions at https://docs.swmansion.com/scarb/docs/reference/manifest.html
+
+[dependencies]
+evm = { path = "../evm" }
+alexandria_data_structures = { path = "../alexandria_data_structures" }
+
+# For profiling
+[cairo]
+unstable-add-statements-functions-debug-info = true
+
+[tool]
+fmt.workspace = true
+
+[dev-dependencies]
+snforge_std = { git = "https://github.com/foundry-rs/starknet-foundry.git", tag = "v0.31.0" }
+assert_macros = "2.8.2"
+
+[scripts]
+test = "snforge test --max-n-steps 4294967295"
+test-profiling = "snforge test --max-n-steps 4294967295 --build-profile"

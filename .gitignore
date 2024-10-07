@@ -44,3 +44,13 @@ profile*.png
 *.memory
 *.air_private_input.json
 *.air_public_input.json
+
+.DS_Store
+.idea
+node_modules
+*.snfoundry_cache
+cairo/kakarot-ssj/target
+cairo/kakarot-ssj/cache/
+cairo/kakarot-ssj/scripts/libcairo_native_runtime.a
+__pycache__
+*.snfoundry

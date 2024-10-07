@@ -218,16 +218,18 @@ COINBASE = int(
     or "0x20eB005C0b9c906691F885eca5895338E15c36De",  # Defaults to faucet on appchain sepolia
     16,
 )
-CAIRO_ZERO_DIR = Path("src")
-CAIRO_DIR = Path("cairo1_contracts")
-TESTS_DIR = Path("tests")
+CAIRO_ZERO_DIR = Path("cairo_zero")
+CAIRO_DIR = Path("cairo")
+TESTS_DIR_CAIRO_ZERO = Path("cairo_zero/tests")
+TESTS_DIR_END_TO_END = Path("tests")
 
 CONTRACTS = {
     p.stem: p
     for p in (
         list(CAIRO_ZERO_DIR.glob("**/*.cairo"))
-        + list(TESTS_DIR.glob("**/*.cairo"))
-        + list(CAIRO_DIR.glob("**/*.cairo"))
+        + list(TESTS_DIR_CAIRO_ZERO.glob("**/*.cairo"))
+        + list(TESTS_DIR_END_TO_END.glob("**/*.cairo"))
+        + [x for x in list(CAIRO_DIR.glob("**/*.cairo")) if "kakarot-ssj" not in str(x)]
     )
 }
 

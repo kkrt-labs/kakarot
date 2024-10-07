@@ -1,0 +1,34 @@
+name: Reusable Build Workflow
+
+on:
+  workflow_call:
+    inputs:
+      artifact-name:
+        required: true
+        type: string
+
+permissions: read-all
+
+jobs:
+  ssj-build:
+    runs-on: ubuntu-latest
+    env:
+      CI_COMMIT_MESSAGE: CI Formatting Auto Commit
+      CI_COMMIT_AUTHOR: ${{ github.event.repository.name }} CI
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Scarb
+        uses: software-mansion/setup-scarb@v1
+        with:
+          tool-versions: ./cairo/kakarot-ssj/.tool-versions
+
+      - name: Build contracts
+        run: cd cairo/kakarot-ssj/ && scarb build -p contracts
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: cairo/kakarot-ssj/target/dev

@@ -1,0 +1,38 @@
+name: cairo-zero-NIGHTLY-FUZZING
+
+on:
+  schedule:
+    - cron: 20 0 * * *
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+permissions: read-all
+
+jobs:
+  tests-unit:
+    runs-on: ubuntu-latest-16-cores
+    env:
+      PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: python
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v2
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+      - name: Run tests
+        env:
+          HYPOTHESIS_PROFILE: nightly
+        run: make test-unit-cairo-zero
+      - name: Upload coverage report to codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: ./coverage/

@@ -1,0 +1,84 @@
+name: SSJ-CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - cairo/kakarot-ssj/**
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+concurrency:
+  group: ssj-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: read-all
+
+jobs:
+  ssj-build:
+    uses: ./.github/workflows/ssj-build.yml
+    with:
+      artifact-name: ssj-build
+
+  ssj-tests-unit:
+    uses: ./.github/workflows/ssj-tests-unit.yml
+    with:
+      run-fmt-check: false
+
+  ssj-ef-tests:
+    uses: ./.github/workflows/ssj-ef-tests.yml
+    needs: [ssj-build]
+    with:
+      artifact-name: ssj-build
+
+  ssj-resources:
+    runs-on: ubuntu-latest
+    needs: [ssj-ef-tests]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.10.14
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.10.14
+
+      - name: Load cached Poetry installation
+        id: cached-poetry
+        uses: actions/cache@v4
+        with:
+          path: ~/.local
+          key: poetry-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install Poetry
+        if: steps.cached-poetry.outputs.cache-hit != 'true'
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          installer-parallel: true
+
+      - run: poetry config installer.modern-installation false
+
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: make setup
+
+      - name: Load performance artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: resources
+          name: resources
+
+      - name: Check resources evolution
+        run: |
+          result=$(GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} make check-resources 2>&1)
+          echo "$result" >> "$GITHUB_STEP_SUMMARY"

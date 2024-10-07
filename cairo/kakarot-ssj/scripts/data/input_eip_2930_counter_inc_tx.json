@@ -1,0 +1,10 @@
+{
+  "chainId": "0x4b4b5254",
+  "nonce": "0x0",
+  "gasPrice": "0x3b9aca00",
+  "gasLimit": "0x1e8480",
+  "to": "0x0000006f746865725f65766d5f61646472657373",
+  "value": "0x0",
+  "data": "0x371303c0",
+  "accessList": []
+}

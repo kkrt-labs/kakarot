@@ -67,6 +67,7 @@ filterwarnings = [
   "ignore:abi:DeprecationWarning",                                                        # from web3
   "ignore::marshmallow.warnings.RemovedInMarshmallow4Warning",                            # from marshmallow
 ]
+pythonpath = [".", "tests"]
 asyncio_mode = "auto"
 markers = [
   "ArithmeticOperations",
@@ -184,14 +185,8 @@ in_place = true
 remove_unused_variables = true
 remove_all_unused_imports = true
 
-[tool.codespell]
-ignore-words = '.codespellignore'
-skip = '.git'
-check-filenames = ''
-check-hidden = ''
-
 [tool.bandit]
-exclude_dirs = ["tests"]
+exclude_dirs = ["tests", "cairo_zero/tests"]
 
 [build-system]
 requires = ["hatchling"]

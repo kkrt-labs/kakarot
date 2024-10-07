@@ -1,0 +1,30 @@
+# trunk-ignore-all(checkov/CKV2_GHA_1)
+name: SSJ-Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build-and-upload:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Scarb
+        uses: software-mansion/setup-scarb@v1
+        with:
+          tool-versions: ./cairo/kakarot-ssj/.tool-versions
+      - name: Build contracts
+        run: |
+          cd cairo/kakarot-ssj && scarb build -p contracts
+      - name: Zip dev artifacts
+        run: zip -rj kakarot-ssj-build.zip cairo/kakarot-ssj/target/dev
+      - name: Upload artifacts to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: kakarot-ssj-build.zip
+          asset_name: kakarot-ssj-build.zip
+          tag: ${{ github.ref_name }}
+          overwrite: true

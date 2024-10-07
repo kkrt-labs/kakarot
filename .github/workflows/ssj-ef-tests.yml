@@ -1,0 +1,129 @@
+name: SSJ-EF-Tests
+
+on:
+  workflow_call:
+    inputs:
+      artifact-name:
+        required: true
+        type: string
+
+permissions: read-all
+
+jobs:
+  ef-tests:
+    # trunk-ignore(actionlint/runner-label)
+    runs-on: ubuntu-latest-16-cores
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Cache cairo-native setup
+        id: cache-cairo-native
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            cairo/kakarot-ssj/target/
+            ./libcairo_native_runtime.a
+          key:
+            ${{ runner.os }}-cairo-native-${{ hashFiles('**/Cargo.lock',
+            'scripts/setup_cairo_native.sh') }}
+
+      - name: Make setup script executable
+        run: chmod +x ./cairo/kakarot-ssj/scripts/setup_cairo_native.sh
+
+      - name: Setup Cairo Native
+        run: |
+          if [[ "${{ steps.cache-cairo-native.outputs.cache-hit }}" == 'true' ]]; then
+            sudo ./cairo/kakarot-ssj/scripts/setup_cairo_native.sh -s
+          else
+            sudo ./cairo/kakarot-ssj/scripts/setup_cairo_native.sh
+          fi
+
+      - name: Set Environment Variables
+        run: |
+          echo "MLIR_SYS_190_PREFIX=/usr/lib/llvm-19/" >> $GITHUB_ENV
+          echo "LLVM_SYS_191_PREFIX=/usr/lib/llvm-19/" >> $GITHUB_ENV
+          echo "TABLEGEN_190_PREFIX=/usr/lib/llvm-19/" >> $GITHUB_ENV
+          echo "CAIRO_NATIVE_RUNTIME_LIBRARY=$(pwd)/libcairo_native_runtime.a" >> $GITHUB_ENV
+
+      - name: Checkout ef-tests
+        uses: actions/checkout@v4
+        with:
+          repository: kkrt-labs/ef-tests
+          ref: feat/cairo-native
+          path: ef-tests # Check out to a subdirectory to avoid cleaning the kakarot-ssj directory
+
+      - name: Checkout local skip file
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            cairo/kakarot-ssj/
+          sparse-checkout-cone-mode: false
+          path: skip-file
+
+      - name: Setup ef-tests
+        run: |
+          mv skip-file/cairo/kakarot-ssj/blockchain-tests-skip.yml ef-tests/blockchain-tests-skip.yml
+          cd ef-tests
+          mkdir -p build/common
+          make setup setup-kakarot-v0
+
+      - name: Install nextest
+        uses: taiki-e/install-action@nextest
+
+      - name: Download Kakarot-SSJ build artifacts in v1
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: ef-tests/build/v1
+
+      - name: Move Cairo1Helpers
+        run: |
+          mv ef-tests/build/v1/contracts_Cairo1Helpers.compiled_contract_class.json \
+          ef-tests/build/common/cairo1_helpers.json
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.10.14
+
+      # Add this step to verify the file exists
+      - name: Verify libcairo_native_runtime.a
+        run: |
+          echo $CAIRO_NATIVE_RUNTIME_LIBRARY
+          ls -l $CAIRO_NATIVE_RUNTIME_LIBRARY
+
+      - name: Run tests
+        working-directory: ef-tests
+        run: |
+          set -o pipefail
+          RUST_MIN_STACK=1342177280 make ef-test-v1-native | tee test_v1.out
+          set +o pipefail
+
+      - name: Retrieve ef-tests execution resources
+        working-directory: ef-tests
+        run: python scripts/compute_resources.py
+        env:
+          KAKAROT_VERSION: v1
+
+      - name: Upload resources
+        uses: actions/upload-artifact@v3
+        with:
+          path: ef-tests/resources
+          name: resources
+
+      - name: Generate blockchain-tests-skip.yml file
+        if: github.event_name == 'workflow_dispatch'
+        working-directory: ef-tests
+        run: make generate-skip-file
+
+      - name: Upload skip file
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v3
+        with:
+          path: ef-tests/blockchain-tests-skip.yml
+          name: blockchain-tests-skip
