@@ -58,6 +58,7 @@ testname:
   vmPerformance:
     - loopExp_d2g0v0_Cancun
     - performanceTester_d0g0v0_Cancun
+    - performanceTester_d2g0v0_Cancun
     - performanceTester_d3g0v0_Cancun
     - loopExp_d10g0v0_Cancun
     - loopExp_d11g0v0_Cancun
@@ -564,6 +565,8 @@ testname:
     - static_LoopCallsDepthThenRevert3_d0g0v0_Cancun
     - static_callChangeRevert_d1g0v0_Cancun
     - static_callCreate2_d2g0v0_Cancun
+    - static_callcall_00_OOGE_1_d1g0v0_Cancun
+    - static_callcall_00_OOGE_2_d1g0v0_Cancun
     - static_callcallcall_000_OOGMAfter2_d0g0v0_Cancun
     - static_callcallcall_000_OOGMBefore_d0g0v0_Cancun
     - static_callcallcallcode_001_OOGE_2_d1g0v0_Cancun
