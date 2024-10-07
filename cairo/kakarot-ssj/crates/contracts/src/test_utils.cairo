@@ -142,7 +142,6 @@ pub fn setup_contracts_for_testing() -> (IERC20CamelDispatcher, IExtendedKakarot
 
     let sequencer_sn_address = kakarot_core.address_registry(sequencer);
     start_cheat_sequencer_address_global(sequencer_sn_address);
-    start_cheat_caller_address_global(kakarot_core.contract_address);
     start_cheat_chain_id_global(chain_id().into());
     return (native_token, kakarot_core);
 }

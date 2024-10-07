@@ -2,10 +2,13 @@ use contracts::account_contract::{IAccountDispatcher, IAccountDispatcherTrait};
 use contracts::kakarot_core::{KakarotCore, IKakarotCore};
 use core::dict::{Felt252Dict, Felt252DictTrait};
 use core::num::traits::Zero;
-use core::starknet::{ContractAddress, EthAddress};
+use core::ops::SnapshotDeref;
+use core::starknet::storage::{StoragePointerReadAccess, StoragePathEntry};
+use core::starknet::{ContractAddress, EthAddress, get_contract_address};
 use crate::backend::starknet_backend::fetch_balance;
 use crate::model::Address;
 use utils::constants::EMPTY_KECCAK;
+use utils::helpers::compute_starknet_address;
 use utils::traits::bytes::U8SpanExTrait;
 
 #[derive(Drop)]
@@ -82,6 +85,24 @@ pub struct Account {
 
 #[generate_trait]
 pub impl AccountImpl of AccountTrait {
+    fn get_starknet_address(evm_address: EthAddress) -> ContractAddress {
+        let kakarot_state = KakarotCore::unsafe_new_contract_state();
+        let kakarot_storage = kakarot_state.snapshot_deref();
+        let existing_address = kakarot_storage
+            .Kakarot_evm_to_starknet_address
+            .entry(evm_address)
+            .read();
+        if existing_address.is_zero() {
+            return compute_starknet_address(
+                get_contract_address(),
+                evm_address,
+                kakarot_state.uninitialized_account_class_hash()
+            );
+        }
+        existing_address
+    }
+
+
     /// Fetches an account from Starknet
     /// An non-deployed account is just an empty account.
     /// # Arguments
@@ -96,7 +117,7 @@ pub impl AccountImpl of AccountTrait {
             Option::Some(account) => account,
             Option::None => {
                 let kakarot_state = KakarotCore::unsafe_new_contract_state();
-                let starknet_address = kakarot_state.compute_starknet_address(evm_address);
+                let starknet_address = kakarot_state.get_starknet_address(evm_address);
                 // If no account exists at `address`, then we are trying to
                 // access an undeployed account. We create an
                 // empty account with the correct address, fetch the balance, and return it.

@@ -20,7 +20,7 @@ use snforge_std::{
     start_cheat_caller_address, stop_cheat_caller_address, start_cheat_transaction_hash, spy_events,
     EventSpyTrait, CheatSpan, cheat_caller_address, stop_cheat_block_timestamp,
     start_cheat_block_timestamp, start_cheat_chain_id_global, stop_cheat_chain_id_global,
-    start_cheat_caller_address_global, stop_cheat_caller_address_global
+    stop_cheat_caller_address_global
 };
 
 use snforge_utils::snforge_utils::EventsFilterBuilderTrait;
@@ -142,8 +142,6 @@ fn set_up() -> (IExtendedKakarotCoreDispatcher, IAccountDispatcher, IERC20CamelD
     let eoa = IAccountDispatcher {
         contract_address: kakarot_core.deploy_externally_owned_account(transaction_signer())
     };
-    start_cheat_caller_address_global(kakarot_core.contract_address);
-
     start_cheat_block_timestamp(eoa.contract_address, 999);
     start_cheat_chain_id_global(chain_id().into());
 
@@ -251,35 +249,6 @@ fn test_execute_from_outside_invalid_signature() {
     tear_down(contract_account);
 }
 
-#[test]
-#[should_panic(expected: 'EOA: could not decode tx')]
-fn test_execute_from_outside_invalid_tx() {
-    let (kakarot_core, contract_account, _) = set_up();
-
-    let mut faulty_eip_2930_tx = eip_2930_encoded_tx();
-    let signature = Signature {
-        r: 0x5c4ae1ed01c8df4277f02aa3443f8183ed44627217fd7f27badaed8795906e78,
-        s: 0x4d2af576441428d47c174ffddc6e70b980527a57795b3c87a71878f97ecef274,
-        y_parity: true
-    };
-    let _ = faulty_eip_2930_tx.pop_front();
-
-    let outside_execution = OutsideExecutionBuilderTrait::new(kakarot_core.contract_address)
-        .with_calls(
-            [
-                CallBuilderTrait::new(kakarot_core.contract_address)
-                    .with_calldata(faulty_eip_2930_tx)
-                    .build()
-            ].span()
-        )
-        .build();
-
-    let signature = serialize_transaction_signature(signature, TxType::Eip2930, chain_id()).span();
-
-    let _ = contract_account.execute_from_outside(outside_execution, signature);
-
-    tear_down(contract_account);
-}
 
 #[test]
 #[should_panic(expected: 'KKRT: Multicall not supported')]

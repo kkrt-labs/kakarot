@@ -168,7 +168,7 @@ fn commit_account(self: @Account, ref state: State) {
     if (self.is_selfdestruct() && self.is_created()) {
         let kakarot_state = KakarotCore::unsafe_new_contract_state();
         let burn_starknet_address = kakarot_state
-            .compute_starknet_address(BURN_ADDRESS.try_into().unwrap());
+            .get_starknet_address(BURN_ADDRESS.try_into().unwrap());
         let burn_address = Address {
             starknet: burn_starknet_address, evm: BURN_ADDRESS.try_into().unwrap()
         };

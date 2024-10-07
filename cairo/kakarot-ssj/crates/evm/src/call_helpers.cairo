@@ -74,10 +74,8 @@ pub impl CallHelpersImpl of CallHelpers {
         let read_only = is_staticcall || self.message.read_only;
 
         let kakarot_core = KakarotCore::unsafe_new_contract_state();
-        let to = Address { evm: to, starknet: kakarot_core.compute_starknet_address(to) };
-        let caller = Address {
-            evm: caller, starknet: kakarot_core.compute_starknet_address(caller)
-        };
+        let to = Address { evm: to, starknet: kakarot_core.get_starknet_address(to) };
+        let caller = Address { evm: caller, starknet: kakarot_core.get_starknet_address(caller) };
 
         let message = Message {
             caller,

@@ -68,7 +68,7 @@ pub mod AccountContract {
     use crate::storage::StorageBytecode;
     use openzeppelin::token::erc20::interface::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
     use super::OutsideExecution;
-    use utils::eth_transaction::transaction::TransactionUnsignedTrait;
+    use utils::eth_transaction::transaction::TransactionTrait;
     use utils::serialization::{deserialize_signature, deserialize_bytes, serialize_bytes};
     use utils::traits::DefaultSignature;
 
@@ -249,18 +249,13 @@ pub mod AccountContract {
             let mut encoded_tx_data = deserialize_bytes((*outside_execution.calls[0]).calldata)
                 .expect('conversion to Span<u8> failed')
                 .span();
-            let unsigned_transaction = TransactionUnsignedTrait::decode_enveloped(
-                ref encoded_tx_data
-            )
-                .expect('EOA: could not decode tx');
+            let unsigned_transaction_hash = TransactionTrait::compute_hash(encoded_tx_data);
 
             let address = self.Account_evm_address.read();
-            verify_eth_signature(unsigned_transaction.hash, signature, address);
+            verify_eth_signature(unsigned_transaction_hash, signature, address);
 
-            //TODO: refactor this to call eth_send_raw_unsigned_tx. Only the transactions bytes are
-            //passed.
             let (success, return_data, gas_used) = kakarot
-                .eth_send_transaction(unsigned_transaction.transaction);
+                .eth_send_raw_unsigned_tx(encoded_tx_data);
             let return_data = serialize_bytes(return_data).span();
 
             // See Argent account

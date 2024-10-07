@@ -1,16 +1,17 @@
 use core::num::traits::Zero;
 use core::starknet::get_tx_info;
-use core::starknet::{EthAddress, get_caller_address};
+use core::starknet::{EthAddress, get_caller_address, ContractAddress};
 use crate::account_contract::{IAccountDispatcher, IAccountDispatcherTrait};
 use crate::kakarot_core::interface::IKakarotCore;
 use crate::kakarot_core::kakarot::{KakarotCore, KakarotCore::{KakarotCoreState}};
 use evm::backend::starknet_backend;
 use evm::backend::validation::validate_eth_tx;
+use evm::model::account::AccountTrait;
 use evm::model::{TransactionResult, Address};
 use evm::{EVMTrait};
 use openzeppelin::token::erc20::interface::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
 use utils::constants::POW_2_53;
-use utils::eth_transaction::transaction::Transaction;
+use utils::eth_transaction::transaction::{Transaction, TransactionTrait};
 
 #[starknet::interface]
 pub trait IEthRPC<T> {
@@ -84,21 +85,6 @@ pub trait IEthRPC<T> {
     /// * The estimated gas as a u64
     fn eth_estimate_gas(self: @T, origin: EthAddress, tx: Transaction) -> (bool, Span<u8>, u64);
 
-    //TODO: make this an internal function. The account contract should call
-    //eth_send_raw_transaction.
-    /// Executes a transaction and possibly modifies the state.
-    ///
-    /// # Arguments
-    ///
-    /// * `tx` - The transaction object
-    ///
-    /// # Returns
-    ///
-    /// A tuple containing:
-    /// * A boolean indicating success
-    /// * The return data as a Span<u8>
-    /// * The amount of gas used as a u64
-    fn eth_send_transaction(ref self: T, tx: Transaction) -> (bool, Span<u8>, u64);
 
     /// Executes an unsigned transaction.
     ///
@@ -153,9 +139,7 @@ pub impl EthRPC<
             core::panic_with_felt252('fn must be called, not invoked');
         };
 
-        let origin = Address {
-            evm: origin, starknet: kakarot_state.compute_starknet_address(origin)
-        };
+        let origin = Address { evm: origin, starknet: kakarot_state.get_starknet_address(origin) };
 
         let TransactionResult { success, return_data, gas_used, state: _state } =
             EVMTrait::process_transaction(
@@ -171,16 +155,49 @@ pub impl EthRPC<
         panic!("unimplemented")
     }
 
-    //TODO: make this one internal, and the eth_send_raw_unsigned_tx one public
-    fn eth_send_transaction(
-        ref self: TContractState, mut tx: Transaction
+    //TODO: we can't really unit-test this with foundry because we can't generate the RLP-encoding
+    //in Cairo Find another way - perhaps test-data gen with python?
+    fn eth_send_raw_unsigned_tx(
+        ref self: TContractState, mut tx_data: Span<u8>
     ) -> (bool, Span<u8>, u64) {
+        let tx = TransactionTrait::decode_enveloped(ref tx_data).expect('EOA: could not decode tx');
+        EthRPCInternal::eth_send_transaction(ref self, tx)
+    }
+}
+
+trait EthRPCInternal<T> {
+    /// Executes a transaction and possibly modifies the state.
+    ///
+    /// This function implements the `eth_sendTransaction` method as described in the Ethereum
+    /// JSON-RPC specification.
+    /// The nonce is taken from the corresponding account contract.
+    ///
+    /// # Arguments
+    ///
+    /// * `tx` - A `Transaction` struct
+    ///
+    /// # Returns
+    ///
+    /// A tuple containing:
+    /// * A boolean indicating success (TRUE if the transaction succeeded, FALSE otherwise)
+    /// * The return data as a `Span<u8>`
+    /// * The amount of gas used by the transaction as a `u64`
+    fn eth_send_transaction(ref self: T, tx: Transaction) -> (bool, Span<u8>, u64);
+}
+
+impl EthRPCInternalImpl<
+    TContractState, impl KakarotState: KakarotCoreState<TContractState>, +Drop<TContractState>
+> of EthRPCInternal<TContractState> {
+    fn eth_send_transaction(ref self: TContractState, tx: Transaction) -> (bool, Span<u8>, u64) {
         let mut kakarot_state = KakarotState::get_state();
         let intrinsic_gas = validate_eth_tx(@kakarot_state, tx);
 
         let starknet_caller_address = get_caller_address();
-        let account = IAccountDispatcher { contract_address: starknet_caller_address };
-        let origin = Address { evm: account.get_evm_address(), starknet: starknet_caller_address };
+        // panics if the caller is a spoofer of an EVM address.
+        //TODO: e2e test this! :) Send a transaction from an account that is not Kakarot's account
+        //(e.g. deploy an account but not from Kakarot)
+        let origin_evm_address = safe_get_evm_address(@self, starknet_caller_address);
+        let origin = Address { evm: origin_evm_address, starknet: starknet_caller_address };
 
         let TransactionResult { success, return_data, gas_used, mut state } =
             EVMTrait::process_transaction(
@@ -189,26 +206,40 @@ pub impl EthRPC<
         starknet_backend::commit(ref state).expect('Committing state failed');
         (success, return_data, gas_used)
     }
-
-    fn eth_send_raw_unsigned_tx(
-        ref self: TContractState, tx_data: Span<u8>
-    ) -> (bool, Span<u8>, u64) {
-        panic!("unimplemented")
-    }
 }
 
-trait IEthRPCInternal<T> {
-    fn eth_send_transaction(
-        ref self: T, origin: EthAddress, tx: Transaction
-    ) -> (bool, Span<u8>, u64);
-}
 
-impl EthRPCInternalImpl<TContractState, +Drop<TContractState>> of IEthRPCInternal<TContractState> {
-    fn eth_send_transaction(
-        ref self: TContractState, origin: EthAddress, tx: Transaction
-    ) -> (bool, Span<u8>, u64) {
-        panic!("unimplemented")
-    }
+/// Returns the EVM address associated with a Starknet account deployed by Kakarot.
+///
+/// This function prevents cases where a Starknet account has an entrypoint `get_evm_address()`
+/// but isn't part of the Kakarot system. It also mitigates re-entrancy risk with the Cairo Interop
+/// module.
+///
+/// # Arguments
+///
+/// * `starknet_address` - The Starknet address of the account
+///
+/// # Returns
+///
+/// * `EthAddress` - The associated EVM address
+///
+/// # Panics
+///
+/// Panics if the declared corresponding EVM address (retrieved with `get_evm_address`)
+/// does not recompute into the actual caller address.
+fn safe_get_evm_address<
+    TContractState, impl KakarotState: KakarotCoreState<TContractState>, +Drop<TContractState>
+>(
+    self: @TContractState, starknet_address: ContractAddress
+) -> EthAddress {
+    let account = IAccountDispatcher { contract_address: starknet_address };
+    let evm_address = account.get_evm_address();
+    let safe_starknet_address = AccountTrait::get_starknet_address(evm_address);
+    assert!(
+        safe_starknet_address == starknet_address,
+        "Kakarot: caller contract is not a Kakarot Account"
+    );
+    evm_address
 }
 
 fn is_view(self: @KakarotCore::ContractState) -> bool {
@@ -225,16 +256,19 @@ fn is_view(self: @KakarotCore::ContractState) -> bool {
 
 #[cfg(test)]
 mod tests {
+    use core::ops::DerefMut;
+    use core::starknet::EthAddress;
+    use core::starknet::storage::{StoragePathEntry, StoragePointerWriteAccess};
     use crate::kakarot_core::KakarotCore;
     use crate::kakarot_core::eth_rpc::IEthRPC;
-    use crate::kakarot_core::interface::IExtendedKakarotCoreDispatcherTrait;
+    use crate::kakarot_core::interface::{IKakarotCore, IExtendedKakarotCoreDispatcherTrait};
     use crate::test_utils::{setup_contracts_for_testing, fund_account_with_native_token};
     use evm::test_utils::{sequencer_evm_address, evm_address, uninitialized_account};
     use snforge_std::{
         start_mock_call, start_cheat_chain_id_global, stop_cheat_chain_id_global, test_address
     };
+    use super::safe_get_evm_address;
     use utils::constants::POW_2_53;
-    use utils::helpers::compute_starknet_address;
 
     fn set_up() -> KakarotCore::ContractState {
         // Define the kakarot state to access contract functions
@@ -250,12 +284,7 @@ mod tests {
     #[test]
     fn test_eth_get_transaction_count() {
         let kakarot_state = set_up();
-        // Deployed eoa should return a zero nonce
-        let starknet_address = compute_starknet_address(
-            test_address(),
-            evm_address(),
-            0.try_into().unwrap() // Using 0 as the kakarot storage is empty
-        );
+        let starknet_address = kakarot_state.get_starknet_address(evm_address());
         start_mock_call::<u256>(starknet_address, selector!("get_nonce"), 1);
         assert_eq!(kakarot_state.eth_get_transaction_count(evm_address()), 1);
     }
@@ -300,5 +329,34 @@ mod tests {
             kakarot_state.eth_chain_id(), 53, "Should return correct value after modulo operation"
         );
         tear_down();
+    }
+
+    #[test]
+    fn test_safe_get_evm_address_succeeds() {
+        let kakarot_state = set_up();
+        // no registry - returns the computed address
+        let starknet_address = kakarot_state.get_starknet_address(evm_address());
+        start_mock_call::<
+            EthAddress
+        >(starknet_address, selector!("get_evm_address"), evm_address());
+        let safe_evm_address = safe_get_evm_address(@kakarot_state, starknet_address);
+        assert_eq!(safe_evm_address, evm_address());
+    }
+
+    #[test]
+    #[should_panic(expected: "Kakarot: caller contract is not a Kakarot Account")]
+    fn test_safe_get_evm_address_panics_when_caller_is_not_kakarot_account() {
+        let mut kakarot_state = set_up();
+        let mut kakarot_storage = kakarot_state.deref_mut();
+
+        // Calling get_evm_address() on a fake starknet account that will return `evm_address()`.
+        // Then, when computing the deterministic starknet_address with get_starknet_address(), it
+        // will return a different address.
+        // This should fail.
+        let fake_starknet_account = 'fake_account'.try_into().unwrap();
+        start_mock_call::<
+            EthAddress
+        >(fake_starknet_account, selector!("get_evm_address"), evm_address());
+        safe_get_evm_address(@kakarot_state, fake_starknet_account);
     }
 }

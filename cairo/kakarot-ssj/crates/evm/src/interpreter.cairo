@@ -47,12 +47,12 @@ pub impl EVMImpl of EVMTrait {
                 let to_evm_address = compute_contract_address(
                     sender_account.address().evm, origin_nonce
                 );
-                let to_starknet_address = self.compute_starknet_address(to_evm_address);
+                let to_starknet_address = self.get_starknet_address(to_evm_address);
                 let to = Address { evm: to_evm_address, starknet: to_starknet_address };
                 (to, true, tx.input(), Zero::zero(), [].span())
             },
             TxKind::Call(to) => {
-                let target_starknet_address = self.compute_starknet_address(to);
+                let target_starknet_address = self.get_starknet_address(to);
                 let to = Address { evm: to, starknet: target_starknet_address };
                 let code = env.state.get_account(to.evm).code;
                 (to, false, code, to, tx.input())
