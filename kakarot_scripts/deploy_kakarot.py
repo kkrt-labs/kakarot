@@ -45,99 +45,98 @@ logger.setLevel(logging.INFO)
 async def main():
     # %% Declarations
     account = await get_starknet_account()
-    logger.info(f"ℹ️  Using account 0x{account.address:064x} as deployer")
 
-    class_hash = {contract: await declare(contract) for contract in DECLARED_CONTRACTS}
-    dump_declarations(class_hash)
+    # class_hash = {contract: await declare(contract) for contract in DECLARED_CONTRACTS}
+    # dump_declarations(class_hash)
 
     # %% Starknet Deployments
     class_hash = get_declarations()
     starknet_deployments = get_starknet_deployments()
     evm_deployments = get_evm_deployments()
 
-    if NETWORK["type"] is not NetworkType.PROD:
-        starknet_deployments["EVM"] = await deploy_starknet(
-            "EVM",
-            account.address,  # owner
-            ETH_TOKEN_ADDRESS,  # native_token_address_
-            class_hash["account_contract"],  # account_contract_class_hash_
-            class_hash["uninitialized_account"],  # uninitialized_account_class_hash_
-            class_hash["Cairo1Helpers"],
-            BLOCK_GAS_LIMIT,
-        )
-        await invoke(
-            "EVM",
-            "set_coinbase",
-            COINBASE,
-            address=starknet_deployments["EVM"]["address"],
-        )
-        starknet_deployments["Counter"] = await deploy_starknet("Counter")
-        starknet_deployments["MockPragmaOracle"] = await deploy_starknet(
-            "MockPragmaOracle"
-        )
-        starknet_deployments["UniversalLibraryCaller"] = await deploy_starknet(
-            "UniversalLibraryCaller"
-        )
-        starknet_deployments["BenchmarkCairoCalls"] = await deploy_starknet(
-            "BenchmarkCairoCalls"
-        )
+    # if NETWORK["type"] is not NetworkType.PROD:
+    #     starknet_deployments["EVM"] = await deploy_starknet(
+    #         "EVM",
+    #         account.address,  # owner
+    #         ETH_TOKEN_ADDRESS,  # native_token_address_
+    #         class_hash["account_contract"],  # account_contract_class_hash_
+    #         class_hash["uninitialized_account"],  # uninitialized_account_class_hash_
+    #         class_hash["Cairo1Helpers"],
+    #         BLOCK_GAS_LIMIT,
+    #     )
+    #     await invoke(
+    #         "EVM",
+    #         "set_coinbase",
+    #         COINBASE,
+    #         address=starknet_deployments["EVM"]["address"],
+    #     )
+    #     starknet_deployments["Counter"] = await deploy_starknet("Counter")
+    #     starknet_deployments["MockPragmaOracle"] = await deploy_starknet(
+    #         "MockPragmaOracle"
+    #     )
+    #     starknet_deployments["UniversalLibraryCaller"] = await deploy_starknet(
+    #         "UniversalLibraryCaller"
+    #     )
+    #     starknet_deployments["BenchmarkCairoCalls"] = await deploy_starknet(
+    #         "BenchmarkCairoCalls"
+    #     )
 
-    # Deploy or upgrade Kakarot
-    if starknet_deployments.get("kakarot") and NETWORK["type"] is not NetworkType.DEV:
-        logger.info("ℹ️  Kakarot already deployed, checking version.")
-        deployed_class_hash = await RPC_CLIENT.get_class_hash_at(
-            starknet_deployments["kakarot"]["address"]
-        )
-        if deployed_class_hash != class_hash["kakarot"]:
-            await invoke("kakarot", "upgrade", class_hash["kakarot"])
-            await invoke(
-                "kakarot",
-                "set_account_contract_class_hash",
-                class_hash["account_contract"],
-            )
-            await invoke(
-                "kakarot",
-                "set_cairo1_helpers_class_hash",
-                class_hash["Cairo1Helpers"],
-            )
-        else:
-            logger.info("✅ Kakarot already up to date.")
-    else:
-        starknet_deployments["kakarot"] = await deploy_starknet(
-            "kakarot",
-            account.address,  # owner
-            ETH_TOKEN_ADDRESS,  # native_token_address_
-            class_hash["account_contract"],  # account_contract_class_hash_
-            class_hash["uninitialized_account"],  # uninitialized_account_class_hash_
-            class_hash["Cairo1Helpers"],
-            BLOCK_GAS_LIMIT,
-        )
-        await invoke(
-            "kakarot",
-            "set_base_fee",
-            DEFAULT_GAS_PRICE,
-            address=starknet_deployments["kakarot"]["address"],
-        )
+    # # Deploy or upgrade Kakarot
+    # if starknet_deployments.get("kakarot") and NETWORK["type"] is not NetworkType.DEV:
+    #     logger.info("ℹ️  Kakarot already deployed, checking version.")
+    #     deployed_class_hash = await RPC_CLIENT.get_class_hash_at(
+    #         starknet_deployments["kakarot"]["address"]
+    #     )
+    #     if deployed_class_hash != class_hash["kakarot"]:
+    #         await invoke("kakarot", "upgrade", class_hash["kakarot"])
+    #         await invoke(
+    #             "kakarot",
+    #             "set_account_contract_class_hash",
+    #             class_hash["account_contract"],
+    #         )
+    #         await invoke(
+    #             "kakarot",
+    #             "set_cairo1_helpers_class_hash",
+    #             class_hash["Cairo1Helpers"],
+    #         )
+    #     else:
+    #         logger.info("✅ Kakarot already up to date.")
+    # else:
+    #     starknet_deployments["kakarot"] = await deploy_starknet(
+    #         "kakarot",
+    #         account.address,  # owner
+    #         ETH_TOKEN_ADDRESS,  # native_token_address_
+    #         class_hash["account_contract"],  # account_contract_class_hash_
+    #         class_hash["uninitialized_account"],  # uninitialized_account_class_hash_
+    #         class_hash["Cairo1Helpers"],
+    #         BLOCK_GAS_LIMIT,
+    #     )
+    #     await invoke(
+    #         "kakarot",
+    #         "set_base_fee",
+    #         DEFAULT_GAS_PRICE,
+    #         address=starknet_deployments["kakarot"]["address"],
+    #     )
 
-    dump_deployments(starknet_deployments)
+    # dump_deployments(starknet_deployments)
 
-    # %% Pre-EIP155 deployments
-    evm_deployments["Multicall3"] = await deploy_with_presigned_tx(
-        MULTICALL3_DEPLOYER, MULTICALL3_SIGNED_TX, name="Multicall3"
-    )
-    evm_deployments["Arachnid_Proxy"] = await deploy_with_presigned_tx(
-        ARACHNID_PROXY_DEPLOYER, ARACHNID_PROXY_SIGNED_TX, name="Arachnid Proxy"
-    )
-    evm_deployments["CreateX"] = await deploy_with_presigned_tx(
-        CREATEX_DEPLOYER, CREATEX_SIGNED_TX, amount=0.3, name="CreateX"
-    )
+    # # %% Pre-EIP155 deployments
+    # evm_deployments["Multicall3"] = await deploy_with_presigned_tx(
+    #     MULTICALL3_DEPLOYER, MULTICALL3_SIGNED_TX, name="Multicall3"
+    # )
+    # evm_deployments["Arachnid_Proxy"] = await deploy_with_presigned_tx(
+    #     ARACHNID_PROXY_DEPLOYER, ARACHNID_PROXY_SIGNED_TX, name="Arachnid Proxy"
+    # )
+    # evm_deployments["CreateX"] = await deploy_with_presigned_tx(
+    #     CREATEX_DEPLOYER, CREATEX_SIGNED_TX, amount=0.3, name="CreateX"
+    # )
 
-    # %% EVM Deployments
-    if not EVM_ADDRESS:
-        logger.info("ℹ️  No EVM address provided, skipping EVM deployments")
-        return
+    # # %% EVM Deployments
+    # if not EVM_ADDRESS:
+    #     logger.info("ℹ️  No EVM address provided, skipping EVM deployments")
+    #     return
 
-    logger.info(f"ℹ️  Using account {EVM_ADDRESS} as deployer")
+    # logger.info(f"ℹ️  Using account {EVM_ADDRESS} as deployer")
 
     await deploy_and_fund_evm_address(
         EVM_ADDRESS, amount=100 if NETWORK["type"] is NetworkType.DEV else 0.01

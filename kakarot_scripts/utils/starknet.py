@@ -29,9 +29,9 @@ from starknet_py.hash.transaction import TransactionHashPrefix, compute_transact
 from starknet_py.hash.utils import message_signature
 from starknet_py.net.account.account import Account
 from starknet_py.net.client_errors import ClientError
-from starknet_py.net.client_models import Call, DeclareTransactionResponse
+from starknet_py.net.client_models import Call, Calls, DeclareTransactionResponse
 from starknet_py.net.full_node_client import _create_broadcasted_txn
-from starknet_py.net.models.transaction import DeclareV1
+from starknet_py.net.models.transaction import DeclareV1, InvokeV1
 from starknet_py.net.schemas.rpc import DeclareTransactionResponseSchema
 from starknet_py.net.signer.stark_curve_signer import KeyPair
 from starkware.starknet.public.abi import get_selector_from_name
@@ -171,15 +171,34 @@ async def fund_address(
             raise ValueError(
                 f"Cannot send {amount / 1e18} ETH from default account with current balance {balance / 1e18} ETH"
             )
-        prepared = eth_contract.functions["transfer"].prepare_invoke_v1(address, amount)
-        tx = await prepared.invoke(max_fee=_max_fee)
+        if await is_multisig(account.address):
+            prepared = eth_contract.functions["transfer"].prepare_invoke_v1(
+                address, amount
+            )
+            call = Call(
+                to_addr=prepared.to_addr,
+                selector=get_selector_from_name("transfer"),
+                calldata=prepared.calldata,
+            )
+            invoke_tx = await account.sign_invoke_v1(
+                calls=call,
+                max_fee=_max_fee,
+                auto_estimate=False,
+            )
 
-        status = await wait_for_transaction(tx.hash)
-        logger.info(
-            f"{status} {amount / 1e18} ETH sent from {hex(account.address)} to {hex(address)}"
-        )
-        balance = (await eth_contract.functions["balanceOf"].call(address)).balance  # type: ignore
-        logger.info(f"💰 Balance of {hex(address)}: {balance / 1e18}")
+            call_argent_multisig_api(call, account, invoke_tx)
+        else:
+            prepared = eth_contract.functions["transfer"].prepare_invoke_v1(
+                address, amount
+            )
+            tx = await prepared.invoke(max_fee=_max_fee)
+
+            status = await wait_for_transaction(tx.hash)
+            logger.info(
+                f"{status} {amount / 1e18} ETH sent from {hex(account.address)} to {hex(address)}"
+            )
+            balance = (await eth_contract.functions["balanceOf"].call(address)).balance  # type: ignore
+            logger.info(f"💰 Balance of {hex(address)}: {balance / 1e18}")
 
 
 async def get_balance(address: Union[int, str], token_contract=None):
@@ -576,3 +595,43 @@ async def wait_for_transaction(tx_hash):
     except Exception as e:
         logger.error(f"Error while waiting for transaction 0x{tx_hash:064x}: {e}")
         return "❌"
+
+
+async def is_multisig(address: int):
+    class_hash = await RPC_CLIENT.get_class_hash_at(address)
+    return class_hash == NETWORK["argent_multisig_class_hash"]
+
+
+def call_argent_multisig_api(calls: Calls, account: Account, transaction: InvokeV1):
+
+    url = f"{NETWORK['argent_multisig_request_url']}/{hex(account.address)}/request"
+    headers = {
+        "content-type": "application/json",
+    }
+    body = {
+        "creator": hex(account.signer.public_key),
+        "transaction": {
+            "maxFee": hex(transaction.max_fee),
+            "nonce": hex(transaction.nonce),
+            "version": hex(transaction.version),
+            "calls": [
+                {
+                    "contractAddress": hex(call.to_addr),
+                    "calldata": [data for data in call.calldata],
+                    "entrypoint": call.selector,
+                }
+                for call in (calls if isinstance(calls, list) else [calls])
+            ],
+            "resource_bounds": {
+                "l1_gas": {"max_amount": "0x0", "max_price_per_unit": "0x0"},
+                "l2_gas": {"max_amount": "0x0", "max_price_per_unit": "0x0"},
+            },
+        },
+        "starknetSignature": {
+            "r": hex(transaction.signature[0]),
+            "s": hex(transaction.signature[1]),
+        },
+    }
+
+    response = requests.post(url, headers=headers, json=body)
+    logger.info(f"Response: {response.json()}")
