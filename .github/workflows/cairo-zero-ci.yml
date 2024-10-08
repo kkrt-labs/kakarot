@@ -5,9 +5,8 @@ on:
     branches:
       - main
   pull_request:
-    paths:
-      - cairo_zero/**
-
+    branches:
+      - "*"
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

@@ -10,10 +10,7 @@ from kakarot_scripts.utils.kakarot import deploy
 
 @pytest_asyncio.fixture(scope="package")
 async def evm_precompiles():
-    return await deploy(
-        "EvmPrecompiles",
-        "EvmPrecompiles",
-    )
+    return await deploy("EvmPrecompiles", "EvmPrecompiles")
 
 
 def ref_alt_bn128_add(x0, y0, x1, y1):
