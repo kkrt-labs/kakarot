@@ -606,33 +606,30 @@ async def send_starknet_transaction(
         "execute_before": current_timestamp + 60 * 60,
     }
     max_fee = _max_fee if max_fee in [None, 0] else max_fee
-    response = (
-        await _get_starknet_contract(
-            "account_contract", address=evm_account.address, provider=relayer
-        )
-        .functions["execute_from_outside"]
-        .invoke_v1(
-            outside_execution=outside_execution,
-            call_array=[
-                {
-                    "to": 0xDEAD,
-                    "selector": 0xDEAD,
-                    "data_offset": 0,
-                    "data_len": len(packed_encoded_unsigned_tx),
-                }
-            ],
-            calldata=list(packed_encoded_unsigned_tx),
-            signature=[
-                *int_to_uint256(signature_r),
-                *int_to_uint256(signature_s),
-                signature_v,
-            ],
-            max_fee=max_fee,
-        )
+    tx_hash = await _invoke_starknet(
+        "account_contract",
+        "execute_from_outside",
+        outside_execution,
+        [
+            {
+                "to": 0xDEAD,
+                "selector": 0xDEAD,
+                "data_offset": 0,
+                "data_len": len(packed_encoded_unsigned_tx),
+            }
+        ],
+        list(packed_encoded_unsigned_tx),
+        [
+            *int_to_uint256(signature_r),
+            *int_to_uint256(signature_s),
+            signature_v,
+        ],
+        address=evm_account.address,
+        account=relayer,
     )
 
-    await wait_for_transaction(tx_hash=response.hash)
-    receipt = await RPC_CLIENT.get_transaction_receipt(response.hash)
+    await wait_for_transaction(tx_hash=tx_hash)
+    receipt = await RPC_CLIENT.get_transaction_receipt(tx_hash)
     transaction_events = [
         event
         for event in receipt.events
