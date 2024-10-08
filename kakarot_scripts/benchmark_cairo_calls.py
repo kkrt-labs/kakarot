@@ -17,7 +17,7 @@ async def main():
     # %% Deploy contracts
     cairo_contract = await deploy_starknet("BenchmarkCairoCalls")
     cairo_contract_caller = await deploy_kakarot(
-        "CairoPrecompiles", "BenchmarkCairoCalls", cairo_contract["address"]
+        "CairoPrecompiles", "BenchmarkCairoCalls", cairo_contract
     )
     await invoke(
         "kakarot",

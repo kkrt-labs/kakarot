@@ -135,21 +135,23 @@ async def main():
     await execute_calls()
     remove_lazy_account(account.address)
 
-    # %% Pre-EIP155 deployments
+    # %% EVM Deployments
     evm_deployments = get_evm_deployments()
-    evm_deployments["Multicall3"] = await deploy_with_presigned_tx(
+
+    # %% Pre-EIP155 deployments, done only once
+    await deploy_with_presigned_tx(
         MULTICALL3_DEPLOYER,
         MULTICALL3_SIGNED_TX,
         name="Multicall3",
         max_fee=int(0.1e18),
     )
-    evm_deployments["Arachnid_Proxy"] = await deploy_with_presigned_tx(
+    await deploy_with_presigned_tx(
         ARACHNID_PROXY_DEPLOYER,
         ARACHNID_PROXY_SIGNED_TX,
         name="Arachnid Proxy",
         max_fee=int(0.1e18),
     )
-    evm_deployments["CreateX"] = await deploy_with_presigned_tx(
+    await deploy_with_presigned_tx(
         CREATEX_DEPLOYER,
         CREATEX_SIGNED_TX,
         amount=0.3,
@@ -157,7 +159,6 @@ async def main():
         max_fee=int(0.2e18),
     )
 
-    # %% EVM Deployments
     if not EVM_ADDRESS:
         logger.info("ℹ️  No EVM address provided, skipping EVM deployments")
         return

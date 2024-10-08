@@ -8,7 +8,7 @@ from collections import defaultdict, namedtuple
 from copy import deepcopy
 from datetime import datetime
 from functools import cache
-from typing import List, Optional, Union, cast
+from typing import Iterable, List, Optional, Union, cast
 
 import requests
 from async_lru import alru_cache
@@ -66,32 +66,27 @@ logger.setLevel(logging.INFO)
 # to have at least 0.1 ETH
 _max_fee = int(0.05e18)
 
+# Global variables for lazy execution and multisig accounts
+_logs = defaultdict(list)
+_lazy_execute = defaultdict(bool)
+_multisig_account = defaultdict(bool)
+
+# Dict to store name to selector mapping
+_selector_to_name = {get_selector_from_name("deployContract"): "deployContract"}
+
+
+def store_selector(_get_selector_from_name):
+    def wrapped(func_name):
+        selector = _get_selector_from_name(func_name)
+        _selector_to_name[selector] = func_name
+        return selector
+
+    return wrapped
+
+
+get_selector_from_name = store_selector(get_selector_from_name)
+
 Artifact = namedtuple("Artifact", ["sierra", "casm"])
-
-
-# To create a new tx
-#
-# argent_api_url = "https://cloud.argent-api.com/v1/multisig/starknet/sepolia"
-# multisig_url = f"{argent_api_url}/0x{multisig_address:064x}/request"
-# data = {
-#     "creator": f"0x{key_pair.public_key:064x}",
-#     "transaction": {
-#         "maxFee": transaction.max_fee,
-#         "nonce": transaction.nonce,
-#         "version": transaction.version,
-#         "calls": [
-#             {
-#                 "contractAddress": hex(call.to_addr),
-#                 "calldata": [str(data) for data in call.calldata],
-#                 "entrypoint": "transfer",
-#             }
-#             for call in calls
-#         ],
-#     },
-#     "starknetSignature": signature,
-# }
-# response = requests.post(multisig_url, json=data)
-# response.json()
 
 
 @alru_cache
@@ -153,6 +148,7 @@ async def get_starknet_account(
             )
         if len(public_keys) > 1:
             register_lazy_account(address)
+            register_multisig_account(address)
             logger.info("ℹ️ Account is a multisig")
     else:
         logger.warning(
@@ -230,6 +226,21 @@ async def get_balance(address: Union[int, str], token_contract=None):
     address = int(address, 16) if isinstance(address, str) else address
     eth_contract = token_contract or await get_eth_contract()
     return (await eth_contract.functions["balanceOf"].call(address)).balance  # type: ignore
+
+
+def dump_class_hashes(class_hashes):
+    json.dump(
+        {name: hex(class_hash) for name, class_hash in class_hashes.items()},
+        open(BUILD_DIR / "class_hashes.json", "w"),
+        indent=2,
+    )
+
+
+def get_class_hashes():
+    return {
+        name: int(class_hash, 16)
+        for name, class_hash in json.load(open(BUILD_DIR / "class_hashes.json")).items()
+    }
 
 
 def dump_declarations(declarations):
@@ -398,27 +409,38 @@ async def deploy_starknet_account(class_hash=None, private_key=None, amount=1):
     }
 
 
+def compute_deployed_class_hash(contract_name):
+    artifact = get_artifact.__wrapped__(contract_name)
+
+    if artifact.sierra is not None:
+        sierra_compiled_contract = artifact.sierra.read_text()
+        compiled_contract = create_sierra_compiled_contract(sierra_compiled_contract)
+        return compute_sierra_class_hash(compiled_contract)
+    else:
+        contract_class = create_compiled_contract(
+            compiled_contract=artifact.casm.read_text()
+        )
+        return compute_class_hash(contract_class=deepcopy(contract_class))
+
+
 async def declare(contract_name):
     logger.info(f"ℹ️  Declaring {contract_name}")
     artifact = get_artifact(contract_name)
+    deployed_class_hash = get_class_hashes()[contract_name]
+    try:
+        await RPC_CLIENT.get_class_by_hash(deployed_class_hash)
+        logger.info("✅ Class already declared, skipping")
+        return deployed_class_hash
+    except Exception:
+        pass
+
     account = next(NETWORK["relayers"])
 
     if artifact.sierra is not None:
         casm_compiled_contract = artifact.casm.read_text()
         sierra_compiled_contract = artifact.sierra.read_text()
-
         casm_class = create_casm_class(casm_compiled_contract)
         class_hash = compute_casm_class_hash(casm_class)
-        compiled_contract = create_sierra_compiled_contract(sierra_compiled_contract)
-        deployed_class_hash = compute_sierra_class_hash(compiled_contract)
-
-        try:
-            await RPC_CLIENT.get_class_by_hash(deployed_class_hash)
-            logger.info("✅ Class already declared, skipping")
-            return deployed_class_hash
-        except Exception:
-            pass
-
         declare_v2_transaction = await account.sign_declare_v2(
             compiled_contract=sierra_compiled_contract,
             compiled_class_hash=class_hash,
@@ -430,20 +452,13 @@ async def declare(contract_name):
         contract_class = create_compiled_contract(
             compiled_contract=artifact.casm.read_text()
         )
-        class_hash = compute_class_hash(contract_class=deepcopy(contract_class))
-        try:
-            await RPC_CLIENT.get_class_by_hash(class_hash)
-            logger.info("✅ Class already declared, skipping")
-            return class_hash
-        except Exception:
-            pass
 
         tx_hash = compute_transaction_hash(
             tx_hash_prefix=TransactionHashPrefix.DECLARE,
             version=1,
             contract_address=account.address,
             entry_point_selector=DEFAULT_ENTRY_POINT_SELECTOR,
-            calldata=[class_hash],
+            calldata=[deployed_class_hash],
             max_fee=_max_fee,
             chain_id=account.signer.chain_id.value,
             additional_data=[await account.get_nonce()],
@@ -511,10 +526,6 @@ async def deploy(contract_name, *args):
     return address
 
 
-_logs = defaultdict(list)
-_lazy_execute = defaultdict(bool)
-
-
 def register_lazy_account(account_address):
     _lazy_execute[account_address] = True
 
@@ -523,11 +534,18 @@ def remove_lazy_account(account_address):
     del _lazy_execute[account_address]
 
 
+def register_multisig_account(account_address):
+    _multisig_account[account_address] = True
+
+
 def lazy_execute(execute):
     @functools.wraps(execute)
     async def wrapper(account, calls):
+        if not isinstance(calls, Iterable):
+            calls = [calls]
+
         if _lazy_execute[account.address]:
-            _logs[account].append(calls)
+            _logs[account].extend(calls)
             return
 
         return await execute(account, calls)
@@ -570,8 +588,35 @@ async def execute_v1(account, calls):
         sender_address=account.address,
         calldata=calldata,
     )
-    params = _create_broadcasted_txn(transaction=transaction)
 
+    if _multisig_account[account.address]:
+        data = {
+            "creator": f"0x{account.signer.public_key:064x}",
+            "transaction": {
+                "maxFee": hex(transaction.max_fee),
+                "nonce": hex(transaction.nonce),
+                "version": hex(transaction.version),
+                "calls": [
+                    {
+                        "contractAddress": hex(call.to_addr),
+                        "calldata": [str(data) for data in call.calldata],
+                        "entrypoint": _selector_to_name[call.selector],
+                    }
+                    for call in calls
+                ],
+            },
+            "starknetSignature": dict(zip(["r", "s"], [hex(v) for v in signature])),
+        }
+        response = requests.post(
+            f"{NETWORK['argent_multisig_api']}/0x{account.address:064x}/request",
+            json=data,
+        )
+        return {
+            "transaction_hash": response.json()["transactionHash"],
+            "status": response.json()["state"],
+        }
+
+    params = _create_broadcasted_txn(transaction=transaction)
     res = cast(
         SentTransactionResponse,
         SentTransactionSchema().load(

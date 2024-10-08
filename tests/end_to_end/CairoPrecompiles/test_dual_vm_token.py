@@ -11,11 +11,9 @@ from tests.utils.errors import cairo_error
 
 @pytest_asyncio.fixture(scope="function")
 async def starknet_token(owner):
-    address = (
-        await deploy_starknet(
-            "StarknetToken", int(1e18), owner.starknet_contract.address
-        )
-    )["address"]
+    address = await deploy_starknet(
+        "StarknetToken", int(1e18), owner.starknet_contract.address
+    )
     return get_contract_starknet("StarknetToken", address=address)
 
 
