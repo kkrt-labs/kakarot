@@ -120,7 +120,7 @@ def get_solidity_artifacts(
             relative_path = Path(file_path).relative_to(src_path).parts[0]
             for library_name, references in libraries.items():
                 result[relative_path][library_name].extend(references)
-        return dict(result)
+        return result
 
     return {
         "bytecode": {
