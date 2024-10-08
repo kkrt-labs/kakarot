@@ -566,7 +566,7 @@ async def execute_calls():
 
 @lazy_execute
 async def execute_v1(account, calls):
-    calldata = _parse_calls(1, calls)
+    calldata = _parse_calls(await account.cairo_version, calls)
     msg_hash = compute_transaction_hash(
         tx_hash_prefix=TransactionHashPrefix.INVOKE,
         version=1,
