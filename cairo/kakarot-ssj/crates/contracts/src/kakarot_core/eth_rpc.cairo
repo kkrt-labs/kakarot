@@ -10,7 +10,7 @@ use evm::model::account::AccountTrait;
 use evm::model::{TransactionResult, Address};
 use evm::{EVMTrait};
 use openzeppelin::token::erc20::interface::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
-use utils::constants::POW_2_53;
+use utils::constants::MAX_SAFE_CHAIN_ID;
 use utils::eth_transaction::transaction::{Transaction, TransactionTrait};
 
 #[starknet::interface]
@@ -128,7 +128,7 @@ pub impl EthRPC<
     fn eth_chain_id(self: @TContractState) -> u64 {
         let tx_info = get_tx_info().unbox();
         let tx_chain_id: u64 = tx_info.chain_id.try_into().unwrap();
-        tx_chain_id % POW_2_53.try_into().unwrap()
+        tx_chain_id % MAX_SAFE_CHAIN_ID.try_into().unwrap()
     }
 
     fn eth_call(
@@ -268,7 +268,7 @@ mod tests {
         start_mock_call, start_cheat_chain_id_global, stop_cheat_chain_id_global, test_address
     };
     use super::safe_get_evm_address;
-    use utils::constants::POW_2_53;
+    use utils::constants::MAX_SAFE_CHAIN_ID;
 
     fn set_up() -> KakarotCore::ContractState {
         // Define the kakarot state to access contract functions
@@ -301,29 +301,29 @@ mod tests {
     }
 
     #[test]
-    fn test_eth_chain_id_returns_input_when_less_than_pow_2_53() {
+    fn test_eth_chain_id_returns_input_when_less_than_max_safe_chain_id() {
         let kakarot_state = KakarotCore::unsafe_new_contract_state();
-        // Convert POW_2_53 - 1 to u64 since POW_2_53 is defined as u128
-        let chain_id: u64 = (POW_2_53 - 1).try_into().unwrap();
+        let chain_id: u64 = MAX_SAFE_CHAIN_ID - 1;
         start_cheat_chain_id_global(chain_id.into());
         assert_eq!(
             kakarot_state.eth_chain_id(),
             chain_id,
-            "Should return original chain ID when below 2^53"
+            "Should return original chain ID when below MAX_SAFE_CHAIN_ID"
         );
         tear_down();
     }
 
     #[test]
-    fn test_eth_chain_id_returns_modulo_when_greater_than_or_equal_to_pow_2_53() {
-        // Test with a value equal to 2^53
+    fn test_eth_chain_id_returns_modulo_when_greater_than_or_equal_to_max_safe_chain_id() {
+        // Test with a value equal to MAX_SAFE_CHAIN_ID
         let kakarot_state = set_up();
-        let chain_id: u64 = POW_2_53.try_into().unwrap();
-        start_cheat_chain_id_global(chain_id.into());
-        assert_eq!(kakarot_state.eth_chain_id(), 0, "Should return 0 when chain ID is 2^53");
+        start_cheat_chain_id_global(MAX_SAFE_CHAIN_ID.into());
+        assert_eq!(
+            kakarot_state.eth_chain_id(), 0, "Should return 0 when chain ID is MAX_SAFE_CHAIN_ID"
+        );
 
-        // Test with a value greater than 2^53
-        let chain_id: u64 = (POW_2_53 + 53).try_into().unwrap();
+        // Test with a value greater than MAX_SAFE_CHAIN_ID
+        let chain_id: u64 = MAX_SAFE_CHAIN_ID + 53;
         start_cheat_chain_id_global(chain_id.into());
         assert_eq!(
             kakarot_state.eth_chain_id(), 53, "Should return correct value after modulo operation"

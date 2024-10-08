@@ -14,6 +14,8 @@ pub const BLOCK_GAS_LIMIT: u64 = 7_000_000;
 pub const MIN_BASE_FEE_PER_BLOB_GAS: u64 = 1;
 // CHAIN_ID = KKRT (0x4b4b5254) in ASCII
 pub const CHAIN_ID: u64 = 1263227476;
+// see https://gist.github.com/rekmarks/a47bd5f2525936c4b8eee31a16345553
+pub const MAX_SAFE_CHAIN_ID: u64 = 4503599627370476;
 
 // STACK
 pub const STACK_MAX_DEPTH: usize = 1024;
