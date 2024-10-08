@@ -1,6 +1,7 @@
 import functools
 import json
 import logging
+from collections import defaultdict
 from pathlib import Path
 from types import MethodType
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
@@ -114,15 +115,12 @@ def get_solidity_artifacts(
     def process_link_references(
         link_references: Dict[str, Dict[str, Any]]
     ) -> Dict[str, Dict[str, Any]]:
-        return {
-            Path(file_path)
-            .relative_to(src_path)
-            .parts[0]: {
-                library_name: references
-                for library_name, references in libraries.items()
-            }
-            for file_path, libraries in link_references.items()
-        }
+        result = defaultdict(lambda: defaultdict(list))
+        for file_path, libraries in link_references.items():
+            relative_path = Path(file_path).relative_to(src_path).parts[0]
+            for library_name, references in libraries.items():
+                result[relative_path][library_name].extend(references)
+        return result
 
     return {
         "bytecode": {
