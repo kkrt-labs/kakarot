@@ -22,6 +22,8 @@ load_dotenv()
 BLOCK_GAS_LIMIT = 7_000_000
 DEFAULT_GAS_PRICE = 1
 BEACON_ROOT_ADDRESS = "0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02"
+# see https://gist.github.com/rekmarks/a47bd5f2525936c4b8eee31a16345553
+MAX_SAFE_CHAIN_ID = 4503599627370476
 
 
 class NetworkType(Enum):
@@ -192,7 +194,7 @@ try:
     if WEB3.is_connected():
         chain_id = WEB3.eth.chain_id
     else:
-        chain_id = starknet_chain_id % 2**53
+        chain_id = starknet_chain_id % MAX_SAFE_CHAIN_ID
 except (
     requests.exceptions.ConnectionError,
     requests.exceptions.MissingSchema,
@@ -202,7 +204,7 @@ except (
         f"⚠️  Could not get chain Id from {NETWORK['rpc_url']}: {e}, defaulting to KKRT"
     )
     starknet_chain_id = int.from_bytes(b"KKRT", "big")
-    chain_id = starknet_chain_id % 2**53
+    chain_id = starknet_chain_id % MAX_SAFE_CHAIN_ID
 
 
 class ChainId(IntEnum):
