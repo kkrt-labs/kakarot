@@ -3,15 +3,14 @@ from time import time
 
 import pytest
 
-from kakarot_scripts.constants import BLOCK_GAS_LIMIT
+from kakarot_scripts.constants import BLOCK_GAS_LIMIT, MAX_SAFE_CHAIN_ID
 
 BLOCK_GAS_LIMIT = BLOCK_GAS_LIMIT
 MIN_BASE_FEE_PER_BLOB_GAS = 1
 
 CHAIN_ID = int.from_bytes(b"KKRT", "big")  # KKRT (0x4b4b5254) in ASCII
 BIG_CHAIN_ID = int.from_bytes(b"SN_SEPOLIA", "big")
-# see https://gist.github.com/rekmarks/a47bd5f2525936c4b8eee31a16345553
-MAX_SAFE_CHAIN_ID = 4503599627370476
+MAX_SAFE_CHAIN_ID = MAX_SAFE_CHAIN_ID
 
 # Class hash of the cairo1 helpers
 CAIRO1_HELPERS_CLASS_HASH = 0xDEADBEEFABDE1E11A5
