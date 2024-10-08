@@ -19,7 +19,7 @@ from starknet_py.common import (
     create_compiled_contract,
     create_sierra_compiled_contract,
 )
-from starknet_py.constants import DEFAULT_ENTRY_POINT_SELECTOR
+from starknet_py.constants import DEFAULT_DEPLOYER_ADDRESS, DEFAULT_ENTRY_POINT_SELECTOR
 from starknet_py.contract import Contract
 from starknet_py.hash.address import compute_address
 from starknet_py.hash.casm_class_hash import compute_casm_class_hash
@@ -27,13 +27,22 @@ from starknet_py.hash.class_hash import compute_class_hash
 from starknet_py.hash.sierra_class_hash import compute_sierra_class_hash
 from starknet_py.hash.transaction import TransactionHashPrefix, compute_transaction_hash
 from starknet_py.hash.utils import message_signature
-from starknet_py.net.account.account import Account
+from starknet_py.net.account.account import Account, _parse_calls
 from starknet_py.net.client_errors import ClientError
-from starknet_py.net.client_models import Call, DeclareTransactionResponse
+from starknet_py.net.client_models import (
+    Call,
+    DeclareTransactionResponse,
+    SentTransactionResponse,
+)
 from starknet_py.net.full_node_client import _create_broadcasted_txn
-from starknet_py.net.models.transaction import DeclareV1
-from starknet_py.net.schemas.rpc import DeclareTransactionResponseSchema
+from starknet_py.net.models.transaction import DeclareV1, InvokeV1
+from starknet_py.net.schemas.rpc import (
+    DeclareTransactionResponseSchema,
+    SentTransactionSchema,
+)
 from starknet_py.net.signer.stark_curve_signer import KeyPair
+from starknet_py.net.udc_deployer.deployer import Deployer
+from starkware.crypto.signature.signature import sign
 from starkware.starknet.public.abi import get_selector_from_name
 
 from kakarot_scripts.constants import (
@@ -62,6 +71,31 @@ _max_fee = int(0.05e18)
 Artifact = namedtuple("Artifact", ["sierra", "casm"])
 
 
+# To create a new tx
+#
+# argent_api_url = "https://cloud.argent-api.com/v1/multisig/starknet/sepolia"
+# multisig_url = f"{argent_api_url}/0x{multisig_address:064x}/request"
+# data = {
+#     "creator": f"0x{key_pair.public_key:064x}",
+#     "transaction": {
+#         "maxFee": transaction.max_fee,
+#         "nonce": transaction.nonce,
+#         "version": transaction.version,
+#         "calls": [
+#             {
+#                 "contractAddress": hex(call.to_addr),
+#                 "calldata": [str(data) for data in call.calldata],
+#                 "entrypoint": "transfer",
+#             }
+#             for call in calls
+#         ],
+#     },
+#     "starknetSignature": signature,
+# }
+# response = requests.post(multisig_url, json=data)
+# response.json()
+
+
 @alru_cache
 async def get_starknet_account(
     address=None,
@@ -80,17 +114,23 @@ async def get_starknet_account(
         )
     key_pair = KeyPair.from_private_key(int(private_key, 16))
 
-    public_key = None
-    for selector in ["get_public_key", "getPublicKey", "getSigner", "get_owner"]:
+    public_keys = None
+    for selector in [
+        "get_public_key",
+        "getPublicKey",
+        "getSigner",
+        "get_owner",
+        "get_signers",
+    ]:
         try:
             call = Call(
                 to_addr=address,
                 selector=get_selector_from_name(selector),
                 calldata=[],
             )
-            public_key = (
-                await RPC_CLIENT.call_contract(call=call, block_hash="pending")
-            )[0]
+            public_keys = await RPC_CLIENT.call_contract(
+                call=call, block_hash="pending"
+            )
             break
         except Exception as err:
             message = str(err)
@@ -108,11 +148,13 @@ async def get_starknet_account(
                 logger.error(f"Raising for account at address {hex(address)}")
                 raise err
 
-    if public_key is not None:
-        if key_pair.public_key != public_key:
+    if public_keys is not None:
+        if key_pair.public_key not in public_keys:
             raise ValueError(
                 f"Public key of account 0x{address:064x} is not consistent with provided private key"
             )
+        if len(public_keys) > 1:
+            logger.info("ℹ️ Account is a multisig")
     else:
         logger.warning(
             f"⚠️ Unable to verify public key for account at address 0x{address:x}"
@@ -131,7 +173,7 @@ async def get_eth_contract(provider=None) -> Contract:
     return Contract(
         ETH_TOKEN_ADDRESS,
         get_abi("ERC20"),
-        provider or await get_starknet_account(),
+        provider or next(NETWORK["relayers"]),
         cairo_version=0,
     )
 
@@ -373,7 +415,7 @@ async def deploy_starknet_account(class_hash=None, private_key=None, amount=1):
 async def declare(contract_name):
     logger.info(f"ℹ️  Declaring {contract_name}")
     artifact = get_artifact(contract_name)
-    account = await get_starknet_account()
+    account = next(NETWORK["relayers"])
 
     if artifact.sierra is not None:
         casm_compiled_contract = artifact.casm.read_text()
@@ -468,54 +510,71 @@ async def deploy(contract_name, *args):
     declarations = get_declarations()
 
     account = await get_starknet_account()
-    deploy_result = await Contract.deploy_contract_v1(
-        account=account,
+
+    deployer = Deployer(
+        deployer_address=DEFAULT_DEPLOYER_ADDRESS,
+        account_address=account.address,
+    )
+    deploy_call, address = deployer.create_contract_deployment(
         class_hash=declarations[contract_name],
         abi=abi,
-        constructor_args=list(args),
-        max_fee=_max_fee,
+        calldata=list(args),
         cairo_version=get_cairo_version(contract_name),
     )
-    status = await wait_for_transaction(deploy_result.hash)
-    logger.info(
-        f"{status} {contract_name} deployed at: 0x{deploy_result.deployed_contract.address:064x}"
-    )
+    res = await execute_v1(account, deploy_call)
+
+    status = await wait_for_transaction(res.transaction_hash)
+    logger.info(f"{status} {contract_name} deployed at: 0x{address:064x}")
     return {
-        "address": deploy_result.deployed_contract.address,
-        "tx": deploy_result.hash,
+        "address": address,
+        "tx": res.transaction_hash,
         "artifact": get_artifact(contract_name)[0],
     }
 
 
-async def invoke_address(contract_address, function_name, *calldata, account=None):
-    account = account or (await get_starknet_account())
-    logger.info(
-        f"ℹ️  Invoking {function_name}({json.dumps(calldata) if calldata else ''}) "
-        f"at address {hex(contract_address)[:10]}"
+async def execute_v1(account, calls, **kwargs):
+    calldata = _parse_calls(1, calls)
+    max_fee = kwargs.pop("max_fee", _max_fee)
+    msg_hash = compute_transaction_hash(
+        tx_hash_prefix=TransactionHashPrefix.INVOKE,
+        version=1,
+        contract_address=account.address,
+        entry_point_selector=DEFAULT_ENTRY_POINT_SELECTOR,
+        calldata=calldata,
+        max_fee=max_fee,
+        chain_id=NETWORK["chain_id"].starknet_chain_id,
+        additional_data=[await account.get_nonce()],
+        **kwargs,
     )
-    return await account.execute_v1(
-        Call(
-            to_addr=contract_address,
-            selector=get_selector_from_name(function_name),
-            calldata=cast(List[int], calldata),
-        ),
-        max_fee=_max_fee,
+    signature = message_signature(
+        msg_hash=msg_hash, priv_key=account.signer.private_key, seed=None
+    )
+    transaction = InvokeV1(
+        version=1,
+        signature=signature,
+        nonce=await account.get_nonce(),
+        max_fee=max_fee,
+        sender_address=account.address,
+        calldata=calldata,
+        **kwargs,
+    )
+    params = _create_broadcasted_txn(transaction=transaction)
+
+    res = await RPC_CLIENT._client.call(
+        method_name="addInvokeTransaction",
+        params={"invoke_transaction": params},
     )
 
+    return cast(SentTransactionResponse, SentTransactionSchema().load(res))
 
-async def invoke_contract(
-    contract_name, function_name, *inputs, address=None, account=None
+
+async def invoke(
+    contract_id: Union[str, int],
+    function_name: str,
+    *calldata,
+    address=None,
+    account=None,
 ):
-    account = account or (await get_starknet_account())
-    contract = get_contract(contract_name, address=address, provider=account)
-    call = contract.functions[function_name].prepare_invoke_v1(*inputs)
-    logger.info(
-        f"ℹ️  Invoking {contract_name}.{function_name}({json.dumps(inputs) if inputs else ''})"
-    )
-    return await account.execute_v1(call, max_fee=_max_fee)
-
-
-async def invoke(contract: Union[str, int], *args, **kwargs):
     """
     Invoke a contract specified:
      - either with a name (expect that a matching ABIs is to be found in the project artifacts)
@@ -523,14 +582,24 @@ async def invoke(contract: Union[str, int], *args, **kwargs):
      - or with a plain address (in this later case, no parsing is done on the calldata)
        `invoke(0x1234, "foo")`.
     """
-    response = await (
-        invoke_address(contract, *args, **kwargs)
-        if isinstance(contract, int)
-        else invoke_contract(contract, *args, **kwargs)
+    account = account or await get_starknet_account()
+    logger.info(
+        f"ℹ️  Invoking {contract_id}.{function_name}({json.dumps(calldata) if calldata else ''})"
     )
+    if isinstance(contract_id, int):
+        call = Call(
+            to_addr=contract_id,
+            selector=get_selector_from_name(function_name),
+            calldata=cast(List[int], calldata),
+        )
+    else:
+        contract = get_contract(contract_id, address=address, provider=account)
+        call = contract.functions[function_name].prepare_invoke_v1(*calldata)
+
+    response = await execute_v1(account, call)
     status = await wait_for_transaction(response.transaction_hash)
     logger.info(
-        f"{status} {contract}.{args[0]} invoked at tx: 0x{response.transaction_hash:064x}"
+        f"{status} {contract_id}.{function_name} invoked at tx: 0x{response.transaction_hash:064x}"
     )
     return response.transaction_hash
 
