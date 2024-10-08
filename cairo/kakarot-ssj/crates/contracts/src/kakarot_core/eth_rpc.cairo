@@ -318,7 +318,9 @@ mod tests {
         // Test with a value equal to MAX_SAFE_CHAIN_ID
         let kakarot_state = set_up();
         start_cheat_chain_id_global(MAX_SAFE_CHAIN_ID.into());
-        assert_eq!(kakarot_state.eth_chain_id(), 0, "Should return 0 when chain ID is MAX_SAFE_CHAIN_ID");
+        assert_eq!(
+            kakarot_state.eth_chain_id(), 0, "Should return 0 when chain ID is MAX_SAFE_CHAIN_ID"
+        );
 
         // Test with a value greater than MAX_SAFE_CHAIN_ID
         let chain_id: u64 = MAX_SAFE_CHAIN_ID + 53;
