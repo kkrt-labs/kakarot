@@ -355,5 +355,5 @@ NETWORK["relayers"] = RelayerPool(
 
 logger.info(
     f"ℹ️  Connected to Starknet chain id {bytes.fromhex(f'{ChainId.starknet_chain_id.value:x}')} "
-    f"and Kakarot chain id {bytes.fromhex(f'{ChainId.chain_id.value:x}')}"
+    f"and Kakarot chain id {bytes.fromhex(f'{ChainId.chain_id.value:014x}')}"
 )
