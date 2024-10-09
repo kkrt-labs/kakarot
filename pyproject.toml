@@ -21,6 +21,7 @@ ef_tests = "kakarot_scripts.ef_tests.fetch:generate_tests"
 [tool.uv.sources]
 kakarot-scripts = { path = "./kakarot_scripts" }
 ethereum = { git = "https://github.com/ethereum/execution-specs.git" }
+py-evm = { git = "https://github.com/ethereum/py-evm", rev = "f2219d6df83ede8f9574eab48cbe4bc33197066f" }
 
 [tool.uv]
 dev-dependencies = [
@@ -35,6 +36,7 @@ dev-dependencies = [
   "eth-typing==3.5.2",
   "eth-utils>=2.1.0",
   "ethereum",
+  "py-evm",
   "hypothesis==6.100.1",
   "ipykernel>=6.23.1",
   "isort>=5.10.1",
