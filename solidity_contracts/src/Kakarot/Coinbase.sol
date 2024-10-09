@@ -5,7 +5,7 @@ import {DualVmToken} from "../CairoPrecompiles/DualVmToken.sol";
 
 contract Coinbase {
     /// @dev State variable to store the owner of the contract
-    address immutable owner;
+    address public owner;
 
     /// @dev The EVM address of the DualVmToken for Kakarot ETH.
     /// @dev DualVmToken.balanceOf(this) is the same as address(this).balance
@@ -27,5 +27,12 @@ contract Coinbase {
     function withdraw(uint256 toStarknetAddress) external onlyOwner {
         uint256 balance = address(this).balance;
         kakarotEth.transfer(toStarknetAddress, balance);
+    }
+
+    /// @notice Transfers ownership of the contract to a new address
+    /// @param newOwner The address to transfer ownership to
+    function transferOwnership(address newOwner) external onlyOwner {
+        require(newOwner != address(0), "New owner cannot be the zero address");
+        owner = newOwner;
     }
 }
