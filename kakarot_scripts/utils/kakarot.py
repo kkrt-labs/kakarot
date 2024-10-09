@@ -478,14 +478,6 @@ async def send_pre_eip155_transaction(
     await _invoke_starknet(
         "kakarot", "set_authorized_pre_eip155_tx", int(evm_address, 16), msg_hash
     )
-    nonce = await _call_starknet(
-        "account_contract", "get_nonce", address=starknet_address
-    )
-    if nonce != 0:
-        logger.info(
-            f"ℹ️  Nonce for {evm_address} is not 0 ({nonce}), skipping transaction"
-        )
-        return
 
     if WEB3.is_connected():
         tx_hash = WEB3.eth.send_raw_transaction(signed_tx)
@@ -754,12 +746,20 @@ async def deploy_with_presigned_tx(
     deployer_starknet_address = await deploy_and_fund_evm_address(
         deployer_evm_address, amount
     )
+    nonce = (
+        await _call_starknet(
+            "account_contract", "get_nonce", address=deployer_starknet_address
+        )
+    ).nonce
+    if nonce != 0:
+        logger.info(
+            f"ℹ️  Nonce for {deployer_evm_address} is not 0 ({nonce}), skipping transaction"
+        )
+        return
+
     response = await send_pre_eip155_transaction(
         deployer_evm_address, deployer_starknet_address, signed_tx, max_fee
     )
-    if response is None:
-        logger.info("ℹ️  Transaction already executed")
-        return
 
     receipt, response, success, gas_used = response
     deployed_address = response[1]
