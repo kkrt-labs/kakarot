@@ -315,7 +315,7 @@ def get_log_receipts(tx_receipt):
     if WEB3.is_connected():
         return tx_receipt.logs
 
-    kakarot_address = _get_starknet_deployments()["kakarot"]["address"]
+    kakarot_address = _get_starknet_deployments()["kakarot"]
     kakarot_events = [
         event
         for event in tx_receipt.events
@@ -480,6 +480,14 @@ async def send_pre_eip155_transaction(
     await _invoke_starknet(
         "kakarot", "set_authorized_pre_eip155_tx", int(evm_address, 16), msg_hash
     )
+    nonce = await _call_starknet(
+        "account_contract", "get_nonce", address=starknet_address
+    )
+    if nonce != 0:
+        logger.info(
+            f"ℹ️  Nonce for {evm_address} is not 0 ({nonce}), skipping transaction"
+        )
+        return
 
     if WEB3.is_connected():
         tx_hash = WEB3.eth.send_raw_transaction(signed_tx)
@@ -495,6 +503,7 @@ async def send_pre_eip155_transaction(
         # Keypair not required for already signed txs
         key_pair=KeyPair(int(0x10), 0x20),
     )
+
     return await send_starknet_transaction(
         evm_account=sender_account,
         signature_r=int.from_bytes(r, "big"),
@@ -606,33 +615,30 @@ async def send_starknet_transaction(
         "execute_before": current_timestamp + 60 * 60,
     }
     max_fee = _max_fee if max_fee in [None, 0] else max_fee
-    response = (
-        await _get_starknet_contract(
-            "account_contract", address=evm_account.address, provider=relayer
-        )
-        .functions["execute_from_outside"]
-        .invoke_v1(
-            outside_execution=outside_execution,
-            call_array=[
-                {
-                    "to": 0xDEAD,
-                    "selector": 0xDEAD,
-                    "data_offset": 0,
-                    "data_len": len(packed_encoded_unsigned_tx),
-                }
-            ],
-            calldata=list(packed_encoded_unsigned_tx),
-            signature=[
-                *int_to_uint256(signature_r),
-                *int_to_uint256(signature_s),
-                signature_v,
-            ],
-            max_fee=max_fee,
-        )
+    tx_hash = await _invoke_starknet(
+        "account_contract",
+        "execute_from_outside",
+        outside_execution,
+        [
+            {
+                "to": 0xDEAD,
+                "selector": 0xDEAD,
+                "data_offset": 0,
+                "data_len": len(packed_encoded_unsigned_tx),
+            }
+        ],
+        list(packed_encoded_unsigned_tx),
+        [
+            *int_to_uint256(signature_r),
+            *int_to_uint256(signature_s),
+            signature_v,
+        ],
+        address=evm_account.address,
+        account=relayer,
     )
 
-    await wait_for_transaction(tx_hash=response.hash)
-    receipt = await RPC_CLIENT.get_transaction_receipt(response.hash)
+    await wait_for_transaction(tx_hash=tx_hash)
+    receipt = await RPC_CLIENT.get_transaction_receipt(tx_hash)
     transaction_events = [
         event
         for event in receipt.events
@@ -750,9 +756,14 @@ async def deploy_with_presigned_tx(
     deployer_starknet_address = await deploy_and_fund_evm_address(
         deployer_evm_address, amount
     )
-    receipt, response, success, gas_used = await send_pre_eip155_transaction(
+    response = await send_pre_eip155_transaction(
         deployer_evm_address, deployer_starknet_address, signed_tx, max_fee
     )
+    if response is None:
+        logger.info("ℹ️  Transaction already executed")
+        return
+
+    receipt, response, success, gas_used = response
     deployed_address = response[1]
     logger.info(f"✅ {name} Deployed at: 0x{deployed_address:040x}")
     deployed_starknet_address = await get_starknet_address(deployed_address)

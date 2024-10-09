@@ -43,7 +43,7 @@ def serialize_data_type(data_type: dict) -> Tuple:
 
 @pytest_asyncio.fixture(scope="module")
 async def pragma_caller(owner):
-    pragma_oracle_address = get_deployments()["MockPragmaOracle"]["address"]
+    pragma_oracle_address = get_deployments()["MockPragmaOracle"]
     return await deploy(
         "CairoPrecompiles",
         "PragmaCaller",

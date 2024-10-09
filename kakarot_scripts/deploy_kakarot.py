@@ -32,11 +32,17 @@ from kakarot_scripts.utils.starknet import deploy as deploy_starknet
 from kakarot_scripts.utils.starknet import (
     dump_declarations,
     dump_deployments,
+    execute_calls,
     get_balance,
     get_declarations,
 )
 from kakarot_scripts.utils.starknet import get_deployments as get_starknet_deployments
-from kakarot_scripts.utils.starknet import get_starknet_account, invoke
+from kakarot_scripts.utils.starknet import (
+    get_starknet_account,
+    invoke,
+    register_lazy_account,
+    remove_lazy_account,
+)
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -47,6 +53,7 @@ logger.setLevel(logging.INFO)
 async def main():
     # %% Declarations
     account = await get_starknet_account()
+    register_lazy_account(account.address)
     logger.info(f"ℹ️  Using account 0x{account.address:064x} as deployer")
     balance_pref = await get_balance(account.address)
 
@@ -71,7 +78,7 @@ async def main():
             "EVM",
             "set_coinbase",
             COINBASE,
-            address=starknet_deployments["EVM"]["address"],
+            address=starknet_deployments["EVM"],
         )
         starknet_deployments["Counter"] = await deploy_starknet("Counter")
         starknet_deployments["MockPragmaOracle"] = await deploy_starknet(
@@ -88,7 +95,7 @@ async def main():
     if starknet_deployments.get("kakarot") and NETWORK["type"] is not NetworkType.DEV:
         logger.info("ℹ️  Kakarot already deployed, checking version.")
         deployed_class_hash = await RPC_CLIENT.get_class_hash_at(
-            starknet_deployments["kakarot"]["address"]
+            starknet_deployments["kakarot"]
         )
         if deployed_class_hash != class_hash["kakarot"]:
             await invoke("kakarot", "upgrade", class_hash["kakarot"])
@@ -118,26 +125,33 @@ async def main():
             "kakarot",
             "set_base_fee",
             DEFAULT_GAS_PRICE,
-            address=starknet_deployments["kakarot"]["address"],
+            address=starknet_deployments["kakarot"],
         )
 
     dump_deployments(starknet_deployments)
 
-    # %% Pre-EIP155 deployments
+    # Execute calls in lazy mode
+    # After this point, Kakarot needs to be deployed for the remaining calls to be executed
+    await execute_calls()
+    remove_lazy_account(account.address)
+
+    # %% EVM Deployments
     evm_deployments = get_evm_deployments()
-    evm_deployments["Multicall3"] = await deploy_with_presigned_tx(
+
+    # %% Pre-EIP155 deployments, done only once
+    await deploy_with_presigned_tx(
         MULTICALL3_DEPLOYER,
         MULTICALL3_SIGNED_TX,
         name="Multicall3",
         max_fee=int(0.1e18),
     )
-    evm_deployments["Arachnid_Proxy"] = await deploy_with_presigned_tx(
+    await deploy_with_presigned_tx(
         ARACHNID_PROXY_DEPLOYER,
         ARACHNID_PROXY_SIGNED_TX,
         name="Arachnid Proxy",
         max_fee=int(0.1e18),
     )
-    evm_deployments["CreateX"] = await deploy_with_presigned_tx(
+    await deploy_with_presigned_tx(
         CREATEX_DEPLOYER,
         CREATEX_SIGNED_TX,
         amount=0.3,
@@ -145,7 +159,6 @@ async def main():
         max_fee=int(0.2e18),
     )
 
-    # %% EVM Deployments
     if not EVM_ADDRESS:
         logger.info("ℹ️  No EVM address provided, skipping EVM deployments")
         return
