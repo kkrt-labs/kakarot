@@ -6,17 +6,27 @@ endif
 
 .PHONY: build test coverage clean
 
+# 176384150 corresponds to release v0.1.13 of Kakarot SSJ.
+KKRT_SSJ_RELEASE_ID = 176384150
+# Kakarot SSJ artifacts for precompiles.
+KKRT_SSJ_BUILD_ARTIFACT_URL = $(shell curl -L https://api.github.com/repos/kkrt-labs/kakarot-ssj/releases/${KKRT_SSJ_RELEASE_ID} | jq -r '.assets[0].browser_download_url')
 KATANA_VERSION = v1.0.0-alpha.14
+ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
 BUILD_DIR = build
 SSJ_DIR = $(BUILD_DIR)/ssj
+SSJ_ZIP = dev-artifacts.zip
 
-build-ssj:
-	@echo "Building Kakarot SSJ"
-	@mkdir -p $(SSJ_DIR)
-	@cd cairo/kakarot-ssj && scarb build -p contracts && find target/dev -type f -name '*contracts*' | grep -vE 'test|mock|Mock' | xargs -I {} cp {} ../../$(SSJ_DIR)
+$(SSJ_DIR): $(SSJ_ZIP)
+	rm -rf $(SSJ_DIR)
+	mkdir -p $(SSJ_DIR)
+	unzip -o $(SSJ_ZIP) -d $(SSJ_DIR)
+	rm -f $(SSJ_ZIP)
 
-build: build-ssj
+$(SSJ_ZIP):
+	curl -sL -o $(SSJ_ZIP) "$(KKRT_SSJ_BUILD_ARTIFACT_URL)"
+
+build: $(SSJ_DIR)
 	uv run compile
 
 deploy: build build-sol
