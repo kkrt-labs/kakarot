@@ -88,7 +88,7 @@ The project uses [uv](https://github.com/astral-sh/uv) to manage python
 dependencies and run commands. To install uv:
 
 ```bash
-curl -L https://install.astral.sh | bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
 To build the CairoZero files:
