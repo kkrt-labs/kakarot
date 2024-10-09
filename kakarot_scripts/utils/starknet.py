@@ -71,7 +71,7 @@ _logs = defaultdict(list)
 _lazy_execute = defaultdict(bool)
 _multisig_account = defaultdict(bool)
 
-# Dict to store name to selector mapping
+# Dict to store selector to name mapping because argent api requires the name but calls have selector
 _selector_to_name = {get_selector_from_name("deployContract"): "deployContract"}
 
 
