@@ -336,22 +336,27 @@ class RelayerPool:
         return relayer
 
 
-NETWORK["relayers"] = RelayerPool(
-    NETWORK.get(
-        "relayers",
-        (
-            [
-                {
-                    "address": int(NETWORK["account_address"], 16),
-                    "private_key": int(NETWORK["private_key"], 16),
-                }
-            ]
-            if NETWORK["account_address"] is not None
-            and NETWORK["private_key"] is not None
-            else []
-        ),
-    )
-)
+if (
+    os.getenv(f"{prefix}_RELAYER_ACCOUNT_ADDRESS") is not None
+    and os.getenv(f"{prefix}_RELAYER_PRIVATE_KEY") is not None
+):
+    default_relayer = {
+        "address": int(os.environ[f"{prefix}_RELAYER_ACCOUNT_ADDRESS"], 16),
+        "private_key": int(os.environ[f"{prefix}_RELAYER_PRIVATE_KEY"], 16),
+    }
+elif NETWORK["account_address"] is not None and NETWORK["private_key"] is not None:
+    default_relayer = {
+        "address": int(NETWORK["account_address"], 16),
+        "private_key": int(NETWORK["private_key"], 16),
+    }
+else:
+    default_relayer = None
+
+if default_relayer is None and NETWORK.get("relayers") is None:
+    raise ValueError("No account nor relayers defined for this network")
+
+NETWORK["relayers"] = RelayerPool(NETWORK.get("relayers", [default_relayer]))
+
 
 logger.info(
     f"ℹ️  Connected to Starknet chain id {bytes.fromhex(f'{ChainId.starknet_chain_id.value:x}')} "

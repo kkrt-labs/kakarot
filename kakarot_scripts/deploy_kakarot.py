@@ -169,15 +169,20 @@ async def main():
         EVM_ADDRESS, amount=100 if NETWORK["type"] is NetworkType.DEV else 0.01
     )
 
-    bridge = await deploy_evm("CairoPrecompiles", "EthStarknetBridge")
-    evm_deployments["Bridge"] = {
-        "address": int(bridge.address, 16),
-        "starknet_address": bridge.starknet_address,
-    }
-    await invoke(
-        "kakarot", "set_authorized_cairo_precompile_caller", int(bridge.address, 16), 1
-    )
-    await invoke("kakarot", "set_coinbase", int(bridge.address, 16))
+    coinbase = (await call("kakarot", "get_coinbase")).coinbase
+    if evm_deployments.get("Bridge", {}).get("address") != coinbase:
+        bridge = await deploy_evm("CairoPrecompiles", "EthStarknetBridge")
+        evm_deployments["Bridge"] = {
+            "address": int(bridge.address, 16),
+            "starknet_address": bridge.starknet_address,
+        }
+        await invoke(
+            "kakarot",
+            "set_authorized_cairo_precompile_caller",
+            int(bridge.address, 16),
+            1,
+        )
+        await invoke("kakarot", "set_coinbase", int(bridge.address, 16))
 
     coinbase = (await call("kakarot", "get_coinbase")).coinbase
     if coinbase == 0:
@@ -185,11 +190,19 @@ async def main():
     else:
         logger.info(f"✅ Coinbase set to: 0x{coinbase:040x}")
 
-    weth = await deploy_evm("WETH", "WETH9")
-    evm_deployments["WETH"] = {
-        "address": int(weth.address, 16),
-        "starknet_address": weth.starknet_address,
-    }
+    weth_starknet_address = (
+        await call(
+            "kakarot",
+            "get_starknet_address",
+            evm_deployments.get("WETH", {}).get("address", 0),
+        )
+    ).starknet_address
+    if evm_deployments.get("WETH", {}).get("starknet_address") != weth_starknet_address:
+        weth = await deploy_evm("WETH", "WETH9")
+        evm_deployments["WETH"] = {
+            "address": int(weth.address, 16),
+            "starknet_address": weth.starknet_address,
+        }
 
     dump_evm_deployments(evm_deployments)
     balance_after = await get_balance(account.address)

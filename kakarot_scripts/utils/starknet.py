@@ -1,3 +1,4 @@
+import asyncio
 import functools
 import json
 import logging
@@ -147,7 +148,6 @@ async def get_starknet_account(
                 f"Public key of account 0x{address:064x} is not consistent with provided private key"
             )
         if len(public_keys) > 1:
-            register_lazy_account(address)
             register_multisig_account(address)
             logger.info("ℹ️ Account is a multisig")
     else:
@@ -611,9 +611,26 @@ async def execute_v1(account, calls):
             f"{NETWORK['argent_multisig_api']}/0x{account.address:064x}/request",
             json=data,
         )
+        content = response.json()["content"]
+        transaction_id = content["id"]
+        status = content["state"]
+        while status not in {"TX_ACCEPTED_L2", "REVERTED"}:
+            response = requests.get(
+                f"{NETWORK['argent_multisig_api']}/0x{account.address:064x}/request"
+            )
+            contents = [
+                content
+                for content in response.json()["content"]
+                if content["id"] == transaction_id
+            ]
+            if len(contents) == 0:
+                raise Exception("Transaction not found")
+            content = contents[0]
+            status = content["state"]
+            await asyncio.sleep(5)
         return {
-            "transaction_hash": response.json()["content"]["transactionHash"],
-            "status": response.json()["content"]["state"],
+            "transaction_hash": content["transactionHash"],
+            "status": content["state"],
         }
 
     params = _create_broadcasted_txn(transaction=transaction)
