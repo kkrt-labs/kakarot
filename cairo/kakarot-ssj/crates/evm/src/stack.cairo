@@ -209,9 +209,17 @@ impl StackImpl of StackTrait {
     fn pop_n(ref self: Stack, mut n: usize) -> Result<Array<u256>, EVMError> {
         ensure(!(n > self.len()), EVMError::StackUnderflow)?;
         let mut popped_items = ArrayTrait::<u256>::new();
+        let mut err = Result::Ok(array![]);
         for _ in 0..n {
-            popped_items.append(self.pop().unwrap());
+            let popped_item = self.pop();
+            match popped_item {
+                Result::Ok(item) => popped_items.append(item),
+                Result::Err(pop_error) => { err = Result::Err(pop_error); break;},
+            };
         };
+        if err.is_err() {
+            return err;
+        }
         Result::Ok(popped_items)
     }
 
@@ -632,5 +640,126 @@ mod tests {
             assert!(result.is_err());
             assert_eq!(result.unwrap_err(), EVMError::StackUnderflow);
         }
+    }
+}
+
+#[cfg(feature: 'pytest')]
+mod pytests {
+    //! Pytests are tests that are run with the scarb-pytest framework.
+    //! This framework allows for testing based on various inputs provided by a third-party test
+    //! runner such as pytest or cargo test.
+    use core::fmt::{Formatter};
+    use crate::errors::{EVMErrorTrait};
+    use utils::pytests::json::{JsonMut, Json};
+    use utils::pytests::from_array::FromArray;
+    use crate::stack::{Stack, StackTrait};
+
+    impl StackJSON of JsonMut<Stack> {
+        fn to_json(ref self: Stack) -> ByteArray {
+            let mut json: ByteArray = "";
+            let mut formatter = Formatter { buffer: json };
+            write!(formatter, "[").unwrap();
+            for i in 0
+                ..self
+                    .len() {
+                        let item = self.items.get(i.into()).deref();
+                        write!(formatter, "{}", item).unwrap();
+                        if i != self.len() - 1 {
+                            write!(formatter, ", ").unwrap();
+                        }
+                    };
+            write!(formatter, "]").unwrap();
+            formatter.buffer
+        }
+    }
+
+    impl StackFromArray of FromArray<u256> {
+        type Output = Stack;
+        fn from_array(array: Span<u256>) -> Self::Output {
+            let mut stack = StackTrait::new();
+            for item in array {
+                stack.push(*item).expect('Stack FromArray failed');
+            };
+            stack
+        }
+    }
+
+    fn test__stack_push(values: Span<u256>) -> ByteArray {
+        let mut stack = StackTrait::new();
+        let mut err = Result::Ok(());
+        for value in values {
+            match stack.push(*value) {
+                Result::Ok(()) => (),
+                Result::Err(evm_error) => {
+                    err = Result::Err(evm_error);
+                    break;
+                },
+            };
+        };
+        if err.is_err() {
+            core::panic_with_felt252(err.unwrap_err().to_string());
+        };
+        stack.to_json()
+    }
+
+    fn test__stack_pop(stack: Span<u256>) -> ByteArray {
+        let mut stack = StackFromArray::from_array(stack);
+        let mut err = Result::Ok(());
+        let value = match stack.pop() {
+            Result::Ok(value) => value,
+            Result::Err(evm_error) => { err = Result::Err(evm_error); 0},
+        };
+        if err.is_err() {
+            core::panic_with_felt252(err.unwrap_err().to_string());
+        };
+        let mut output: (Stack, u256) = (stack, value);
+        output.to_json()
+    }
+
+    fn test__stack_pop_n(stack: Span<u256>, n: usize) -> ByteArray {
+        let mut stack = StackFromArray::from_array(stack);
+        let mut err = Result::Ok(());
+        let values = match stack.pop_n(n) {
+            Result::Ok(values) => values,
+            Result::Err(evm_error) => { err = Result::Err(evm_error); array![]},
+        };
+        if err.is_err() {
+            core::panic_with_felt252(err.unwrap_err().to_string());
+        };
+        let mut output: (Stack, Span<u256>) = (stack, values.span());
+        output.to_json()
+    }
+
+    fn test__stack_peek(stack: Span<u256>, index: usize) -> ByteArray {
+        let mut stack = StackFromArray::from_array(stack);
+        let mut err = Result::Ok(());
+        let value = match stack.peek_at(index) {
+            Result::Ok(value) => value,
+            Result::Err(evm_error) => { err = Result::Err(evm_error); 0},
+        };
+        if err.is_err() {
+            core::panic_with_felt252(err.unwrap_err().to_string());
+        };
+
+        let mut output: (Stack, u256) = (stack, value);
+        output.to_json()
+    }
+
+    fn test__stack_swap(stack: Span<u256>, index: usize) -> ByteArray {
+        let mut stack = StackFromArray::from_array(stack);
+        let mut err = Result::Ok(());
+        match stack.swap_i(index) {
+            Result::Ok(()) => (),
+            Result::Err(evm_error) => { err = Result::Err(evm_error); },
+        };
+        if err.is_err() {
+            core::panic_with_felt252(err.unwrap_err().to_string());
+        };
+        stack.to_json()
+    }
+
+    fn test__stack_new() -> ByteArray {
+        let mut stack: Stack = Default::default();
+        stack.to_json()
     }
 }

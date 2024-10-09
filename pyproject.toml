@@ -19,6 +19,7 @@ deploy = "kakarot_scripts.deploy_kakarot:main_sync"
 ef_tests = "kakarot_scripts.ef_tests.fetch:generate_tests"
 
 [tool.uv.sources]
+py_tests = { path = "./cairo/kakarot-ssj/py_tests" }
 kakarot-scripts = { path = "./kakarot_scripts" }
 ethereum = { git = "https://github.com/ethereum/execution-specs.git" }
 

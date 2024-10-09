@@ -23,3 +23,7 @@ assert_macros = "2.8.2"
 [scripts]
 test = "snforge test --max-n-steps 4294967295"
 test-profiling = "snforge test --max-n-steps 4294967295 --build-profile"
+
+[features]
+default = []
+pytest = []
