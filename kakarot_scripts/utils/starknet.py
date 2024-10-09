@@ -288,11 +288,11 @@ def get_artifact(contract_name):
         return Artifact(sierra=None, casm=artifacts[0])
 
     # Cairo 1 artifacts
-    artifacts = [
+    artifacts = list(BUILD_DIR_SSJ.glob(f"**/*{contract_name}.*.json")) or [
         artifact
         for artifact in list(CAIRO_DIR.glob(f"**/*{contract_name}.*.json"))
         if "test" not in str(artifact)
-    ] or list(BUILD_DIR_SSJ.glob(f"**/*{contract_name}.*.json"))
+    ]
     if artifacts:
         sierra, casm = (
             artifacts
@@ -612,8 +612,8 @@ async def execute_v1(account, calls):
             json=data,
         )
         return {
-            "transaction_hash": response.json()["transactionHash"],
-            "status": response.json()["state"],
+            "transaction_hash": response.json()["content"]["transactionHash"],
+            "status": response.json()["content"]["state"],
         }
 
     params = _create_broadcasted_txn(transaction=transaction)
@@ -658,6 +658,7 @@ async def invoke(
         )
     else:
         contract = get_contract(contract_id, address=address, provider=account)
+        _selector_to_name[get_selector_from_name(function_name)] = function_name
         call = contract.functions[function_name].prepare_invoke_v1(*calldata)
 
     response = await execute_v1(account, call)
