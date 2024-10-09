@@ -214,7 +214,7 @@ async def main():
     coinbase = (await call("kakarot", "get_coinbase")).coinbase
     if evm_deployments.get("Coinbase", {}).get("address") != coinbase:
         contract = await deploy_evm(
-            "Starknet",
+            "Kakarot",
             "Coinbase",
             to_checksum_address(f'{evm_deployments["KakarotETH"]["address"]:040x}'),
         )
