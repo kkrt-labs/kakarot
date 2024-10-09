@@ -44,6 +44,7 @@ NETWORKS = {
         "max_wait": 60,
         "class_hash": 0x061DAC032F228ABEF9C6626F995015233097AE253A7F72D68552DB02F2971B8F,
         "voyager_api_url": "https://api.voyager.online/beta",
+        "argent_multisig_api": "https://cloud.argent-api.com/v1/multisig/starknet/mainnet",
     },
     "sepolia": {
         "name": "starknet-sepolia",
@@ -56,6 +57,7 @@ NETWORKS = {
         "max_wait": 20,
         "class_hash": 0x061DAC032F228ABEF9C6626F995015233097AE253A7F72D68552DB02F2971B8F,
         "voyager_api_url": "https://sepolia-api.voyager.online/beta",
+        "argent_multisig_api": "https://cloud.argent-api.com/v1/multisig/starknet/sepolia",
     },
     "starknet-devnet": {
         "name": "starknet-devnet",

@@ -4,12 +4,11 @@ import logging
 import random
 import re
 import subprocess
-from collections import namedtuple
+from collections import defaultdict, namedtuple
 from copy import deepcopy
 from datetime import datetime
 from functools import cache
-from pathlib import Path
-from typing import List, Union, cast
+from typing import Iterable, List, Optional, Union, cast
 
 import requests
 from async_lru import alru_cache
@@ -19,7 +18,7 @@ from starknet_py.common import (
     create_compiled_contract,
     create_sierra_compiled_contract,
 )
-from starknet_py.constants import DEFAULT_ENTRY_POINT_SELECTOR
+from starknet_py.constants import DEFAULT_DEPLOYER_ADDRESS, DEFAULT_ENTRY_POINT_SELECTOR
 from starknet_py.contract import Contract
 from starknet_py.hash.address import compute_address
 from starknet_py.hash.casm_class_hash import compute_casm_class_hash
@@ -27,13 +26,21 @@ from starknet_py.hash.class_hash import compute_class_hash
 from starknet_py.hash.sierra_class_hash import compute_sierra_class_hash
 from starknet_py.hash.transaction import TransactionHashPrefix, compute_transaction_hash
 from starknet_py.hash.utils import message_signature
-from starknet_py.net.account.account import Account
+from starknet_py.net.account.account import Account, _parse_calls
 from starknet_py.net.client_errors import ClientError
-from starknet_py.net.client_models import Call, DeclareTransactionResponse
+from starknet_py.net.client_models import (
+    Call,
+    DeclareTransactionResponse,
+    SentTransactionResponse,
+)
 from starknet_py.net.full_node_client import _create_broadcasted_txn
-from starknet_py.net.models.transaction import DeclareV1
-from starknet_py.net.schemas.rpc import DeclareTransactionResponseSchema
+from starknet_py.net.models.transaction import DeclareV1, InvokeV1
+from starknet_py.net.schemas.rpc import (
+    DeclareTransactionResponseSchema,
+    SentTransactionSchema,
+)
 from starknet_py.net.signer.stark_curve_signer import KeyPair
+from starknet_py.net.udc_deployer.deployer import Deployer
 from starkware.starknet.public.abi import get_selector_from_name
 
 from kakarot_scripts.constants import (
@@ -59,6 +66,26 @@ logger.setLevel(logging.INFO)
 # to have at least 0.1 ETH
 _max_fee = int(0.05e18)
 
+# Global variables for lazy execution and multisig accounts
+_logs = defaultdict(list)
+_lazy_execute = defaultdict(bool)
+_multisig_account = defaultdict(bool)
+
+# Dict to store selector to name mapping because argent api requires the name but calls have selector
+_selector_to_name = {get_selector_from_name("deployContract"): "deployContract"}
+
+
+def store_selector(_get_selector_from_name):
+    def wrapped(func_name):
+        selector = _get_selector_from_name(func_name)
+        _selector_to_name[selector] = func_name
+        return selector
+
+    return wrapped
+
+
+get_selector_from_name = store_selector(get_selector_from_name)
+
 Artifact = namedtuple("Artifact", ["sierra", "casm"])
 
 
@@ -80,17 +107,23 @@ async def get_starknet_account(
         )
     key_pair = KeyPair.from_private_key(int(private_key, 16))
 
-    public_key = None
-    for selector in ["get_public_key", "getPublicKey", "getSigner", "get_owner"]:
+    public_keys = None
+    for selector in [
+        "get_public_key",
+        "getPublicKey",
+        "getSigner",
+        "get_owner",
+        "get_signers",
+    ]:
         try:
             call = Call(
                 to_addr=address,
                 selector=get_selector_from_name(selector),
                 calldata=[],
             )
-            public_key = (
-                await RPC_CLIENT.call_contract(call=call, block_hash="pending")
-            )[0]
+            public_keys = await RPC_CLIENT.call_contract(
+                call=call, block_hash="pending"
+            )
             break
         except Exception as err:
             message = str(err)
@@ -108,11 +141,15 @@ async def get_starknet_account(
                 logger.error(f"Raising for account at address {hex(address)}")
                 raise err
 
-    if public_key is not None:
-        if key_pair.public_key != public_key:
+    if public_keys is not None:
+        if key_pair.public_key not in public_keys:
             raise ValueError(
                 f"Public key of account 0x{address:064x} is not consistent with provided private key"
             )
+        if len(public_keys) > 1:
+            register_lazy_account(address)
+            register_multisig_account(address)
+            logger.info("ℹ️ Account is a multisig")
     else:
         logger.warning(
             f"⚠️ Unable to verify public key for account at address 0x{address:x}"
@@ -131,7 +168,7 @@ async def get_eth_contract(provider=None) -> Contract:
     return Contract(
         ETH_TOKEN_ADDRESS,
         get_abi("ERC20"),
-        provider or await get_starknet_account(),
+        provider or next(NETWORK["relayers"]),
         cairo_version=0,
     )
 
@@ -139,7 +176,7 @@ async def get_eth_contract(provider=None) -> Contract:
 @cache
 def get_contract(contract_name, address=None, provider=None) -> Contract:
     return Contract(
-        address or get_deployments()[contract_name]["address"],
+        address or get_deployments()[contract_name],
         get_abi(contract_name),
         provider or RPC_CLIENT,
         cairo_version=get_cairo_version(contract_name),
@@ -191,6 +228,21 @@ async def get_balance(address: Union[int, str], token_contract=None):
     return (await eth_contract.functions["balanceOf"].call(address)).balance  # type: ignore
 
 
+def dump_class_hashes(class_hashes):
+    json.dump(
+        {name: hex(class_hash) for name, class_hash in class_hashes.items()},
+        open(BUILD_DIR / "class_hashes.json", "w"),
+        indent=2,
+    )
+
+
+def get_class_hashes():
+    return {
+        name: int(class_hash, 16)
+        for name, class_hash in json.load(open(BUILD_DIR / "class_hashes.json")).items()
+    }
+
+
 def dump_declarations(declarations):
     json.dump(
         {name: hex(class_hash) for name, class_hash in declarations.items()},
@@ -210,15 +262,7 @@ def get_declarations():
 
 def dump_deployments(deployments):
     json.dump(
-        {
-            name: {
-                **deployment,
-                "address": hex(deployment["address"]),
-                "tx": hex(deployment["tx"]),
-                "artifact": str(deployment["artifact"]),
-            }
-            for name, deployment in deployments.items()
-        },
+        {name: hex(deployment) for name, deployment in deployments.items()},
         open(DEPLOYMENTS_DIR / "deployments.json", "w"),
         indent=2,
     )
@@ -227,12 +271,7 @@ def dump_deployments(deployments):
 def get_deployments():
     try:
         return {
-            name: {
-                **deployment,
-                "address": int(deployment["address"], 16),
-                "tx": int(deployment["tx"], 16),
-                "artifact": Path(deployment["artifact"]),
-            }
+            name: int(deployment, 16)
             for name, deployment in json.load(
                 open(DEPLOYMENTS_DIR / "deployments.json", "r")
             ).items()
@@ -370,27 +409,38 @@ async def deploy_starknet_account(class_hash=None, private_key=None, amount=1):
     }
 
 
+def compute_deployed_class_hash(contract_name):
+    artifact = get_artifact.__wrapped__(contract_name)
+
+    if artifact.sierra is not None:
+        sierra_compiled_contract = artifact.sierra.read_text()
+        compiled_contract = create_sierra_compiled_contract(sierra_compiled_contract)
+        return compute_sierra_class_hash(compiled_contract)
+    else:
+        contract_class = create_compiled_contract(
+            compiled_contract=artifact.casm.read_text()
+        )
+        return compute_class_hash(contract_class=deepcopy(contract_class))
+
+
 async def declare(contract_name):
     logger.info(f"ℹ️  Declaring {contract_name}")
     artifact = get_artifact(contract_name)
-    account = await get_starknet_account()
+    deployed_class_hash = get_class_hashes()[contract_name]
+    try:
+        await RPC_CLIENT.get_class_by_hash(deployed_class_hash)
+        logger.info("✅ Class already declared, skipping")
+        return deployed_class_hash
+    except Exception:
+        pass
+
+    account = next(NETWORK["relayers"])
 
     if artifact.sierra is not None:
         casm_compiled_contract = artifact.casm.read_text()
         sierra_compiled_contract = artifact.sierra.read_text()
-
         casm_class = create_casm_class(casm_compiled_contract)
         class_hash = compute_casm_class_hash(casm_class)
-        compiled_contract = create_sierra_compiled_contract(sierra_compiled_contract)
-        deployed_class_hash = compute_sierra_class_hash(compiled_contract)
-
-        try:
-            await RPC_CLIENT.get_class_by_hash(deployed_class_hash)
-            logger.info("✅ Class already declared, skipping")
-            return deployed_class_hash
-        except Exception:
-            pass
-
         declare_v2_transaction = await account.sign_declare_v2(
             compiled_contract=sierra_compiled_contract,
             compiled_class_hash=class_hash,
@@ -402,20 +452,13 @@ async def declare(contract_name):
         contract_class = create_compiled_contract(
             compiled_contract=artifact.casm.read_text()
         )
-        class_hash = compute_class_hash(contract_class=deepcopy(contract_class))
-        try:
-            await RPC_CLIENT.get_class_by_hash(class_hash)
-            logger.info("✅ Class already declared, skipping")
-            return class_hash
-        except Exception:
-            pass
 
         tx_hash = compute_transaction_hash(
             tx_hash_prefix=TransactionHashPrefix.DECLARE,
             version=1,
             contract_address=account.address,
             entry_point_selector=DEFAULT_ENTRY_POINT_SELECTOR,
-            calldata=[class_hash],
+            calldata=[deployed_class_hash],
             max_fee=_max_fee,
             chain_id=account.signer.chain_id.value,
             additional_data=[await account.get_nonce()],
@@ -454,7 +497,7 @@ async def deploy(contract_name, *args):
     if deployments.get(contract_name):
         try:
             deployed_class_hash = await RPC_CLIENT.get_class_hash_at(
-                deployments[contract_name]["address"]
+                deployments[contract_name]
             )
             latest_class_hash = get_declarations().get(contract_name)
             if latest_class_hash == deployed_class_hash:
@@ -463,59 +506,139 @@ async def deploy(contract_name, *args):
         except ClientError:
             pass
 
-    logger.info(f"ℹ️  Deploying {contract_name}")
     abi = get_abi(contract_name)
     declarations = get_declarations()
 
     account = await get_starknet_account()
-    deploy_result = await Contract.deploy_contract_v1(
-        account=account,
+
+    deployer = Deployer(
+        deployer_address=DEFAULT_DEPLOYER_ADDRESS,
+        account_address=account.address,
+    )
+    deploy_call, address = deployer.create_contract_deployment(
         class_hash=declarations[contract_name],
         abi=abi,
-        constructor_args=list(args),
-        max_fee=_max_fee,
+        calldata=list(args),
         cairo_version=get_cairo_version(contract_name),
     )
-    status = await wait_for_transaction(deploy_result.hash)
-    logger.info(
-        f"{status} {contract_name} deployed at: 0x{deploy_result.deployed_contract.address:064x}"
-    )
-    return {
-        "address": deploy_result.deployed_contract.address,
-        "tx": deploy_result.hash,
-        "artifact": get_artifact(contract_name)[0],
-    }
+    logger.info(f"ℹ️  Deploying {contract_name} at: 0x{address:064x}")
+    await execute_v1(account, deploy_call)
+    return address
 
 
-async def invoke_address(contract_address, function_name, *calldata, account=None):
-    account = account or (await get_starknet_account())
-    logger.info(
-        f"ℹ️  Invoking {function_name}({json.dumps(calldata) if calldata else ''}) "
-        f"at address {hex(contract_address)[:10]}"
-    )
-    return await account.execute_v1(
-        Call(
-            to_addr=contract_address,
-            selector=get_selector_from_name(function_name),
-            calldata=cast(List[int], calldata),
-        ),
+def register_lazy_account(account_address):
+    _lazy_execute[account_address] = True
+
+
+def remove_lazy_account(account_address):
+    del _lazy_execute[account_address]
+
+
+def register_multisig_account(account_address):
+    _multisig_account[account_address] = True
+
+
+def lazy_execute(execute):
+    @functools.wraps(execute)
+    async def wrapper(account, calls):
+        if not isinstance(calls, Iterable):
+            calls = [calls]
+
+        if _lazy_execute[account.address]:
+            _logs[account].extend(calls)
+            return
+
+        return await execute(account, calls)
+
+    return wrapper
+
+
+async def execute_calls():
+    global _logs
+    for _account, _calls in _logs.items():
+        logger.info(
+            f"ℹ️  Executing {len(_calls)} calls with account 0x{_account.address:064x}"
+        )
+        await execute_v1.__wrapped__(_account, _calls)
+
+    _logs = defaultdict(list)
+
+
+@lazy_execute
+async def execute_v1(account, calls):
+    calldata = _parse_calls(await account.cairo_version, calls)
+    msg_hash = compute_transaction_hash(
+        tx_hash_prefix=TransactionHashPrefix.INVOKE,
+        version=1,
+        contract_address=account.address,
+        entry_point_selector=DEFAULT_ENTRY_POINT_SELECTOR,
+        calldata=calldata,
         max_fee=_max_fee,
+        chain_id=NETWORK["chain_id"].starknet_chain_id,
+        additional_data=[await account.get_nonce()],
+    )
+    signature = message_signature(
+        msg_hash=msg_hash, priv_key=account.signer.private_key, seed=None
+    )
+    transaction = InvokeV1(
+        version=1,
+        signature=signature,
+        nonce=await account.get_nonce(),
+        max_fee=_max_fee,
+        sender_address=account.address,
+        calldata=calldata,
     )
 
+    if _multisig_account[account.address]:
+        data = {
+            "creator": f"0x{account.signer.public_key:064x}",
+            "transaction": {
+                "maxFee": hex(transaction.max_fee),
+                "nonce": hex(transaction.nonce),
+                "version": hex(transaction.version),
+                "calls": [
+                    {
+                        "contractAddress": hex(call.to_addr),
+                        "calldata": [str(data) for data in call.calldata],
+                        "entrypoint": _selector_to_name[call.selector],
+                    }
+                    for call in calls
+                ],
+            },
+            "starknetSignature": dict(zip(["r", "s"], [hex(v) for v in signature])),
+        }
+        response = requests.post(
+            f"{NETWORK['argent_multisig_api']}/0x{account.address:064x}/request",
+            json=data,
+        )
+        return {
+            "transaction_hash": response.json()["transactionHash"],
+            "status": response.json()["state"],
+        }
 
-async def invoke_contract(
-    contract_name, function_name, *inputs, address=None, account=None
-):
-    account = account or (await get_starknet_account())
-    contract = get_contract(contract_name, address=address, provider=account)
-    call = contract.functions[function_name].prepare_invoke_v1(*inputs)
-    logger.info(
-        f"ℹ️  Invoking {contract_name}.{function_name}({json.dumps(inputs) if inputs else ''})"
+    params = _create_broadcasted_txn(transaction=transaction)
+    res = cast(
+        SentTransactionResponse,
+        SentTransactionSchema().load(
+            await RPC_CLIENT._client.call(
+                method_name="addInvokeTransaction",
+                params={"invoke_transaction": params},
+            )
+        ),
     )
-    return await account.execute_v1(call, max_fee=_max_fee)
+
+    status = await wait_for_transaction(res.transaction_hash)
+    logger.info(f"{status}: 0x{res.transaction_hash:064x}")
+    return res
 
 
-async def invoke(contract: Union[str, int], *args, **kwargs):
+async def invoke(
+    contract_id: Union[str, int],
+    function_name: str,
+    *calldata,
+    address=None,
+    account=None,
+) -> Optional[str]:
     """
     Invoke a contract specified:
      - either with a name (expect that a matching ABIs is to be found in the project artifacts)
@@ -523,16 +646,22 @@ async def invoke(contract: Union[str, int], *args, **kwargs):
      - or with a plain address (in this later case, no parsing is done on the calldata)
        `invoke(0x1234, "foo")`.
     """
-    response = await (
-        invoke_address(contract, *args, **kwargs)
-        if isinstance(contract, int)
-        else invoke_contract(contract, *args, **kwargs)
-    )
-    status = await wait_for_transaction(response.transaction_hash)
+    account = account or await get_starknet_account()
     logger.info(
-        f"{status} {contract}.{args[0]} invoked at tx: 0x{response.transaction_hash:064x}"
+        f"ℹ️  Invoking {contract_id}.{function_name}({(json.dumps(calldata) if len(json.dumps(calldata)) < 100 else '...') if calldata else ''})"
     )
-    return response.transaction_hash
+    if isinstance(contract_id, int):
+        call = Call(
+            to_addr=contract_id,
+            selector=get_selector_from_name(function_name),
+            calldata=cast(List[int], calldata),
+        )
+    else:
+        contract = get_contract(contract_id, address=address, provider=account)
+        call = contract.functions[function_name].prepare_invoke_v1(*calldata)
+
+    response = await execute_v1(account, call)
+    return getattr(response, "transaction_hash", None)
 
 
 async def call_address(contract_address, function_name, *calldata):

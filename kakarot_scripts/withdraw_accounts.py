@@ -20,7 +20,7 @@ logger.setLevel(logging.INFO)
 
 # %% Fetch contract events
 def get_contracts():
-    contract_address = hex(get_deployments()["kakarot"]["address"])
+    contract_address = hex(get_deployments()["kakarot"])
     logger.info(f"ℹ️  Fetching contracts from {contract_address}")
     url = f"{NETWORK['voyager_api_url']}/events?ps=10&p=1&contract={contract_address}"
     headers = {
