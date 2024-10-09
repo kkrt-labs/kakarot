@@ -478,9 +478,9 @@ async def send_pre_eip155_transaction(
     await _invoke_starknet(
         "kakarot", "set_authorized_pre_eip155_tx", int(evm_address, 16), msg_hash
     )
-    nonce = await _call_starknet(
-        "account_contract", "get_nonce", address=starknet_address
-    )
+    nonce = (
+        await _call_starknet("account_contract", "get_nonce", address=starknet_address)
+    ).nonce
     if nonce != 0:
         logger.info(
             f"ℹ️  Nonce for {evm_address} is not 0 ({nonce}), skipping transaction"
