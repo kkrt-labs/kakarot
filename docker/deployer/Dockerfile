@@ -65,7 +65,7 @@ RUN git clone --depth 1 https://github.com/asdf-vm/asdf.git "$HOME/.asdf" && \
 RUN source "$HOME/.asdf/asdf.sh" && asdf plugin add scarb && asdf install scarb 0.7.0  && asdf install scarb 2.6.5 && asdf install scarb 2.8.3
 
 RUN --mount=type=cache,target=/root/.cache \
-    source "$HOME/.asdf/asdf.sh" && source "$HOME/.cargo/env" && make build-ssj && make build && make build-sol
+    source "$HOME/.asdf/asdf.sh" && source "$HOME/.cargo/env" && make build && make build-sol
 
 
 ############################################
