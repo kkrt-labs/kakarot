@@ -75,7 +75,7 @@ async def new_eoa(deployer) -> Wallet:
 
     bridge_address = (await call("kakarot", "get_coinbase")).coinbase
     bridge = await get_solidity_contract(
-        "CairoPrecompiles", "EthStarknetBridge", address=bridge_address
+        "CairoPrecompiles", "Coinbase", address=bridge_address
     )
     gas_price = (await call("kakarot", "get_base_fee")).base_fee
     gas_limit = 40_000
