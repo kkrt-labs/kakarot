@@ -1,6 +1,7 @@
 # %% Imports
 import logging
 
+from eth_utils.address import to_checksum_address
 from uvloop import run
 
 from kakarot_scripts.constants import (
@@ -18,6 +19,7 @@ from kakarot_scripts.constants import (
     MULTICALL3_SIGNED_TX,
     NETWORK,
     RPC_CLIENT,
+    STRK_TOKEN_ADDRESS,
     NetworkType,
 )
 from kakarot_scripts.utils.kakarot import deploy as deploy_evm
@@ -136,6 +138,7 @@ async def main():
     remove_lazy_account(account.address)
 
     # %% EVM Deployments
+    starknet_deployments = get_starknet_deployments()
     evm_deployments = get_evm_deployments()
 
     # %% Pre-EIP155 deployments, done only once
@@ -159,6 +162,7 @@ async def main():
         max_fee=int(0.2e18),
     )
 
+    # %% Tokens deployments
     if not EVM_ADDRESS:
         logger.info("ℹ️  No EVM address provided, skipping EVM deployments")
         return
@@ -169,40 +173,62 @@ async def main():
         EVM_ADDRESS, amount=100 if NETWORK["type"] is NetworkType.DEV else 0.01
     )
 
-    coinbase = (await call("kakarot", "get_coinbase")).coinbase
-    if evm_deployments.get("Bridge", {}).get("address") != coinbase:
-        bridge = await deploy_evm("CairoPrecompiles", "EthStarknetBridge")
-        evm_deployments["Bridge"] = {
-            "address": int(bridge.address, 16),
-            "starknet_address": bridge.starknet_address,
+    for contract_app, contract_name, deployed_name, *deployment_args in [
+        ("WETH", "WETH9", "WETH9"),
+        (
+            "CairoPrecompiles",
+            "DualVmToken",
+            "KakarotETH",
+            starknet_deployments["kakarot"],
+            ETH_TOKEN_ADDRESS,
+        ),
+        (
+            "CairoPrecompiles",
+            "DualVmToken",
+            "KakarotSTRK",
+            starknet_deployments["kakarot"],
+            STRK_TOKEN_ADDRESS,
+        ),
+    ]:
+        deployment = evm_deployments.get(deployed_name)
+        if deployment is not None:
+            token_starknet_address = (
+                await call("kakarot", "get_starknet_address", deployment["address"])
+            ).starknet_address
+            if deployment["starknet_address"] == token_starknet_address:
+                logger.info(f"✅ {deployed_name} already deployed, skipping")
+                continue
+
+        token = await deploy_evm(contract_app, contract_name, *deployment_args)
+        evm_deployments[deployed_name] = {
+            "address": int(token.address, 16),
+            "starknet_address": token.starknet_address,
         }
         await invoke(
             "kakarot",
             "set_authorized_cairo_precompile_caller",
-            int(bridge.address, 16),
+            int(token.address, 16),
             1,
         )
-        await invoke("kakarot", "set_coinbase", int(bridge.address, 16))
+
+    coinbase = (await call("kakarot", "get_coinbase")).coinbase
+    if evm_deployments.get("Coinbase", {}).get("address") != coinbase:
+        contract = await deploy_evm(
+            "Starknet",
+            "Coinbase",
+            to_checksum_address(f'{evm_deployments["KakarotETH"]["address"]:040x}'),
+        )
+        evm_deployments["Coinbase"] = {
+            "address": int(contract.address, 16),
+            "starknet_address": contract.starknet_address,
+        }
+        await invoke("kakarot", "set_coinbase", int(contract.address, 16))
 
     coinbase = (await call("kakarot", "get_coinbase")).coinbase
     if coinbase == 0:
         logger.error("❌ Coinbase is set to 0, all transaction fees will be lost")
     else:
         logger.info(f"✅ Coinbase set to: 0x{coinbase:040x}")
-
-    weth_starknet_address = (
-        await call(
-            "kakarot",
-            "get_starknet_address",
-            evm_deployments.get("WETH", {}).get("address", 0),
-        )
-    ).starknet_address
-    if evm_deployments.get("WETH", {}).get("starknet_address") != weth_starknet_address:
-        weth = await deploy_evm("WETH", "WETH9")
-        evm_deployments["WETH"] = {
-            "address": int(weth.address, 16),
-            "starknet_address": weth.starknet_address,
-        }
 
     dump_evm_deployments(evm_deployments)
     balance_after = await get_balance(account.address)
