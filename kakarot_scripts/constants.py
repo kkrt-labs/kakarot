@@ -78,10 +78,6 @@ NETWORKS = {
         "max_wait": 3,
         "relayers": [
             {
-                "address": 0xB3FF441A68610B30FD5E2ABBF3A1548EB6BA6F3559F2862BF2DC757E5828CA,
-                "private_key": 0x2BBF4F9FD0BBB2E60B0316C1FE0B76CF7A4D0198BD493CED9B8DF2A3A24D68A,
-            },
-            {
                 "address": 0xE29882A1FCBA1E7E10CAD46212257FEA5C752A4F9B1B1EC683C503A2CF5C8A,
                 "private_key": 0x14D6672DCB4B77CA36A887E9A11CD9D637D5012468175829E9C6E770C61642,
             },
@@ -298,7 +294,13 @@ CREATEX_SIGNED_TX = bytes.fromhex(
     json.loads((DATA_DIR / "signed_txs.json").read_text())["createx"]
 )
 
-EVM_PRIVATE_KEY = os.getenv("EVM_PRIVATE_KEY")
+prefix = NETWORK["name"].upper().replace("-", "_")
+EVM_PRIVATE_KEY = os.getenv(f"{prefix}_EVM_PRIVATE_KEY")
+if EVM_PRIVATE_KEY is None:
+    logger.warning(
+        f"⚠️  {prefix}_EVM_PRIVATE_KEY not set, defaulting to EVM_PRIVATE_KEY"
+    )
+    EVM_PRIVATE_KEY = os.getenv("EVM_PRIVATE_KEY")
 EVM_ADDRESS = (
     EVM_PRIVATE_KEY
     and keys.PrivateKey(
@@ -306,7 +308,6 @@ EVM_ADDRESS = (
     ).public_key.to_checksum_address()
 )
 
-prefix = NETWORK["name"].upper().replace("-", "_")
 NETWORK["account_address"] = os.environ.get(f"{prefix}_ACCOUNT_ADDRESS")
 if NETWORK["account_address"] is None:
     logger.warning(
