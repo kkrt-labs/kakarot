@@ -15,7 +15,7 @@ dependencies = [
 
 [project.scripts]
 compile = "kakarot_scripts.compile_kakarot:main"
-deploy = "kakarot_scripts.deploy_kakarot:main_sync"
+deploy = "kakarot_scripts.deployment.main:main_sync"
 ef_tests = "kakarot_scripts.ef_tests.fetch:generate_tests"
 
 [tool.uv.sources]
