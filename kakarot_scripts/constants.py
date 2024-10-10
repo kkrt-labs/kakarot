@@ -294,7 +294,13 @@ CREATEX_SIGNED_TX = bytes.fromhex(
     json.loads((DATA_DIR / "signed_txs.json").read_text())["createx"]
 )
 
-EVM_PRIVATE_KEY = os.getenv("EVM_PRIVATE_KEY")
+prefix = NETWORK["name"].upper().replace("-", "_")
+EVM_PRIVATE_KEY = os.getenv(f"{prefix}_EVM_PRIVATE_KEY")
+if EVM_PRIVATE_KEY is None:
+    logger.warning(
+        f"⚠️  {prefix}_EVM_PRIVATE_KEY not set, defaulting to EVM_PRIVATE_KEY"
+    )
+    EVM_PRIVATE_KEY = os.getenv("EVM_PRIVATE_KEY")
 EVM_ADDRESS = (
     EVM_PRIVATE_KEY
     and keys.PrivateKey(
@@ -302,7 +308,6 @@ EVM_ADDRESS = (
     ).public_key.to_checksum_address()
 )
 
-prefix = NETWORK["name"].upper().replace("-", "_")
 NETWORK["account_address"] = os.environ.get(f"{prefix}_ACCOUNT_ADDRESS")
 if NETWORK["account_address"] is None:
     logger.warning(

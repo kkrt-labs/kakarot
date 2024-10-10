@@ -141,6 +141,7 @@ async def main():
     dump_deployments(starknet_deployments)
 
     # %% L1
+    starknet_deployments = get_starknet_deployments()
     l1_addresses = get_l1_addresses()
 
     l1_kakarot_messaging_registered_address = None
@@ -161,6 +162,9 @@ async def main():
         if NETWORK["type"] == NetworkType.DEV:
             starknet_core = deploy_on_l1("Starknet", "StarknetMessagingLocal")
             l1_addresses.update({"StarknetCore": starknet_core.address})
+        else:
+            if "StarknetCore" not in l1_addresses:
+                raise ValueError("StarknetCore missing in L1 addresses")
 
         l1_kakarot_messaging = deploy_on_l1(
             "L1L2Messaging",
