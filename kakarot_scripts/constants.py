@@ -242,6 +242,18 @@ BUILD_DIR_SSJ = BUILD_DIR / "ssj"
 DATA_DIR = Path("kakarot_scripts") / "data"
 
 
+def load_pre_eip155_transactions():
+    raw_data = json.loads((DATA_DIR / "pre_eip155_txs.json").read_text())
+
+    for tx in raw_data.values():
+        tx["signed_tx"] = bytes.fromhex(tx["signed_tx"])
+
+    return raw_data
+
+
+PRE_EIP155_TX = load_pre_eip155_transactions()
+
+
 DEPLOYMENTS_DIR = Path("deployments") / NETWORK["name"]
 DEPLOYMENTS_DIR.mkdir(exist_ok=True, parents=True)
 
@@ -279,33 +291,6 @@ DECLARED_CONTRACTS = [
     "uninitialized_account",
     "UniversalLibraryCaller",
 ]
-
-PRE_EIP155_TX = {
-    "MULTICALL3": {
-        "deployer": "0x05f32b3cc3888453ff71b01135b34ff8e41263f2",
-        "signed_tx": bytes.fromhex(
-            json.loads((DATA_DIR / "signed_txs.json").read_text())["multicall3"]
-        ),
-        "address": "0xcA11bde05977b3631167028862bE2a173976CA11",
-        "required_eth": 0.1,
-    },
-    "ArachnidProxy": {
-        "deployer": "0x3fab184622dc19b6109349b94811493bf2a45362",
-        "signed_tx": bytes.fromhex(
-            json.loads((DATA_DIR / "signed_txs.json").read_text())["arachnid"]
-        ),
-        "address": "0x4e59b44847b379578588920ca78fbf26c0b4956c",
-        "required_eth": 0.1,
-    },
-    "CreateX": {
-        "deployer": "0xeD456e05CaAb11d66C4c797dD6c1D6f9A7F352b5",
-        "signed_tx": bytes.fromhex(
-            json.loads((DATA_DIR / "signed_txs.json").read_text())["createx"]
-        ),
-        "address": "0xba5Ed099633D3B313e4D5F7bdc1305d3c28ba5Ed",
-        "required_eth": 0.3,
-    },
-}
 
 prefix = NETWORK["name"].upper().replace("-", "_")
 EVM_PRIVATE_KEY = os.getenv(f"{prefix}_EVM_PRIVATE_KEY")

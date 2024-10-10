@@ -39,15 +39,17 @@ async def main():
     await execute_calls()
 
     # %% EVM Deployments
-    # These deployments depend on a deployed kakarot
     await whitelist_pre_eip155_contracts()
     await deploy_evm_contracts()
+    await execute_calls()
+
+    # Needs whitelist tx to be executed first
+    await deploy_pre_eip155_contracts()
     await execute_calls()
     remove_lazy_account(account.address)
 
     # Must be sequential
     await deploy_messaging_contracts()
-    await deploy_pre_eip155_contracts()
 
     # %% Tear down
     balance_after = await get_balance(account.address)

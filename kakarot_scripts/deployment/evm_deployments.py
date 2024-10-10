@@ -22,10 +22,6 @@ logger = logging.getLogger(__name__)
 
 
 async def deploy_evm_contracts():
-    if not EVM_ADDRESS:
-        logger.info("ℹ️  No EVM address provided, skipping EVM deployments")
-        return
-
     logger.info(f"ℹ️  Using account {EVM_ADDRESS} as deployer")
 
     await deploy_and_fund_evm_address(
@@ -110,6 +106,11 @@ if __name__ == "__main__":
         except Exception:
             logger.error("❌ Kakarot is not deployed, exiting...")
             return
+
+        if not EVM_ADDRESS:
+            logger.info("ℹ️  No EVM address provided, skipping EVM deployments")
+            return
+
         await deploy_evm_contracts()
 
     run(main())
