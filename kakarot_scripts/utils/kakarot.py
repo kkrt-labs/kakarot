@@ -1,6 +1,7 @@
 import functools
 import json
 import logging
+import time
 from collections import defaultdict
 from pathlib import Path
 from types import MethodType
@@ -47,7 +48,6 @@ from kakarot_scripts.utils.starknet import get_balance
 from kakarot_scripts.utils.starknet import get_contract as _get_starknet_contract
 from kakarot_scripts.utils.starknet import get_deployments as _get_starknet_deployments
 from kakarot_scripts.utils.starknet import invoke as _invoke_starknet
-from kakarot_scripts.utils.starknet import wait_for_transaction
 from kakarot_scripts.utils.uint256 import int_to_uint256
 from tests.utils.constants import TRANSACTION_GAS_LIMIT
 from tests.utils.helpers import pack_calldata, rlp_encode_signed_data
@@ -629,7 +629,13 @@ async def send_starknet_transaction(
         account=relayer,
     )
 
-    receipt = await RPC_CLIENT.get_transaction_receipt(tx_hash)
+    try:
+        receipt = await RPC_CLIENT.get_transaction_receipt(tx_hash)
+    except Exception:
+        # Sometime the RPC_CLIENT is too fast and the first pool raises with
+        # starknet_py.net.client_errors.ClientError: Client failed with code 29. Message: Transaction hash not found
+        time.sleep(2)
+        receipt = await RPC_CLIENT.get_transaction_receipt(tx_hash)
     transaction_events = [
         event
         for event in receipt.events

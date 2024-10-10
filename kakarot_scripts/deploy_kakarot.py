@@ -282,7 +282,7 @@ async def main():
             "kakarot",
             "set_authorized_cairo_precompile_caller",
             int(l2_kakarot_messaging.address, 16),
-            True,
+            1,
         )
         evm_deployments["L2KakarotMessaging"] = {
             "address": int(l2_kakarot_messaging.address, 16),
