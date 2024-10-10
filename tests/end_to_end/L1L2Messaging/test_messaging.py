@@ -24,7 +24,7 @@ def sn_messaging_local():
     if l1_addresses.get("StarknetMessagingLocal"):
         address = l1_addresses["StarknetMessagingLocal"]["address"]
         if l1_contract_exists(address):
-            return get_l1_contract("starknet", "StarknetMessagingLocal", address)
+            return get_l1_contract("Starknet", "StarknetMessagingLocal", address)
 
     contract = deploy_on_l1(
         "Starknet",
