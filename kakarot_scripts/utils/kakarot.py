@@ -37,6 +37,7 @@ from kakarot_scripts.constants import (
     EVM_ADDRESS,
     EVM_PRIVATE_KEY,
     NETWORK,
+    PRE_EIP155_TX,
     RPC_CLIENT,
     WEB3,
     ChainId,
@@ -465,21 +466,16 @@ async def get_eoa(private_key=None, amount=0) -> Account:
     )
 
 
-async def send_pre_eip155_transaction(
-    evm_address: str,
-    starknet_address: Union[int, str],
-    signed_tx: bytes,
-    max_fee: Optional[int] = None,
-):
-    rlp_decoded = rlp.decode(signed_tx)
-    v, r, s = rlp_decoded[-3:]
-    unsigned_tx_data = rlp_decoded[:-3]
-    unsigned_encoded_tx = rlp.encode(unsigned_tx_data)
-    msg_hash = int.from_bytes(keccak(unsigned_encoded_tx), "big")
+async def send_pre_eip155_transaction(name: str, max_fee: Optional[int] = None):
+    signed_tx = PRE_EIP155_TX[name]["signed_tx"]
+    deployer = PRE_EIP155_TX[name]["deployer"]
+    should_deploy = PRE_EIP155_TX[name].get("should_deploy", False)
+    if not should_deploy:
+        logger.info(f"ℹ️ {name} is already deployed, skipping")
+        return
+    deployer_starknet_address = await get_starknet_address(deployer)
 
-    await _invoke_starknet(
-        "kakarot", "set_authorized_pre_eip155_tx", int(evm_address, 16), msg_hash
-    )
+    unsigned_encoded_tx = get_unsigned_encoded_tx_data(signed_tx)
 
     if WEB3.is_connected():
         tx_hash = WEB3.eth.send_raw_transaction(signed_tx)
@@ -489,13 +485,14 @@ async def send_pre_eip155_transaction(
         return receipt, [], receipt.status, receipt.gasUsed
 
     sender_account = Account(
-        address=starknet_address,
+        address=deployer_starknet_address,
         client=RPC_CLIENT,
         chain=ChainId.starknet_chain_id,
         # Keypair not required for already signed txs
         key_pair=KeyPair(int(0x10), 0x20),
     )
 
+    v, r, s = get_signature(signed_tx)
     return await send_starknet_transaction(
         evm_account=sender_account,
         signature_r=int.from_bytes(r, "big"),
@@ -676,6 +673,7 @@ async def deploy_and_fund_evm_address(evm_address: str, amount: float):
     """
     Deploy an EOA linked to the given EVM address and fund it with amount ETH.
     """
+    logger.info(f"ℹ️  Funding EVM address {evm_address}")
     starknet_address = await get_starknet_address(int(evm_address, 16))
     account_balance = await eth_balance_of(evm_address)
     if account_balance < amount:
@@ -747,29 +745,97 @@ async def store_bytecode(bytecode: Union[str, bytes], **kwargs):
     return evm_address
 
 
-async def deploy_with_presigned_tx(
-    deployer_evm_address: str, signed_tx: bytes, amount=0.1, name="", max_fee=None
-):
-    deployer_starknet_address = await deploy_and_fund_evm_address(
-        deployer_evm_address, amount
+# async def deploy_with_presigned_tx(
+#     deployer_evm_address: str, signed_tx: bytes, amount=0.1, name="", max_fee=None
+# ):
+#     deployer_starknet_address = await deploy_and_fund_evm_address(
+#         deployer_evm_address, amount
+#     )
+#     nonce = (
+#         await _call_starknet(
+#             "account_contract", "get_nonce", address=deployer_starknet_address
+#         )
+#     ).nonce
+#     if nonce != 0:
+#         logger.info(
+#             f"ℹ️  Nonce for {deployer_evm_address} is not 0 ({nonce}), skipping transaction"
+#         )
+#         return
+
+#     response = await send_pre_eip155_transaction(
+#         deployer_evm_address, deployer_starknet_address, signed_tx, max_fee
+#     )
+
+#     receipt, response, success, gas_used = response
+#     deployed_address = response[1]
+#     logger.info(f"✅ {name} Deployed at: 0x{deployed_address:040x}")
+#     deployed_starknet_address = await get_starknet_address(deployed_address)
+#     return {"address": deployed_address, "starknet_address": deployed_starknet_address}
+
+
+async def whitelist_pre_eip155_tx(name: str) -> bool:
+    tx_instance = PRE_EIP155_TX[name]
+    deployer_evm_address = tx_instance["deployer"]
+    tx_instance["address"]
+    signed_tx = tx_instance["signed_tx"]
+    amount = tx_instance["required_eth"]
+
+    # check the nonce of the deployer for an early return if it's not 0.
+    # Either the nonce is 0, or the account should not be deployed already.
+    deployer_starknet_address = (
+        f"0x{await get_starknet_address(deployer_evm_address):064x}"
     )
-    nonce = (
-        await _call_starknet(
-            "account_contract", "get_nonce", address=deployer_starknet_address
-        )
-    ).nonce
+    kakarot_contract = _get_starknet_contract("kakarot")
+    try:
+        nonce = (
+            await kakarot_contract.functions["eth_get_transaction_count"].call(
+                int(deployer_evm_address, 16)
+            )
+        ).tx_count
+    except Exception as e:
+        if (
+            f"Requested contract address {deployer_starknet_address} is not deployed"
+            in str(e.data)
+        ):
+            nonce = 0
+        else:
+            raise e
     if nonce != 0:
         logger.info(
             f"ℹ️  Nonce for {deployer_evm_address} is not 0 ({nonce}), skipping transaction"
         )
         return
 
-    response = await send_pre_eip155_transaction(
-        deployer_evm_address, deployer_starknet_address, signed_tx, max_fee
+    # Deploy and fund deployer for the authorization callback
+    await deploy_and_fund_evm_address(deployer_evm_address, amount)
+
+    # I have to deploy another account for the authorization to work... I love Starknet
+    # This makes 0 sense but don't delete this.
+    await deploy_and_fund_evm_address(f"0x{12305986340589761235:040x}", 0)
+
+    msg_hash = get_msg_hash(signed_tx)
+    await _invoke_starknet(
+        "kakarot",
+        "set_authorized_pre_eip155_tx",
+        int(deployer_evm_address, 16),
+        msg_hash,
     )
 
-    receipt, response, success, gas_used = response
-    deployed_address = response[1]
-    logger.info(f"✅ {name} Deployed at: 0x{deployed_address:040x}")
-    deployed_starknet_address = await get_starknet_address(deployed_address)
-    return {"address": deployed_address, "starknet_address": deployed_starknet_address}
+    tx_instance["should_deploy"] = True
+
+
+def get_msg_hash(signed_tx: bytes):
+    unsigned_encoded_tx = get_unsigned_encoded_tx_data(signed_tx)
+    return int.from_bytes(keccak(unsigned_encoded_tx), "big")
+
+
+def get_unsigned_encoded_tx_data(signed_tx: bytes):
+    rlp_decoded = rlp.decode(signed_tx)
+    unsigned_tx_data = rlp_decoded[:-3]
+    unsigned_encoded_tx = rlp.encode(unsigned_tx_data)
+    return unsigned_encoded_tx
+
+
+def get_signature(signed_tx: bytes) -> Tuple[int, int, int]:
+    rlp_decoded = rlp.decode(signed_tx)
+    return rlp_decoded[-3:]
