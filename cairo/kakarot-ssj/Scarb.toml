@@ -15,3 +15,7 @@ starknet = "2.8.2"
 
 [workspace.tool.fmt]
 sort-module-level-items = true
+
+[features]
+default = []
+pytest = []
