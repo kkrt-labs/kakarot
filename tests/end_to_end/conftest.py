@@ -12,7 +12,7 @@ from kakarot_scripts.constants import NETWORK, RPC_CLIENT, NetworkType
 from kakarot_scripts.utils.kakarot import deploy as deploy_kakarot
 from kakarot_scripts.utils.kakarot import eth_balance_of
 from kakarot_scripts.utils.kakarot import get_contract as get_solidity_contract
-from kakarot_scripts.utils.kakarot import get_eoa
+from kakarot_scripts.utils.kakarot import get_deployments, get_eoa
 from kakarot_scripts.utils.starknet import (
     call,
     get_contract,
@@ -73,9 +73,10 @@ async def new_eoa(deployer) -> Wallet:
 
     yield _factory
 
-    bridge_address = (await call("kakarot", "get_coinbase")).coinbase
-    bridge = await get_solidity_contract(
-        "CairoPrecompiles", "EthStarknetBridge", address=bridge_address
+    kakarot_eth = await get_solidity_contract(
+        "CairoPrecompiles",
+        "DualVmToken",
+        address=get_deployments()["KakarotETH"]["address"],
     )
     gas_price = (await call("kakarot", "get_base_fee")).base_fee
     gas_limit = 40_000
@@ -85,7 +86,7 @@ async def new_eoa(deployer) -> Wallet:
         if balance < tx_cost:
             continue
 
-        await bridge.transfer(
+        await kakarot_eth.functions["transfer(uint256,uint256)"](
             deployer.address,
             balance - tx_cost,
             caller_eoa=wallet.starknet_contract,

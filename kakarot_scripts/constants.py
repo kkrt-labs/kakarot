@@ -217,6 +217,8 @@ class ChainId(IntEnum):
 NETWORK["chain_id"] = ChainId.chain_id
 
 ETH_TOKEN_ADDRESS = 0x49D36570D4E46F48E99674BD3FCC84644DDD6B96F7C741B1562B82F9E004DC7
+STRK_TOKEN_ADDRESS = 0x04718F5A0FC34CC1AF16A1CDEE98FFB20C31F5CD61D6AB07201858F4287C938D
+
 COINBASE = int(
     os.getenv("KAKAROT_COINBASE_RECIPIENT")
     or "0x20eB005C0b9c906691F885eca5895338E15c36De",  # Defaults to faucet on appchain sepolia
@@ -357,8 +359,8 @@ if default_relayer is None and NETWORK.get("relayers") is None:
 
 NETWORK["relayers"] = RelayerPool(NETWORK.get("relayers", [default_relayer]))
 
-
+kakarot_chain_ascii = bytes.fromhex(f"{ChainId.chain_id.value:014x}").lstrip(b"\x00")
 logger.info(
     f"ℹ️  Connected to Starknet chain id {bytes.fromhex(f'{ChainId.starknet_chain_id.value:x}')} "
-    f"and Kakarot chain id {bytes.fromhex(f'{ChainId.chain_id.value:014x}')}"
+    f"and Kakarot chain id {kakarot_chain_ascii}"
 )
