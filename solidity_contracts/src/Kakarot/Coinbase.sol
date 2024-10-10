@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity 0.8.27;
 
 import {DualVmToken} from "../CairoPrecompiles/DualVmToken.sol";
 import {Ownable2Step, Ownable} from "@openzeppelin-contracts/access/Ownable2Step.sol";
