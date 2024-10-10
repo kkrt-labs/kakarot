@@ -1,5 +1,8 @@
 import pytest
 import pytest_asyncio
+from eth_abi import encode
+from eth_utils import keccak
+from eth_utils.address import to_checksum_address
 
 from kakarot_scripts.utils.kakarot import deploy, eth_balance_of, fund_address
 from kakarot_scripts.utils.starknet import invoke
@@ -39,23 +42,35 @@ class TestCoinbase:
             assert balance_owner - balance_owner_prev + tx["gas_used"] == 0.001e18
 
         async def test_should_revert_when_not_owner(self, coinbase, other):
-            with evm_error("Not the contract owner"):
+            error = keccak(b"OwnableUnauthorizedAccount(address)")[:4] + encode(
+                ["address"], [other.address]
+            )
+            with evm_error(error):
                 await coinbase.withdraw(0xDEAD, caller_eoa=other.starknet_contract)
 
     class TestTransferOwnership:
+
         async def test_should_transfer_ownership(self, coinbase, owner, other):
+            # initiate transfer process
             await coinbase.transferOwnership(other.address)
+            assert await coinbase.pendingOwner() == other.address
+            assert await coinbase.owner() == owner.address
+            # accept the transfer
+            await coinbase.acceptOwnership(caller_eoa=other.starknet_contract)
+            ZERO_ADDRESS = to_checksum_address(f"0x{0:040x}")
+            assert await coinbase.pendingOwner() == ZERO_ADDRESS
             assert await coinbase.owner() == other.address
+            # teardown
             await coinbase.transferOwnership(
                 owner.address, caller_eoa=other.starknet_contract
             )
-
-        async def test_should_revert_when_new_owner_is_zero_address(self, coinbase):
-            with evm_error("New owner cannot be the zero address"):
-                await coinbase.transferOwnership(f"0x{0:040x}")
+            await coinbase.acceptOwnership(caller_eoa=owner.starknet_contract)
 
         async def test_should_revert_when_not_owner(self, coinbase, other):
-            with evm_error("Not the contract owner"):
+            error = keccak(b"OwnableUnauthorizedAccount(address)")[:4] + encode(
+                ["address"], [other.address]
+            )
+            with evm_error(error):
                 await coinbase.transferOwnership(
                     other.address, caller_eoa=other.starknet_contract
                 )
