@@ -144,19 +144,16 @@ async def main():
     starknet_deployments = get_starknet_deployments()
     l1_addresses = get_l1_addresses()
 
+    l1_kakarot_messaging = get_l1_contract(
+        "L1L2Messaging",
+        "L1KakarotMessaging",
+        address=l1_addresses.get("L1KakarotMessaging"),
+    )
     l1_kakarot_messaging_registered_address = None
-    if l1_addresses.get("L1KakarotMessaging"):
-        try:
-            l1_kakarot_messaging = get_l1_contract(
-                "L1L2Messaging",
-                "L1KakarotMessaging",
-                address=l1_addresses["L1KakarotMessaging"],
-            )
-            l1_kakarot_messaging_registered_address = (
-                l1_kakarot_messaging.kakarotAddress()
-            )
-        except (ContractLogicError, InsufficientDataBytes):
-            pass
+    try:
+        l1_kakarot_messaging_registered_address = l1_kakarot_messaging.kakarotAddress()
+    except (ContractLogicError, InsufficientDataBytes):
+        pass
 
     if l1_kakarot_messaging_registered_address != starknet_deployments["kakarot"]:
         if NETWORK["type"] == NetworkType.DEV:
@@ -173,6 +170,11 @@ async def main():
             starknet_deployments["kakarot"],
         )
         l1_addresses.update({"L1KakarotMessaging": l1_kakarot_messaging.address})
+
+    l1_messaging_contract_address = (
+        await call("kakarot", "get_l1_messaging_contract_address")
+    ).l1_messaging_contract_address
+    if l1_messaging_contract_address != int(l1_kakarot_messaging.address, 16):
         await invoke(
             "kakarot",
             "set_l1_messaging_contract_address",
