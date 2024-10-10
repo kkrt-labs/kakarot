@@ -42,14 +42,14 @@ else:
 def dump_l1_addresses(deployments):
     json.dump(
         deployments,
-        open(DEPLOYMENTS_DIR / "l1-addresses.json", "w"),
+        open(DEPLOYMENTS_DIR / "l1_addresses.json", "w"),
         indent=2,
     )
 
 
 def get_l1_addresses():
     try:
-        return json.load(open(DEPLOYMENTS_DIR / "l1-addresses.json", "r"))
+        return json.load(open(DEPLOYMENTS_DIR / "l1_addresses.json", "r"))
     except FileNotFoundError:
         return {}
 

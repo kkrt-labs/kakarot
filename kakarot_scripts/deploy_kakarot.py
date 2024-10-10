@@ -1,8 +1,10 @@
 # %% Imports
 import logging
 
+from eth_abi.exceptions import InsufficientDataBytes
 from eth_utils.address import to_checksum_address
 from uvloop import run
+from web3.exceptions import ContractLogicError
 
 from kakarot_scripts.constants import (
     ARACHNID_PROXY_DEPLOYER,
@@ -29,6 +31,12 @@ from kakarot_scripts.utils.kakarot import (
 )
 from kakarot_scripts.utils.kakarot import dump_deployments as dump_evm_deployments
 from kakarot_scripts.utils.kakarot import get_deployments as get_evm_deployments
+from kakarot_scripts.utils.l1 import (
+    deploy_on_l1,
+    dump_l1_addresses,
+    get_l1_addresses,
+    get_l1_contract,
+)
 from kakarot_scripts.utils.starknet import call, declare
 from kakarot_scripts.utils.starknet import deploy as deploy_starknet
 from kakarot_scripts.utils.starknet import (
@@ -132,16 +140,47 @@ async def main():
 
     dump_deployments(starknet_deployments)
 
-    # Execute calls in lazy mode
-    # After this point, Kakarot needs to be deployed for the remaining calls to be executed
+    # %% L1
+    l1_addresses = get_l1_addresses()
+
+    l1_kakarot_messaging_registered_address = None
+    if l1_addresses.get("L1KakarotMessaging"):
+        try:
+            l1_kakarot_messaging = get_l1_contract(
+                "L1L2Messaging",
+                "L1KakarotMessaging",
+                address=l1_addresses["L1KakarotMessaging"],
+            )
+            l1_kakarot_messaging_registered_address = (
+                l1_kakarot_messaging.kakarotAddress()
+            )
+        except (ContractLogicError, InsufficientDataBytes):
+            pass
+
+    if l1_kakarot_messaging_registered_address != starknet_deployments["kakarot"]:
+        if NETWORK["type"] == NetworkType.DEV:
+            starknet_core = deploy_on_l1("Starknet", "StarknetMessagingLocal")
+            l1_addresses.update({"StarknetCore": starknet_core.address})
+
+        l1_kakarot_messaging = deploy_on_l1(
+            "L1L2Messaging",
+            "L1KakarotMessaging",
+            l1_addresses["StarknetCore"],
+            starknet_deployments["kakarot"],
+        )
+        l1_addresses.update({"L1KakarotMessaging": l1_kakarot_messaging.address})
+        await invoke(
+            "kakarot",
+            "set_l1_messaging_contract_address",
+            int(l1_kakarot_messaging.address, 16),
+        )
+
+    dump_l1_addresses(l1_addresses)
+
+    # %% Pre-EIP155 deployments, done only once and don't need an account
+    # Kakarot needs to be deployed for the remaining calls to be executed
     await execute_calls()
     remove_lazy_account(account.address)
-
-    # %% EVM Deployments
-    starknet_deployments = get_starknet_deployments()
-    evm_deployments = get_evm_deployments()
-
-    # %% Pre-EIP155 deployments, done only once
     await deploy_with_presigned_tx(
         MULTICALL3_DEPLOYER,
         MULTICALL3_SIGNED_TX,
@@ -161,8 +200,9 @@ async def main():
         name="CreateX",
         max_fee=int(0.2e18),
     )
+    register_lazy_account(account.address)
 
-    # %% Tokens deployments
+    # %% EVM Deployments
     if not EVM_ADDRESS:
         logger.info("ℹ️  No EVM address provided, skipping EVM deployments")
         return
@@ -173,12 +213,23 @@ async def main():
         EVM_ADDRESS, amount=100 if NETWORK["type"] is NetworkType.DEV else 0.01
     )
 
-    for contract_app, contract_name, deployed_name, *deployment_args in [
-        ("WETH", "WETH9", "WETH9"),
+    starknet_deployments = get_starknet_deployments()
+    evm_deployments = get_evm_deployments()
+
+    # %% Tokens deployments
+    for (
+        contract_app,
+        contract_name,
+        deployed_name,
+        cairo_precompile,
+        *deployment_args,
+    ) in [
+        ("WETH", "WETH9", "WETH9", False),
         (
             "CairoPrecompiles",
             "DualVmToken",
             "KakarotETH",
+            True,
             starknet_deployments["kakarot"],
             ETH_TOKEN_ADDRESS,
         ),
@@ -186,6 +237,7 @@ async def main():
             "CairoPrecompiles",
             "DualVmToken",
             "KakarotSTRK",
+            True,
             starknet_deployments["kakarot"],
             STRK_TOKEN_ADDRESS,
         ),
@@ -204,13 +256,36 @@ async def main():
             "address": int(token.address, 16),
             "starknet_address": token.starknet_address,
         }
+        if cairo_precompile:
+            await invoke(
+                "kakarot",
+                "set_authorized_cairo_precompile_caller",
+                int(token.address, 16),
+                1,
+            )
+
+    # %% Messaging
+    deployment = evm_deployments.get("L2KakarotMessaging")
+    starknet_address = None
+    if deployment is not None:
+        starknet_address = (
+            await call("kakarot", "get_starknet_address", deployment["address"])
+        ).starknet_address
+
+    if deployment is None or deployment["starknet_address"] != starknet_address:
+        l2_kakarot_messaging = await deploy_evm("L1L2Messaging", "L2KakarotMessaging")
         await invoke(
             "kakarot",
             "set_authorized_cairo_precompile_caller",
-            int(token.address, 16),
-            1,
+            int(l2_kakarot_messaging.address, 16),
+            True,
         )
+        evm_deployments["L2KakarotMessaging"] = {
+            "address": int(l2_kakarot_messaging.address, 16),
+            "starknet_address": l2_kakarot_messaging.starknet_address,
+        }
 
+    # %% Coinbase
     coinbase = (await call("kakarot", "get_coinbase")).coinbase
     if evm_deployments.get("Coinbase", {}).get("address") != coinbase:
         contract = await deploy_evm(
@@ -224,17 +299,19 @@ async def main():
         }
         await invoke("kakarot", "set_coinbase", int(contract.address, 16))
 
+    # %% Tear down
+    await execute_calls()
+    dump_evm_deployments(evm_deployments)
+    balance_after = await get_balance(account.address)
+    logger.info(
+        f"ℹ💰  Deployer balance changed from {balance_pref / 1e18} to {balance_after / 1e18} ETH"
+    )
+
     coinbase = (await call("kakarot", "get_coinbase")).coinbase
     if coinbase == 0:
         logger.error("❌ Coinbase is set to 0, all transaction fees will be lost")
     else:
         logger.info(f"✅ Coinbase set to: 0x{coinbase:040x}")
-
-    dump_evm_deployments(evm_deployments)
-    balance_after = await get_balance(account.address)
-    logger.info(
-        f"ℹ️  Deployer balance changed from {balance_pref / 1e18} to {balance_after / 1e18} ETH"
-    )
 
 
 # %% Run

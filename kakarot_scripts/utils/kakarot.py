@@ -629,7 +629,6 @@ async def send_starknet_transaction(
         account=relayer,
     )
 
-    await wait_for_transaction(tx_hash=tx_hash)
     receipt = await RPC_CLIENT.get_transaction_receipt(tx_hash)
     transaction_events = [
         event
