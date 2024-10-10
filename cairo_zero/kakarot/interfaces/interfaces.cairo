@@ -97,6 +97,21 @@ namespace IAccount {
 
 @contract_interface
 namespace IKakarot {
+    func upgrade(new_class: felt) {
+    }
+
+    func transfer_ownership(new_owner: felt) {
+    }
+
+    func pause() {
+    }
+
+    func unpause() {
+    }
+
+    func get_owner() -> (owner: felt) {
+    }
+
     func set_native_token(native_token_address: felt) {
     }
 
@@ -115,19 +130,16 @@ namespace IKakarot {
     func get_coinbase() -> (coinbase: felt) {
     }
 
-    func set_block_gas_limit(gas_limit_: felt) {
-    }
-
-    func get_block_gas_limit() -> (block_gas_limit: felt) {
-    }
-
     func set_prev_randao(prev_randao: Uint256) {
     }
 
     func get_prev_randao() -> (prev_randao: Uint256) {
     }
 
-    func deploy_externally_owned_account(evm_address: felt) {
+    func set_block_gas_limit(gas_limit_: felt) {
+    }
+
+    func get_block_gas_limit() -> (block_gas_limit: felt) {
     }
 
     func get_account_contract_class_hash() -> (account_contract_class_hash: felt) {
@@ -142,16 +154,40 @@ namespace IKakarot {
     func set_uninitialized_account_class_hash(uninitialized_account_class_hash: felt) {
     }
 
+    func set_authorized_cairo_precompile_caller(evm_address: felt, authorized: felt) {
+    }
+
     func set_cairo1_helpers_class_hash(cairo1_helpers_class_hash: felt) {
     }
 
     func get_cairo1_helpers_class_hash() -> (cairo1_helpers_class_hash: felt) {
     }
 
+    func get_starknet_address(evm_address: felt) -> (starknet_address: felt) {
+    }
+
+    func deploy_externally_owned_account(evm_address: felt) {
+    }
+
     func register_account(evm_address: felt) {
     }
 
-    func get_starknet_address(evm_address: felt) -> (starknet_address: felt) {
+    func write_account_bytecode(evm_address: felt, bytecode_len: felt, bytecode: felt*) {
+    }
+
+    func upgrade_account(evm_address: felt, new_class: felt) {
+    }
+
+    func write_account_nonce(evm_address: felt, nonce: felt) {
+    }
+
+    func set_authorized_pre_eip155_tx(sender_address: felt, msg_hash: felt) {
+    }
+
+    func set_l1_messaging_contract_address(l1_messaging_contract_address: felt) {
+    }
+
+    func get_l1_messaging_contract_address() -> (l1_messaging_contract_address: felt) {
     }
 
     func eth_call(
@@ -190,12 +226,6 @@ namespace IKakarot {
     func eth_send_raw_unsigned_tx(tx_data_len: felt, tx_data: felt*) -> (
         return_data_len: felt, return_data: felt*, success: felt, gas_used: felt
     ) {
-    }
-
-    func set_l1_messaging_contract_address(l1_messaging_contract_address: felt) {
-    }
-
-    func get_l1_messaging_contract_address() -> (l1_messaging_contract_address: felt) {
     }
 }
 

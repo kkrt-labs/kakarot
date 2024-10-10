@@ -249,6 +249,20 @@ class TestKakarot:
                 assert receipt.execution_status.name == "REVERTED"
                 assert "Ownable: caller is not the owner" in receipt.revert_reason
 
+        class TestSetAuthorizedPreEip155Tx:
+            async def test_should_fail_not_owner(self, new_eoa, other):
+                eoa = await new_eoa()
+                tx_hash = await invoke(
+                    "kakarot",
+                    "set_authorized_pre_eip155_tx",
+                    int(eoa.address, 16),
+                    True,
+                    account=other,
+                )
+                receipt = await RPC_CLIENT.get_transaction_receipt(tx_hash)
+                assert receipt.execution_status.name == "REVERTED"
+                assert "Ownable: caller is not the owner" in receipt.revert_reason
+
     class TestUpgradeAccount:
         async def test_should_upgrade_account_class(self, new_eoa, class_hashes):
             eoa = await new_eoa()
