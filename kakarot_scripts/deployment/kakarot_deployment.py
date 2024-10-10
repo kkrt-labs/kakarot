@@ -72,12 +72,6 @@ if __name__ == "__main__":
 
     async def main():
         account = await get_starknet_account()
-        try:
-            await RPC_CLIENT.get_class_hash_at(get_deployments()["kakarot"])
-        except Exception:
-            logger.error("❌ Kakarot is not deployed, exiting...")
-            return
-
         register_lazy_account(account.address)
         await deploy_or_upgrade_kakarot(account)
         await execute_calls()
