@@ -171,16 +171,6 @@ async def main():
         )
         l1_addresses.update({"L1KakarotMessaging": l1_kakarot_messaging.address})
 
-    l1_messaging_contract_address = (
-        await call("kakarot", "get_l1_messaging_contract_address")
-    ).l1_messaging_contract_address
-    if l1_messaging_contract_address != int(l1_kakarot_messaging.address, 16):
-        await invoke(
-            "kakarot",
-            "set_l1_messaging_contract_address",
-            int(l1_kakarot_messaging.address, 16),
-        )
-
     dump_l1_addresses(l1_addresses)
 
     # %% Pre-EIP155 deployments, done only once and don't need an account
@@ -290,6 +280,16 @@ async def main():
             "address": int(l2_kakarot_messaging.address, 16),
             "starknet_address": l2_kakarot_messaging.starknet_address,
         }
+
+    l1_messaging_contract_address = (
+        await call("kakarot", "get_l1_messaging_contract_address")
+    ).l1_messaging_contract_address
+    if l1_messaging_contract_address != int(l1_kakarot_messaging.address, 16):
+        await invoke(
+            "kakarot",
+            "set_l1_messaging_contract_address",
+            int(l1_kakarot_messaging.address, 16),
+        )
 
     # %% Coinbase
     coinbase = (await call("kakarot", "get_coinbase")).coinbase
