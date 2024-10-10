@@ -94,7 +94,9 @@ def get_solidity_artifacts(
         )
         if len(target_solidity_file_path) != 1:
             raise ValueError(
-                f"Cannot locate a unique {contract_name} in {contract_app}"
+                f"Cannot locate a unique {contract_name} in {contract_app}:\n"
+                f"Search path: {str(src_path / contract_app)}/**/{contract_name}.sol\n"
+                f"Found: {target_solidity_file_path}"
             )
 
         target_compilation_output = [
