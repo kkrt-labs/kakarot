@@ -5,6 +5,7 @@ from uvloop import run
 from kakarot_scripts.deployment.declarations import declare_contracts
 from kakarot_scripts.deployment.evm_deployments import deploy_evm_contracts
 from kakarot_scripts.deployment.kakarot_deployment import deploy_or_upgrade_kakarot
+from kakarot_scripts.deployment.messaging_deployments import deploy_messaging_contracts
 from kakarot_scripts.deployment.pre_eip155_deployments import (
     deploy_pre_eip155_contracts,
     whitelist_pre_eip155_contracts,
@@ -38,13 +39,14 @@ async def main():
     await execute_calls()
 
     # %% EVM Deployments
-    # Whitelists depend on a deployed kakarot
+    # These deployments depend on a deployed kakarot
     await whitelist_pre_eip155_contracts()
     await deploy_evm_contracts()
     await execute_calls()
     remove_lazy_account(account.address)
 
     # Must be sequential
+    await deploy_messaging_contracts()
     await deploy_pre_eip155_contracts()
 
     # %% Tear down
