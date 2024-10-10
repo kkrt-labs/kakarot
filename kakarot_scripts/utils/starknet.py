@@ -531,7 +531,7 @@ def register_lazy_account(account_address):
 
 
 def remove_lazy_account(account_address):
-    del _lazy_execute[account_address]
+    _lazy_execute.pop(account_address, None)
 
 
 def register_multisig_account(account_address):
