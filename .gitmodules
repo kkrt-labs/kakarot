@@ -13,3 +13,6 @@
 [submodule "solidity_contracts/lib/base64-sol"]
 	path = solidity_contracts/lib/base64-sol
 	url = https://github.com/Brechtpd/base64
+[submodule "solidity_contracts/lib/openzeppelin-contracts"]
+	path = solidity_contracts/lib/openzeppelin-contracts
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts
