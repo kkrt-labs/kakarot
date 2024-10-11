@@ -6,11 +6,9 @@ from typing import Any, Dict, List
 from uvloop import run
 
 from kakarot_scripts.constants import (
-    ETH_TOKEN_ADDRESS,
     EVM_ADDRESS,
     NETWORK,
     RPC_CLIENT,
-    STRK_TOKEN_ADDRESS,
     TOKEN_ADDRESSES_DIR,
     NetworkType,
 )
