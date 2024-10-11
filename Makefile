@@ -10,7 +10,6 @@ endif
 KKRT_SSJ_RELEASE_ID = 176384150
 # Kakarot SSJ artifacts for precompiles.
 KKRT_SSJ_BUILD_ARTIFACT_URL = $(shell curl -L https://api.github.com/repos/kkrt-labs/kakarot-ssj/releases/${KKRT_SSJ_RELEASE_ID} | jq -r '.assets[0].browser_download_url')
-KATANA_VERSION = v1.0.0-alpha.16
 ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
 BUILD_DIR = build
@@ -26,6 +25,12 @@ $(SSJ_DIR): $(SSJ_ZIP)
 $(SSJ_ZIP):
 	curl -sL -o $(SSJ_ZIP) "$(KKRT_SSJ_BUILD_ARTIFACT_URL)"
 
+# Accepts "katana" as an argument to setup only Katana (for CI).
+setup:
+	uv run setup $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+	uv sync --all-extras --dev
+katana: ;
+
 build: $(SSJ_DIR)
 	uv run compile
 
@@ -34,10 +39,6 @@ deploy: build build-sol
 
 fetch-ef-tests:
 	uv run ef_tests
-
-setup:
-	uv run setup
-	uv sync --all-extras --dev
 
 test-cairo-zero: deploy
 	uv run pytest cairo_zero/tests/src  -m "not NoCI" --log-cli-level=INFO -n logical --seed 42
@@ -82,9 +83,6 @@ check-resources:
 build-sol:
 	git submodule update --init --recursive
 	forge build --names --force
-
-install-katana:
-	cargo install --git https://github.com/dojoengine/dojo --locked --tag "${KATANA_VERSION}" katana
 
 run-katana:
 	katana --chain-id test --validate-max-steps 1000000 --invoke-max-steps 9000000 --eth-gas-price 0 --strk-gas-price 0 --disable-fee --seed 0

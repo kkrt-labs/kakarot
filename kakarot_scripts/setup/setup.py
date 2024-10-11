@@ -4,39 +4,49 @@ import os
 import shutil
 import subprocess
 import sys
+from typing import Optional
+
+KATANA_VERSION = "v1.0.0-alpha.14"
+PYTHON_MIN_VERSION = (3, 10)
+ASDF_VERSION = "v0.14.1"
+
+SHELL_CONFIG_FILES = {
+    "bash": [".bashrc", ".bash_profile"],
+    "zsh": [".zshrc"],
+    "fish": [".config/fish/config.fish"],
+}
 
 
-def run_command(command, error_message):
+class SetupError(Exception):
+    """Custom exception for setup errors."""
+
+    pass
+
+
+def run_command(command: str, error_message: str) -> None:
     try:
         subprocess.run(command, check=True, shell=True)
-    except subprocess.CalledProcessError:
-        print(f"Error: {error_message}")
-        sys.exit(1)
+    except subprocess.CalledProcessError as e:
+        raise SetupError(f"{error_message}: {e}") from e
 
 
-def is_command_available(command):
+def is_command_available(command: str) -> bool:
     return shutil.which(command) is not None
 
 
-def install_dependency(name, install_command, check_command):
-    if is_command_available(check_command):
-        print(f"{name} is already installed.")
-    else:
-        print(f"Installing {name}...")
-        run_command(install_command, f"Failed to install {name}")
+def get_version(command: str) -> Optional[str]:
+    try:
+        result = subprocess.run([command, "--version"], capture_output=True, text=True)
+        return result.stdout.strip()
+    except subprocess.CalledProcessError:
+        return None
 
 
-def get_shell_config_file():
+def get_shell_config_file() -> Optional[str]:
     shell = os.environ.get("SHELL", "").split("/")[-1]
     home = os.path.expanduser("~")
 
-    config_files = {
-        "bash": [".bashrc", ".bash_profile"],
-        "zsh": [".zshrc"],
-        "fish": [".config/fish/config.fish"],
-    }
-
-    for file in config_files.get(shell, []):
+    for file in SHELL_CONFIG_FILES.get(shell, []):
         full_path = os.path.join(home, file)
         if os.path.exists(full_path):
             return full_path
@@ -44,25 +54,49 @@ def get_shell_config_file():
     return None
 
 
-def main():
-    # Check Python version
-    if sys.version_info < (3, 10):
-        print("❌ Error: Python 3.10 or higher is required.")
-        sys.exit(1)
+def install_dependency(
+    name: str, install_command: str, check_command: str, version: Optional[str] = None
+) -> None:
+    if is_command_available(check_command):
+        if version:
+            current_version = get_version(check_command)
+            if current_version == version:
+                print(f"{name} version {version} is already installed.")
+                return
+            print(f"Updating {name} to version {version}...")
+        else:
+            print(f"{name} is already installed.")
+            return
+    else:
+        print(f"Installing {name}...")
 
-    # Install jq
+    run_command(install_command, f"Failed to install/update {name}")
+
+
+def setup_katana() -> None:
+    install_dependency(
+        "katana",
+        f'cargo install --git https://github.com/dojoengine/dojo --locked --tag "{KATANA_VERSION}" katana',
+        "katana",
+        version=KATANA_VERSION,
+    )
+
+
+def setup_local() -> None:
+    if sys.version_info < PYTHON_MIN_VERSION:
+        raise SetupError(
+            f"Python {PYTHON_MIN_VERSION[0]}.{PYTHON_MIN_VERSION[1]} or higher is required."
+        )
+
+    # Install dependencies
     install_dependency(
         "jq",
         "brew install jq" if sys.platform == "darwin" else "sudo apt-get install -y jq",
         "jq",
     )
-
-    # Install cargo
     install_dependency("cargo", "curl https://sh.rustup.rs -sSf | sh -s -- -y", "cargo")
-    # source $HOME/.cargo/env
     run_command(". $HOME/.cargo/env", "Failed to source cargo environment")
 
-    # Install docker
     if not is_command_available("docker"):
         print(
             "❌ Please install Docker manually from https://docs.docker.com/get-docker/"
@@ -70,37 +104,37 @@ def main():
     else:
         print("Docker is already installed.")
 
-    # Install foundry
     install_dependency(
         "foundry", "curl -L https://foundry.paradigm.xyz | bash && foundryup", "forge"
     )
 
-    # Install scarb using asdf
+    # Install asdf and related tools
     if not is_command_available("asdf"):
         print("Installing asdf...")
         run_command(
-            "git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.14.1",
+            f"git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch {ASDF_VERSION}",
             "Failed to install asdf",
+            version=ASDF_VERSION,
         )
         shell_config = get_shell_config_file()
-        run_command(
-            f"echo '. $HOME/.asdf/asdf.sh' >> {shell_config}",
-            "Failed to source asdf environment",
-        )
-        print(
-            "Please add asdf to your shell configuration and restart your terminal by following the instructions at https://asdf-vm.com/guide/getting-started.html"
-        )
+        if shell_config:
+            run_command(
+                f"echo '. $HOME/.asdf/asdf.sh' >> {shell_config}",
+                "Failed to source asdf environment",
+            )
+            print("Please restart your terminal to use asdf.")
+        else:
+            print("Please add asdf to your shell configuration manually.")
     else:
         print("asdf is already installed.")
 
     if is_command_available("asdf"):
         run_command(
             "asdf plugin add scarb && asdf plugin add starknet-foundry || true",
-            "Failed to add scarb plugin to asdf",
+            "Failed to add asdf plugins",
         )
-        run_command("asdf install || true", "Failed to install scarb 0.7.0")
+        run_command("asdf install", "Failed to install asdf tools")
 
-    # Install Go
     install_dependency(
         "go",
         (
@@ -110,8 +144,20 @@ def main():
         ),
         "go",
     )
+    setup_katana()
 
     print("All dependencies have been installed or were already available!")
+
+
+def main() -> None:
+    try:
+        if len(sys.argv) > 1 and sys.argv[1] == "katana":
+            setup_katana()
+        else:
+            setup_local()
+    except SetupError as e:
+        print(f"❌ Error: {e}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
