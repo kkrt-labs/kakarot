@@ -2,9 +2,8 @@ import pytest
 import pytest_asyncio
 from eth_utils import keccak
 
-from kakarot_scripts.deployment.dualvm_token_deployments import deploy_dualvm_token, deploy_starknet_token
-from kakarot_scripts.utils.kakarot import deploy as deploy_kakarot, get_deployments as get_evm_deployments, get_contract as get_contract_evm
-from kakarot_scripts.utils.starknet import deploy as deploy_starknet
+from kakarot_scripts.utils.kakarot import get_contract as get_contract_evm
+from kakarot_scripts.utils.kakarot import get_deployments as get_evm_deployments
 from kakarot_scripts.utils.starknet import get_contract as get_contract_starknet
 from kakarot_scripts.utils.starknet import get_starknet_account, invoke
 from tests.utils.errors import cairo_error
@@ -18,11 +17,13 @@ async def starknet_token(owner):
     return get_contract_starknet("StarknetToken", address=address)
 
 
+
 @pytest_asyncio.fixture(scope="function")
 async def dual_vm_token():
     evm_deployments = get_evm_deployments()
     ether = evm_deployments["Ether"]["address"]
     return await get_contract_evm("CairoPrecompiles", "DualVmToken", address=ether)
+
 
 @pytest.mark.asyncio(scope="module")
 @pytest.mark.CairoPrecompiles
