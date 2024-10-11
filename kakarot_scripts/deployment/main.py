@@ -5,6 +5,7 @@ from uvloop import run
 
 from kakarot_scripts.constants import EVM_ADDRESS, L1_RPC_PROVIDER, NETWORK
 from kakarot_scripts.deployment.declarations import declare_contracts
+from kakarot_scripts.deployment.dualvm_token_deployments import deploy_dualvm_tokens
 from kakarot_scripts.deployment.evm_deployments import deploy_evm_contracts
 from kakarot_scripts.deployment.kakarot_deployment import deploy_or_upgrade_kakarot
 from kakarot_scripts.deployment.messaging_deployments import (
@@ -52,6 +53,7 @@ async def main():
     # %% EVM Deployments
     await deploy_pre_eip155_senders()
     await deploy_evm_contracts()
+    await deploy_dualvm_tokens()
     await execute_calls()
 
     await whitelist_pre_eip155_txs()
