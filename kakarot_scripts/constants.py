@@ -136,7 +136,7 @@ NETWORKS = {
         "type": NetworkType.DEV,
         "check_interval": 6,
         "max_wait": 30,
-    }
+    },
 }
 
 if os.getenv("STARKNET_NETWORK") is not None:
