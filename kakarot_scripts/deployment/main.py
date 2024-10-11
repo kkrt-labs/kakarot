@@ -5,7 +5,9 @@ from uvloop import run
 from kakarot_scripts.deployment.declarations import declare_contracts
 from kakarot_scripts.deployment.evm_deployments import deploy_evm_contracts
 from kakarot_scripts.deployment.kakarot_deployment import deploy_or_upgrade_kakarot
-from kakarot_scripts.deployment.messaging_deployments import deploy_messaging_contracts
+from kakarot_scripts.deployment.messaging_deployments import (
+    deploy_l2_messaging_contracts,
+)
 from kakarot_scripts.deployment.pre_eip155_deployments import (
     deploy_pre_eip155_contracts,
     whitelist_pre_eip155_contracts,
@@ -26,11 +28,14 @@ logger.setLevel(logging.INFO)
 
 
 async def main():
-    # %% Declarations
+
+    # %% Account initialization
     account = await get_starknet_account()
     register_lazy_account(account.address)
     logger.info(f"ℹ️  Using account 0x{account.address:064x} as deployer")
     balance_before = await get_balance(account.address)
+
+    # %% Declarations
     await declare_contracts()
 
     # %% Starknet Deployments
@@ -43,13 +48,11 @@ async def main():
     await deploy_evm_contracts()
     await execute_calls()
 
+    # Must be sequential
+    remove_lazy_account(account.address)
     # Needs whitelist tx to be executed first
     await deploy_pre_eip155_contracts()
-    await execute_calls()
-    remove_lazy_account(account.address)
-
-    # Must be sequential
-    await deploy_messaging_contracts()
+    await deploy_l2_messaging_contracts()
 
     # %% Tear down
     balance_after = await get_balance(account.address)

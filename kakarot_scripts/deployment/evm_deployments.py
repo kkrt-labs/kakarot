@@ -1,6 +1,7 @@
 import logging
 
 from eth_utils.address import to_checksum_address
+from uvloop import run
 
 from kakarot_scripts.constants import (
     ETH_TOKEN_ADDRESS,
@@ -93,24 +94,28 @@ async def deploy_evm_contracts():
         await invoke("kakarot", "set_coinbase", int(contract.address, 16))
 
     # %% Tear down
-    await execute_calls()
     dump_evm_deployments(evm_deployments)
 
 
-if __name__ == "__main__":
-    from uvloop import run
+# %% Run
+async def main():
+    try:
+        await RPC_CLIENT.get_class_hash_at(get_starknet_deployments()["kakarot"])
+    except Exception:
+        logger.error("❌ Kakarot is not deployed, exiting...")
+        return
 
-    async def main():
-        try:
-            await RPC_CLIENT.get_class_hash_at(get_starknet_deployments()["kakarot"])
-        except Exception:
-            logger.error("❌ Kakarot is not deployed, exiting...")
-            return
+    if not EVM_ADDRESS:
+        logger.info("ℹ️  No EVM address provided, skipping EVM deployments")
+        return
 
-        if not EVM_ADDRESS:
-            logger.info("ℹ️  No EVM address provided, skipping EVM deployments")
-            return
+    await deploy_evm_contracts()
+    await execute_calls()
 
-        await deploy_evm_contracts()
 
+def main_sync():
     run(main())
+
+
+if __name__ == "__main__":
+    main_sync()

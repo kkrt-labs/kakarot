@@ -1,10 +1,13 @@
 import logging
 
+from uvloop import run
+
 from kakarot_scripts.constants import (
     BLOCK_GAS_LIMIT,
     COINBASE,
     ETH_TOKEN_ADDRESS,
     NETWORK,
+    RPC_CLIENT,
     NetworkType,
 )
 from kakarot_scripts.utils.starknet import deploy as deploy_starknet
@@ -57,14 +60,23 @@ async def deploy_starknet_contracts(account):
     return starknet_deployments
 
 
-if __name__ == "__main__":
-    from uvloop import run
-
-    async def main():
-        account = await get_starknet_account()
-        register_lazy_account(account.address)
-        await deploy_starknet_contracts(account)
-        await execute_calls()
-        remove_lazy_account(account.address)
-
+# %% Run
+def main_sync():
     run(main())
+
+
+async def main():
+    try:
+        await RPC_CLIENT.get_class_by_hash(get_declarations()["kakarot"])
+    except Exception:
+        logger.error("❌ Classes were not declared, exiting...")
+        return
+    account = await get_starknet_account()
+    register_lazy_account(account.address)
+    await deploy_starknet_contracts(account)
+    await execute_calls()
+    remove_lazy_account(account.address)
+
+
+if __name__ == "__main__":
+    main_sync()

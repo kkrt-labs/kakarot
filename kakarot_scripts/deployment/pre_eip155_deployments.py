@@ -1,6 +1,9 @@
 from asyncio.log import logger
 
-from kakarot_scripts.constants import PRE_EIP155_TX, RPC_CLIENT
+from uvloop import run
+
+from kakarot_scripts.constants import RPC_CLIENT
+from kakarot_scripts.data.pre_eip155_txs import PRE_EIP155_TX
 from kakarot_scripts.utils.kakarot import dump_deployments as dump_evm_deployments
 from kakarot_scripts.utils.kakarot import get_deployments
 from kakarot_scripts.utils.kakarot import get_deployments as get_evm_deployments
@@ -36,24 +39,27 @@ async def deploy_pre_eip155_contracts():
     dump_evm_deployments(evm_deployments)
 
 
-if __name__ == "__main__":
-    from uvloop import run
+# %% Run
+async def main():
+    try:
+        await RPC_CLIENT.get_class_hash_at(get_deployments()["kakarot"])
+    except Exception:
+        logger.error("❌ Kakarot is not deployed, exiting...")
+        return
 
-    async def main():
+    account = await get_starknet_account()
+    register_lazy_account(account.address)
+    await whitelist_pre_eip155_contracts()
+    await execute_calls()
+    remove_lazy_account(account.address)
 
-        try:
-            await RPC_CLIENT.get_class_hash_at(get_deployments()["kakarot"])
-        except Exception:
-            logger.error("❌ Kakarot is not deployed, exiting...")
-            return
+    # Must be sequential
+    await deploy_pre_eip155_contracts()
 
-        # lazy whitelisting of multiple contracts
-        account = await get_starknet_account()
-        register_lazy_account(account.address)
-        await whitelist_pre_eip155_contracts()
-        await execute_calls()
-        remove_lazy_account(account.address)
 
-        await deploy_pre_eip155_contracts()
-
+def main_sync():
     run(main())
+
+
+if __name__ == "__main__":
+    main_sync()
