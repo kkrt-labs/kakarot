@@ -8,7 +8,7 @@
 	path = solidity_contracts/lib/v3-core
 	url = https://github.com/Uniswap/v3-core
 [submodule "solidity_contracts/lib/openzeppelin"]
-	path = solidity_contracts/lib/openzeppelin
+	path = solidity_contracts/lib/openzeppelin-uniswapV3
 	url = https://github.com/OpenZeppelin/openzeppelin-contracts
 [submodule "solidity_contracts/lib/base64-sol"]
 	path = solidity_contracts/lib/base64-sol

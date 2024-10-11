@@ -1,1 +1,2 @@
 @openzeppelin-contracts/=solidity_contracts/lib/openzeppelin-contracts/contracts/
+openzeppelin/=solidity_contracts/lib/openzeppelin-uniswapV3/contracts/
