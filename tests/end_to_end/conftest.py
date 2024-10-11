@@ -76,7 +76,7 @@ async def new_eoa(deployer) -> Wallet:
     kakarot_eth = await get_solidity_contract(
         "CairoPrecompiles",
         "DualVmToken",
-        address=get_deployments()["KakarotETH"]["address"],
+        address=get_deployments()["Ether"]["address"],
     )
     gas_price = (await call("kakarot", "get_base_fee")).base_fee
     gas_limit = 40_000
@@ -86,6 +86,7 @@ async def new_eoa(deployer) -> Wallet:
         if balance < tx_cost:
             continue
 
+        breakpoint()
         await kakarot_eth.functions["transfer(uint256,uint256)"](
             deployer.address,
             balance - tx_cost,

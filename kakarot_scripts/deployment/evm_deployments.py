@@ -63,7 +63,7 @@ async def deploy_evm_contracts():
         contract = await deploy_evm(
             "Kakarot",
             "Coinbase",
-            to_checksum_address(f'{evm_deployments["KakarotETH"]["address"]:040x}'),
+            to_checksum_address(f'{evm_deployments["Ether"]["address"]:040x}'),
         )
         evm_deployments["Coinbase"] = {
             "address": int(contract.address, 16),
