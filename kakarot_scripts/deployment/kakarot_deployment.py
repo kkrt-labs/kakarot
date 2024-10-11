@@ -1,3 +1,5 @@
+# %% Imports
+
 import logging
 
 from uvloop import run
@@ -24,8 +26,11 @@ from kakarot_scripts.utils.starknet import (
 
 logger = logging.getLogger(__name__)
 
+# %%
 
-async def deploy_or_upgrade_kakarot(account):
+
+async def deploy_or_upgrade_kakarot(owner):
+    # %% Deploy
     class_hash = get_declarations()
     starknet_deployments = get_deployments()
 
@@ -52,7 +57,7 @@ async def deploy_or_upgrade_kakarot(account):
     else:
         starknet_deployments["kakarot"] = await deploy_starknet(
             "kakarot",
-            account.address,  # owner
+            owner.address,  # owner
             ETH_TOKEN_ADDRESS,  # native_token_address_
             class_hash["account_contract"],  # account_contract_class_hash_
             class_hash["uninitialized_account"],  # uninitialized_account_class_hash_

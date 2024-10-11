@@ -43,6 +43,7 @@ from kakarot_scripts.constants import (
 )
 from kakarot_scripts.data.pre_eip155_txs import PRE_EIP155_TX
 from kakarot_scripts.utils.starknet import _max_fee
+from kakarot_scripts.utils.starknet import call
 from kakarot_scripts.utils.starknet import call as _call_starknet
 from kakarot_scripts.utils.starknet import fund_address as _fund_starknet_address
 from kakarot_scripts.utils.starknet import get_balance
@@ -466,14 +467,12 @@ async def get_eoa(private_key=None, amount=0) -> Account:
     )
 
 
-async def send_pre_eip155_transaction(name: str, max_fee: Optional[int] = None):
+async def whitelist_pre_eip155_tx(name: str):
     signed_tx = PRE_EIP155_TX[name]["signed_tx"]
     deployer_evm_address = PRE_EIP155_TX[name]["deployer"]
     should_deploy = PRE_EIP155_TX[name].get("should_deploy", False)
     if not should_deploy:
-        logger.info(f"ℹ️ {name} is already deployed, skipping")
         return
-    deployer_starknet_address = await get_starknet_address(deployer_evm_address)
 
     # Inline get_msg_hash and get_unsigned_encoded_tx_data
     rlp_decoded = rlp.decode(signed_tx)
@@ -487,6 +486,19 @@ async def send_pre_eip155_transaction(name: str, max_fee: Optional[int] = None):
         int(deployer_evm_address, 16),
         msg_hash,
     )
+
+
+async def send_pre_eip155_transaction(name: str, max_fee: Optional[int] = None):
+    """
+    Transaction must be whitelisted first.
+    """
+    signed_tx = PRE_EIP155_TX[name]["signed_tx"]
+    deployer_evm_address = PRE_EIP155_TX[name]["deployer"]
+    deployer_starknet_address = await get_starknet_address(deployer_evm_address)
+    should_deploy = PRE_EIP155_TX[name].get("deployer", False)
+    if not should_deploy:
+        logger.info(f"ℹ️ {name} is already deployed, skipping")
+        return
 
     if WEB3.is_connected():
         tx_hash = WEB3.eth.send_raw_transaction(signed_tx)
@@ -504,6 +516,9 @@ async def send_pre_eip155_transaction(name: str, max_fee: Optional[int] = None):
     )
 
     # Inline get_signature
+    rlp_decoded = rlp.decode(signed_tx)
+    unsigned_tx_data = rlp_decoded[:-3]
+    unsigned_encoded_tx = rlp.encode(unsigned_tx_data)
     v, r, s = rlp_decoded[-3:]
 
     return await send_starknet_transaction(
@@ -527,17 +542,18 @@ async def eth_get_code(address: Union[int, str]):
     )
 
 
-async def eth_get_transaction_count(evm_address, starknet_address=None):
-    kakarot_contract = _get_starknet_contract("kakarot")
+async def eth_get_transaction_count(evm_address):
+    starknet_address = (
+        await call("kakarot", "get_starknet_address", int(evm_address, 16))
+    ).starknet_address
     try:
         nonce = (
-            await kakarot_contract.functions["eth_get_transaction_count"].call(
-                int(evm_address, 16)
-            )
+            await call("kakarot", "eth_get_transaction_count", int(evm_address, 16))
         ).tx_count
     except Exception as e:
-        if f"Requested contract address {starknet_address} is not deployed" in str(
-            e.data
+        if (
+            f"Requested contract address 0x{starknet_address:064x} is not deployed"
+            in str(e.data)
         ):
             nonce = 0
         else:
@@ -698,7 +714,6 @@ async def deploy_and_fund_evm_address(evm_address: str, amount: float):
     """
     Deploy an EOA linked to the given EVM address and fund it with amount ETH.
     """
-    logger.info(f"ℹ️  Funding EVM address {evm_address}")
     starknet_address = await get_starknet_address(int(evm_address, 16))
     account_balance = await eth_balance_of(evm_address)
     if account_balance < amount:
@@ -770,21 +785,19 @@ async def store_bytecode(bytecode: Union[str, bytes], **kwargs):
     return evm_address
 
 
-async def whitelist_pre_eip155_tx(name: str) -> bool:
+async def deploy_pre_eip155_sender(name: str) -> bool:
     tx_instance = PRE_EIP155_TX[name]
     deployer_evm_address = tx_instance["deployer"]
-    tx_instance["signed_tx"]
     amount = tx_instance["required_eth"]
+    signed_tx = tx_instance["signed_tx"]
+    rlp_decoded = rlp.decode(signed_tx)
+    unsigned_tx_data = rlp_decoded[:-3]
+    tx_nonce = int.from_bytes(unsigned_tx_data[0], "big")
 
     # check the nonce of the deployer for an early return if it's not 0.
     # Either the nonce is 0, or the account is already deployed.
-    deployer_starknet_address = (
-        f"0x{await get_starknet_address(deployer_evm_address):064x}"
-    )
-    nonce = await eth_get_transaction_count(
-        deployer_evm_address, deployer_starknet_address
-    )
-    if nonce != 0:
+    nonce = await eth_get_transaction_count(deployer_evm_address)
+    if nonce != tx_nonce:
         logger.info(
             f"ℹ️  Nonce for {deployer_evm_address} is not 0 ({nonce}), skipping transaction"
         )
