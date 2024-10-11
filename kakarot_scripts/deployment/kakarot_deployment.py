@@ -7,6 +7,7 @@ from kakarot_scripts.constants import (
     BLOCK_GAS_LIMIT,
     DEFAULT_GAS_PRICE,
     ETH_TOKEN_ADDRESS,
+    EVM_ADDRESS,
     NETWORK,
     RPC_CLIENT,
     NetworkType,
@@ -68,6 +69,12 @@ async def deploy_or_upgrade_kakarot(owner):
             DEFAULT_GAS_PRICE,
             address=starknet_deployments["kakarot"],
         )
+        await invoke(
+            "kakarot",
+            "set_coinbase",
+            int(EVM_ADDRESS, 16),
+            address=starknet_deployments["kakarot"],
+        )
 
     dump_deployments(starknet_deployments)
 
@@ -78,6 +85,9 @@ async def main():
         await RPC_CLIENT.get_class_by_hash(get_declarations()["kakarot"])
     except Exception:
         logger.error("❌ Kakarot is not declared, exiting...")
+        return
+    if EVM_ADDRESS is None:
+        logger.error("❌ EVM_ADDRESS is not set, exiting...")
         return
     account = await get_starknet_account()
     register_lazy_account(account.address)
