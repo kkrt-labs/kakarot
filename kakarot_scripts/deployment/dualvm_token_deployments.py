@@ -17,10 +17,15 @@ from kakarot_scripts.utils.kakarot import deploy_and_fund_evm_address
 from kakarot_scripts.utils.kakarot import dump_deployments as dump_evm_deployments
 from kakarot_scripts.utils.kakarot import get_deployments as get_evm_deployments
 from kakarot_scripts.utils.starknet import deploy as deploy_starknet
-from kakarot_scripts.utils.starknet import get_class_hash_at
+from kakarot_scripts.utils.starknet import execute_calls, get_class_hash_at
 from kakarot_scripts.utils.starknet import get_contract as get_contract_starknet
 from kakarot_scripts.utils.starknet import get_deployments as get_starknet_deployments
-from kakarot_scripts.utils.starknet import get_starknet_account, invoke
+from kakarot_scripts.utils.starknet import (
+    get_starknet_account,
+    invoke,
+    register_lazy_account,
+    remove_lazy_account,
+)
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -155,6 +160,7 @@ async def ensure_starknet_token(token_name: str, token: Dict[str, Any]) -> str:
     return token["l2_token_address"]
 
 
+# %% Run
 async def main() -> None:
     try:
         await RPC_CLIENT.get_class_hash_at(get_starknet_deployments()["kakarot"])
@@ -166,14 +172,17 @@ async def main() -> None:
         EVM_ADDRESS, amount=100 if NETWORK["type"] is NetworkType.DEV else 0.01
     )
 
+    account = await get_starknet_account()
+    register_lazy_account(account)
     await deploy_dualvm_tokens()
+    await execute_calls()
+    remove_lazy_account(account.address)
 
 
 def main_sync() -> None:
     run(main())
 
 
+# %%
 if __name__ == "__main__":
     main_sync()
-
-# %%
