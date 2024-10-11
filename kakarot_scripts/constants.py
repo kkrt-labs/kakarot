@@ -34,7 +34,7 @@ class NetworkType(Enum):
 
 NETWORKS = {
     "mainnet": {
-        "name": "starknet-mainnet",
+        "name": "mainnet",
         "explorer_url": "https://starkscan.co",
         "rpc_url": f"https://rpc.nethermind.io/mainnet-juno/?apikey={os.getenv('NETHERMIND_API_KEY')}",
         "l1_rpc_url": f"https://mainnet.infura.io/v3/{os.getenv('INFURA_KEY')}",
@@ -47,7 +47,7 @@ NETWORKS = {
         "argent_multisig_api": "https://cloud.argent-api.com/v1/multisig/starknet/mainnet",
     },
     "sepolia": {
-        "name": "starknet-sepolia",
+        "name": "sepolia",
         "explorer_url": "https://sepolia.starkscan.co/",
         "rpc_url": f"https://rpc.nethermind.io/sepolia-juno/?apikey={os.getenv('NETHERMIND_API_KEY')}",
         "l1_rpc_url": f"https://sepolia.infura.io/v3/{os.getenv('INFURA_KEY')}",
@@ -136,34 +136,7 @@ NETWORKS = {
         "type": NetworkType.DEV,
         "check_interval": 6,
         "max_wait": 30,
-    },
-    "sharingan": {
-        "name": "sharingan",
-        "explorer_url": "",
-        "rpc_url": os.getenv("SHARINGAN_RPC_URL"),
-        "l1_rpc_url": "http://127.0.0.1:8545",
-        "type": NetworkType.PROD,
-        "check_interval": 6,
-        "max_wait": 30,
-    },
-    "kakarot-sepolia": {
-        "name": "kakarot-sepolia",
-        "explorer_url": "",
-        "rpc_url": os.getenv("KAKAROT_SEPOLIA_RPC_URL"),
-        "l1_rpc_url": f"https://sepolia.infura.io/v3/{os.getenv('INFURA_KEY')}",
-        "type": NetworkType.PROD,
-        "check_interval": 6,
-        "max_wait": 360,
-    },
-    "kakarot-staging": {
-        "name": "kakarot-staging",
-        "explorer_url": "",
-        "rpc_url": os.getenv("KAKAROT_STAGING_RPC_URL"),
-        "l1_rpc_url": f"https://sepolia.infura.io/v3/{os.getenv('INFURA_KEY')}",
-        "type": NetworkType.STAGING,
-        "check_interval": 1,
-        "max_wait": 30,
-    },
+    }
 }
 
 if os.getenv("STARKNET_NETWORK") is not None:
@@ -237,6 +210,7 @@ CAIRO_ZERO_DIR = Path("cairo_zero")
 CAIRO_DIR = Path("cairo")
 TESTS_DIR_CAIRO_ZERO = Path("cairo_zero/tests")
 TESTS_DIR_END_TO_END = Path("tests")
+TOKEN_ADDRESSES_DIR = Path("starknet-addresses/bridged_tokens")
 
 CONTRACTS = {
     p.stem: p

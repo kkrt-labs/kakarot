@@ -725,3 +725,10 @@ async def wait_for_transaction(tx_hash):
     except Exception as e:
         logger.error(f"Error while waiting for transaction 0x{tx_hash:064x}: {e}")
         return "❌"
+
+
+async def get_class_hash_at(address):
+    try:
+        return await RPC_CLIENT.get_class_hash_at(address)
+    except Exception:
+        return None
