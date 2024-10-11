@@ -95,10 +95,10 @@ def main():
 
     if is_command_available("asdf"):
         run_command(
-            "asdf plugin add scarb || true", "Failed to add scarb plugin to asdf"
+            "asdf plugin add scarb && asdf plugin add starknet-foundry || true",
+            "Failed to add scarb plugin to asdf",
         )
-        run_command("asdf install scarb 0.7.0 || true", "Failed to install scarb 0.7.0")
-        run_command("asdf install scarb 2.6.5 || true", "Failed to install scarb 2.6.5")
+        run_command("asdf install || true", "Failed to install scarb 0.7.0")
 
     # Install Go
     install_dependency(
