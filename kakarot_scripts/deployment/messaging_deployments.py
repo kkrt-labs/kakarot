@@ -1,6 +1,7 @@
 import logging
 
 from eth_abi.exceptions import InsufficientDataBytes
+from uvloop import run
 from web3.exceptions import ContractLogicError
 
 from kakarot_scripts.constants import NETWORK, RPC_CLIENT, NetworkType
@@ -20,7 +21,7 @@ from kakarot_scripts.utils.starknet import invoke
 logger = logging.getLogger(__name__)
 
 
-async def deploy_l1_contracts():
+async def deploy_l1_messaging_contracts():
     # %% L1
     starknet_deployments = get_starknet_deployments()
     l1_addresses = get_l1_addresses()
@@ -55,7 +56,7 @@ async def deploy_l1_contracts():
     dump_l1_addresses(l1_addresses)
 
 
-async def deploy_messaging_contracts():
+async def deploy_l2_messaging_contracts():
     # %% Messaging
     evm_deployments = get_evm_deployments()
     l1_kakarot_messaging_address = get_l1_addresses()["L1KakarotMessaging"]
@@ -92,16 +93,20 @@ async def deploy_messaging_contracts():
     dump_evm_deployments(evm_deployments)
 
 
-if __name__ == "__main__":
-    from uvloop import run
+# %% Run
+async def main():
+    try:
+        await RPC_CLIENT.get_class_hash_at(get_starknet_deployments()["kakarot"])
+    except Exception:
+        logger.error("❌ Kakarot is not deployed, exiting...")
+        return
+    await deploy_l1_messaging_contracts()
+    await deploy_l2_messaging_contracts()
 
-    async def main():
-        try:
-            await RPC_CLIENT.get_class_hash_at(get_starknet_deployments()["kakarot"])
-        except Exception:
-            logger.error("❌ Kakarot is not deployed, exiting...")
-            return
-        await deploy_l1_contracts()
-        await deploy_messaging_contracts()
 
+def main_sync():
     run(main())
+
+
+if __name__ == "__main__":
+    main_sync()

@@ -252,21 +252,6 @@ BUILD_DIR = Path("build")
 BUILD_DIR.mkdir(exist_ok=True, parents=True)
 BUILD_DIR_SSJ = BUILD_DIR / "ssj"
 
-DATA_DIR = Path("kakarot_scripts") / "data"
-
-
-def load_pre_eip155_transactions():
-    raw_data = json.loads((DATA_DIR / "pre_eip155_txs.json").read_text())
-
-    for tx in raw_data.values():
-        tx["signed_tx"] = bytes.fromhex(tx["signed_tx"])
-
-    return raw_data
-
-
-PRE_EIP155_TX = load_pre_eip155_transactions()
-
-
 DEPLOYMENTS_DIR = Path("deployments") / NETWORK["name"]
 DEPLOYMENTS_DIR.mkdir(exist_ok=True, parents=True)
 

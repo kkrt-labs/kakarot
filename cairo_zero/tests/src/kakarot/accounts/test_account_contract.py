@@ -14,7 +14,7 @@ from starkware.starknet.public.abi import (
     get_storage_var_address,
 )
 
-from kakarot_scripts.constants import PRE_EIP155_TX
+from kakarot_scripts.data.pre_eip155_txs import PRE_EIP155_TX
 from kakarot_scripts.utils.uint256 import int_to_uint256
 from tests.utils.constants import CHAIN_ID, TRANSACTIONS
 from tests.utils.errors import cairo_error

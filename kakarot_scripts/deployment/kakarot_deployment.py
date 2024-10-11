@@ -1,5 +1,7 @@
 import logging
 
+from uvloop import run
+
 from kakarot_scripts.constants import (
     BLOCK_GAS_LIMIT,
     DEFAULT_GAS_PRICE,
@@ -67,14 +69,23 @@ async def deploy_or_upgrade_kakarot(account):
     dump_deployments(starknet_deployments)
 
 
-if __name__ == "__main__":
-    from uvloop import run
+# %% Run
+async def main():
+    try:
+        await RPC_CLIENT.get_class_by_hash(get_declarations()["kakarot"])
+    except Exception:
+        logger.error("❌ Kakarot is not declared, exiting...")
+        return
+    account = await get_starknet_account()
+    register_lazy_account(account.address)
+    await deploy_or_upgrade_kakarot(account)
+    await execute_calls()
+    remove_lazy_account(account.address)
 
-    async def main():
-        account = await get_starknet_account()
-        register_lazy_account(account.address)
-        await deploy_or_upgrade_kakarot(account)
-        await execute_calls()
-        remove_lazy_account(account.address)
 
+def main_sync():
     run(main())
+
+
+if __name__ == "__main__":
+    main_sync()
