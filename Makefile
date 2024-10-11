@@ -36,6 +36,7 @@ fetch-ef-tests:
 	uv run ef_tests
 
 setup:
+	uv run setup
 	uv sync --all-extras --dev
 
 test-cairo-zero: deploy
