@@ -34,26 +34,30 @@ libraries, e.g. `cairo-lang`.
 
 - Install [uv](https://github.com/astral-sh/uv) to manage python dependencies
   and run commands
-- Install [jq](https://jqlang.github.io/jq/) to process JSON from the CLI
-- Install
-  [cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html) to
-  manage our Rust dependencies.
-- Install [docker](https://docs.docker.com/get-docker/) to build some
-  experimental solidity contracts that require a custom solc compiler
-- Install [foundry](https://book.getfoundry.sh/getting-started/installation) to
-  compile the Solidity contracts we use for testing.
-- Install
-  [scarb using asdf](https://docs.swmansion.com/scarb/download.html#install-via-asdf)
-  to the Cairo contracts we use as dependencies. As these dependencies rely on
-  different versions of Cairo, you will need to install the following versions
-  of Scarb:
 
-  ```sh
-  asdf install scarb 0.7.0
-  asdf install scarb 2.6.5
-  ```
+- Setup the environment using `make setup`. Alternatively, you can install the
+  dependencies manually as follows:
 
-- Install [Go](https://go.dev/doc/install) to profile tests using `pprof`
+  - Install [jq](https://jqlang.github.io/jq/) to process JSON from the CLI
+  - Install
+    [cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html)
+    to manage our Rust dependencies.
+  - Install [docker](https://docs.docker.com/get-docker/) to build some
+    experimental solidity contracts that require a custom solc compiler
+  - Install [foundry](https://book.getfoundry.sh/getting-started/installation)
+    to compile the Solidity contracts we use for testing.
+  - Install
+    [scarb using asdf](https://docs.swmansion.com/scarb/download.html#install-via-asdf)
+    to the Cairo contracts we use as dependencies. As these dependencies rely on
+    different versions of Cairo, you will need to install the following versions
+    of Scarb:
+
+    ```sh
+    asdf install scarb 0.7.0
+    asdf install scarb 2.6.5
+    ```
+
+  - Install [Go](https://go.dev/doc/install) to profile tests using `pprof`
 
 - Install the two VSCode extensions for Cairo:
   - [Cairo Syntax](https://marketplace.visualstudio.com/items?itemName=starkware.cairo)
@@ -75,31 +79,25 @@ To set up a development environment, please follow these steps:
    make setup
    ```
 
-3. Install katana
-
-   ```sh
-   make install-katana
-   ```
-
-4. Build the Solidity contracts
+3. Build the Solidity contracts
 
    ```sh
    make build-sol
    ```
 
-5. Copy the default environment variables
+4. Copy the default environment variables
 
    ```sh
    cp .env.example .env
    ```
 
-6. Start a local katana instance
+5. Start a local katana instance
 
    ```sh
    make run-katana
    ```
 
-7. Run tests
+6. Run tests
 
    ```sh
    make test

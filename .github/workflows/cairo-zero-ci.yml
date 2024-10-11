@@ -122,7 +122,7 @@ jobs:
       - name: Extract Katana Version
         id: extract_katana_version
         run: |
-          KATANA_VERSION=$(grep -oP '^KATANA_VERSION = \K.*' Makefile)
+          KATANA_VERSION=$(grep -E "^KATANA_VERSION\s*=" kakarot_scripts/setup/setup.py | cut -d'"' -f2)
           echo "katana_version=$KATANA_VERSION" >> "$GITHUB_OUTPUT"
       - uses: astral-sh/setup-uv@v2
         with:
@@ -144,7 +144,7 @@ jobs:
           key: katana-${{ steps.extract_katana_version.outputs.katana_version }}
       - name: Install Katana
         if: steps.cached-katana.outputs.cache-hit != 'true'
-        run: make install-katana
+        run: make setup "katana"
       - name: Run tests
         run: |
           cp .env.example .env
