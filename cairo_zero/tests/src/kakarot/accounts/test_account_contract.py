@@ -14,7 +14,7 @@ from starkware.starknet.public.abi import (
     get_storage_var_address,
 )
 
-from kakarot_scripts.constants import ARACHNID_PROXY_DEPLOYER, ARACHNID_PROXY_SIGNED_TX
+from kakarot_scripts.data.pre_eip155_txs import PRE_EIP155_TX
 from kakarot_scripts.utils.uint256 import int_to_uint256
 from tests.utils.constants import CHAIN_ID, TRANSACTIONS
 from tests.utils.errors import cairo_error
@@ -344,9 +344,11 @@ class TestAccountContract:
                     chain_id=CHAIN_ID,
                 )
 
-        @SyscallHandler.patch("Account_evm_address", int(ARACHNID_PROXY_DEPLOYER, 16))
+        @SyscallHandler.patch(
+            "Account_evm_address", int(PRE_EIP155_TX["ArachnidProxy"]["deployer"], 16)
+        )
         def test_should_raise_unauthorized_pre_eip155_tx(self, cairo_run):
-            rlp_decoded = rlp.decode(ARACHNID_PROXY_SIGNED_TX)
+            rlp_decoded = rlp.decode(PRE_EIP155_TX["ArachnidProxy"]["signed_tx"])
             v, r, s = rlp_decoded[-3:]
             signature = [
                 *int_to_uint256(int.from_bytes(r, "big")),
@@ -400,7 +402,7 @@ class TestAccountContract:
             lambda _, __: [1, 0x68656C6C6F, 1, 1],  # hello
         )
         def test_pass_authorized_pre_eip155_transaction(self, cairo_run):
-            rlp_decoded = rlp.decode(ARACHNID_PROXY_SIGNED_TX)
+            rlp_decoded = rlp.decode(PRE_EIP155_TX["ArachnidProxy"]["signed_tx"])
             v, r, s = rlp_decoded[-3:]
             signature = [
                 *int_to_uint256(int.from_bytes(r, "big")),
@@ -416,7 +418,8 @@ class TestAccountContract:
 
             with (
                 SyscallHandler.patch(
-                    "Account_evm_address", int(ARACHNID_PROXY_DEPLOYER, 16)
+                    "Account_evm_address",
+                    int(PRE_EIP155_TX["ArachnidProxy"]["deployer"], 16),
                 ),
                 SyscallHandler.patch(
                     "Account_authorized_message_hashes", tx_hash_low, tx_hash_high, 0x1

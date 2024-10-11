@@ -252,9 +252,6 @@ BUILD_DIR = Path("build")
 BUILD_DIR.mkdir(exist_ok=True, parents=True)
 BUILD_DIR_SSJ = BUILD_DIR / "ssj"
 
-DATA_DIR = Path("kakarot_scripts") / "data"
-
-
 DEPLOYMENTS_DIR = Path("deployments") / NETWORK["name"]
 DEPLOYMENTS_DIR.mkdir(exist_ok=True, parents=True)
 
@@ -292,20 +289,6 @@ DECLARED_CONTRACTS = [
     "uninitialized_account",
     "UniversalLibraryCaller",
 ]
-
-# PRE-EIP155 TX
-MULTICALL3_DEPLOYER = "0x05f32b3cc3888453ff71b01135b34ff8e41263f2"
-MULTICALL3_SIGNED_TX = bytes.fromhex(
-    json.loads((DATA_DIR / "signed_txs.json").read_text())["multicall3"]
-)
-ARACHNID_PROXY_DEPLOYER = "0x3fab184622dc19b6109349b94811493bf2a45362"
-ARACHNID_PROXY_SIGNED_TX = bytes.fromhex(
-    json.loads((DATA_DIR / "signed_txs.json").read_text())["arachnid"]
-)
-CREATEX_DEPLOYER = "0xeD456e05CaAb11d66C4c797dD6c1D6f9A7F352b5"
-CREATEX_SIGNED_TX = bytes.fromhex(
-    json.loads((DATA_DIR / "signed_txs.json").read_text())["createx"]
-)
 
 prefix = NETWORK["name"].upper().replace("-", "_")
 EVM_PRIVATE_KEY = os.getenv(f"{prefix}_EVM_PRIVATE_KEY")
