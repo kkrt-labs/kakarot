@@ -91,6 +91,13 @@ dependencies and run commands. To install uv:
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
+To setup the project and install
+[all dependencies](docs/CONTRIBUTING.md#prerequisites):
+
+```bash
+make setup
+```
+
 To build the CairoZero files:
 
 ```bash
