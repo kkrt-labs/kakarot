@@ -1,3 +1,4 @@
+# %% Imports
 import logging
 
 from uvloop import run
@@ -25,7 +26,10 @@ from kakarot_scripts.utils.starknet import (
 logger = logging.getLogger(__name__)
 
 
+# %%
 async def deploy_starknet_contracts(account):
+
+    # %% Deployments
     class_hash = get_declarations()
     starknet_deployments = get_deployments()
 
@@ -57,6 +61,7 @@ async def deploy_starknet_contracts(account):
         )
 
     dump_deployments(starknet_deployments)
+    # %%
     return starknet_deployments
 
 

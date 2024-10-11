@@ -1,3 +1,4 @@
+# %% Imports
 import logging
 
 from eth_utils.address import to_checksum_address
@@ -22,7 +23,9 @@ from kakarot_scripts.utils.starknet import invoke
 logger = logging.getLogger(__name__)
 
 
+# %%
 async def deploy_evm_contracts():
+    # %% Deployments
     logger.info(f"ℹ️  Using account {EVM_ADDRESS} as deployer")
 
     await deploy_and_fund_evm_address(
@@ -32,6 +35,7 @@ async def deploy_evm_contracts():
     starknet_deployments = get_starknet_deployments()
     evm_deployments = get_evm_deployments()
 
+    # %% Tokens
     for (
         contract_app,
         contract_name,
@@ -106,7 +110,7 @@ async def main():
         return
 
     if not EVM_ADDRESS:
-        logger.info("ℹ️  No EVM address provided, skipping EVM deployments")
+        logger.warn("⚠️  No EVM address provided, skipping EVM deployments")
         return
 
     await deploy_evm_contracts()

@@ -1,3 +1,4 @@
+# %% Imports
 import logging
 
 from eth_abi.exceptions import InsufficientDataBytes
@@ -19,6 +20,8 @@ from kakarot_scripts.utils.starknet import get_deployments as get_starknet_deplo
 from kakarot_scripts.utils.starknet import invoke
 
 logger = logging.getLogger(__name__)
+
+# %%
 
 
 async def deploy_l1_messaging_contracts():
@@ -108,5 +111,6 @@ def main_sync():
     run(main())
 
 
+# %%
 if __name__ == "__main__":
     main_sync()

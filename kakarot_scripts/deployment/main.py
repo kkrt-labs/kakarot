@@ -6,11 +6,13 @@ from kakarot_scripts.deployment.declarations import declare_contracts
 from kakarot_scripts.deployment.evm_deployments import deploy_evm_contracts
 from kakarot_scripts.deployment.kakarot_deployment import deploy_or_upgrade_kakarot
 from kakarot_scripts.deployment.messaging_deployments import (
+    deploy_l1_messaging_contracts,
     deploy_l2_messaging_contracts,
 )
 from kakarot_scripts.deployment.pre_eip155_deployments import (
     deploy_pre_eip155_contracts,
-    whitelist_pre_eip155_contracts,
+    deploy_pre_eip155_senders,
+    whitelist_pre_eip155_txs,
 )
 from kakarot_scripts.deployment.starknet_deployments import deploy_starknet_contracts
 from kakarot_scripts.utils.starknet import (
@@ -44,14 +46,20 @@ async def main():
     await execute_calls()
 
     # %% EVM Deployments
-    await whitelist_pre_eip155_contracts()
+    await deploy_pre_eip155_senders()
     await deploy_evm_contracts()
+    await execute_calls()
+
+    await whitelist_pre_eip155_txs()
     await execute_calls()
 
     # Must be sequential
     remove_lazy_account(account.address)
     # Needs whitelist tx to be executed first
     await deploy_pre_eip155_contracts()
+
+    # %% Messaging
+    await deploy_l1_messaging_contracts()
     await deploy_l2_messaging_contracts()
 
     # %% Tear down
