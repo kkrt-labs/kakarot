@@ -21,9 +21,8 @@ from kakarot_scripts.utils.starknet import (
     remove_lazy_account,
 )
 
+
 # %%
-
-
 async def deploy_pre_eip155_senders():
     # %% Deployers
     for contract_name in PRE_EIP155_TX.keys():
