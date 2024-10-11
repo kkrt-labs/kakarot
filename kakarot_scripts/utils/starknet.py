@@ -614,7 +614,7 @@ async def execute_v1(account, calls):
         content = response.json()["content"]
         transaction_id = content["id"]
         status = content["state"]
-        while status not in {"TX_ACCEPTED_L2", "REVERTED"}:
+        while status not in {"TX_ACCEPTED_L2", "REVERTED", "REJECTED"}:
             response = requests.get(
                 f"{NETWORK['argent_multisig_api']}/0x{account.address:064x}/request"
             )
@@ -628,6 +628,10 @@ async def execute_v1(account, calls):
             content = contents[0]
             status = content["state"]
             await asyncio.sleep(5)
+        if status != "TX_ACCEPTED_L2":
+            logger.error(f"❌ Transaction rejected:\n{content}")
+            raise ValueError(f"Transaction rejected: {status}")
+
         return {
             "transaction_hash": content["transactionHash"],
             "status": content["state"],

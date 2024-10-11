@@ -28,9 +28,9 @@ from kakarot_scripts.utils.starknet import (
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+
 # %%
-
-
 async def main():
 
     # %% Account initialization
