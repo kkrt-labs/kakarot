@@ -495,7 +495,7 @@ async def send_pre_eip155_transaction(name: str, max_fee: Optional[int] = None):
     signed_tx = PRE_EIP155_TX[name]["signed_tx"]
     deployer_evm_address = PRE_EIP155_TX[name]["deployer"]
     deployer_starknet_address = await get_starknet_address(deployer_evm_address)
-    should_deploy = PRE_EIP155_TX[name].get("deployer", False)
+    should_deploy = PRE_EIP155_TX[name].get("should_deploy", False)
     if not should_deploy:
         logger.info(f"ℹ️ {name} is already deployed, skipping")
         return
