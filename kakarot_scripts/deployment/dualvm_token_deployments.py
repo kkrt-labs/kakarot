@@ -6,9 +6,11 @@ from typing import Any, Dict, List
 from uvloop import run
 
 from kakarot_scripts.constants import (
+    ETH_TOKEN_ADDRESS,
     EVM_ADDRESS,
     NETWORK,
     RPC_CLIENT,
+    STRK_TOKEN_ADDRESS,
     TOKEN_ADDRESSES_DIR,
     NetworkType,
 )
@@ -33,19 +35,21 @@ logger.setLevel(logging.INFO)
 # %%
 
 
-async def deploy_starknet_token(owner_address: str) -> Any:
-    address = await deploy_starknet("StarknetToken", int(1e18), owner_address)
+async def deploy_starknet_token() -> Any:
+    owner = await get_starknet_account()
+    address = await deploy_starknet("StarknetToken", int(1e18), owner.address)
     return get_contract_starknet("StarknetToken", address=address)
 
 
 async def deploy_dualvm_token(
     kakarot_address: str, starknet_token_address: str, deployer_account: Any = None
 ) -> Any:
+    breakpoint()
     dual_vm_token = await deploy_kakarot(
         "CairoPrecompiles",
         "DualVmToken",
         kakarot_address,
-        starknet_token_address,
+        int(starknet_token_address, 16),
         caller_eoa=deployer_account,
     )
 
@@ -147,12 +151,17 @@ async def ensure_starknet_token(token_name: str, token: Dict[str, Any]) -> str:
     If not, deploys a new one in dev networks, or returns the starknet address in production networks.
     """
     if NETWORK["type"] == NetworkType.DEV:
-        owner = await get_starknet_account()
-        starknet_token = await deploy_starknet_token(owner.address)
-        token["l2_token_address"] = starknet_token.address
-        logger.info(
-            f"Deployed new Starknet token for {token_name} at address {starknet_token.address}"
-        )
+        try:
+            RPC_CLIENT.get_class_hash_at(token["l2_token_address"])
+            logger.info(
+                f"Using existing Starknet token for {token_name} at address {token['l2_token_address']}"
+            )
+        except Exception:
+            starknet_token = await deploy_starknet_token()
+            token["l2_token_address"] = f"0x{starknet_token.address:064x}"
+            logger.info(
+                f"Deployed new Starknet token for {token_name} at address {token['l2_token_address']}"
+            )
     else:
         logger.info(
             f"Using existing Starknet token for {token_name} at address {token['l2_token_address']}"
