@@ -1,3 +1,4 @@
+# %% Imports
 import logging
 
 from uvloop import run
@@ -27,6 +28,7 @@ from kakarot_scripts.utils.starknet import (
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+# %%
 
 
 async def main():
@@ -75,9 +77,14 @@ async def main():
         logger.info(f"✅ Coinbase set to: 0x{coinbase:040x}")
 
 
+# %%
+
+
 def main_sync():
     run(main())
 
+
+# %%
 
 if __name__ == "__main__":
     main_sync()

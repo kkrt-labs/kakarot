@@ -21,9 +21,8 @@ from kakarot_scripts.utils.starknet import invoke
 
 logger = logging.getLogger(__name__)
 
+
 # %%
-
-
 async def deploy_l1_messaging_contracts():
     # %% L1
     starknet_deployments = get_starknet_deployments()

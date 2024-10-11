@@ -32,8 +32,10 @@ async def deploy_pre_eip155_senders():
 
 
 async def whitelist_pre_eip155_txs():
+    # %% Whitelist
     for contract_name in PRE_EIP155_TX.keys():
         await whitelist_pre_eip155_tx(contract_name)
+    # %%
 
 
 async def deploy_pre_eip155_contracts():
