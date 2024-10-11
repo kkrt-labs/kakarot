@@ -16,3 +16,6 @@
 [submodule "solidity_contracts/lib/openzeppelin-contracts"]
 	path = solidity_contracts/lib/openzeppelin-contracts
 	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+[submodule "starknet-addresses"]
+	path = starknet-addresses
+	url = https://github.com/starknet-io/starknet-addresses
