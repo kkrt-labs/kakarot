@@ -2,12 +2,16 @@ import pytest
 import pytest_asyncio
 from eth_utils import keccak
 
-from kakarot_scripts.constants import NETWORK
 from kakarot_scripts.utils.kakarot import get_contract as get_contract_evm
 from kakarot_scripts.utils.kakarot import get_deployments as get_evm_deployments
-from kakarot_scripts.utils.starknet import get_contract as get_contract_starknet, wait_for_transaction
-from kakarot_scripts.utils.starknet import get_starknet_account, invoke
+from kakarot_scripts.utils.starknet import get_contract as get_contract_starknet
+from kakarot_scripts.utils.starknet import (
+    get_starknet_account,
+    invoke,
+    wait_for_transaction,
+)
 from tests.utils.errors import cairo_error
+
 
 @pytest_asyncio.fixture(scope="function", autouse=True)
 async def fund_owner(owner, starknet_token, max_fee):
@@ -31,7 +35,9 @@ async def fund_owner(owner, starknet_token, max_fee):
     (balance,) = await starknet_token.functions["balance_of"].call(
         owner.starknet_contract.address
     )
-    assert balance >= amount, f"Transfer failed. Expected min balance: {amount}, Actual balance: {balance}"
+    assert (
+        balance >= amount
+    ), f"Transfer failed. Expected min balance: {amount}, Actual balance: {balance}"
 
 
 @pytest_asyncio.fixture(scope="function")
@@ -47,7 +53,12 @@ async def starknet_token(owner):
 async def dual_vm_token(owner):
     evm_deployments = get_evm_deployments()
     ether = evm_deployments["Ether"]["address"]
-    return await get_contract_evm("CairoPrecompiles", "DualVmToken", address=ether, caller_eoa=owner.starknet_contract)
+    return await get_contract_evm(
+        "CairoPrecompiles",
+        "DualVmToken",
+        address=ether,
+        caller_eoa=owner.starknet_contract,
+    )
 
 
 @pytest.mark.asyncio(scope="module")
@@ -186,9 +197,7 @@ class TestDualVmToken:
         async def test_should_revert_transfer_insufficient_balance(
             self, dual_vm_token, owner, other, signature, to_address
         ):
-            balance = await dual_vm_token.functions["balanceOf(address)"](
-                other.address
-            )
+            balance = await dual_vm_token.functions["balanceOf(address)"](other.address)
             # No wrapping of errors for OZ 0.10 contracts
             with cairo_error("u256_sub Overflow"):
                 await dual_vm_token.functions[signature](
@@ -204,9 +213,7 @@ class TestDualVmToken:
                     2**256 - 1, 1
                 )
 
-        async def test_should_approve(
-            self, dual_vm_token, owner, other
-        ):
+        async def test_should_approve(self, dual_vm_token, owner, other):
             amount = 1
             allowance_before = await dual_vm_token.functions[
                 "allowance(address,address)"
