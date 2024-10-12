@@ -1,5 +1,6 @@
 import pytest
 from eth_abi import encode
+from eth_utils import keccak
 from starkware.starknet.public.abi import get_selector_from_name
 
 from tests.utils.constants import (
@@ -13,7 +14,9 @@ from tests.utils.constants import (
 )
 from tests.utils.syscall_handler import SyscallHandler
 
-CALL_CONTRACT_SOLIDITY_SELECTOR = "b3eb2c1b"
+CALL_CONTRACT_SOLIDITY_SELECTOR = keccak(
+    text="call_contract(uint256,uint256,uint256[])"
+)[:4].hex()
 
 AUTHORIZED_CALLER_CODE = 0xA7071ED
 UNAUTHORIZED_CALLER_CODE = 0xC0C0C0

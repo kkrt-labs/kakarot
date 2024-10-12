@@ -34,6 +34,7 @@ namespace Precompiles {
     // @param input The input array.
     // @param caller_code_address The address of the code of the contract that calls the precompile.
     // @param caller_address The address of the caller of the precompile. Delegatecall rules apply.
+    // @param message_address The address being executed in the current message.
     // @return output_len The output length.
     // @return output The output array.
     // @return gas_used The gas usage of precompile.
@@ -49,6 +50,7 @@ namespace Precompiles {
         input: felt*,
         caller_code_address: felt,
         caller_address: felt,
+        message_address: felt,
     ) -> (output_len: felt, output: felt*, gas_used: felt, reverted: felt) {
         let is_eth_precompile = is_nn(LAST_ETHEREUM_PRECOMPILE_ADDRESS - precompile_address);
         tempvar syscall_ptr = syscall_ptr;
@@ -132,8 +134,10 @@ namespace Precompiles {
         ret;
 
         kakarot_precompile:
-        let is_whitelisted = KakarotPrecompiles.is_caller_whitelisted(caller_code_address);
-        tempvar is_not_authorized = 1 - is_whitelisted;
+        let is_call_authorized_ = PrecompilesHelpers.is_call_authorized(
+            precompile_address, caller_code_address, caller_address, message_address
+        );
+        tempvar is_not_authorized = 1 - is_call_authorized_;
         tempvar syscall_ptr = syscall_ptr;
         tempvar pedersen_ptr = pedersen_ptr;
         tempvar range_check_ptr = range_check_ptr;
@@ -157,6 +161,8 @@ namespace Precompiles {
         call KakarotPrecompiles.cairo_precompile;  // offset 0x0c: precompile 0x75001
         ret;
         call KakarotPrecompiles.cairo_message;  // offset 0x0d: precompile 0x75002
+        ret;
+        call KakarotPrecompiles.multicall_cairo_precompile;  // offset 0x0e: precompile 0x75003
         ret;
     }
 

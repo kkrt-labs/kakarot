@@ -82,6 +82,7 @@ namespace Interpreter {
                     evm.message.calldata,
                     caller_code_address,
                     caller_address,
+                    evm.message.address.evm,
                 );
 
                 let precompile_reverted = is_not_zero(revert_code);
