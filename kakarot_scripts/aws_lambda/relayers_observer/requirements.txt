@@ -1,12 +1,2 @@
-pycryptodome==3.21.0
-starknet-py==0.23.0
-python-dotenv==0.21.0
-web3==6
-async_lru==2.0.4
-cairo-lang==0.13.1
-requests==2.32.3
-dotenv==0.0.5
-eth_keys==0.5.1
-boto3==1.35.36
-urllib3==2.2.3
-asyncio==3.4.3
+aws-cdk-lib==2.161.1
+constructs>=10.0.0,<11.0.0

@@ -1,0 +1,8 @@
+starknet-py==0.23.0
+python-dotenv==0.21.0
+web3==6
+async_lru==2.0.4
+cairo-lang==0.13.1
+requests==2.32.3
+eth_keys==0.5.1
+boto3==1.35.36

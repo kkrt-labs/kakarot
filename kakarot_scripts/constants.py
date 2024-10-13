@@ -314,6 +314,8 @@ if NETWORK["private_key"] is None:
     logger.warning(f"⚠️  {prefix}_PRIVATE_KEY not set, defaulting to PRIVATE_KEY")
     NETWORK["private_key"] = os.getenv("PRIVATE_KEY")
 
+SLACK_WEBHOOK_URL = os.environ.get("SLACK_WEBHOOK_URL")
+
 
 class RelayerPool:
     def __init__(self, relayers: List[Dict[str, int]]):
