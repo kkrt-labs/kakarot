@@ -13,20 +13,17 @@ contract PragmaCaller {
     uint256 private immutable pragmaSummaryStats;
 
     /// @dev The cairo function selector to call `get_data` from the Pragma Oracle
-    uint256 private constant FUNCTION_SELECTOR_GET_DATA =
-        uint256(keccak256("get_data")) % 2 ** 250;
+    uint256 private constant FUNCTION_SELECTOR_GET_DATA = uint256(keccak256("get_data")) % 2 ** 250;
 
     /// @dev The cairo function selector to call `calculate_mean` from the Pragma Summary Stats
-    uint256 private constant FUNCTION_SELECTOR_CALCULATE_MEAN =
-        uint256(keccak256("calculate_mean")) % 2 ** 250;
+    uint256 private constant FUNCTION_SELECTOR_CALCULATE_MEAN = uint256(keccak256("calculate_mean")) % 2 ** 250;
 
     /// @dev The cairo function selector to call `calculate_volatility` from the Pragma Summary Stats
     uint256 private constant FUNCTION_SELECTOR_CALCULATE_VOLATILITY =
         uint256(keccak256("calculate_volatility")) % 2 ** 250;
 
     /// @dev The cairo function selector to call `calculate_twap` from the Pragma Summary Stats
-    uint256 private constant FUNCTION_SELECTOR_CALCULATE_TWAP =
-        uint256(keccak256("calculate_twap")) % 2 ** 250;
+    uint256 private constant FUNCTION_SELECTOR_CALCULATE_TWAP = uint256(keccak256("calculate_twap")) % 2 ** 250;
 
     /// @dev The aggregation mode used by the Oracle
     enum AggregationMode {
@@ -89,26 +86,16 @@ contract PragmaCaller {
         uint256 decimals;
     }
 
-    constructor(
-        uint256 pragmaOracleAddress,
-        uint256 pragmaSummaryStatsAddress
-    ) {
+    constructor(uint256 pragmaOracleAddress, uint256 pragmaSummaryStatsAddress) {
         require(pragmaOracleAddress != 0, "Invalid Pragma Oracle address");
-        require(
-            pragmaSummaryStatsAddress != 0,
-            "Invalid Pragma Summary Stats address"
-        );
+        require(pragmaSummaryStatsAddress != 0, "Invalid Pragma Summary Stats address");
         pragmaOracle = pragmaOracleAddress;
         pragmaSummaryStats = pragmaSummaryStatsAddress;
     }
 
-    function getPrice(
-        PragmaPricesRequest memory request
-    ) public view returns (PragmaPricesResponse memory response) {
+    function getPrice(PragmaPricesRequest memory request) public view returns (PragmaPricesResponse memory response) {
         // Serialize the data request into a format compatible with the expected Pragma inputs
-        uint256[] memory data = new uint256[](
-            request.dataType == DataType.FuturesEntry ? 4 : 3
-        );
+        uint256[] memory data = new uint256[](request.dataType == DataType.FuturesEntry ? 4 : 3);
         data[0] = uint256(request.dataType);
         data[1] = request.pairId;
         if (request.dataType == DataType.FuturesEntry) {
@@ -118,10 +105,7 @@ contract PragmaCaller {
             data[2] = uint256(request.aggregationMode);
         }
 
-        bytes memory returnData = pragmaOracle.staticcallCairo(
-            FUNCTION_SELECTOR_GET_DATA,
-            data
-        );
+        bytes memory returnData = pragmaOracle.staticcallCairo(FUNCTION_SELECTOR_GET_DATA, data);
 
         assembly {
             // Load the values from the return data
@@ -135,9 +119,7 @@ contract PragmaCaller {
             // and we set it to 0 - otherwise, we load it from the return data
             let never_expires := mload(add(returnData, 0xa0))
             let maybe_expiration_timestamp := 0
-            if eq(never_expires, 0) {
-                maybe_expiration_timestamp := mload(add(returnData, 0xc0))
-            }
+            if eq(never_expires, 0) { maybe_expiration_timestamp := mload(add(returnData, 0xc0)) }
 
             // Store the values in the response struct
             mstore(response, price)
@@ -149,13 +131,13 @@ contract PragmaCaller {
         return response;
     }
 
-    function calculateMean(
-        PragmaCalculateMeanRequest memory request
-    ) public view returns (PragmaSummaryStatsResponse memory response) {
+    function calculateMean(PragmaCalculateMeanRequest memory request)
+        public
+        view
+        returns (PragmaSummaryStatsResponse memory response)
+    {
         // Serialize the data request into a format compatible with the expected Pragma inputs
-        uint256[] memory data = new uint256[](
-            request.dataType == DataType.FuturesEntry ? 6 : 5
-        );
+        uint256[] memory data = new uint256[](request.dataType == DataType.FuturesEntry ? 6 : 5);
         data[0] = uint256(request.dataType);
         data[1] = request.pairId;
         if (request.dataType == DataType.FuturesEntry) {
@@ -169,10 +151,7 @@ contract PragmaCaller {
             data[4] = uint256(request.aggregationMode);
         }
 
-        bytes memory returnData = pragmaSummaryStats.staticcallCairo(
-            FUNCTION_SELECTOR_CALCULATE_MEAN,
-            data
-        );
+        bytes memory returnData = pragmaSummaryStats.staticcallCairo(FUNCTION_SELECTOR_CALCULATE_MEAN, data);
 
         assembly {
             // Load the values from the return data
@@ -187,13 +166,13 @@ contract PragmaCaller {
         return response;
     }
 
-    function calculateVolatility(
-        PragmaCalculateVolatilityRequest memory request
-    ) public view returns (PragmaSummaryStatsResponse memory response) {
+    function calculateVolatility(PragmaCalculateVolatilityRequest memory request)
+        public
+        view
+        returns (PragmaSummaryStatsResponse memory response)
+    {
         // Serialize the data request into a format compatible with the expected Pragma inputs
-        uint256[] memory data = new uint256[](
-            request.dataType == DataType.FuturesEntry ? 7 : 6
-        );
+        uint256[] memory data = new uint256[](request.dataType == DataType.FuturesEntry ? 7 : 6);
         data[0] = uint256(request.dataType);
         data[1] = request.pairId;
         if (request.dataType == DataType.FuturesEntry) {
@@ -209,10 +188,7 @@ contract PragmaCaller {
             data[5] = uint256(request.aggregationMode);
         }
 
-        bytes memory returnData = pragmaSummaryStats.staticcallCairo(
-            FUNCTION_SELECTOR_CALCULATE_VOLATILITY,
-            data
-        );
+        bytes memory returnData = pragmaSummaryStats.staticcallCairo(FUNCTION_SELECTOR_CALCULATE_VOLATILITY, data);
 
         assembly {
             // Load the values from the return data
@@ -227,13 +203,13 @@ contract PragmaCaller {
         return response;
     }
 
-    function calculateTwap(
-        PragmaCalculateTwapRequest memory request
-    ) public view returns (PragmaSummaryStatsResponse memory response) {
+    function calculateTwap(PragmaCalculateTwapRequest memory request)
+        public
+        view
+        returns (PragmaSummaryStatsResponse memory response)
+    {
         // Serialize the data request into a format compatible with the expected Pragma inputs
-        uint256[] memory data = new uint256[](
-            request.dataType == DataType.FuturesEntry ? 6 : 5
-        );
+        uint256[] memory data = new uint256[](request.dataType == DataType.FuturesEntry ? 6 : 5);
         data[0] = uint256(request.dataType);
         data[1] = request.pairId;
         if (request.dataType == DataType.FuturesEntry) {
@@ -247,10 +223,7 @@ contract PragmaCaller {
             data[4] = request.durationInSeconds;
         }
 
-        bytes memory returnData = pragmaSummaryStats.staticcallCairo(
-            FUNCTION_SELECTOR_CALCULATE_TWAP,
-            data
-        );
+        bytes memory returnData = pragmaSummaryStats.staticcallCairo(FUNCTION_SELECTOR_CALCULATE_TWAP, data);
 
         assembly {
             // Load the values from the return data
