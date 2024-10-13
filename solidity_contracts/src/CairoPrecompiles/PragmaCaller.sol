@@ -164,7 +164,7 @@ contract PragmaCaller {
             data[4] = uint256(request.aggregationMode);
         }
 
-        bytes memory returnData = pragmaOracle.staticcallCairo(
+        bytes memory returnData = pragmaSummaryStats.staticcallCairo(
             FUNCTION_SELECTOR_CALCULATE_MEAN,
             data
         );
@@ -204,7 +204,7 @@ contract PragmaCaller {
             data[5] = uint256(request.aggregationMode);
         }
 
-        bytes memory returnData = pragmaOracle.staticcallCairo(
+        bytes memory returnData = pragmaSummaryStats.staticcallCairo(
             FUNCTION_SELECTOR_CALCULATE_VOLATILITY,
             data
         );
@@ -242,7 +242,7 @@ contract PragmaCaller {
             data[4] = request.durationInSeconds;
         }
 
-        bytes memory returnData = pragmaOracle.staticcallCairo(
+        bytes memory returnData = pragmaSummaryStats.staticcallCairo(
             FUNCTION_SELECTOR_CALCULATE_TWAP,
             data
         );
