@@ -7,25 +7,25 @@ using CairoLib for uint256;
 
 contract PragmaCaller {
     /// @dev The starknet address of the pragma oracle
-    uint256 pragmaOracle;
+    uint256 private immutable pragmaOracle;
 
     /// @dev The starknet address of the pragma summary stats
-    uint256 pragmaSummaryStats;
+    uint256 private immutable pragmaSummaryStats;
 
     /// @dev The cairo function selector to call `get_data` from the Pragma Oracle
-    uint256 constant FUNCTION_SELECTOR_GET_DATA =
+    uint256 private constant FUNCTION_SELECTOR_GET_DATA =
         uint256(keccak256("get_data")) % 2 ** 250;
 
     /// @dev The cairo function selector to call `calculate_mean` from the Pragma Summary Stats
-    uint256 constant FUNCTION_SELECTOR_CALCULATE_MEAN =
+    uint256 private constant FUNCTION_SELECTOR_CALCULATE_MEAN =
         uint256(keccak256("calculate_mean")) % 2 ** 250;
 
     /// @dev The cairo function selector to call `calculate_volatility` from the Pragma Summary Stats
-    uint256 constant FUNCTION_SELECTOR_CALCULATE_VOLATILITY =
+    uint256 private constant FUNCTION_SELECTOR_CALCULATE_VOLATILITY =
         uint256(keccak256("calculate_volatility")) % 2 ** 250;
 
     /// @dev The cairo function selector to call `calculate_twap` from the Pragma Summary Stats
-    uint256 constant FUNCTION_SELECTOR_CALCULATE_TWAP =
+    uint256 private constant FUNCTION_SELECTOR_CALCULATE_TWAP =
         uint256(keccak256("calculate_twap")) % 2 ** 250;
 
     /// @dev The aggregation mode used by the Oracle
@@ -93,6 +93,11 @@ contract PragmaCaller {
         uint256 pragmaOracleAddress,
         uint256 pragmaSummaryStatsAddress
     ) {
+        require(pragmaOracleAddress != 0, "Invalid Pragma Oracle address");
+        require(
+            pragmaSummaryStatsAddress != 0,
+            "Invalid Pragma Summary Stats address"
+        );
         pragmaOracle = pragmaOracleAddress;
         pragmaSummaryStats = pragmaSummaryStatsAddress;
     }
