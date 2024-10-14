@@ -7,10 +7,12 @@ from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import call_contract, library_call, get_caller_address
 from starkware.starknet.common.messages import send_message_to_l1
 from starkware.cairo.common.bool import FALSE, TRUE
+from starkware.cairo.common.uint256 import Uint256, uint256_lt
 
 from kakarot.errors import Errors
 from kakarot.interfaces.interfaces import IAccount
 from kakarot.account import Account
+from kakarot.constants import Constants
 from kakarot.storages import Kakarot_l1_messaging_contract_address
 from utils.utils import Helpers
 from backend.starknet import Starknet
@@ -264,12 +266,9 @@ namespace Internals {
     // @return calldata_len The length of the call data
     // @return calldata Pointer to the call data
     // @return next_call_offset The offset to the next call in the input
-    func parse_cairo_call{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(evm_encoded_call_len: felt, evm_encoded_call_ptr: felt*) -> (
+    func parse_cairo_call{range_check_ptr}(
+        evm_encoded_call_len: felt, evm_encoded_call_ptr: felt*
+    ) -> (
         is_err: felt,
         to_address: felt,
         selector: felt,
@@ -284,59 +283,75 @@ namespace Internals {
             MIN_EVM_ENCODED_STARKNET_CALL_BYTES - (evm_encoded_call_len + 1)
         );
         if (is_input_invalid != 0) {
-            with_attr error_message("ERR1") {
-                assert 0 = 1;
-                let (empty) = alloc();
-                return (TRUE, 0, 0, 0, empty, 0);
-            }
+            let (empty) = alloc();
+            return (TRUE, 0, 0, 0, empty, 0);
         }
 
-        let to_address = Helpers.bytes32_to_felt(evm_encoded_call_ptr);
+        // Check that the to_address is a valid felt252
+        let to_address_256 = Helpers.bytes32_to_uint256(evm_encoded_call_ptr);
+        let (is_bigger_than_prime) = uint256_lt(
+            Uint256(Constants.FELT252_PRIME_LOW, Constants.FELT252_PRIME_HIGH), to_address_256
+        );
+        if (is_bigger_than_prime != FALSE) {
+            let (empty) = alloc();
+            return (TRUE, 0, 0, 0, empty, 0);
+        }
+        let to_address = to_address_256.low + 2 ** 128 * to_address_256.high;
+
+        // Check that the selector is a valid felt252
         let selector_ptr = evm_encoded_call_ptr + 32;
-        let selector = Helpers.bytes32_to_felt(selector_ptr);
+        let selector_256 = Helpers.bytes32_to_uint256(selector_ptr);
+        let (is_bigger_than_prime) = uint256_lt(
+            Uint256(Constants.FELT252_PRIME_LOW, Constants.FELT252_PRIME_HIGH), selector_256
+        );
+        if (is_bigger_than_prime != FALSE) {
+            let (empty) = alloc();
+            return (TRUE, 0, 0, 0, empty, 0);
+        }
+        let selector = selector_256.low + 2 ** 128 * selector_256.high;
 
+        // Check that the calldata_len_offset is valid (fits in a felt + not too high)
         let calldata_len_offset_ptr = selector_ptr + 32;
-        let calldata_len_offset = Helpers.bytes32_to_felt(calldata_len_offset_ptr);
+        let calldata_len_offset_256 = Helpers.bytes32_to_uint256(calldata_len_offset_ptr);
+        let is_valid_calldata_len_offset = Helpers.is_zero(calldata_len_offset_256.high);
+        if (is_valid_calldata_len_offset == FALSE) {
+            let (empty) = alloc();
+            return (TRUE, 0, 0, 0, empty, 0);
+        }
+        let calldata_len_offset = calldata_len_offset_256.low;
 
-        // Ensure that the data_len, located in [calldata_len_offset: calldata_len_offset+32], is within the bounds of the input
+        // Check that the data_len, located in [calldata_len_offset: calldata_len_offset+32], is within the bounds of the input
         let is_calldata_len_invalid = is_nn(
             (calldata_len_offset + 32) - (evm_encoded_call_len + 1)
         );
         if (is_calldata_len_invalid != 0) {
-            with_attr error_message("ERR2") {
-                assert 0 = 1;
-                let (empty) = alloc();
-                return (TRUE, 0, 0, 0, empty, 0);
-            }
+            let (empty) = alloc();
+            return (TRUE, 0, 0, 0, empty, 0);
         }
         let calldata_len_ptr = evm_encoded_call_ptr + calldata_len_offset;
 
-        // We enforce calldata_len to be at most 2 bytes.
+        // Check that the data_len is at most 2 bytes.
         let invalid_calldata_words_len = Helpers.bytes_to_felt(30, calldata_len_ptr);
         if (invalid_calldata_words_len != FALSE) {
-            with_attr error_message("ERR3") {
-                assert 0 = 1;
-                let (empty) = alloc();
-                return (TRUE, 0, 0, 0, empty, 0);
-            }
+            let (empty) = alloc();
+            return (TRUE, 0, 0, 0, empty, 0);
         }
 
         let calldata_words_len = Helpers.bytes2_to_felt(calldata_len_ptr + 30);
         let calldata_bytes_len = calldata_words_len * 32;
         let calldata_offset = calldata_len_offset + 32;
 
-        // Ensure that the data, located in [calldata_offset, calldata_offset + calldata_bytes_len], is within the bounds of the input
+        // Check that the data, located in [calldata_offset, calldata_offset + calldata_bytes_len], is within the bounds of the input
         let is_calldata_invalid = is_nn(
             (calldata_offset + calldata_bytes_len) - (evm_encoded_call_len + 1)
         );
         if (is_calldata_invalid != 0) {
-            with_attr error_message("ERR4") {
-                assert 0 = 1;
-                let (empty) = alloc();
-                return (TRUE, 0, 0, 0, empty, 0);
-            }
+            let (empty) = alloc();
+            return (TRUE, 0, 0, 0, empty, 0);
         }
         let calldata_ptr = calldata_len_ptr + 32;
+
+        // This doesn't check for individual values overflowing PRIME.
         let (calldata_len, calldata) = Helpers.load_256_bits_array(
             calldata_bytes_len, calldata_ptr
         );

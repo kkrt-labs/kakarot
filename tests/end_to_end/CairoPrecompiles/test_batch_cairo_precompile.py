@@ -145,11 +145,3 @@ class TestCairoPrecompiles:
                 "EVM tx reverted, reverting SN tx because of previous calls to cairo precompiles"
             ):
                 await multicall_cairo_counter_caller.incrementCairoCounterCallcode()
-
-        # TODO
-        # async def test_should_fail_when_data_len_too_big(
-        #     self, multicall_cairo_counter_caller
-        # ):
-        #     with cairo_error(""):
-        #         # Create a large data payload that exceeds 2^32 bytes
-        #         large_data = b"0" * (2**32 + 1)

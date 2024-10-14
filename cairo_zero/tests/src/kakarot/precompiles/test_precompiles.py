@@ -1,6 +1,5 @@
 import pytest
 from eth_abi import encode
-from eth_utils import keccak
 from starkware.starknet.public.abi import get_selector_from_name
 
 from tests.utils.constants import (
@@ -13,10 +12,6 @@ from tests.utils.constants import (
     LAST_ROLLUP_PRECOMPILE_ADDRESS,
 )
 from tests.utils.syscall_handler import SyscallHandler
-
-CALL_CONTRACT_SOLIDITY_SELECTOR = keccak(
-    text="call_contract(uint256,uint256,uint256[])"
-)[:4].hex()
 
 AUTHORIZED_CALLER_CODE = 0xA7071ED
 UNAUTHORIZED_CALLER_CODE = 0xC0C0C0
@@ -103,8 +98,7 @@ class TestPrecompiles:
                     "test__precompiles_run",
                     address=0x75001,
                     input=bytes.fromhex(
-                        CALL_CONTRACT_SOLIDITY_SELECTOR
-                        + f"{0xc0de:064x}"
+                        f"{0xc0de:064x}"
                         + f"{get_selector_from_name('inc'):064x}"
                         + f"{0x60:064x}"  # data_offset
                         + f"{0x00:064x}"  # data_len
@@ -142,8 +136,7 @@ class TestPrecompiles:
                         0x75001,
                         AUTHORIZED_CALLER_CODE,
                         bytes.fromhex(
-                            CALL_CONTRACT_SOLIDITY_SELECTOR
-                            + f"{0xc0de:064x}"
+                            f"{0xc0de:064x}"
                             + f"{get_selector_from_name('inc'):064x}"
                             + f"{0x60:064x}"  # data_offset
                             + f"{0x00:064x}"  # data_len
@@ -155,8 +148,7 @@ class TestPrecompiles:
                         0x75001,
                         AUTHORIZED_CALLER_CODE,
                         bytes.fromhex(
-                            CALL_CONTRACT_SOLIDITY_SELECTOR
-                            + f"{0xc0de:064x}"
+                            f"{0xc0de:064x}"
                             + f"{get_selector_from_name('get'):064x}"
                             + f"{0x60:064x}"  # data_offset
                             + f"{0x01:064x}"  # data_len
