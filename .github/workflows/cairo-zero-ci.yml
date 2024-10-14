@@ -65,7 +65,9 @@ jobs:
       - uses: asdf-vm/actions/install@v3
       - run: asdf install
       - name: Compile all the cairo files
-        run: make build
+        run: |
+          cp .env.example .env
+          make build
 
       - name: Uploads Kakarot build artifacts
         uses: actions/upload-artifact@v3
@@ -97,7 +99,9 @@ jobs:
       - name: Run tests
         env:
           HYPOTHESIS_PROFILE: ci
-        run: make test-unit-cairo-zero
+        run: |
+          cp .env.example .env
+          make test-unit-cairo-zero
       - name: Upload coverage report to codecov
         uses: codecov/codecov-action@v3
         with:
