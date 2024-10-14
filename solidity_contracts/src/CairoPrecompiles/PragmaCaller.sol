@@ -93,7 +93,7 @@ contract PragmaCaller {
         pragmaSummaryStats = pragmaSummaryStatsAddress;
     }
 
-    function getPrice(PragmaPricesRequest memory request) public view returns (PragmaPricesResponse memory response) {
+    function getData(PragmaPricesRequest memory request) public view returns (PragmaPricesResponse memory response) {
         // Serialize the data request into a format compatible with the expected Pragma inputs
         uint256[] memory data = new uint256[](request.dataType == DataType.FuturesEntry ? 4 : 3);
         data[0] = uint256(request.dataType);
