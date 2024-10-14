@@ -297,12 +297,11 @@ if EVM_PRIVATE_KEY is None:
         f"⚠️  {prefix}_EVM_PRIVATE_KEY not set, defaulting to EVM_PRIVATE_KEY"
     )
     EVM_PRIVATE_KEY = os.getenv("EVM_PRIVATE_KEY")
-EVM_ADDRESS = (
-    EVM_PRIVATE_KEY
-    and keys.PrivateKey(
-        bytes.fromhex(EVM_PRIVATE_KEY[2:])
-    ).public_key.to_checksum_address()
-)
+    if EVM_PRIVATE_KEY is None:
+        raise ValueError("EVM_PRIVATE_KEY not set")
+EVM_ADDRESS = keys.PrivateKey(
+    bytes.fromhex(EVM_PRIVATE_KEY[2:])
+).public_key.to_checksum_address()
 
 NETWORK["account_address"] = os.environ.get(f"{prefix}_ACCOUNT_ADDRESS")
 if NETWORK["account_address"] is None:

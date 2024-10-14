@@ -21,6 +21,7 @@ from kakarot_scripts.utils.starknet import get_deployments as get_starknet_deplo
 from kakarot_scripts.utils.starknet import invoke
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 # %%
@@ -107,10 +108,6 @@ async def main():
         await RPC_CLIENT.get_class_hash_at(get_starknet_deployments()["kakarot"])
     except Exception:
         logger.error("❌ Kakarot is not deployed, exiting...")
-        return
-
-    if not EVM_ADDRESS:
-        logger.warn("⚠️  No EVM address provided, skipping EVM deployments")
         return
 
     await deploy_evm_contracts()
