@@ -27,7 +27,7 @@ $(SSJ_ZIP):
 
 # Accepts "katana" as an argument to setup only Katana (for CI).
 setup:
-	uv run setup $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+	@python kakarot_scripts/setup/setup.py $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 	uv sync --all-extras --dev
 katana: ;
 

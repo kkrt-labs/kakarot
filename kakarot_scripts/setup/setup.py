@@ -83,11 +83,6 @@ def setup_katana() -> None:
 
 
 def setup_local() -> None:
-    if sys.version_info < PYTHON_MIN_VERSION:
-        raise SetupError(
-            f"Python {PYTHON_MIN_VERSION[0]}.{PYTHON_MIN_VERSION[1]} or higher is required."
-        )
-
     # Install dependencies
     install_dependency(
         "jq",
@@ -96,6 +91,8 @@ def setup_local() -> None:
     )
     install_dependency("cargo", "curl https://sh.rustup.rs -sSf | sh -s -- -y", "cargo")
     run_command(". $HOME/.cargo/env", "Failed to source cargo environment")
+
+    install_dependency("uv", "curl -LsSf https://astral.sh/uv/install.sh | sh", "uv")
 
     if not is_command_available("docker"):
         print(
@@ -128,12 +125,11 @@ def setup_local() -> None:
     else:
         print("asdf is already installed.")
 
-    if is_command_available("asdf"):
-        run_command(
-            "asdf plugin add scarb && asdf plugin add starknet-foundry || true",
-            "Failed to add asdf plugins",
-        )
-        run_command("asdf install", "Failed to install asdf tools")
+    run_command(
+        "asdf plugin add scarb && asdf plugin add starknet-foundry || true",
+        "Failed to add asdf plugins",
+    )
+    run_command("asdf install", "Failed to install asdf tools")
 
     install_dependency(
         "go",
