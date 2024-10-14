@@ -25,6 +25,7 @@ from kakarot_scripts.utils.starknet import (
 )
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 # %%

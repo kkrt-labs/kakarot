@@ -21,6 +21,7 @@ from kakarot_scripts.utils.starknet import get_deployments as get_starknet_deplo
 from kakarot_scripts.utils.starknet import invoke
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 # %%

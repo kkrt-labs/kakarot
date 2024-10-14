@@ -28,16 +28,17 @@ async def deploy_l1_messaging_contracts():
     starknet_deployments = get_starknet_deployments()
     l1_addresses = get_l1_addresses()
 
-    l1_kakarot_messaging = get_l1_contract(
-        "L1L2Messaging",
-        "L1KakarotMessaging",
-        address=l1_addresses.get("L1KakarotMessaging"),
-    )
     l1_kakarot_messaging_registered_address = None
-    try:
-        l1_kakarot_messaging_registered_address = l1_kakarot_messaging.kakarotAddress()
-    except (ContractLogicError, InsufficientDataBytes):
-        pass
+    if address := l1_addresses.get("L1KakarotMessaging"):
+        l1_kakarot_messaging = get_l1_contract(
+            "L1L2Messaging", "L1KakarotMessaging", address=address
+        )
+        try:
+            l1_kakarot_messaging_registered_address = (
+                l1_kakarot_messaging.kakarotAddress()
+            )
+        except (ContractLogicError, InsufficientDataBytes):
+            pass
 
     if l1_kakarot_messaging_registered_address != starknet_deployments["kakarot"]:
         if NETWORK["type"] == NetworkType.DEV:
