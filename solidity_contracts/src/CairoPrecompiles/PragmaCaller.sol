@@ -7,7 +7,6 @@ using CairoLib for uint256;
 
 /// @notice Contract for interacting with Pragma's Oracle on Starknet. This include the main contract
 ///         and the summary stats contract.
-/// @dev Use this contract to call Pragma's function.
 contract PragmaCaller {
     /// @dev The cairo function selector to call `get_data` from the Pragma Oracle
     uint256 private constant FUNCTION_SELECTOR_GET_DATA = uint256(keccak256("get_data")) % 2 ** 250;
