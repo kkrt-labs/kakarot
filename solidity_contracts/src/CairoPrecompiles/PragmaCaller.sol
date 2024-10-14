@@ -5,13 +5,10 @@ import {CairoLib} from "kakarot-lib/CairoLib.sol";
 
 using CairoLib for uint256;
 
+/// @notice Contract for interacting with Pragma's Oracle on Starknet. This include the main contract
+///         and the summary stats contract.
+/// @dev Use this contract to call Pragma's function.
 contract PragmaCaller {
-    /// @dev The starknet address of the pragma oracle
-    uint256 private immutable pragmaOracle;
-
-    /// @dev The starknet address of the pragma summary stats
-    uint256 private immutable pragmaSummaryStats;
-
     /// @dev The cairo function selector to call `get_data` from the Pragma Oracle
     uint256 private constant FUNCTION_SELECTOR_GET_DATA = uint256(keccak256("get_data")) % 2 ** 250;
 
@@ -24,6 +21,12 @@ contract PragmaCaller {
 
     /// @dev The cairo function selector to call `calculate_twap` from the Pragma Summary Stats
     uint256 private constant FUNCTION_SELECTOR_CALCULATE_TWAP = uint256(keccak256("calculate_twap")) % 2 ** 250;
+
+    /// @dev The starknet address of the pragma oracle
+    uint256 private immutable pragmaOracle;
+
+    /// @dev The starknet address of the pragma summary stats
+    uint256 private immutable pragmaSummaryStats;
 
     /// @dev The aggregation mode used by the Oracle
     enum AggregationMode {
@@ -86,6 +89,7 @@ contract PragmaCaller {
         uint256 decimals;
     }
 
+    /// @dev Constructor sets the oracle & summary stats addresses.
     constructor(uint256 pragmaOracleAddress, uint256 pragmaSummaryStatsAddress) {
         require(pragmaOracleAddress != 0, "Invalid Pragma Oracle address");
         require(pragmaSummaryStatsAddress != 0, "Invalid Pragma Summary Stats address");
@@ -93,6 +97,9 @@ contract PragmaCaller {
         pragmaSummaryStats = pragmaSummaryStatsAddress;
     }
 
+    /// @notice Calls the `get_data` function from the Pragma's Oracle contract on Starknet.
+    /// @param request The request parameters to fetch Pragma's Prices. See `PragmaPricesRequest`.
+    /// @return response The pragma prices response of the specified request.
     function getData(PragmaPricesRequest memory request) public view returns (PragmaPricesResponse memory response) {
         // Serialize the data request into a format compatible with the expected Pragma inputs
         uint256[] memory data = new uint256[](request.dataType == DataType.FuturesEntry ? 4 : 3);
@@ -131,6 +138,9 @@ contract PragmaCaller {
         return response;
     }
 
+    /// @notice Calls the `calculate_mean` function from the Pragma's Summary Stats contract on Starknet.
+    /// @param request The request parameters of `calculate_mean`. See `PragmaCalculateMeanRequest`.
+    /// @return response The return of the mean calculation, i.e the price and the decimals. See `PragmaSummaryStatsResponse`.
     function calculateMean(PragmaCalculateMeanRequest memory request)
         public
         view
@@ -146,8 +156,8 @@ contract PragmaCaller {
             data[4] = request.endTimestamp;
             data[5] = uint256(request.aggregationMode);
         } else {
-            data[2] = uint256(request.startTimestamp);
-            data[3] = uint256(request.endTimestamp);
+            data[2] = request.startTimestamp;
+            data[3] = request.endTimestamp;
             data[4] = uint256(request.aggregationMode);
         }
 
@@ -166,6 +176,9 @@ contract PragmaCaller {
         return response;
     }
 
+    /// @notice Calls the `calculate_volatility` function from the Pragma's Summary Stats contract on Starknet.
+    /// @param request The request parameters of `calculate_volatility`. See `PragmaCalculateVolatilityRequest`.
+    /// @return response The return of the volatility calculation, i.e the price and the decimals. See `PragmaSummaryStatsResponse`.
     function calculateVolatility(PragmaCalculateVolatilityRequest memory request)
         public
         view
@@ -203,6 +216,9 @@ contract PragmaCaller {
         return response;
     }
 
+    /// @notice Calls the `calculate_twap` function from the Pragma's Summary Stats contract on Starknet.
+    /// @param request The request parameters of `calculate_twap`. See `PragmaCalculateTwapRequest`.
+    /// @return response The return of the twap calculation, i.e the price and the decimals. See `PragmaSummaryStatsResponse`.
     function calculateTwap(PragmaCalculateTwapRequest memory request)
         public
         view
