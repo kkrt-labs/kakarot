@@ -1,3 +1,5 @@
+from typing import Any, List, Tuple
+
 import pytest
 import pytest_asyncio
 from eth_abi import encode
@@ -35,6 +37,21 @@ async def multicall_cairo_counter_caller(owner, cairo_counter):
     return caller_contract
 
 
+def encode_starknet_call(call) -> bytes:
+    return encode(
+        ["uint256", "uint256", "uint256[]"],
+        [call.to_addr, call.selector, call.calldata],
+    )
+
+
+def prepare_transaction_data(calls: List[Tuple[Any, str, List[Any]]]) -> str:
+    encoded_calls = b"".join(
+        encode_starknet_call(entrypoint.prepare_call(*calldata))
+        for entrypoint, calldata in calls
+    )
+    return f"{len(calls):064x}" + encoded_calls.hex()
+
+
 @pytest.mark.asyncio(scope="module")
 @pytest.mark.CairoPrecompiles
 class TestCairoPrecompiles:
@@ -46,61 +63,38 @@ class TestCairoPrecompiles:
         ):
             prev_count = (await cairo_counter.functions["get"].call()).count
 
-            # Starknet call to perform in the batch
-            call = cairo_counter.functions["inc"].prepare_call()
-            encoded_starknet_call = encode(
-                ["uint256", "uint256", "uint256[]"],
-                [call.to_addr, call.selector, call.calldata],
-            )
+            calls = [
+                (cairo_counter.functions["inc"], []) for _ in range(calls_per_batch)
+            ]
+            tx_data = prepare_transaction_data(calls)
 
-            tx_data = (
-                f"{calls_per_batch:064x}"
-                + encoded_starknet_call.hex() * calls_per_batch
-            )
             await eth_send_transaction(
                 to=f"0x{0x75003:040x}",
-                gas=21000
-                + 20000
-                * calls_per_batch,  # Gas is 21k base + 10k per call + calldata cost
+                gas=21000 + 20000 * calls_per_batch,
                 data=tx_data,
                 value=0,
             )
 
             new_count = (await cairo_counter.functions["get"].call()).count
-            expected_increment = calls_per_batch
-            assert new_count == prev_count + expected_increment
+            assert (
+                new_count == prev_count + calls_per_batch
+            ), f"Expected count to increase by {calls_per_batch}, but it increased by {new_count - prev_count}"
 
         async def test_should_set_and_increase_counter_in_batch(
             self, cairo_counter, owner
         ):
             prev_count = (await cairo_counter.functions["get"].call()).count
-
-            # 1st starknet call to perform in the batch
             new_counter = prev_count * 2 + 100
-            call_1 = cairo_counter.functions["set_counter"].prepare_call(
-                new_counter=new_counter
-            )
-            encoded_starknet_call_1 = encode(
-                ["uint256", "uint256", "uint256[]"],
-                [call_1.to_addr, call_1.selector, call_1.calldata],
-            )
 
-            # 2nd starknet call to perform in the batch
-            call_2 = cairo_counter.functions["inc"].prepare_call()
-            encoded_starknet_call_2 = encode(
-                ["uint256", "uint256", "uint256[]"],
-                [call_2.to_addr, call_2.selector, call_2.calldata],
-            )
+            calls = [
+                (cairo_counter.functions["set_counter"], [new_counter]),
+                (cairo_counter.functions["inc"], []),
+            ]
+            tx_data = prepare_transaction_data(calls)
 
-            encoded_starknet_calls = encoded_starknet_call_1 + encoded_starknet_call_2
-            calls_per_batch = 2
-
-            tx_data = f"{calls_per_batch:064x}" + encoded_starknet_calls.hex()
             await eth_send_transaction(
                 to=f"0x{0x75003:040x}",
-                gas=21000
-                + 20000
-                * calls_per_batch,  # Gas is 21k base + 10k per call + calldata cost
+                gas=21000 + 20000 * len(calls),
                 data=tx_data,
                 value=0,
                 caller_eoa=owner.starknet_contract,
@@ -126,7 +120,7 @@ class TestCairoPrecompiles:
         async def test_should_increase_counter_in_multicall_from_solidity(
             self, cairo_counter, multicall_cairo_counter_caller
         ):
-            expected_increment = 2
+            expected_increment = 5
             prev_count = (await cairo_counter.functions["get"].call()).count
             await multicall_cairo_counter_caller.incrementCairoCounterBatch(
                 expected_increment
