@@ -2,7 +2,9 @@ use pragma::entry::structs::{DataType, AggregationMode, PragmaPricesResponse};
 
 #[starknet::interface]
 trait IOracle<TContractState> {
-    fn get_data(self: @TContractState, data_type: DataType, aggregation_mode: AggregationMode) -> PragmaPricesResponse;
+    fn get_data(
+        self: @TContractState, data_type: DataType, aggregation_mode: AggregationMode
+    ) -> PragmaPricesResponse;
 }
 
 #[starknet::interface]
@@ -36,7 +38,9 @@ mod MockPragmaOracle {
     //! Must be compatible with Cairo 2.2.0
     #[external(v0)]
     impl IPragmaOracleImpl of IOracle<ContractState> {
-        fn get_data(self: @ContractState, data_type: DataType, aggregation_mode: AggregationMode) -> PragmaPricesResponse {
+        fn get_data(
+            self: @ContractState, data_type: DataType, aggregation_mode: AggregationMode
+        ) -> PragmaPricesResponse {
             match data_type {
                 DataType::SpotEntry => {
                     PragmaPricesResponse {
