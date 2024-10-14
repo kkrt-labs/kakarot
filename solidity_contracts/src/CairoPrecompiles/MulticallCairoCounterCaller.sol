@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
-using MulticallCairoLib for uint256;
 
 /// @notice A contract that performs various call types to the Kakarot MulticallCairo precompile.
 /// @dev Only meant to test the MulticallCairo precompile when called from a Solidity Contract.
 contract MulticallCairoCounterCaller {
+
+    using MulticallCairoLib for uint256;
+
     /// @dev The cairo contract to call
     uint256 immutable cairoCounter;
 
@@ -57,20 +59,6 @@ library MulticallCairoLib {
     /// @dev The Batch Cairo precompile contract's address.
     address constant BATCH_CAIRO_PRECOMPILE_ADDRESS = 0x0000000000000000000000000000000000075003;
 
-    function concatenateBytes(bytes memory a, bytes memory b) public pure returns (bytes memory) {
-        bytes memory result = new bytes(a.length + b.length);
-        uint256 k = 0;
-        for (uint256 i = 0; i < a.length; i++) {
-            result[k] = a[i];
-            k++;
-        }
-        for (uint256 i = 0; i < b.length; i++) {
-            result[k] = b[i];
-            k++;
-        }
-        return result;
-    }
-
     function batchCallCairo(uint256[][] memory calls) internal returns (bytes memory) {
         uint32 n_calls = uint32(calls.length);
         bytes4 selector = bytes4(keccak256("call_contract(bytes4,uint256,uint256,uint256[])"));
@@ -86,7 +74,7 @@ library MulticallCairoLib {
                 data[j] = calls[i][j + 3];
             }
             bytes memory encodedCall = abi.encode(contractAddress, functionSelector, data);
-            callData = concatenateBytes(callData, encodedCall);
+            callData = bytes.concat(callData, encodedCall);
         }
 
         (bool success, bytes memory result) = BATCH_CAIRO_PRECOMPILE_ADDRESS.call(callData);
