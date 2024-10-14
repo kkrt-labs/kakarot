@@ -64,9 +64,16 @@ namespace KakarotPrecompiles {
         let evm_selector = Helpers.bytes4_to_felt(input);
         let call_ptr = input + EVM_SELECTOR_BYTES;
 
-        let (to_address, selector, calldata_len, calldata, _) = Internals.parse_cairo_call(
-            call_ptr
+        let (is_err, to_address, selector, calldata_len, calldata, _) = Internals.parse_cairo_call(
+            evm_encoded_call_len=input_len - EVM_SELECTOR_BYTES, evm_encoded_call_ptr=call_ptr
         );
+
+        if (is_err != FALSE) {
+            let (revert_reason_len, revert_reason) = Errors.precompileInputError();
+            return (
+                revert_reason_len, revert_reason, CAIRO_PRECOMPILE_GAS, Errors.EXCEPTIONAL_HALT
+            );
+        }
 
         return Internals.execute_cairo_call(
             caller_address,
@@ -79,7 +86,7 @@ namespace KakarotPrecompiles {
         );
     }
 
-    // @notice Executes a batch of call to cairo contracts.
+    // @notice Executes a batch of calls to cairo contracts.
     // @dev Cannot be called with CALLCODE / DELEGATECALL - _should_ be checked upstream.
     // @dev The input is formatted as:
     // @dev [selector: bytes4][number_of_calls: bytes4]
@@ -98,7 +105,9 @@ namespace KakarotPrecompiles {
         alloc_locals;
 
         // Input must be at least 8 bytes long.
-        let is_input_invalid = is_nn((EVM_SELECTOR_BYTES + NUMBER_OF_CALLS_BYTES) - input_len);
+        let is_input_invalid = is_nn(
+            (EVM_SELECTOR_BYTES + NUMBER_OF_CALLS_BYTES) - (input_len + 1)
+        );
         if (is_input_invalid != 0) {
             let (revert_reason_len, revert_reason) = Errors.outOfBoundsRead();
             return (
@@ -113,8 +122,11 @@ namespace KakarotPrecompiles {
         // We enforce data_len to be at most 4 bytes, made some tests on Starknet
         // and even bytes4 looks like it's not supported
         let invalid_number_of_calls_len = Helpers.bytes_to_felt(28, number_of_calls_ptr);
-        with_attr error_message("Invalid number of calls length") {
-            assert invalid_number_of_calls_len = 0;
+        if (invalid_number_of_calls_len != FALSE) {
+            let (revert_reason_len, revert_reason) = Errors.precompileInputError();
+            return (
+                revert_reason_len, revert_reason, CAIRO_PRECOMPILE_GAS, Errors.EXCEPTIONAL_HALT
+            );
         }
 
         let number_of_calls = Helpers.bytes4_to_felt(number_of_calls_ptr + 28);
@@ -184,9 +196,14 @@ namespace Internals {
             return (revert_reason_len, revert_reason, Errors.EXCEPTIONAL_HALT);
         }
 
-        let (to_address, selector, calldata_len, calldata, next_call_offset) = parse_cairo_call(
-            calls
-        );
+        let (
+            is_err, to_address, selector, calldata_len, calldata, next_call_offset
+        ) = parse_cairo_call(evm_encoded_call_len=calls_len, evm_encoded_call_ptr=calls);
+
+        if (is_err != FALSE) {
+            let (revert_reason_len, revert_reason) = Errors.precompileInputError();
+            return (revert_reason_len, revert_reason, Errors.EXCEPTIONAL_HALT);
+        }
 
         let (output_len, output, gas_used, reverted) = execute_cairo_call(
             caller_address,
@@ -295,7 +312,8 @@ namespace Internals {
 
     // @notice Parses a single Cairo call from the input data
     // @param evm_encoded_call_ptr Pointer to the start of the evm encoded starknet call
-    // in form : [to_address: bytes32][selector: bytes32][calldata_offset: bytes32][calldata_len: bytes32][calldata: bytes[]]
+    // in form : [to_address: bytes32][selector: bytes32][calldata_len_offset: bytes32][calldata_len: bytes32][calldata: bytes[]]
+    // @return is_err 0 if the operation is successful, 1 otherwise
     // @return to_addr The Starknet address to call
     // @return selector The selector of the function to call
     // @return calldata_len The length of the call data
@@ -306,7 +324,8 @@ namespace Internals {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(evm_encoded_call_ptr: felt*) -> (
+    }(evm_encoded_call_len: felt, evm_encoded_call_ptr: felt*) -> (
+        is_err: felt,
         to_address: felt,
         selector: felt,
         calldata_len: felt,
@@ -315,31 +334,72 @@ namespace Internals {
     ) {
         alloc_locals;
 
+        // Ensure that evm_encoded_call_len is at least MIN_EVM_ENCODED_STARKNET_CALL_BYTES
+        let is_input_invalid = is_nn(
+            MIN_EVM_ENCODED_STARKNET_CALL_BYTES - (evm_encoded_call_len + 1)
+        );
+        if (is_input_invalid != 0) {
+            with_attr error_message("ERR1") {
+                assert 0 = 1;
+                let (empty) = alloc();
+                return (TRUE, 0, 0, 0, empty, 0);
+            }
+        }
+
         let to_address = Helpers.bytes32_to_felt(evm_encoded_call_ptr);
 
         let selector_ptr = evm_encoded_call_ptr + 32;
         let selector = Helpers.bytes32_to_felt(selector_ptr);
 
-        let data_offset_ptr = evm_encoded_call_ptr + 64;
-        let data_offset = Helpers.bytes32_to_felt(data_offset_ptr);
-        let data_len_ptr = evm_encoded_call_ptr + data_offset;
+        let calldata_len_offset_ptr = evm_encoded_call_ptr + 64;
+        let calldata_len_offset = Helpers.bytes32_to_felt(calldata_len_offset_ptr);
 
-        // We enforce data_len to be at most 4 bytes, made some tests on Starknet
+        // Ensure that the data_len, located in [calldata_len_offset: calldata_len_offset+32], is within the bounds of the input
+        let is_calldata_len_invalid = is_nn(
+            (calldata_len_offset + 32) - (evm_encoded_call_len + 1)
+        );
+        if (is_calldata_len_invalid != 0) {
+            with_attr error_message("ERR2") {
+                assert 0 = 1;
+                let (empty) = alloc();
+                return (TRUE, 0, 0, 0, empty, 0);
+            }
+        }
+        let calldata_len_ptr = evm_encoded_call_ptr + calldata_len_offset;
+
+        // We enforce calldata_len to be at most 4 bytes, made some tests on Starknet
         // and even bytes4 looks like it's not supported
-        let invalid_data_words_len = Helpers.bytes_to_felt(28, data_len_ptr);
-
-        // TODO: don't throw cairo vm errors, just fail the call.
-        with_attr error_message("Invalid data length") {
-            assert invalid_data_words_len = 0;
+        let invalid_calldata_words_len = Helpers.bytes_to_felt(28, calldata_len_ptr);
+        if (invalid_calldata_words_len != FALSE) {
+            with_attr error_message("ERR3") {
+                assert 0 = 1;
+                let (empty) = alloc();
+                return (TRUE, 0, 0, 0, empty, 0);
+            }
         }
 
-        let data_words_len = Helpers.bytes4_to_felt(data_len_ptr + 28);
-        let data_bytes_len = data_words_len * 32;
-        let data_ptr = data_len_ptr + 32;
-        let (calldata_len, calldata) = Helpers.load_256_bits_array(data_bytes_len, data_ptr);
+        let calldata_words_len = Helpers.bytes4_to_felt(calldata_len_ptr + 28);
+        let calldata_bytes_len = calldata_words_len * 32;
+        let calldata_offset = calldata_len_offset + 32;
 
-        let next_call_offset = MIN_EVM_ENCODED_STARKNET_CALL_BYTES + data_bytes_len;
+        // Ensure that the data, located in [calldata_offset, calldata_offset + calldata_bytes_len], is within the bounds of the input
+        let is_calldata_invalid = is_nn(
+            (calldata_offset + calldata_bytes_len) - (evm_encoded_call_len + 1)
+        );
+        if (is_calldata_invalid != 0) {
+            with_attr error_message("ERR4") {
+                assert 0 = 1;
+                let (empty) = alloc();
+                return (TRUE, 0, 0, 0, empty, 0);
+            }
+        }
+        let calldata_ptr = calldata_len_ptr + 32;
+        let (calldata_len, calldata) = Helpers.load_256_bits_array(
+            calldata_bytes_len, calldata_ptr
+        );
 
-        return (to_address, selector, calldata_len, calldata, next_call_offset);
+        let next_call_offset = MIN_EVM_ENCODED_STARKNET_CALL_BYTES + calldata_bytes_len;
+
+        return (FALSE, to_address, selector, calldata_len, calldata, next_call_offset);
     }
 }
