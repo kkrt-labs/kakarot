@@ -54,7 +54,7 @@ async def deploy_starknet_contracts(account):
             "MockPragmaOracle"
         )
         starknet_deployments["MockPragmaSummaryStats"] = await deploy_starknet(
-            "MockPragmaSummaryStats"
+            "MockPragmaSummaryStats", starknet_deployments["MockPragmaOracle"]
         )
         starknet_deployments["UniversalLibraryCaller"] = await deploy_starknet(
             "UniversalLibraryCaller"
