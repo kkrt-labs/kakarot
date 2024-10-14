@@ -101,11 +101,13 @@ contract PragmaCaller {
     /// @param request The request parameters to fetch Pragma's Prices. See `PragmaPricesRequest`.
     /// @return response The pragma prices response of the specified request.
     function getData(PragmaPricesRequest memory request) public view returns (PragmaPricesResponse memory response) {
+        bool isFuturesData = request.dataType == DataType.FuturesEntry;
+
         // Serialize the data request into a format compatible with the expected Pragma inputs
-        uint256[] memory data = new uint256[](request.dataType == DataType.FuturesEntry ? 4 : 3);
+        uint256[] memory data = new uint256[](isFuturesData ? 4 : 3);
         data[0] = uint256(request.dataType);
         data[1] = request.pairId;
-        if (request.dataType == DataType.FuturesEntry) {
+        if (isFuturesData) {
             data[2] = request.expirationTimestamp;
             data[3] = uint256(request.aggregationMode);
         } else {
@@ -113,6 +115,10 @@ contract PragmaCaller {
         }
 
         bytes memory returnData = pragmaOracle.staticcallCairo(FUNCTION_SELECTOR_GET_DATA, data);
+
+        // 160 = 5 felts for Spot/Generic data ; 192 = 6 felts for Futures.
+        uint256 expectedLength = isFuturesData ? 192 : 160;
+        require(returnData.length == expectedLength, "Invalid return data length.");
 
         assembly {
             // Load the values from the return data
@@ -162,6 +168,7 @@ contract PragmaCaller {
         }
 
         bytes memory returnData = pragmaSummaryStats.staticcallCairo(FUNCTION_SELECTOR_CALCULATE_MEAN, data);
+        require(returnData.length == 64, "Invalid return data length."); // 64 = 2 felts.
 
         assembly {
             // Load the values from the return data
@@ -202,6 +209,7 @@ contract PragmaCaller {
         }
 
         bytes memory returnData = pragmaSummaryStats.staticcallCairo(FUNCTION_SELECTOR_CALCULATE_VOLATILITY, data);
+        require(returnData.length == 64, "Invalid return data length."); // 64 = 2 felts.
 
         assembly {
             // Load the values from the return data
@@ -240,6 +248,7 @@ contract PragmaCaller {
         }
 
         bytes memory returnData = pragmaSummaryStats.staticcallCairo(FUNCTION_SELECTOR_CALCULATE_TWAP, data);
+        require(returnData.length == 64, "Invalid return data length."); // 64 = 2 felts.
 
         assembly {
             // Load the values from the return data
