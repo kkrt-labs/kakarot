@@ -26,13 +26,13 @@ contract MulticallCairoCounterCaller {
 
     /// @notice Calls the Cairo contract to increment its internal counter in a batch of multiple calls
     function incrementCairoCounterBatch(uint32 n_calls) external {
-        uint256[][] memory calls = new uint256[][](n_calls);
+        MulticallCairoLib.CairoCall[] memory calls = new MulticallCairoLib.CairoCall[](n_calls);
         for (uint32 i = 0; i < n_calls; i++) {
-            calls[i] = new uint256[](3);
-            calls[i][0] = cairoCounter;
-            calls[i][1] = FUNCTION_SELECTOR_INC;
-            calls[i][2] = 0; // Length of the empty calldata array
-                // No data because len = 0
+            calls[i] = MulticallCairoLib.CairoCall({
+                contractAddress: cairoCounter,
+                functionSelector: FUNCTION_SELECTOR_INC,
+                data: new uint256[](0)
+            });
         }
         MulticallCairoLib.batchCallCairo(calls);
     }
@@ -57,20 +57,18 @@ library MulticallCairoLib {
     /// @dev The Batch Cairo precompile contract's address.
     address constant BATCH_CAIRO_PRECOMPILE_ADDRESS = 0x0000000000000000000000000000000000075003;
 
-    function batchCallCairo(uint256[][] memory calls) internal returns (bytes memory) {
-        uint256 n_calls = uint256(calls.length);
+    struct CairoCall {
+        uint256 contractAddress;
+        uint256 functionSelector;
+        uint256[] data;
+    }
+
+    function batchCallCairo(CairoCall[] memory calls) internal returns (bytes memory) {
+        uint256 n_calls = calls.length;
         bytes memory callData = abi.encode(n_calls);
 
         for (uint32 i = 0; i < n_calls; i++) {
-            require(calls[i].length >= 3, "Invalid call format");
-            uint256 contractAddress = calls[i][0];
-            uint256 functionSelector = calls[i][1];
-            uint256 dataLength = calls[i][2];
-            uint256[] memory data = new uint256[](dataLength);
-            for (uint256 j = 0; j < dataLength; j++) {
-                data[j] = calls[i][j + 3];
-            }
-            bytes memory encodedCall = abi.encode(contractAddress, functionSelector, data);
+            bytes memory encodedCall = abi.encode(calls[i].contractAddress, calls[i].functionSelector, calls[i].data);
             callData = bytes.concat(callData, encodedCall);
         }
 
