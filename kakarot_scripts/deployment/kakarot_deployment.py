@@ -7,6 +7,7 @@ from kakarot_scripts.constants import (
     BLOCK_GAS_LIMIT,
     DEFAULT_GAS_PRICE,
     ETH_TOKEN_ADDRESS,
+    EVM_ADDRESS,
     NETWORK,
     RPC_CLIENT,
     NetworkType,
@@ -24,6 +25,7 @@ from kakarot_scripts.utils.starknet import (
 )
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 # %%
@@ -68,6 +70,15 @@ async def deploy_or_upgrade_kakarot(owner):
             DEFAULT_GAS_PRICE,
             address=starknet_deployments["kakarot"],
         )
+        # Temporarily set the coinbase to the default EVM deployer so that
+        # fees are not sent to 0x0 but rather sent back to the deployer itself,
+        # until the coinbase is set to the deployed contract later on.
+        await invoke(
+            "kakarot",
+            "set_coinbase",
+            int(EVM_ADDRESS, 16),
+            address=starknet_deployments["kakarot"],
+        )
 
     dump_deployments(starknet_deployments)
 
@@ -79,6 +90,7 @@ async def main():
     except Exception:
         logger.error("❌ Kakarot is not declared, exiting...")
         return
+
     account = await get_starknet_account()
     register_lazy_account(account.address)
     await deploy_or_upgrade_kakarot(account)

@@ -495,9 +495,9 @@ async def send_pre_eip155_transaction(name: str, max_fee: Optional[int] = None):
     signed_tx = PRE_EIP155_TX[name]["signed_tx"]
     deployer_evm_address = PRE_EIP155_TX[name]["deployer"]
     deployer_starknet_address = await get_starknet_address(deployer_evm_address)
-    should_deploy = PRE_EIP155_TX[name].get("deployer", False)
+    should_deploy = PRE_EIP155_TX[name].get("should_deploy", False)
     if not should_deploy:
-        logger.info(f"ℹ️ {name} is already deployed, skipping")
+        logger.info(f"ℹ️  {name} is already deployed, skipping")
         return
 
     if WEB3.is_connected():
@@ -785,7 +785,7 @@ async def store_bytecode(bytecode: Union[str, bytes], **kwargs):
     return evm_address
 
 
-async def deploy_pre_eip155_sender(name: str) -> bool:
+async def deploy_pre_eip155_sender(name: str):
     tx_instance = PRE_EIP155_TX[name]
     deployer_evm_address = tx_instance["deployer"]
     amount = tx_instance["required_eth"]
@@ -801,6 +801,7 @@ async def deploy_pre_eip155_sender(name: str) -> bool:
         logger.info(
             f"ℹ️  Nonce for {deployer_evm_address} is not 0 ({nonce}), skipping transaction"
         )
+        tx_instance["should_deploy"] = False
         return
 
     # Deploy and fund deployer to enable the authorization callback when calling set_authorized_pre_eip155_tx

@@ -206,7 +206,7 @@ async def fund_address(
         balance = await get_balance(account.address, eth_contract)
         if balance < amount:
             raise ValueError(
-                f"Cannot send {amount / 1e18} ETH from default account with current balance {balance / 1e18} ETH"
+                f"Cannot send {amount / 1e18} ETH from account 0x{account.address:064x} with current balance {balance / 1e18} ETH"
             )
         prepared = eth_contract.functions["transfer"].prepare_invoke_v1(address, amount)
         tx = await prepared.invoke(max_fee=_max_fee)
@@ -614,7 +614,8 @@ async def execute_v1(account, calls):
         content = response.json()["content"]
         transaction_id = content["id"]
         status = content["state"]
-        while status not in {"TX_ACCEPTED_L2", "REVERTED"}:
+        while status not in {"TX_ACCEPTED_L2", "REVERTED", "REJECTED"}:
+            await asyncio.sleep(5)
             response = requests.get(
                 f"{NETWORK['argent_multisig_api']}/0x{account.address:064x}/request"
             )
@@ -627,7 +628,11 @@ async def execute_v1(account, calls):
                 raise Exception("Transaction not found")
             content = contents[0]
             status = content["state"]
-            await asyncio.sleep(5)
+            logger.info(f"⏳ Multisig transaction status: {status}")
+        if status != "TX_ACCEPTED_L2":
+            logger.error(f"❌ Transaction rejected:\n{content}")
+            raise ValueError(f"Transaction rejected: {status}")
+
         return {
             "transaction_hash": content["transactionHash"],
             "status": content["state"],
@@ -645,7 +650,7 @@ async def execute_v1(account, calls):
     )
 
     status = await wait_for_transaction(res.transaction_hash)
-    logger.info(f"{status}: 0x{res.transaction_hash:064x}")
+    logger.info(f"{status} 0x{res.transaction_hash:064x}")
     return res
 
 

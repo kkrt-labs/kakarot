@@ -1,0 +1,34 @@
+{
+  "WETH9": {
+    "address": "0x7a2dee402f31632592e3c9270d4f12e450877f86",
+    "starknet_address": "0x560ee2d03b8d5324ab2b2633f1cc7e622670f0dd5f4339cd805f7a8c7c2954c"
+  },
+  "KakarotETH": {
+    "address": "0xc9c677a629aae7a149f5f0e7546394f2630e8e9e",
+    "starknet_address": "0x148fb0906ddab285adfca8d6cb263f2d1d80f4a5de73097fb4d6f915de37ddb"
+  },
+  "KakarotSTRK": {
+    "address": "0x506de97018260b95ddf3d1b4c3d795a639b04d3f",
+    "starknet_address": "0x5d2c7e0607e567b216d6797340a6d2abc0d2e2ed10c6e02ed59eaf938efd8ee"
+  },
+  "Coinbase": {
+    "address": "0x20a6338ae7c41a5f70fb8c660c8cc5b3f5f631f7",
+    "starknet_address": "0x61410328063dd18e8ba0dc4036b19f542898111e94f3592d5dc7a99226a0f59"
+  },
+  "Multicall3": {
+    "address": "0xca11bde05977b3631167028862be2a173976ca11",
+    "starknet_address": "0x6651e54eeedb45bc4c35afdb347087a9bf4d605c2c32059d40a53c11c58ad54"
+  },
+  "ArachnidProxy": {
+    "address": "0x4e59b44847b379578588920ca78fbf26c0b4956c",
+    "starknet_address": "0x1951616e873145d51a0e77cc6c9c3ea2d1d3cc40ec9fa226b217a06f415dd61"
+  },
+  "CreateX": {
+    "address": "0xba5ed099633d3b313e4d5f7bdc1305d3c28ba5ed",
+    "starknet_address": "0x374b73d5437a4e0f6f5350da52d937b4241d010ae419dc7093bb36294d56ddf"
+  },
+  "L2KakarotMessaging": {
+    "address": "0xd88b092890db8c02e0c7a838841d88f3cf4d8286",
+    "starknet_address": "0x1c172576798412602954fdc8024276c3e801be5352c0d3166b23765552aa879"
+  }
+}
