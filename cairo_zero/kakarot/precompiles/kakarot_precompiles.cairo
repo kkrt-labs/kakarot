@@ -21,9 +21,6 @@ from backend.starknet import Starknet
 // The data is a 256 bits array that can be of any length.
 const MIN_EVM_ENCODED_STARKNET_CALL_BYTES = 4 * 32;  // [starknet_address: bytes32][starknet_selector:bytes32][data_offset: bytes32][data_len: bytes32]
 
-// @dev The number of bytes in an EVM selector
-const EVM_SELECTOR_BYTES = 4;
-
 // @dev The number of bytes encoding the number of calls in a multicall Cairo precompile
 const NUMBER_OF_CALLS_BYTES = 32;
 
@@ -49,23 +46,17 @@ namespace KakarotPrecompiles {
     ) {
         alloc_locals;
 
-        // Input must be at least EVM_SELECTOR_BYTES + MIN_EVM_ENCODED_STARKNET_CALL_BYTES bytes long to be valid.
-        let is_input_invalid = is_nn(
-            (EVM_SELECTOR_BYTES + MIN_EVM_ENCODED_STARKNET_CALL_BYTES) - (input_len + 1)
-        );
-        if (is_input_invalid != 0) {
+        // Input must be at least MIN_EVM_ENCODED_STARKNET_CALL_BYTES bytes long to be valid.
+        let is_call_invalid = is_nn(MIN_EVM_ENCODED_STARKNET_CALL_BYTES - (input_len + 1));
+        if (is_call_invalid != 0) {
             let (revert_reason_len, revert_reason) = Errors.outOfBoundsRead();
             return (
                 revert_reason_len, revert_reason, CAIRO_PRECOMPILE_GAS, Errors.EXCEPTIONAL_HALT
             );
         }
 
-        // Load evm_selector from first 4 bytes of input.
-        let evm_selector = Helpers.bytes4_to_felt(input);
-        let call_ptr = input + EVM_SELECTOR_BYTES;
-
         let (is_err, to_address, selector, calldata_len, calldata, _) = Internals.parse_cairo_call(
-            evm_encoded_call_len=input_len - EVM_SELECTOR_BYTES, evm_encoded_call_ptr=call_ptr
+            evm_encoded_call_len=input_len, evm_encoded_call_ptr=input
         );
 
         if (is_err != FALSE) {
@@ -76,13 +67,7 @@ namespace KakarotPrecompiles {
         }
 
         return Internals.execute_cairo_call(
-            caller_address,
-            evm_selector,
-            to_address,
-            selector,
-            calldata_len,
-            calldata,
-            skip_returndata=FALSE,
+            caller_address, to_address, selector, calldata_len, calldata, skip_returndata=FALSE
         );
     }
 
@@ -104,10 +89,8 @@ namespace KakarotPrecompiles {
     ) {
         alloc_locals;
 
-        // Input must be at least 8 bytes long.
-        let is_input_invalid = is_nn(
-            (EVM_SELECTOR_BYTES + NUMBER_OF_CALLS_BYTES) - (input_len + 1)
-        );
+        // Input must be at least NUMBER_OF_CALLS_BYTES bytes long.
+        let is_input_invalid = is_nn(NUMBER_OF_CALLS_BYTES - (input_len + 1));
         if (is_input_invalid != 0) {
             let (revert_reason_len, revert_reason) = Errors.outOfBoundsRead();
             return (
@@ -115,13 +98,9 @@ namespace KakarotPrecompiles {
             );
         }
 
-        // Load selector from first 4 bytes of input.
-        let evm_selector = Helpers.bytes4_to_felt(input);
-        let number_of_calls_ptr = input + EVM_SELECTOR_BYTES;
-
-        // We enforce data_len to be at most 4 bytes, made some tests on Starknet
-        // and even bytes4 looks like it's not supported
-        let invalid_number_of_calls_len = Helpers.bytes_to_felt(28, number_of_calls_ptr);
+        let number_of_calls_ptr = input;
+        // We enforce the number of calls to be at most 2 bytes.
+        let invalid_number_of_calls_len = Helpers.bytes_to_felt(30, number_of_calls_ptr);
         if (invalid_number_of_calls_len != FALSE) {
             let (revert_reason_len, revert_reason) = Errors.precompileInputError();
             return (
@@ -129,13 +108,13 @@ namespace KakarotPrecompiles {
             );
         }
 
-        let number_of_calls = Helpers.bytes4_to_felt(number_of_calls_ptr + 28);
+        let number_of_calls = Helpers.bytes2_to_felt(number_of_calls_ptr + 30);
         let gas_cost = number_of_calls * CAIRO_PRECOMPILE_GAS;
         let calls_ptr = number_of_calls_ptr + NUMBER_OF_CALLS_BYTES;
-        let calls_len = input_len - (EVM_SELECTOR_BYTES + NUMBER_OF_CALLS_BYTES);
+        let calls_len = input_len - NUMBER_OF_CALLS_BYTES;
 
         let (output_len, output, reverted) = Internals.execute_multiple_cairo_calls(
-            caller_address, evm_selector, calls_len, calls_ptr
+            caller_address, calls_len, calls_ptr
         );
         return (output_len, output, gas_cost, reverted);
     }
@@ -178,7 +157,7 @@ namespace Internals {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(caller_address: felt, evm_selector: felt, calls_len: felt, calls: felt*) -> (
+    }(caller_address: felt, calls_len: felt, calls: felt*) -> (
         output_len: felt, output: felt*, reverted: felt
     ) {
         alloc_locals;
@@ -206,13 +185,7 @@ namespace Internals {
         }
 
         let (output_len, output, gas_used, reverted) = execute_cairo_call(
-            caller_address,
-            evm_selector,
-            to_address,
-            selector,
-            calldata_len,
-            calldata,
-            skip_returndata=TRUE,
+            caller_address, to_address, selector, calldata_len, calldata, skip_returndata=TRUE
         );
 
         if (reverted != FALSE) {
@@ -221,12 +194,11 @@ namespace Internals {
 
         // Move to the next call
         return execute_multiple_cairo_calls(
-            caller_address, evm_selector, calls_len - next_call_offset, calls + next_call_offset
+            caller_address, calls_len - next_call_offset, calls + next_call_offset
         );
     }
 
     // @notice Executes a call to a cairo contract
-    // @ param evm_selector The selector of the evm
     // @ param to_starknet_address The starknet address of the contract to call
     // @ param starknet_selector The selector of the starknet contract to call
     // @ param data_len The length of the data to pass to the contract
@@ -239,7 +211,6 @@ namespace Internals {
         bitwise_ptr: BitwiseBuiltin*,
     }(
         caller_address: felt,
-        evm_selector: felt,
         to_starknet_address: felt,
         starknet_selector: felt,
         data_len: felt,
@@ -247,13 +218,6 @@ namespace Internals {
         skip_returndata: felt,
     ) -> (output_len: felt, output: felt*, gas_used: felt, reverted: felt) {
         alloc_locals;
-        let is_evm_selector_valid_ = is_evm_selector_valid(evm_selector);
-        if (is_evm_selector_valid_ == FALSE) {
-            let (revert_reason_len, revert_reason) = Errors.invalidEvmSelector();
-            return (
-                revert_reason_len, revert_reason, CAIRO_PRECOMPILE_GAS, Errors.EXCEPTIONAL_HALT
-            );
-        }
 
         let caller_starknet_address = Account.get_registered_starknet_address(caller_address);
         let is_not_deployed = Helpers.is_zero(caller_starknet_address);
@@ -289,25 +253,6 @@ namespace Internals {
         let output_len = retdata_len * 32;
         Helpers.felt_array_to_bytes32_array(retdata_len, retdata, output);
         return (output_len, output, CAIRO_PRECOMPILE_GAS, FALSE);
-    }
-
-    // @notice Checks if the selector is a valid EVM selector for a Cairo call.
-    // @dev Currently, two selectors are supported:
-    // call_contract(uint256,uint256,uint256[]) - for "regular" CallCairo Precompile
-    // call_contract(uint256,uint256,uint256,uint256[]) - for MulticallCairo Precompile
-    // @param selector The selector to check.
-    // @returns TRUE if the selector is valid, FALSE otherwise.
-    func is_evm_selector_valid(selector: felt) -> felt {
-        // call_contract(uint256,uint256,uint256[])
-        if (selector == 0xb3eb2c1b) {
-            return TRUE;
-        }
-
-        // call_contract(uint256,uint256,uint256,uint256[])
-        if (selector == 0x87e0a47e) {
-            return TRUE;
-        }
-        return FALSE;
     }
 
     // @notice Parses a single Cairo call from the input data
@@ -347,11 +292,10 @@ namespace Internals {
         }
 
         let to_address = Helpers.bytes32_to_felt(evm_encoded_call_ptr);
-
         let selector_ptr = evm_encoded_call_ptr + 32;
         let selector = Helpers.bytes32_to_felt(selector_ptr);
 
-        let calldata_len_offset_ptr = evm_encoded_call_ptr + 64;
+        let calldata_len_offset_ptr = selector_ptr + 32;
         let calldata_len_offset = Helpers.bytes32_to_felt(calldata_len_offset_ptr);
 
         // Ensure that the data_len, located in [calldata_len_offset: calldata_len_offset+32], is within the bounds of the input
@@ -367,9 +311,8 @@ namespace Internals {
         }
         let calldata_len_ptr = evm_encoded_call_ptr + calldata_len_offset;
 
-        // We enforce calldata_len to be at most 4 bytes, made some tests on Starknet
-        // and even bytes4 looks like it's not supported
-        let invalid_calldata_words_len = Helpers.bytes_to_felt(28, calldata_len_ptr);
+        // We enforce calldata_len to be at most 2 bytes.
+        let invalid_calldata_words_len = Helpers.bytes_to_felt(30, calldata_len_ptr);
         if (invalid_calldata_words_len != FALSE) {
             with_attr error_message("ERR3") {
                 assert 0 = 1;
@@ -378,7 +321,7 @@ namespace Internals {
             }
         }
 
-        let calldata_words_len = Helpers.bytes4_to_felt(calldata_len_ptr + 28);
+        let calldata_words_len = Helpers.bytes2_to_felt(calldata_len_ptr + 30);
         let calldata_bytes_len = calldata_words_len * 32;
         let calldata_offset = calldata_len_offset + 32;
 

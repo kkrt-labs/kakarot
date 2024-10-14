@@ -54,8 +54,7 @@ class TestCairoPrecompiles:
             )
 
             tx_data = (
-                EVM_MULTICALLCAIRO_SELECTOR.hex()
-                + f"{calls_per_batch:064x}"
+                f"{calls_per_batch:064x}"
                 + encoded_starknet_call.hex() * calls_per_batch
             )
             await eth_send_transaction(
@@ -96,11 +95,7 @@ class TestCairoPrecompiles:
             encoded_starknet_calls = encoded_starknet_call_1 + encoded_starknet_call_2
             calls_per_batch = 2
 
-            tx_data = (
-                EVM_MULTICALLCAIRO_SELECTOR.hex()
-                + f"{calls_per_batch:064x}"
-                + encoded_starknet_calls.hex()
-            )
+            tx_data = f"{calls_per_batch:064x}" + encoded_starknet_calls.hex()
             await eth_send_transaction(
                 to=f"0x{0x75003:040x}",
                 gas=21000

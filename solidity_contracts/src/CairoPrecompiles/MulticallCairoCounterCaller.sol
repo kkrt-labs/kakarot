@@ -58,9 +58,8 @@ library MulticallCairoLib {
     address constant BATCH_CAIRO_PRECOMPILE_ADDRESS = 0x0000000000000000000000000000000000075003;
 
     function batchCallCairo(uint256[][] memory calls) internal returns (bytes memory) {
-        uint32 n_calls = uint32(calls.length);
-        bytes4 selector = bytes4(keccak256("call_contract(uint256,uint256,uint256,uint256[])"));
-        bytes memory callData = abi.encodePacked(selector, uint256(n_calls));
+        uint256 n_calls = uint256(calls.length);
+        bytes memory callData = abi.encode(n_calls);
 
         for (uint32 i = 0; i < n_calls; i++) {
             require(calls[i].length >= 3, "Invalid call format");
@@ -85,9 +84,8 @@ library MulticallCairoLib {
         internal
         returns (bytes memory)
     {
-        bytes4 selector = bytes4(keccak256("call_contract(uint256,uint256,uint256,uint256[])"));
         bytes memory callData =
-            abi.encodePacked(selector, uint256(1), abi.encode(contractAddress, functionSelector, data));
+            bytes.concat(abi.encode(uint256(1)), abi.encode(contractAddress, functionSelector, data));
 
         (bool success, bytes memory result) = BATCH_CAIRO_PRECOMPILE_ADDRESS.call(callData);
         require(success, string(abi.encodePacked("CairoLib: call_contract failed with: ", result)));
@@ -117,9 +115,8 @@ library MulticallCairoLib {
         internal
         returns (bytes memory)
     {
-        bytes4 selector = bytes4(keccak256("call_contract(uint256,uint256,uint256,uint256[])"));
         bytes memory callData =
-            abi.encodePacked(selector, uint256(1), abi.encode(contractAddress, functionSelector, data));
+            bytes.concat(abi.encode(uint256(1)), abi.encode(contractAddress, functionSelector, data));
 
         bool success;
         bytes memory result;
@@ -154,9 +151,8 @@ library MulticallCairoLib {
         internal
         returns (bytes memory)
     {
-        bytes4 selector = bytes4(keccak256("call_contract(uint256,uint256,uint256,uint256[])"));
         bytes memory callData =
-            abi.encodePacked(selector, uint256(1), abi.encode(contractAddress, functionSelector, data));
+            bytes.concat(abi.encode(uint256(1)), abi.encode(contractAddress, functionSelector, data));
 
         bool success;
         bytes memory result;
