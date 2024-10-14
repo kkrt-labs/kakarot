@@ -74,7 +74,7 @@ namespace KakarotPrecompiles {
     }
 
     // @notice Executes a batch of calls to cairo contracts.
-    // @dev Cannot be called with CALLCODE / DELEGATECALL - _should_ be checked upstream.
+    // @dev Cannot be called with CALLCODE / DELEGATECALL - _must_ be checked upstream.
     // @dev The input is formatted as:
     // @dev [selector: bytes4][number_of_calls: bytes4]
     // @dev [to_1: bytes32][selector_1:bytes32][calldata_offset_1: bytes32][calldata_len_1: bytes32][calldata_1: bytes[]]...[to_n:bytes32]...
@@ -310,7 +310,7 @@ namespace Internals {
         }
         let selector = selector_256.low + 2 ** 128 * selector_256.high;
 
-        // Check that the calldata_len_offset is valid (fits in a felt + not too high)
+        // Check that the calldata_len_offset is valid (< 2**128 as otherwise the gas cost would be too high)
         let calldata_len_offset_ptr = selector_ptr + 32;
         let calldata_len_offset_256 = Helpers.bytes32_to_uint256(calldata_len_offset_ptr);
         let is_valid_calldata_len_offset = Helpers.is_zero(calldata_len_offset_256.high);

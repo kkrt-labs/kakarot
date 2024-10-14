@@ -32,23 +32,19 @@ async def multicall_cairo_counter_caller(owner, cairo_counter):
         "CairoPrecompiles",
         "MulticallCairoCounterCaller",
         cairo_counter.address,
-        caller_eoa=owner.starknet_contract,
     )
     return caller_contract
 
 
-def encode_starknet_call(call) -> bytes:
-    return encode(
-        ["uint256", "uint256", "uint256[]"],
-        [call.to_addr, call.selector, call.calldata],
-    )
-
-
-def prepare_transaction_data(calls: List[Tuple[Any, str, List[Any]]]) -> str:
+def prepare_transaction_data(calls: List[Tuple[Any, List[Any]]]) -> str:
     encoded_calls = b"".join(
-        encode_starknet_call(entrypoint.prepare_call(*calldata))
-        for entrypoint, calldata in calls
+        encode(
+            ["uint256", "uint256", "uint256[]"],
+            [int(call.to_addr), int(call.selector), call.calldata],
+        )
+        for call in calls
     )
+
     return f"{len(calls):064x}" + encoded_calls.hex()
 
 
@@ -64,7 +60,8 @@ class TestCairoPrecompiles:
             prev_count = (await cairo_counter.functions["get"].call()).count
 
             calls = [
-                (cairo_counter.functions["inc"], []) for _ in range(calls_per_batch)
+                cairo_counter.functions["inc"].prepare_call()
+                for _ in range(calls_per_batch)
             ]
             tx_data = prepare_transaction_data(calls)
 
@@ -76,9 +73,7 @@ class TestCairoPrecompiles:
             )
 
             new_count = (await cairo_counter.functions["get"].call()).count
-            assert (
-                new_count == prev_count + calls_per_batch
-            ), f"Expected count to increase by {calls_per_batch}, but it increased by {new_count - prev_count}"
+            assert new_count == prev_count + calls_per_batch
 
         async def test_should_set_and_increase_counter_in_batch(
             self, cairo_counter, owner
@@ -87,8 +82,8 @@ class TestCairoPrecompiles:
             new_counter = prev_count * 2 + 100
 
             calls = [
-                (cairo_counter.functions["set_counter"], [new_counter]),
-                (cairo_counter.functions["inc"], []),
+                cairo_counter.functions["set_counter"].prepare_call(new_counter),
+                cairo_counter.functions["inc"].prepare_call(),
             ]
             tx_data = prepare_transaction_data(calls)
 
@@ -102,9 +97,7 @@ class TestCairoPrecompiles:
 
             new_count = (await cairo_counter.functions["get"].call()).count
             expected_count = new_counter + 1
-            assert (
-                new_count == expected_count
-            ), f"Expected count to be {expected_count}, but it is {new_count}"
+            assert new_count == expected_count
 
         async def test_should_increase_counter_single_call_from_solidity(
             self, cairo_counter, multicall_cairo_counter_caller
@@ -113,9 +106,7 @@ class TestCairoPrecompiles:
             await multicall_cairo_counter_caller.incrementCairoCounter()
             new_count = (await cairo_counter.functions["get"].call()).count
             expected_increment = 1
-            assert (
-                new_count == prev_count + expected_increment
-            ), f"Expected count to increase by {expected_increment}, but it increased by {new_count - prev_count}"
+            assert new_count == prev_count + expected_increment
 
         async def test_should_increase_counter_in_multicall_from_solidity(
             self, cairo_counter, multicall_cairo_counter_caller
@@ -126,9 +117,7 @@ class TestCairoPrecompiles:
                 expected_increment
             )
             new_count = (await cairo_counter.functions["get"].call()).count
-            assert (
-                new_count == prev_count + expected_increment
-            ), f"Expected count to increase by {expected_increment}, but it increased by {new_count - prev_count}"
+            assert new_count == prev_count + expected_increment
 
         async def test_should_fail_when_called_with_delegatecall(
             self, multicall_cairo_counter_caller
