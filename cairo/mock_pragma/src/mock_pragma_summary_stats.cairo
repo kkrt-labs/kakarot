@@ -28,23 +28,30 @@ trait ISummaryStats<TContractState> {
     ) -> (u128, u32);
 }
 
-#[starknet::interface]
-trait IMockSummaryStats<TContractState> {
-    fn set_result(ref self: TContractState, pair_id: felt252, price: u128, decimals: u32,);
-}
-
 #[starknet::contract]
 mod MockSummaryStats {
+    use core::zeroable::Zeroable;
     use starknet::ContractAddress;
     use pragma::entry::structs::{DataType, AggregationMode};
+    use pragma::oracle::oracle::{IPragmaABIDispatcher, IPragmaABIDispatcherTrait};
 
-    use super::{ISummaryStats, IMockSummaryStats};
+    use super::ISummaryStats;
 
     #[storage]
     struct Storage {
-        pair_id: felt252,
-        price: u128,
-        decimals: u32,
+        pragma_oracle: IPragmaABIDispatcher,
+    }
+
+    #[constructor]
+    fn constructor(
+        ref self: ContractState,
+        pragma_oracle_address: ContractAddress
+    ) {
+        assert(!pragma_oracle_address.is_zero(), 'Pragma Oracle cannot be 0');
+        let pragma_oracle = IPragmaABIDispatcher {
+            contract_address: pragma_oracle_address
+        };
+        self.pragma_oracle.write(pragma_oracle);
     }
 
     //! Must be compatible with Cairo 2.2.0
@@ -57,7 +64,8 @@ mod MockSummaryStats {
             stop: u64,
             aggregation_mode: AggregationMode
         ) -> (u128, u32) {
-            (self.price.read(), self.decimals.read())
+            let data = self.pragma_oracle.read().get_data(data_type, aggregation_mode);
+            (data.price, data.decimals)
         }
 
         fn calculate_volatility(
@@ -68,7 +76,8 @@ mod MockSummaryStats {
             num_samples: u64,
             aggregation_mode: AggregationMode
         ) -> (u128, u32) {
-            (self.price.read(), self.decimals.read())
+            let data = self.pragma_oracle.read().get_data(data_type, aggregation_mode);
+            (data.price, data.decimals)
         }
 
         fn calculate_twap(
@@ -78,16 +87,8 @@ mod MockSummaryStats {
             time: u64,
             start_time: u64,
         ) -> (u128, u32) {
-            (self.price.read(), self.decimals.read())
-        }
-    }
-
-    #[external(v0)]
-    impl IMockSummaryStatsImpl of IMockSummaryStats<ContractState> {
-        fn set_result(ref self: ContractState, pair_id: felt252, price: u128, decimals: u32,) {
-            self.pair_id.write(pair_id);
-            self.price.write(price);
-            self.decimals.write(decimals);
+            let data = self.pragma_oracle.read().get_data(data_type, aggregation_mode);
+            (data.price, data.decimals)
         }
     }
 }
