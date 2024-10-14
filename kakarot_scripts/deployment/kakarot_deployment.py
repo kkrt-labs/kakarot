@@ -69,6 +69,9 @@ async def deploy_or_upgrade_kakarot(owner):
             DEFAULT_GAS_PRICE,
             address=starknet_deployments["kakarot"],
         )
+        # Temporarily set the coinbase to the default EVM deployer so that
+        # fees are not sent to 0x0 but rather sent back to the deployer itself,
+        # until the coinbase is set to the deployed contract later on.
         await invoke(
             "kakarot",
             "set_coinbase",
@@ -86,9 +89,7 @@ async def main():
     except Exception:
         logger.error("❌ Kakarot is not declared, exiting...")
         return
-    if EVM_ADDRESS is None:
-        logger.error("❌ EVM_ADDRESS is not set, exiting...")
-        return
+
     account = await get_starknet_account()
     register_lazy_account(account.address)
     await deploy_or_upgrade_kakarot(account)

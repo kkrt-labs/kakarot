@@ -627,6 +627,7 @@ async def execute_v1(account, calls):
                 raise Exception("Transaction not found")
             content = contents[0]
             status = content["state"]
+            logger.info(f"⏳ Multisig transaction status: {status}")
             await asyncio.sleep(5)
         if status != "TX_ACCEPTED_L2":
             logger.error(f"❌ Transaction rejected:\n{content}")

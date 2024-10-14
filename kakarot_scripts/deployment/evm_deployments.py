@@ -109,10 +109,6 @@ async def main():
         logger.error("❌ Kakarot is not deployed, exiting...")
         return
 
-    if not EVM_ADDRESS:
-        logger.warn("⚠️  No EVM address provided, skipping EVM deployments")
-        return
-
     await deploy_evm_contracts()
     await execute_calls()
 
