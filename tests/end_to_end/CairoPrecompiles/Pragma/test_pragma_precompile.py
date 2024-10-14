@@ -32,7 +32,7 @@ def serialize_cairo_inputs(data_type: dict, aggregation_mode: AggregationMode) -
     with the same format as the one expected by the Solidity contract.
 
     In solidity, the serialized data type is a tuple with the following format:
-    (entry_type, pair_id, expiration_timestamp)
+    (entry_type, pair_id, expiration_timestamp, aggregation_mode)
       - SpotEntry and GenericEntry take one argument pair_id
       - FutureEntry takes two arguments pair_id and expiration_timestamp
 
