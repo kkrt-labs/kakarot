@@ -40,7 +40,10 @@ class TestPrecompiles:
                 self, cairo_run, address, error_message
             ):
                 return_data, reverted, _ = cairo_run(
-                    "test__precompiles_run", address=address, input=[]
+                    "test__precompiles_run",
+                    address=address,
+                    input=[],
+                    message_address=address,
                 )
                 assert bytes(return_data).decode() == error_message
                 assert reverted
@@ -70,7 +73,10 @@ class TestPrecompiles:
                 self, cairo_run, address, input_data, expected_return_data
             ):
                 return_data, reverted, gas_used = cairo_run(
-                    "test__precompiles_run", address=address, input=input_data
+                    "test__precompiles_run",
+                    address=address,
+                    input=input_data,
+                    message_address=address,
                 )
                 assert not reverted
                 assert return_data == expected_return_data
@@ -105,6 +111,7 @@ class TestPrecompiles:
                     ),
                     caller_code_address=AUTHORIZED_CALLER_CODE,
                     caller_address=CALLER_ADDRESS,
+                    message_address=0x75001,
                 )
                 assert not bool(reverted)
                 assert bytes(return_data) == b""
@@ -200,6 +207,7 @@ class TestPrecompiles:
                         input=input_data,
                         caller_code_address=caller_code_address,
                         caller_address=CALLER_ADDRESS,
+                        message_address=address,
                     )
                 assert bool(reverted) == expected_reverted
                 assert bytes(return_data) == expected_return_data
@@ -273,6 +281,7 @@ class TestPrecompiles:
                     input=input_data,
                     caller_code_address=caller_code_address,
                     caller_address=CALLER_ADDRESS,
+                    message_address=address,
                 )
                 if expected_reverted:
                     assert reverted
