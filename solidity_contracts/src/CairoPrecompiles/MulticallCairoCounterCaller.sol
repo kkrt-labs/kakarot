@@ -1,11 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
-
 /// @notice A contract that performs various call types to the Kakarot MulticallCairo precompile.
 /// @dev Only meant to test the MulticallCairo precompile when called from a Solidity Contract.
 contract MulticallCairoCounterCaller {
-
     using MulticallCairoLib for uint256;
 
     /// @dev The cairo contract to call
