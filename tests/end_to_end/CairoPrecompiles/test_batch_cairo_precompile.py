@@ -9,7 +9,9 @@ from kakarot_scripts.utils.kakarot import deploy, eth_send_transaction
 from kakarot_scripts.utils.starknet import get_contract, wait_for_transaction
 from tests.utils.errors import cairo_error
 
-EVM_CALL_SELECTOR = keccak(text="call_contract(uint256,uint256,uint256[])")[:4]
+EVM_MULTICALLCAIRO_SELECTOR = keccak(
+    text="call_contract(uint256,uint256,uint256,uint256[])"
+)[:4]
 
 
 @pytest_asyncio.fixture(scope="module")
@@ -52,8 +54,8 @@ class TestCairoPrecompiles:
             )
 
             tx_data = (
-                EVM_CALL_SELECTOR.hex()
-                + f"{calls_per_batch:08x}"
+                EVM_MULTICALLCAIRO_SELECTOR.hex()
+                + f"{calls_per_batch:064x}"
                 + encoded_starknet_call.hex() * calls_per_batch
             )
             await eth_send_transaction(
@@ -95,8 +97,8 @@ class TestCairoPrecompiles:
             calls_per_batch = 2
 
             tx_data = (
-                EVM_CALL_SELECTOR.hex()
-                + f"{calls_per_batch:08x}"
+                EVM_MULTICALLCAIRO_SELECTOR.hex()
+                + f"{calls_per_batch:064x}"
                 + encoded_starknet_calls.hex()
             )
             await eth_send_transaction(
@@ -154,3 +156,11 @@ class TestCairoPrecompiles:
                 "EVM tx reverted, reverting SN tx because of previous calls to cairo precompiles"
             ):
                 await multicall_cairo_counter_caller.incrementCairoCounterCallcode()
+
+        # TODO
+        # async def test_should_fail_when_data_len_too_big(
+        #     self, multicall_cairo_counter_caller
+        # ):
+        #     with cairo_error(""):
+        #         # Create a large data payload that exceeds 2^32 bytes
+        #         large_data = b"0" * (2**32 + 1)
