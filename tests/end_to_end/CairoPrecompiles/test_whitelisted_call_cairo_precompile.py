@@ -20,7 +20,7 @@ async def cairo_counter(max_fee, deployer):
 async def cairo_counter_caller(owner, cairo_counter):
     caller_contract = await deploy(
         "CairoPrecompiles",
-        "CairoCounterCaller",
+        "WhitelistedCallCairoPrecompileTest",
         cairo_counter.address,
         caller_eoa=owner.starknet_contract,
     )
@@ -78,7 +78,9 @@ class TestCairoPrecompiles:
             self, cairo_counter, max_fee
         ):
             cairo_counter_caller = await deploy(
-                "CairoPrecompiles", "CairoCounterCaller", cairo_counter.address
+                "CairoPrecompiles",
+                "WhitelistedCallCairoPrecompileTest",
+                cairo_counter.address,
             )
             with cairo_error(
                 "EVM tx reverted, reverting SN tx because of previous calls to cairo precompiles"
@@ -87,7 +89,7 @@ class TestCairoPrecompiles:
 
         async def test_last_caller_address_should_be_eoa(self, cairo_counter_caller):
             eoa = await get_eoa()
-            await cairo_counter_caller.incrementCairoCounter(caller_eoa=eoa)
+            await cairo_counter_caller.delegateCallIncrementCairoCounter(caller_eoa=eoa)
             last_caller_address = await cairo_counter_caller.getLastCaller()
             assert last_caller_address == eoa.address
 

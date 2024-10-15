@@ -3,17 +3,12 @@ from typing import Any, List, Tuple
 import pytest
 import pytest_asyncio
 from eth_abi import encode
-from eth_utils import keccak
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from kakarot_scripts.utils.kakarot import deploy, eth_send_transaction
 from kakarot_scripts.utils.starknet import get_contract, invoke, wait_for_transaction
 from tests.utils.errors import cairo_error
-
-EVM_MULTICALLCAIRO_SELECTOR = keccak(
-    text="call_contract(uint256,uint256,uint256,uint256[])"
-)[:4]
 
 
 @pytest_asyncio.fixture(scope="module")
@@ -30,7 +25,7 @@ async def cairo_counter(max_fee, deployer):
 async def multicall_cairo_counter_caller(owner, cairo_counter):
     caller_contract = await deploy(
         "CairoPrecompiles",
-        "MulticallCairoCounterCaller",
+        "MulticallCairoPrecompileTest",
         cairo_counter.address,
     )
     return caller_contract

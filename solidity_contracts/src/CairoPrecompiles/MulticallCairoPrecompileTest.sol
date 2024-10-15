@@ -3,7 +3,7 @@ pragma solidity >=0.8.0 <0.9.0;
 
 /// @notice A contract that performs various call types to the Kakarot MulticallCairo precompile.
 /// @dev Only meant to test the MulticallCairo precompile when called from a Solidity Contract.
-contract MulticallCairoCounterCaller {
+contract MulticallCairoPrecompileTest {
     using MulticallCairoLib for uint256;
 
     /// @dev The cairo contract to call
@@ -12,16 +12,14 @@ contract MulticallCairoCounterCaller {
     /// @dev The cairo function selector to call - `inc`
     uint256 constant FUNCTION_SELECTOR_INC = uint256(keccak256("inc")) % 2 ** 250;
 
-    /// @dev The cairo function selector to call - `set_counter`
-    uint256 constant FUNCTION_SELECTOR_SET_COUNTER = uint256(keccak256("set_counter")) % 2 ** 250;
-
     constructor(uint256 cairoContractAddress) {
         cairoCounter = cairoContractAddress;
     }
 
     /// @notice Calls the Cairo contract to increment its internal counter
     function incrementCairoCounter() external {
-        cairoCounter.callCairo("inc");
+        uint256[] memory data = new uint256[](0);
+        cairoCounter.callCairo("inc", data);
     }
 
     /// @notice Calls the Cairo contract to increment its internal counter in a batch of multiple calls
@@ -42,14 +40,16 @@ contract MulticallCairoCounterCaller {
     /// be the caller of this function.
     /// @dev Should always fail, as MulticallCairo does not support delegatecalls.
     function incrementCairoCounterDelegatecall() external {
-        cairoCounter.delegatecallCairo("inc");
+        uint256[] memory data = new uint256[](0);
+        cairoCounter.delegatecallCairo("inc", data);
     }
 
     /// @notice Calls the Cairo contract to increment its internal counter
     /// @dev Called with a regular call, the caller's address will be this contract's address
     /// @dev Should always fail, as MulticallCairo does not support callcode.
     function incrementCairoCounterCallcode() external {
-        cairoCounter.callcodeCairo("inc");
+        uint256[] memory data = new uint256[](0);
+        cairoCounter.callcodeCairo("inc", data);
     }
 }
 
@@ -78,10 +78,11 @@ library MulticallCairoLib {
         return result;
     }
 
-    function callCairo(uint256 contractAddress, uint256 functionSelector, uint256[] memory data)
+    function callCairo(uint256 contractAddress, string memory functionName, uint256[] memory data)
         internal
         returns (bytes memory)
     {
+        uint256 functionSelector = uint256(keccak256(bytes(functionName))) % 2 ** 250;
         bytes memory callData =
             bytes.concat(abi.encode(uint256(1)), abi.encode(contractAddress, functionSelector, data));
 
@@ -91,28 +92,11 @@ library MulticallCairoLib {
         return result;
     }
 
-    function callCairo(uint256 contractAddress, uint256 functionSelector) internal returns (bytes memory) {
-        uint256[] memory data = new uint256[](0);
-        return callCairo(contractAddress, functionSelector, data);
-    }
-
-    function callCairo(uint256 contractAddress, string memory functionName, uint256[] memory data)
+    function delegatecallCairo(uint256 contractAddress, string memory functionName, uint256[] memory data)
         internal
         returns (bytes memory)
     {
         uint256 functionSelector = uint256(keccak256(bytes(functionName))) % 2 ** 250;
-        return callCairo(contractAddress, functionSelector, data);
-    }
-
-    function callCairo(uint256 contractAddress, string memory functionName) internal returns (bytes memory) {
-        uint256[] memory data = new uint256[](0);
-        return callCairo(contractAddress, functionName, data);
-    }
-
-    function delegatecallCairo(uint256 contractAddress, uint256 functionSelector, uint256[] memory data)
-        internal
-        returns (bytes memory)
-    {
         bytes memory callData =
             bytes.concat(abi.encode(uint256(1)), abi.encode(contractAddress, functionSelector, data));
 
@@ -126,29 +110,11 @@ library MulticallCairoLib {
         return result;
     }
 
-    function delegatecallCairo(uint256 contractAddress, uint256 functionSelector) internal returns (bytes memory) {
-        uint256[] memory data = new uint256[](0);
-        return delegatecallCairo(contractAddress, functionSelector, data);
-    }
-
-    function delegatecallCairo(uint256 contractAddress, string memory functionName, uint256[] memory data)
+    function callcodeCairo(uint256 contractAddress, string memory functionName, uint256[] memory data)
         internal
         returns (bytes memory)
     {
         uint256 functionSelector = uint256(keccak256(bytes(functionName))) % 2 ** 250;
-        return delegatecallCairo(contractAddress, functionSelector, data);
-    }
-
-    function delegatecallCairo(uint256 contractAddress, string memory functionName) internal returns (bytes memory) {
-        uint256[] memory data = new uint256[](0);
-        uint256 functionSelector = uint256(keccak256(bytes(functionName))) % 2 ** 250;
-        return delegatecallCairo(contractAddress, functionSelector, data);
-    }
-
-    function callcodeCairo(uint256 contractAddress, uint256 functionSelector, uint256[] memory data)
-        internal
-        returns (bytes memory)
-    {
         bytes memory callData =
             bytes.concat(abi.encode(uint256(1)), abi.encode(contractAddress, functionSelector, data));
 
@@ -179,11 +145,5 @@ library MulticallCairoLib {
         require(success, string(abi.encodePacked("CairoLib: call_contract failed with: ", result)));
 
         return result;
-    }
-
-    function callcodeCairo(uint256 contractAddress, string memory functionName) internal returns (bytes memory) {
-        uint256[] memory data = new uint256[](0);
-        uint256 functionSelector = uint256(keccak256(bytes(functionName))) % 2 ** 250;
-        return callcodeCairo(contractAddress, functionSelector, data);
     }
 }

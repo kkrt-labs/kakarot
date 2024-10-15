@@ -5,27 +5,16 @@ import {CairoLib} from "kakarot-lib/CairoLib.sol";
 
 using CairoLib for uint256;
 
-contract CairoCounterCaller {
+contract WhitelistedCallCairoPrecompileTest {
     /// @dev The cairo contract to call
     uint256 immutable cairoCounter;
-
-    /// @dev The cairo function selector to call - `inc`
-    uint256 constant FUNCTION_SELECTOR_INC = uint256(keccak256("inc")) % 2 ** 250;
-
-    /// @dev The cairo function selector to call - `set_counter`
-    uint256 constant FUNCTION_SELECTOR_SET_COUNTER = uint256(keccak256("set_counter")) % 2 ** 250;
-
-    /// @dev The cairo function selector to call - `get`
-    uint256 constant FUNCTION_SELECTOR_GET = uint256(keccak256("get")) % 2 ** 250;
-
-    uint256 constant FUNCTION_SELECTOR_GET_LAST_CALLER = uint256(keccak256("get_last_caller")) % 2 ** 250;
 
     constructor(uint256 cairoContractAddress) {
         cairoCounter = cairoContractAddress;
     }
 
     function getCairoCounter() public view returns (uint256 counterValue) {
-        bytes memory returnData = cairoCounter.staticcallCairo(FUNCTION_SELECTOR_GET);
+        bytes memory returnData = cairoCounter.staticcallCairo("get");
 
         // The return data is a 256-bit integer, so we can directly cast it to uint256
         return abi.decode(returnData, (uint256));
@@ -34,8 +23,13 @@ contract CairoCounterCaller {
     /// @notice Calls the Cairo contract to increment its internal counter
     /// @dev The delegatecall preserves the caller's context, so the caller's address will
     /// be the caller of this function.
-    function incrementCairoCounter() external {
+    function delegateCallIncrementCairoCounter() external {
         cairoCounter.delegatecallCairo("inc");
+    }
+
+    /// @notice Calls the Cairo contract to increment its internal counter
+    function incrementCairoCounter() external {
+        cairoCounter.callCairo("inc");
     }
 
     /// @notice Calls the Cairo contract to set its internal counter to an arbitrary value
@@ -50,13 +44,13 @@ contract CairoCounterCaller {
         uint256[] memory data = new uint256[](2);
         data[0] = uint256(newCounterLow);
         data[1] = uint256(newCounterHigh);
-        cairoCounter.callCairo(FUNCTION_SELECTOR_SET_COUNTER, data);
+        cairoCounter.callCairo("set_counter", data);
     }
 
     /// @notice Calls the Cairo contract to get the (starknet) address of the last caller
     /// @return lastCaller The starknet address of the last caller
     function getLastCaller() external view returns (uint256 lastCaller) {
-        bytes memory returnData = cairoCounter.staticcallCairo(FUNCTION_SELECTOR_GET_LAST_CALLER);
+        bytes memory returnData = cairoCounter.staticcallCairo("get_last_caller");
 
         return abi.decode(returnData, (uint256));
     }
