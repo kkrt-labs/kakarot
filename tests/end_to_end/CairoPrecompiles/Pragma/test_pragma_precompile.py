@@ -131,7 +131,8 @@ class TestPragmaPrecompile:
         max_fee,
     ):
         (cairo_res,) = await cairo_pragma.functions["get_data"].call(
-            data_type, aggregation_mode
+            data_type,
+            aggregation_mode.value,
         )
         solidity_input = serialize_cairo_inputs(data_type, aggregation_mode)
         sol_res = await pragma_caller.getData(solidity_input)
