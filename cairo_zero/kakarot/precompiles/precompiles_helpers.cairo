@@ -9,8 +9,8 @@ from kakarot.storages import Kakarot_authorized_cairo_precompiles_callers
 const LAST_ETHEREUM_PRECOMPILE_ADDRESS = 0x0a;
 const FIRST_ROLLUP_PRECOMPILE_ADDRESS = Constants.P256VERIFY_PRECOMPILE;
 const LAST_ROLLUP_PRECOMPILE_ADDRESS = Constants.P256VERIFY_PRECOMPILE;
-const FIRST_KAKAROT_PRECOMPILE_ADDRESS = Constants.CAIRO_CALL_PRECOMPILE;
-const LAST_KAKAROT_PRECOMPILE_ADDRESS = Constants.CAIRO_BATCH_CALL_PRECOMPILE;
+const FIRST_KAKAROT_PRECOMPILE_ADDRESS = Constants.CAIRO_WHITELISTED_CALL_PRECOMPILE;
+const LAST_KAKAROT_PRECOMPILE_ADDRESS = Constants.CAIRO_CALL_PRECOMPILE;
 
 namespace PrecompilesHelpers {
     func is_rollup_precompile{range_check_ptr}(address: felt) -> felt {
@@ -46,7 +46,7 @@ namespace PrecompilesHelpers {
     // @param precompile_address The address of the precompile.
     // @return Whether the precompile address requires a whitelist.
     func requires_whitelist(precompile_address: felt) -> felt {
-        if (precompile_address == Constants.CAIRO_CALL_PRECOMPILE) {
+        if (precompile_address == Constants.CAIRO_WHITELISTED_CALL_PRECOMPILE) {
             return TRUE;
         }
         if (precompile_address == Constants.CAIRO_MESSAGING_PRECOMPILE) {
@@ -65,10 +65,18 @@ namespace PrecompilesHelpers {
         return res;
     }
 
+    func is_delegatecall_protected(precompile_address: felt) -> felt {
+        let is_cairo_multicall = Helpers.is_zero(
+            precompile_address - Constants.CAIRO_MULTICALL_PRECOMPILE
+        );
+        let is_cairo_call = Helpers.is_zero(precompile_address - Constants.CAIRO_CALL_PRECOMPILE);
+        return is_cairo_multicall + is_cairo_call;
+    }
+
     // @notice Returns whether the call to the precompile is authorized.
     // @dev A call is authorized if:
     // a. The precompile requires a whitelist AND the CODE_ADDRESS of the caller is whitelisted
-    // b. The precompile is CAIRO_BATCH_CALL_PRECOMPILE and the precompile address is the same as the message address (NOT a DELEGATECALL / CALLCODE).
+    // b. The precompile is CAIRO_MULTICALL_PRECOMPILE and the precompile address is the same as the message address (NOT a DELEGATECALL / CALLCODE).
     // @param precompile_address The address of the precompile.
     // @param caller_code_address The code_address of the precompile caller.
     // @param caller_address The address of the caller.
@@ -101,8 +109,9 @@ namespace PrecompilesHelpers {
         let range_check_ptr = [ap - 2];
         let authorized = [ap - 1];
 
-        // Ensure that calls to CAIRO_BATCH_CALL_PRECOMPILE are not made through a delegatecall / callcode.
-        if (precompile_address == Constants.CAIRO_BATCH_CALL_PRECOMPILE) {
+        // Ensure that calls to CAIRO_CALL_PRECOMPILE are not made through a delegatecall / callcode.
+        let is_delegatecall_protected_ = is_delegatecall_protected(precompile_address);
+        if (is_delegatecall_protected_ != FALSE) {
             let is_not_delegatecall = Helpers.is_zero(message_address - precompile_address);
             tempvar authorized = authorized * is_not_delegatecall;
         } else {
