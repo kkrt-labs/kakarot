@@ -29,7 +29,7 @@ trait ISummaryStats<TContractState> {
 }
 
 #[starknet::contract]
-mod MockSummaryStats {
+mod MockPragmaSummaryStats {
     use core::zeroable::Zeroable;
     use starknet::ContractAddress;
     use pragma::entry::structs::{DataType, AggregationMode};
