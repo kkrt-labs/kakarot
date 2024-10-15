@@ -8,7 +8,7 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from kakarot_scripts.utils.kakarot import deploy, eth_send_transaction
-from kakarot_scripts.utils.starknet import get_contract, wait_for_transaction
+from kakarot_scripts.utils.starknet import get_contract, invoke, wait_for_transaction
 from tests.utils.errors import cairo_error
 
 EVM_MULTICALLCAIRO_SELECTOR = keccak(
@@ -22,8 +22,8 @@ async def cairo_counter(max_fee, deployer):
 
     yield cairo_counter
 
-    tx = await cairo_counter.functions["set_counter"].invoke_v1(0, max_fee=max_fee)
-    await wait_for_transaction(tx.hash)
+    tx_hash = await invoke("Counter", "set_counter", 0)
+    await wait_for_transaction(tx_hash)
 
 
 @pytest_asyncio.fixture(scope="module")
