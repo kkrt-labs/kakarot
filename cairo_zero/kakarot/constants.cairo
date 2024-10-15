@@ -25,6 +25,20 @@ namespace Constants {
 
     // See https://gist.github.com/rekmarks/a47bd5f2525936c4b8eee31a16345553
     const MAX_SAFE_CHAIN_ID = 4503599627370476;
+
+    // PRECOMPILES
+
+    // Rollup precompiles
+    const P256VERIFY_PRECOMPILE = 0x100;
+
+    // Kakarot precompiles
+    const CAIRO_CALL_PRECOMPILE = 0x75001;
+    const CAIRO_MESSAGING_PRECOMPILE = 0x75002;
+    const CAIRO_BATCH_CALL_PRECOMPILE = 0x75003;
+
+    // FIELD PRIME
+    const FELT252_PRIME_HIGH = 0x8000000000000110000000000000000;
+    const FELT252_PRIME_LOW = 0x1;
 }
 
 // See model.Opcode:

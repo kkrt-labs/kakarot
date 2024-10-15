@@ -510,9 +510,9 @@ namespace Errors {
         return (35, error);
     }
 
-    func invalidCairoSelector() -> (error_len: felt, error: felt*) {
+    func invalidEvmSelector() -> (error_len: felt, error: felt*) {
         let (error) = get_label_location(invalid_cairo_selector_message);
-        return (29, error);
+        return (27, error);
 
         invalid_cairo_selector_message:
         dw 'K';
@@ -531,11 +531,9 @@ namespace Errors {
         dw 'l';
         dw 'i';
         dw 'd';
-        dw 'C';
-        dw 'a';
-        dw 'i';
-        dw 'r';
-        dw 'o';
+        dw 'E';
+        dw 'V';
+        dw 'M';
         dw 'S';
         dw 'e';
         dw 'l';

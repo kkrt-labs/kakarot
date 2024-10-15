@@ -27,6 +27,7 @@ func test__precompiles_run{
     local input_len;
     local caller_code_address;
     local caller_address;
+    local message_address;
     let (local input) = alloc();
     %{
         ids.address = program_input["address"]
@@ -34,6 +35,7 @@ func test__precompiles_run{
         segments.write_arg(ids.input, program_input["input"])
         ids.caller_code_address = program_input.get("caller_code_address", 0)
         ids.caller_address = program_input.get("caller_address", 0)
+        ids.message_address = program_input.get("message_address", 0)
     %}
 
     // When
@@ -43,6 +45,7 @@ func test__precompiles_run{
         input=input,
         caller_code_address=caller_code_address,
         caller_address=caller_address,
+        message_address=message_address,
     );
     let output_len = result.output_len;
     let (output) = alloc();
