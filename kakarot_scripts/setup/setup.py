@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import logging
 import os
 import shutil
 import subprocess
@@ -61,14 +62,14 @@ def install_dependency(
         if version:
             current_version = get_version(check_command)
             if current_version == version:
-                print(f"{name} version {version} is already installed.")
+                logger.info(f"{name} version {version} is already installed.")
                 return
-            print(f"Updating {name} to version {version}...")
+            logger.info(f"Updating {name} to version {version}...")
         else:
-            print(f"{name} is already installed.")
+            logger.info(f"{name} is already installed.")
             return
     else:
-        print(f"Installing {name}...")
+        logger.info(f"Installing {name}...")
 
     run_command(install_command, f"Failed to install/update {name}")
 
@@ -95,11 +96,11 @@ def setup_local() -> None:
     install_dependency("uv", "curl -LsSf https://astral.sh/uv/install.sh | sh", "uv")
 
     if not is_command_available("docker"):
-        print(
+        logger.warning(
             "❌ Please install Docker manually from https://docs.docker.com/get-docker/"
         )
     else:
-        print("Docker is already installed.")
+        logger.info("Docker is already installed.")
 
     install_dependency(
         "foundry", "curl -L https://foundry.paradigm.xyz | bash && foundryup", "forge"
@@ -107,7 +108,7 @@ def setup_local() -> None:
 
     # Install asdf and related tools
     if not is_command_available("asdf"):
-        print("Installing asdf...")
+        logger.info("Installing asdf...")
         run_command(
             f"git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch {ASDF_VERSION}",
             "Failed to install asdf",
@@ -119,11 +120,11 @@ def setup_local() -> None:
                 f"echo '. $HOME/.asdf/asdf.sh' >> {shell_config}",
                 "Failed to source asdf environment",
             )
-            print("Please restart your terminal to use asdf.")
+            logger.info("Please restart your terminal to use asdf.")
         else:
-            print("Please add asdf to your shell configuration manually.")
+            logger.warning("Please add asdf to your shell configuration manually.")
     else:
-        print("asdf is already installed.")
+        logger.info("asdf is already installed.")
 
     run_command(
         "asdf plugin add scarb && asdf plugin add starknet-foundry || true",
@@ -142,7 +143,7 @@ def setup_local() -> None:
     )
     setup_katana()
 
-    print("All dependencies have been installed or were already available!")
+    logger.info("All dependencies have been installed or were already available!")
 
 
 def main() -> None:
@@ -152,9 +153,13 @@ def main() -> None:
         else:
             setup_local()
     except SetupError as e:
-        print(f"❌ Error: {e}")
+        logger.error(f"❌ Error: {e}")
         sys.exit(1)
 
+
+# Set up logging
+logging.basicConfig(level=logging.INFO, format="%(message)s")
+logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
     main()
