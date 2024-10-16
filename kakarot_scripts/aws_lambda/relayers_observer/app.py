@@ -6,9 +6,6 @@ from relayers_observer_service.relayers_observer_lambda_stack import (
 )
 
 app = cdk.App()
-RelayerObserverLambdaStack(
-    app,
-    "RelayerObserverLambdaStack",
-)
+RelayerObserverLambdaStack(app, "RelayerObserverLambdaStack")
 
 app.synth()

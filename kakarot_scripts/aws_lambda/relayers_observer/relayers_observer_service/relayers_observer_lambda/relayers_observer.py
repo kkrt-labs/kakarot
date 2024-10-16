@@ -5,8 +5,13 @@ import logging
 import boto3
 import requests
 
-from kakarot_scripts.constants import NETWORK, SLACK_WEBHOOK_URL
-from kakarot_scripts.utils.starknet import fund_address, get_balance, get_eth_contract
+from kakarot_scripts.constants import SLACK_WEBHOOK_URL
+from kakarot_scripts.utils.starknet import (
+    fund_address,
+    get_balance,
+    get_eth_contract,
+    get_starknet_account,
+)
 
 client = boto3.client("secretsmanager")
 logger = logging.getLogger()
@@ -38,30 +43,27 @@ async def check_and_fund_relayers():
 
     # Retrieve secret from AWS Secrets Manager
     response = client.get_secret_value(SecretId="relayers_fund_account")
-    secret_dict = eval(response["SecretString"])
+    secret_dict = json.loads(response["SecretString"])
 
     address, private_key = next(iter(secret_dict.items()))
-    NETWORK["account_address"] = address
-    NETWORK["private_key"] = private_key
-    relayer_account = next(NETWORK["relayers"])
+    account = await get_starknet_account(address, private_key)
 
     # Get ETH contract and check main relayer account balance
-    eth_contract = await get_eth_contract(relayer_account)
-    balance = await get_balance(relayer_account.address, eth_contract)
+    eth_contract = await get_eth_contract(account)
+    balance = await get_balance(account.address, eth_contract)
 
     # Alert if main relayer account balance is lower than the funding_account_lower_limit
     if balance / 1e18 < funding_account_lower_limit:
-        message = f"Fund the relayer account {relayer_account.address}. Current balance: {balance / 1e18} ETH"
+        message = f"Fund the relayer account 0x{account.address:064x}. Current balance: {balance / 1e18} ETH"
         send_message_to_slack(message)
 
     # Check and fund individual relayer accounts
     for relayer in relayers:
-        address = hex(relayer["address"])
-        relayer_balance = await get_balance(address, eth_contract)
+        relayer_balance = await get_balance(relayer["address"])
         if relayer_balance / 1e18 < relayers_lower_limit:
             try:
-                await fund_address(address, amount_to_fund, relayer_account)
-                message = f"Funded address {address} with {amount_to_fund} ETH from {relayer_account.address}"
+                await fund_address(address, amount_to_fund, account)
+                message = f"Funded address {address} with {amount_to_fund} ETH from {account.address}"
             except Exception:
                 message = f"Failed to fund address {address}"
                 send_message_to_slack(message)
