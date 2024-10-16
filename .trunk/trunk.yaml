@@ -73,6 +73,7 @@ lint:
         - cairo/token
         - cairo/utils
         - cairo/kakarot-ssj/crates
+        - cairo/protocol_handler
     - linters: [ALL]
       paths:
         - logs*
