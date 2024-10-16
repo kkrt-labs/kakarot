@@ -7,7 +7,7 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from kakarot_scripts.utils.kakarot import deploy, eth_send_transaction
-from kakarot_scripts.utils.starknet import get_contract, invoke, wait_for_transaction
+from kakarot_scripts.utils.starknet import get_contract, invoke
 from tests.utils.errors import cairo_error
 
 
@@ -17,8 +17,7 @@ async def cairo_counter(max_fee, deployer):
 
     yield cairo_counter
 
-    tx_hash = await invoke("Counter", "set_counter", 0)
-    await wait_for_transaction(tx_hash)
+    await invoke("Counter", "set_counter", 0)
 
 
 @pytest_asyncio.fixture(scope="module")

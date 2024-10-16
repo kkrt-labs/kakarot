@@ -21,7 +21,7 @@ contract SubContextPrecompile {
 }
 
 contract RevertingSubContext {
-    WhitelistedCallCairoPrecompileTest immutable cairo_counter_caller;
+    WhitelistedCallCairoPrecompileTest immutable cairoCounterCaller;
     uint256 dummyCounter;
 
     constructor(address _cairo_counter_caller) {

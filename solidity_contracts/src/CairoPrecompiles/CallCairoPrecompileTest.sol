@@ -20,14 +20,6 @@ contract CallCairoPrecompileTest {
     }
 
     /// @notice Calls the Cairo contract to increment its internal counter
-    /// @dev The delegatecall preserves the caller's context, so the caller's address will
-    /// be the caller of this function.
-    function delegateCallIncrementCairoCounter() external {
-        uint256[] memory data = new uint256[](0);
-        cairoCounter.delegatecallCairo("inc", data);
-    }
-
-    /// @notice Calls the Cairo contract to increment its internal counter
     function incrementCairoCounter() external {
         uint256[] memory data = new uint256[](0);
         cairoCounter.callCairo("inc", data);

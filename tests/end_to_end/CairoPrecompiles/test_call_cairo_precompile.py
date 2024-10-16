@@ -3,7 +3,7 @@ import pytest_asyncio
 from eth_abi import encode
 
 from kakarot_scripts.utils.kakarot import deploy, eth_send_transaction
-from kakarot_scripts.utils.starknet import get_contract, invoke, wait_for_transaction
+from kakarot_scripts.utils.starknet import get_contract, invoke
 from tests.utils.errors import cairo_error
 
 CALL_CAIRO_PRECOMPILE = 0x75004
@@ -15,18 +15,16 @@ async def cairo_counter(max_fee, deployer):
 
     yield cairo_counter
 
-    tx_hash = await invoke("Counter", "set_counter", 0)
-    await wait_for_transaction(tx_hash)
+    await invoke("Counter", "set_counter", 0)
 
 
 @pytest_asyncio.fixture(scope="module")
 async def cairo_counter_caller(cairo_counter):
-    caller_contract = await deploy(
+    return await deploy(
         "CairoPrecompiles",
         "CallCairoPrecompileTest",
         cairo_counter.address,
     )
-    return caller_contract
 
 
 @pytest.mark.asyncio(scope="module")
@@ -39,7 +37,7 @@ class TestCairoPrecompiles:
             call = cairo_counter.functions["inc"].prepare_call()
             tx_data = encode(
                 ["uint256", "uint256", "uint256[]"],
-                [int(cairo_counter.address), int(call.selector), call.calldata],
+                [int(call.to_addr), int(call.selector), call.calldata],
             )
 
             await eth_send_transaction(

@@ -162,7 +162,7 @@ namespace Precompiles {
         ret;
         call KakarotPrecompiles.cairo_message;  // offset 0x0d: precompile 0x75002
         ret;
-        call KakarotPrecompiles.multicall_cairo_precompile;  // offset 0x0e: precompile 0x75003
+        call KakarotPrecompiles.cairo_multicall_precompile;  // offset 0x0e: precompile 0x75003
         ret;
         call KakarotPrecompiles.cairo_call_precompile;  // offset 0x0f: precompile 0x75004
         ret;
