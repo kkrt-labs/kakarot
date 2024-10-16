@@ -16,28 +16,35 @@ class RelayerObserverLambdaStack(Stack):
         self.build_lambda_func()
 
     def build_lambda_func(self):
-        dest_dir = "relayers_observer_service/relayers_observer_lambda"
-        shutil.copy("../../constants.py", os.path.join(dest_dir, "constants.py"))
-        shutil.copy("../../utils/starknet.py", os.path.join(dest_dir, "starknet.py"))
-        shutil.copy("../../../.env", os.path.join(dest_dir, ".env"))
+        dest_dir = "./"
+        shutil.copy(
+            "../../kakarot_scripts/constants.py", os.path.join(dest_dir, "constants.py")
+        )
+        shutil.copy(
+            "../../kakarot_scripts/utils/starknet.py",
+            os.path.join(dest_dir, "starknet.py"),
+        )
+        shutil.copy("../../.env", os.path.join(dest_dir, ".env"))
         shutil.copytree(
-            "../../../build", os.path.join(dest_dir, "build"), dirs_exist_ok=True
+            "../../build",
+            os.path.join(dest_dir, "build"),
+            dirs_exist_ok=True,
         )
         shutil.copytree(
-            "../../../deployments",
+            "../../deployments",
             os.path.join(dest_dir, "deployments"),
             dirs_exist_ok=True,
         )
         shutil.copytree(
-            "../../data", os.path.join(dest_dir, "data"), dirs_exist_ok=True
+            "../../kakarot_scripts/data",
+            os.path.join(dest_dir, "data"),
+            dirs_exist_ok=True,
         )
         self.prediction_lambda = _lambda.DockerImageFunction(
             scope=self,
             id="relayers_observer_lambda",
             function_name="relayers_observer",
-            code=_lambda.DockerImageCode.from_image_asset(
-                directory="relayers_observer_service/relayers_observer_lambda"
-            ),
+            code=_lambda.DockerImageCode.from_image_asset(directory="."),
             environment_encryption=None,
             timeout=Duration.minutes(1),
         )

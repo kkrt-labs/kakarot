@@ -12,7 +12,7 @@ RUN yum update -y && \
 
 WORKDIR /var/task
 
-COPY requirements.txt ./
+COPY requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt setuptools
 
 COPY build ./build
