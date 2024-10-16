@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.7.0 <0.9.0;
+pragma solidity >=0.8.0 <0.9.0;
 
 import {CairoLib} from "kakarot-lib/CairoLib.sol";
 
@@ -8,9 +8,6 @@ using CairoLib for uint256;
 contract PragmaCaller {
     /// @dev The starknet address of the pragma oracle
     uint256 pragmaOracle;
-
-    /// @dev The cairo function selector to call - `get_data_median`
-    uint256 constant FUNCTION_SELECTOR_GET_DATA_MEDIAN = uint256(keccak256("get_data_median")) % 2 ** 250;
 
     struct PragmaPricesResponse {
         uint256 price;
@@ -46,7 +43,7 @@ contract PragmaCaller {
             data[2] = request.expirationTimestamp;
         }
 
-        bytes memory returnData = pragmaOracle.staticcallCairo(FUNCTION_SELECTOR_GET_DATA_MEDIAN, data);
+        bytes memory returnData = pragmaOracle.staticcallCairo("get_data_median", data);
 
         assembly {
             // Load the values from the return data

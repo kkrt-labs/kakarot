@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
+import {CairoLib} from "kakarot-lib/CairoLib.sol";
+
 contract CallCairoPrecompileTest {
-    using CallCairoLib for uint256;
+    using CairoLib for uint256;
 
     /// @dev The cairo contract to call
     uint256 immutable cairoCounter;
@@ -21,8 +23,7 @@ contract CallCairoPrecompileTest {
 
     /// @notice Calls the Cairo contract to increment its internal counter
     function incrementCairoCounter() external {
-        uint256[] memory data = new uint256[](0);
-        cairoCounter.callCairo("inc", data);
+        cairoCounter.callCairo("inc");
     }
 
     /// @notice Calls the Cairo contract to set its internal counter to an arbitrary value
@@ -55,7 +56,7 @@ contract CallCairoPrecompileTest {
     /// @dev Should always fail, as MulticallCairo does not support delegatecalls.
     function incrementCairoCounterDelegatecall() external {
         uint256[] memory data = new uint256[](0);
-        cairoCounter.delegatecallCairo("inc", data);
+        Internals.delegatecallCairo(cairoCounter, "inc", data);
     }
 
     /// @notice Calls the Cairo contract to increment its internal counter
@@ -63,39 +64,12 @@ contract CallCairoPrecompileTest {
     /// @dev Should always fail, as MulticallCairo does not support callcode.
     function incrementCairoCounterCallcode() external {
         uint256[] memory data = new uint256[](0);
-        cairoCounter.callcodeCairo("inc", data);
+        Internals.callcodeCairo(cairoCounter, "inc", data);
     }
 }
 
-library CallCairoLib {
+library Internals {
     address constant CALL_CAIRO_PRECOMPILE = 0x0000000000000000000000000000000000075004;
-
-    function callCairo(uint256 contractAddress, string memory functionName, uint256[] memory data)
-        internal
-        returns (bytes memory)
-    {
-        uint256 functionSelector = uint256(keccak256(bytes(functionName))) % 2 ** 250;
-        bytes memory callData = abi.encode(contractAddress, functionSelector, data);
-
-        (bool success, bytes memory result) = CALL_CAIRO_PRECOMPILE.call(callData);
-        require(success, string(abi.encodePacked("CairoLib: cairo call failed with: ", result)));
-
-        return result;
-    }
-
-    function staticcallCairo(uint256 contractAddress, string memory functionName, uint256[] memory data)
-        internal
-        view
-        returns (bytes memory)
-    {
-        uint256 functionSelector = uint256(keccak256(bytes(functionName))) % 2 ** 250;
-        bytes memory callData = abi.encode(contractAddress, functionSelector, data);
-
-        (bool success, bytes memory result) = CALL_CAIRO_PRECOMPILE.staticcall(callData);
-        require(success, string(abi.encodePacked("CairoLib: cairo call failed with: ", result)));
-
-        return result;
-    }
 
     function delegatecallCairo(uint256 contractAddress, string memory functionName, uint256[] memory data)
         internal
