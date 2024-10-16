@@ -158,11 +158,13 @@ namespace Precompiles {
         // Kakarot precompiles. Offset must have been computed appropriately,
         // based on the total number of kakarot precompiles
         jmp rel offset;
-        call KakarotPrecompiles.cairo_precompile;  // offset 0x0c: precompile 0x75001
+        call KakarotPrecompiles.cairo_call_precompile;  // offset 0x0c: precompile 0x75001
         ret;
         call KakarotPrecompiles.cairo_message;  // offset 0x0d: precompile 0x75002
         ret;
-        call KakarotPrecompiles.multicall_cairo_precompile;  // offset 0x0e: precompile 0x75003
+        call KakarotPrecompiles.cairo_multicall_precompile;  // offset 0x0e: precompile 0x75003
+        ret;
+        call KakarotPrecompiles.cairo_call_precompile;  // offset 0x0f: precompile 0x75004
         ret;
     }
 

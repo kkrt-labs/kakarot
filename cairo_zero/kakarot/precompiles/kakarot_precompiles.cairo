@@ -32,13 +32,14 @@ const CAIRO_MESSAGE_GAS = 5000;
 
 namespace KakarotPrecompiles {
     // @notice Executes a cairo contract/class.
-    // @dev Requires a whitelisted caller, as this could be called by CALLCODE / DELEGATECALL
+    // @dev If called with 0x75001, the caller _must_ be whitelisted, as this could be called by CALLCODE / DELEGATECALL.
+    // @dev If called with 0x75004, the caller can be anyone, as DELEGATECALL / CALLCODE are not allowed.
     // @dev The input is formatted as:
-    // @dev [selector: bytes4][starknet_address: bytes32][starknet_selector:bytes32][data_offset: bytes32][data_len: bytes32][data: bytes[]]
+    // @dev [starknet_address: bytes32][starknet_selector:bytes32][data_offset: bytes32][data_len: bytes32][data: bytes[]]
     // @param input_len The length of the input in bytes.
     // @param input The input data.
     // @param caller_address The address of the caller of the precompile. Delegatecall rules apply.
-    func cairo_precompile{
+    func cairo_call_precompile{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
@@ -76,12 +77,12 @@ namespace KakarotPrecompiles {
     // @notice Executes a batch of calls to cairo contracts.
     // @dev Cannot be called with CALLCODE / DELEGATECALL - _must_ be checked upstream.
     // @dev The input is formatted as:
-    // @dev [selector: bytes4][number_of_calls: bytes4]
+    // @dev [number_of_calls: bytes32]
     // @dev [to_1: bytes32][selector_1:bytes32][calldata_offset_1: bytes32][calldata_len_1: bytes32][calldata_1: bytes[]]...[to_n:bytes32]...
     // @param input_len The length of the input in bytes.
     // @param input The input data.
     // @param caller_address The address of the caller of the precompile.
-    func multicall_cairo_precompile{
+    func cairo_multicall_precompile{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
