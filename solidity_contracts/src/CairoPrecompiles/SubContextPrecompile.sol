@@ -25,12 +25,12 @@ contract RevertingSubContext {
     uint256 dummyCounter;
 
     constructor(address _cairo_counter_caller) {
-        cairo_counter_caller = WhitelistedCallCairoPrecompileTest(_cairo_counter_caller);
+        cairoCounterCaller = WhitelistedCallCairoPrecompileTest(_cairo_counter_caller);
     }
 
     function reverting() public {
         dummyCounter = 1;
-        cairo_counter_caller.incrementCairoCounter();
+        cairoCounterCaller.incrementCairoCounter();
         // force a revert after a call to a cairo precompile in a subcontext
         require(false);
     }
