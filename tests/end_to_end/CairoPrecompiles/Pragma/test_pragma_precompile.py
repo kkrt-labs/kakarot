@@ -44,13 +44,13 @@ def serialize_cairo_inputs(data_type: dict, aggregation_mode: AggregationMode) -
     if isinstance(query_args, tuple):
         pair_id, expiration_timestamp = query_args
         return (
+            serialized_aggregation_mode,
             serialized_entry_type,
             pair_id,
             expiration_timestamp,
-            serialized_aggregation_mode,
         )
     else:
-        return (serialized_entry_type, query_args, 0, serialized_aggregation_mode)
+        return (serialized_aggregation_mode, serialized_entry_type, query_args, 0)
 
 
 @pytest_asyncio.fixture(scope="module")
