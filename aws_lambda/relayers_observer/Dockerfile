@@ -1,5 +1,6 @@
 # trunk-ignore-all(checkov/CKV_DOCKER_2)
 # trunk-ignore-all(checkov/CKV_DOCKER_3)
+# trunk-ignore-all(hadolint/DL3013)
 # trunk-ignore-all(hadolint/DL3033)
 FROM amazon/aws-lambda-python:3.10
 
@@ -10,8 +11,11 @@ RUN yum update -y && \
 
 WORKDIR /var/task
 
-COPY requirements.txt ./requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt setuptools
+RUN pip install --no-cache-dir uv && uv venv
+
+COPY pyproject.toml ./
+
+RUN pip install --no-cache-dir -e '.[lambda-dependencies]'
 
 COPY build ./build
 COPY deployments ./deployments

@@ -1,0 +1,30 @@
+[project]
+name = "relayers_observer"
+version = "0.1.0"
+description = "Relayers Observer Lambda function"
+requires-python = ">=3.10,<3.11"
+
+[project.optional-dependencies]
+lambda-dependencies = [
+  "starknet-py==0.23.0",
+  "python-dotenv==0.21.0",
+  "web3==6",
+  "async_lru==2.0.4",
+  "cairo-lang==0.13.1",
+  "requests==2.32.3",
+  "eth_keys==0.5.1",
+  "boto3==1.35.36",
+]
+
+cdk-dependencies = ["aws-cdk-lib==2.161.1", "constructs>=10.0.0,<11.0.0"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build]
+include = [
+  "relayers_observer.py",
+  "relayers_observer_lambda_stack.py",
+  "app.py",
+]
