@@ -66,25 +66,25 @@ pub enum EVMError {
 pub impl EVMErrorImpl of EVMErrorTrait {
     fn to_string(self: EVMError) -> felt252 {
         match self {
-            EVMError::StackOverflow => 'stack overflow',
-            EVMError::StackUnderflow => 'stack underflow',
+            EVMError::StackOverflow => 'StackOverflow',
+            EVMError::StackUnderflow => 'StackUnderflow',
             EVMError::TypeConversionError(error_message) => error_message,
             EVMError::NumericOperations(error_message) => error_message,
-            EVMError::InsufficientBalance => 'insufficient balance',
-            EVMError::ReturnDataOutOfBounds => 'return data out of bounds',
-            EVMError::InvalidJump => 'invalid jump destination',
-            EVMError::InvalidCode => 'invalid code',
-            EVMError::NotImplemented => 'not implemented',
+            EVMError::InsufficientBalance => 'InsufficientBalance',
+            EVMError::ReturnDataOutOfBounds => 'ReturnDataOutOfBounds',
+            EVMError::InvalidJump => 'InvalidJump',
+            EVMError::InvalidCode => 'InvalidCode',
+            EVMError::NotImplemented => 'NotImplemented',
             EVMError::InvalidParameter(error_message) => error_message,
             // TODO: refactor with dynamic strings once supported
-            EVMError::InvalidOpcode => 'invalid opcode'.into(),
-            EVMError::WriteInStaticContext => 'write protection',
-            EVMError::Collision => 'create collision'.into(),
-            EVMError::OutOfGas => 'out of gas'.into(),
-            EVMError::Assertion => 'assertion failed'.into(),
-            EVMError::DepthLimit => 'max call depth exceeded'.into(),
-            EVMError::MemoryLimitOOG => 'memory limit out of gas'.into(),
-            EVMError::NonceOverflow => 'nonce overflow'.into(),
+            EVMError::InvalidOpcode => 'InvalidOpcode',
+            EVMError::WriteInStaticContext => 'WriteInStaticContext',
+            EVMError::Collision => 'Collision',
+            EVMError::OutOfGas => 'OutOfGas',
+            EVMError::Assertion => 'Assertion',
+            EVMError::DepthLimit => 'DepthLimit',
+            EVMError::MemoryLimitOOG => 'MemoryLimitOOG',
+            EVMError::NonceOverflow => 'NonceOverflow',
         }
     }
 
