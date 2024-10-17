@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
+import {CairoLib} from "kakarot-lib/CairoLib.sol";
+
 /// @notice A contract that performs various call types to the Kakarot MulticallCairo precompile.
 /// @dev Only meant to test the MulticallCairo precompile when called from a Solidity Contract.
 contract MulticallCairoPrecompileTest {
-    using MulticallCairoLib for uint256;
-
     /// @dev The cairo contract to call
     uint256 immutable cairoCounter;
 
@@ -16,23 +16,23 @@ contract MulticallCairoPrecompileTest {
         cairoCounter = cairoContractAddress;
     }
 
-    /// @notice Calls the Cairo contract to increment its internal counter
-    function incrementCairoCounter() external {
-        uint256[] memory data = new uint256[](0);
-        cairoCounter.callCairo("inc", data);
-    }
-
     /// @notice Calls the Cairo contract to increment its internal counter in a batch of multiple calls
     function incrementCairoCounterBatch(uint32 n_calls) external {
-        MulticallCairoLib.CairoCall[] memory calls = new MulticallCairoLib.CairoCall[](n_calls);
+        CairoLib.CairoCall[] memory calls = new CairoLib.CairoCall[](n_calls);
         for (uint32 i = 0; i < n_calls; i++) {
-            calls[i] = MulticallCairoLib.CairoCall({
+            calls[i] = CairoLib.CairoCall({
                 contractAddress: cairoCounter,
                 functionSelector: FUNCTION_SELECTOR_INC,
                 data: new uint256[](0)
             });
         }
-        MulticallCairoLib.batchCallCairo(calls);
+        CairoLib.multicallCairo(calls);
+    }
+
+    /// @notice Calls the Cairo contract to increment its internal counter
+    function incrementCairoCounter() external {
+        uint256[] memory data = new uint256[](0);
+        Internals.callCairo(cairoCounter, "inc", data);
     }
 
     /// @notice Calls the Cairo contract to increment its internal counter
@@ -41,7 +41,7 @@ contract MulticallCairoPrecompileTest {
     /// @dev Should always fail, as MulticallCairo does not support delegatecalls.
     function incrementCairoCounterDelegatecall() external {
         uint256[] memory data = new uint256[](0);
-        cairoCounter.delegatecallCairo("inc", data);
+        Internals.delegatecallCairo(cairoCounter, "inc", data);
     }
 
     /// @notice Calls the Cairo contract to increment its internal counter
@@ -49,11 +49,11 @@ contract MulticallCairoPrecompileTest {
     /// @dev Should always fail, as MulticallCairo does not support callcode.
     function incrementCairoCounterCallcode() external {
         uint256[] memory data = new uint256[](0);
-        cairoCounter.callcodeCairo("inc", data);
+        Internals.callcodeCairo(cairoCounter, "inc", data);
     }
 }
 
-library MulticallCairoLib {
+library Internals {
     /// @dev The Batch Cairo precompile contract's address.
     address constant BATCH_CAIRO_PRECOMPILE_ADDRESS = 0x0000000000000000000000000000000000075003;
 

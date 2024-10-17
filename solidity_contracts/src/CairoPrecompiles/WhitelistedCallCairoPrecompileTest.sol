@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.7.0 <0.9.0;
 
-import {CairoLib} from "kakarot-lib/CairoLib.sol";
-
-using CairoLib for uint256;
+import {WhitelistedCallCairoLib} from "./WhitelistedCallCairoLib.sol";
 
 contract WhitelistedCallCairoPrecompileTest {
     /// @dev The cairo contract to call
@@ -14,7 +12,7 @@ contract WhitelistedCallCairoPrecompileTest {
     }
 
     function getCairoCounter() public view returns (uint256 counterValue) {
-        bytes memory returnData = cairoCounter.staticcallCairo("get");
+        bytes memory returnData = WhitelistedCallCairoLib.staticcallCairo(cairoCounter, "get");
 
         // The return data is a 256-bit integer, so we can directly cast it to uint256
         return abi.decode(returnData, (uint256));
@@ -24,12 +22,12 @@ contract WhitelistedCallCairoPrecompileTest {
     /// @dev The delegatecall preserves the caller's context, so the caller's address will
     /// be the caller of this function.
     function delegateCallIncrementCairoCounter() external {
-        cairoCounter.delegatecallCairo("inc");
+        WhitelistedCallCairoLib.delegatecallCairo(cairoCounter, "inc");
     }
 
     /// @notice Calls the Cairo contract to increment its internal counter
     function incrementCairoCounter() external {
-        cairoCounter.callCairo("inc");
+        WhitelistedCallCairoLib.callCairo(cairoCounter, "inc");
     }
 
     /// @notice Calls the Cairo contract to set its internal counter to an arbitrary value
@@ -44,14 +42,13 @@ contract WhitelistedCallCairoPrecompileTest {
         uint256[] memory data = new uint256[](2);
         data[0] = uint256(newCounterLow);
         data[1] = uint256(newCounterHigh);
-        cairoCounter.callCairo("set_counter", data);
+        WhitelistedCallCairoLib.callCairo(cairoCounter, "set_counter", data);
     }
 
     /// @notice Calls the Cairo contract to get the (starknet) address of the last caller
     /// @return lastCaller The starknet address of the last caller
     function getLastCaller() external view returns (uint256 lastCaller) {
-        bytes memory returnData = cairoCounter.staticcallCairo("get_last_caller");
-
+        bytes memory returnData = WhitelistedCallCairoLib.staticcallCairo(cairoCounter, "get_last_caller");
         return abi.decode(returnData, (uint256));
     }
 }
