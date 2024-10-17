@@ -7,7 +7,7 @@ import subprocess
 import sys
 from typing import Optional
 
-KATANA_VERSION = "v1.0.0-alpha.14"
+KATANA_VERSION = "v1.0.0-alpha.16"
 PYTHON_MIN_VERSION = (3, 10)
 ASDF_VERSION = "v0.14.1"
 
