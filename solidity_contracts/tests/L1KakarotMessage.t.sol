@@ -3,7 +3,7 @@ pragma solidity >=0.8.0;
 import "forge-std/Test.sol";
 
 import {L1KakarotMessaging} from "../src/L1L2Messaging/L1KakarotMessaging.sol";
-import {StarknetMessagingLocal} from "../src/starknet/StarknetMessagingLocal.sol";
+import {StarknetMessagingLocal} from "../src/Starknet/StarknetMessagingLocal.sol";
 import {AddressAliasHelper} from "../src/L1L2Messaging/AddressAliasHelper.sol";
 
 contract L1KakarotMessagingTest is Test {

@@ -23,6 +23,8 @@ RUN --mount=type=cache,target=/root/.cache \
 RUN --mount=type=cache,target=/root/.cache \
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
+ENV PATH="/root/.cargo/bin:$PATH"
+
 WORKDIR /app/kakarot
 
 ############################################
@@ -53,6 +55,7 @@ ARG GITHUB_TOKEN
 ENV GITHUB_TOKEN=${GITHUB_TOKEN}
 
 COPY . .
+COPY .env.example .env
 
 SHELL ["/bin/bash", "-c"]
 RUN  source "$HOME/.cargo/env" && uv venv && uv pip install -e .
