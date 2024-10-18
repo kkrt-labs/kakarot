@@ -8,19 +8,6 @@ using CairoLib for uint256;
 /// @notice Contract for interacting with Pragma's Oracle on Starknet. This include the main contract
 ///         and the summary stats contract.
 contract PragmaCaller {
-    /// @dev The cairo function selector to call `get_data` from the Pragma Oracle
-    uint256 private constant FUNCTION_SELECTOR_GET_DATA = uint256(keccak256("get_data")) % 2 ** 250;
-
-    /// @dev The cairo function selector to call `calculate_mean` from the Pragma Summary Stats
-    uint256 private constant FUNCTION_SELECTOR_CALCULATE_MEAN = uint256(keccak256("calculate_mean")) % 2 ** 250;
-
-    /// @dev The cairo function selector to call `calculate_volatility` from the Pragma Summary Stats
-    uint256 private constant FUNCTION_SELECTOR_CALCULATE_VOLATILITY =
-        uint256(keccak256("calculate_volatility")) % 2 ** 250;
-
-    /// @dev The cairo function selector to call `calculate_twap` from the Pragma Summary Stats
-    uint256 private constant FUNCTION_SELECTOR_CALCULATE_TWAP = uint256(keccak256("calculate_twap")) % 2 ** 250;
-
     /// @dev The starknet address of the pragma oracle
     uint256 private immutable pragmaOracle;
 
@@ -113,7 +100,7 @@ contract PragmaCaller {
             data[2] = uint256(request.aggregationMode);
         }
 
-        bytes memory returnData = pragmaOracle.staticcallCairo(FUNCTION_SELECTOR_GET_DATA, data);
+        bytes memory returnData = pragmaOracle.staticcallCairo("get_data", data);
 
         // 160 = 5 felts for Spot/Generic data ; 192 = 6 felts for Futures.
         uint256 expectedLength = isFuturesData ? 192 : 160;
@@ -166,7 +153,7 @@ contract PragmaCaller {
             data[4] = uint256(request.aggregationMode);
         }
 
-        bytes memory returnData = pragmaSummaryStats.staticcallCairo(FUNCTION_SELECTOR_CALCULATE_MEAN, data);
+        bytes memory returnData = pragmaSummaryStats.staticcallCairo("calculate_mean", data);
         require(returnData.length == 64, "Invalid return data length."); // 64 = 2 felts.
 
         assembly {
@@ -207,7 +194,7 @@ contract PragmaCaller {
             data[5] = uint256(request.aggregationMode);
         }
 
-        bytes memory returnData = pragmaSummaryStats.staticcallCairo(FUNCTION_SELECTOR_CALCULATE_VOLATILITY, data);
+        bytes memory returnData = pragmaSummaryStats.staticcallCairo("calculate_volatility", data);
         require(returnData.length == 64, "Invalid return data length."); // 64 = 2 felts.
 
         assembly {
@@ -246,7 +233,7 @@ contract PragmaCaller {
             data[4] = request.durationInSeconds;
         }
 
-        bytes memory returnData = pragmaSummaryStats.staticcallCairo(FUNCTION_SELECTOR_CALCULATE_TWAP, data);
+        bytes memory returnData = pragmaSummaryStats.staticcallCairo("calculate_twap", data);
         require(returnData.length == 64, "Invalid return data length."); // 64 = 2 felts.
 
         assembly {
