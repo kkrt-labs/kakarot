@@ -8,6 +8,8 @@ mod StarknetToken {
     #[abi(embed_v0)]
     impl ERC20Impl = ERC20Component::ERC20Impl<ContractState>;
     #[abi(embed_v0)]
+    impl ERC20CamelOnlyImpl = ERC20Component::ERC20CamelOnlyImpl<ContractState>;
+    #[abi(embed_v0)]
     impl ERC20MetadataImpl = ERC20Component::ERC20MetadataImpl<ContractState>;
     impl ERC20InternalImpl = ERC20Component::InternalImpl<ContractState>;
 
@@ -31,5 +33,10 @@ mod StarknetToken {
 
         self.erc20.initializer(name, symbol);
         self.erc20._mint(recipient, initial_supply);
+    }
+
+    #[external(v0)]
+    fn mint(ref self: ContractState, to: ContractAddress, amount: u256) {
+        self.erc20._mint(to, amount);
     }
 }
