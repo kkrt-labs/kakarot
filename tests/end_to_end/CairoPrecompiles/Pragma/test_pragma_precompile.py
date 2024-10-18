@@ -9,8 +9,14 @@ from kakarot_scripts.utils.starknet import get_contract, get_deployments, invoke
 
 
 class AggregationMode(Enum):
-    MEDIAN = 0
-    MEAN = 1
+    MEDIAN = "Median"
+    MEAN = "Mean"
+
+    def to_tuple(self) -> Tuple[str, None]:
+        return (self.value, None)
+
+    def serialize(self) -> int:
+        return list(AggregationMode).index(self)
 
 
 ENTRY_TYPE_INDEX = {"SpotEntry": 0, "FutureEntry": 1, "GenericEntry": 2}
@@ -39,7 +45,7 @@ def serialize_cairo_inputs(data_type: dict, aggregation_mode: AggregationMode) -
     """
     entry_type, query_args = next(iter(data_type.items()))
     serialized_entry_type = ENTRY_TYPE_INDEX[entry_type]
-    serialized_aggregation_mode = aggregation_mode.value
+    serialized_aggregation_mode = aggregation_mode.serialize()
 
     if isinstance(query_args, tuple):
         pair_id, expiration_timestamp = query_args
@@ -131,7 +137,7 @@ class TestPragmaPrecompile:
     ):
         (cairo_res,) = await cairo_pragma.functions["get_data"].call(
             data_type,
-            aggregation_mode.value,
+            aggregation_mode.to_tuple(),
         )
         solidity_input = serialize_cairo_inputs(data_type, aggregation_mode)
         sol_res = await pragma_caller.getData(solidity_input)
