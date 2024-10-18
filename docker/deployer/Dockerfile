@@ -23,6 +23,8 @@ RUN --mount=type=cache,target=/root/.cache \
 RUN --mount=type=cache,target=/root/.cache \
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
+ENV PATH="/root/.cargo/bin:$PATH"
+
 WORKDIR /app/kakarot
 
 ############################################
