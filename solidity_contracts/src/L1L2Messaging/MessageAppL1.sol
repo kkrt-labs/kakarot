@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 
 import "./L1KakarotMessaging.sol";
 import "./MessageAppL2.sol";
-import "../starknet/IStarknetMessaging.sol";
+import "../Starknet/IStarknetMessaging.sol";
 
 // Define some custom error as an example.
 // It saves a lot's of space to use those custom error instead of strings.
