@@ -1,6 +1,7 @@
 import functools
 import json
 import logging
+import re
 import time
 from collections import defaultdict
 from pathlib import Path
@@ -71,6 +72,7 @@ class StarknetTransactionError(Exception):
 def get_solidity_artifacts(
     contract_app: str,
     contract_name: str,
+    version: Optional[str] = None,
 ):
     import toml
 
@@ -82,11 +84,13 @@ def get_solidity_artifacts(
         foundry_file = toml.loads(Path("foundry.toml").read_text())
 
     src_path = Path(foundry_file["profile"]["default"]["src"])
+    version_pattern = version if version else r"(\.[\d.]+)?"
     all_compilation_outputs = [
         json.load(open(file))
         for file in Path(foundry_file["profile"]["default"]["out"]).glob(
-            f"**/{contract_name}.json"
+            f"**/{contract_name}*.json"
         )
+        if re.match(re.compile(f"{contract_name}{version_pattern}$"), file.stem)
     ]
     if len(all_compilation_outputs) == 1:
         target_compilation_output = all_compilation_outputs[0]
@@ -109,7 +113,7 @@ def get_solidity_artifacts(
             )
         ]
 
-        if len(target_compilation_output) != 1:
+        if len(target_compilation_output) != 1 and version is not None:
             raise ValueError(
                 f"Cannot locate a unique compilation output for target {target_solidity_file_path[0]}: "
                 f"found {len(target_compilation_output)} outputs:\n{target_compilation_output}"
