@@ -55,6 +55,7 @@ ARG GITHUB_TOKEN
 ENV GITHUB_TOKEN=${GITHUB_TOKEN}
 
 COPY . .
+COPY .env.example .env
 
 SHELL ["/bin/bash", "-c"]
 RUN  source "$HOME/.cargo/env" && uv venv && uv pip install -e .
