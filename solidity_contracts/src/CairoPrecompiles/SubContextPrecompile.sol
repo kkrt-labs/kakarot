@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.7.0 <0.9.0;
 
-import {CairoCounterCaller} from "./CairoCounterCaller.sol";
+import {WhitelistedCallCairoPrecompileTest} from "./WhitelistedCallCairoPrecompileTest.sol";
 
 contract SubContextPrecompile {
     RevertingSubContext immutable revertingSubContext;
@@ -21,16 +21,16 @@ contract SubContextPrecompile {
 }
 
 contract RevertingSubContext {
-    CairoCounterCaller immutable cairo_counter_caller;
+    WhitelistedCallCairoPrecompileTest immutable cairoCounterCaller;
     uint256 dummyCounter;
 
     constructor(address _cairo_counter_caller) {
-        cairo_counter_caller = CairoCounterCaller(_cairo_counter_caller);
+        cairoCounterCaller = WhitelistedCallCairoPrecompileTest(_cairo_counter_caller);
     }
 
     function reverting() public {
         dummyCounter = 1;
-        cairo_counter_caller.incrementCairoCounter();
+        cairoCounterCaller.incrementCairoCounter();
         // force a revert after a call to a cairo precompile in a subcontext
         require(false);
     }

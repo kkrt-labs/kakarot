@@ -1,0 +1,26 @@
+[package]
+name = "snforge_utils"
+version = "0.1.0"
+edition = "2024_07"
+
+# See more keys and their definitions at https://docs.swmansion.com/scarb/docs/reference/manifest.html
+
+[dependencies]
+starknet = "2.8.2"
+evm = { path = "../evm" }
+
+[dev-dependencies]
+snforge_std = { git = "https://github.com/foundry-rs/starknet-foundry.git", tag = "v0.31.0" }
+assert_macros = "2.8.2"
+
+[[target.starknet-contract]]
+sierra = true
+casm = true
+casm-add-pythonic-hints = true
+
+
+[lib]
+name = "snforge_utils"
+
+[scripts]
+test = "snforge test"

@@ -1,10 +1,22 @@
 {
-  "Bridge": {
-    "address": "0x5fbdb2315678afecb367f032d93f642f64180aa3",
-    "starknet_address": "0x231fc0a786be568c112a84dfc0b44dc923d1cee902ff4903b2ef89db010ccb6"
+  "WETH9": {
+    "address": "0x37f78d636aab48c5cffc9909390cf62318b8abbf",
+    "starknet_address": "0x19a5d6a1d55619a79fdaa98a696c2b2e379e1b5a402c9bf78ad18833c189c70"
   },
-  "WETH": {
-    "address": "0xe7f1725e7734ce288f8367e1bb143e90bb3f0512",
-    "starknet_address": "0x673b8462d6d2e1d1ddb8399e9a3e7a22bcbcb13e038727a8353d3ded1ab2d60"
+  "KakarotETH": {
+    "address": "0x5e950f65e70a06efae17cd3f6d8e4fc6474b5b8d",
+    "starknet_address": "0x734abad1f311ff96517f55d2ae31fa178235c99d51dc97a03f126b719775c62"
+  },
+  "KakarotSTRK": {
+    "address": "0x68b7dbbd2ef15e9e6716d58ea844ee72976b131f",
+    "starknet_address": "0x1dd4844458b812a6a865b6537c03327e58025a1b6b7bd1c2bfb2a7d92234dac"
+  },
+  "L2KakarotMessaging": {
+    "address": "0x3653ff9df27df8bca306fb628e70f1c90fcde27f",
+    "starknet_address": "0x4227ee2b1b5611dbbe1f54410e244f90581ddc8f66caebf9d4e1c9aa8dc8da0"
+  },
+  "Coinbase": {
+    "address": "0xccaa1b04b831ea3e547d4fe4359e0c2f5b34b749",
+    "starknet_address": "0x152c78b2d1229464d461bc323801739bf7a439d049685f59c506b356d0da1bb"
   }
 }

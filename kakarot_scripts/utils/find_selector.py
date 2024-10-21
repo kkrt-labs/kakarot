@@ -11,7 +11,7 @@ def find_cairo_functions(directory):
         for file in files
         if file.endswith(".cairo")
         for match in re.findall(
-            r"func\s+(\w+)\(", open(os.path.join(root, file)).read()
+            r"func\s+(\w+)(?:\{|\()", open(os.path.join(root, file)).read()
         )
     ]
 
@@ -26,7 +26,7 @@ def get_function_from_selector(selectors):
 
 
 if __name__ == "__main__":
-    directory = "."
+    directory = "cairo_zero"
     functions = find_cairo_functions(directory)
     selectors = map_selectors(functions)
     get_function_from_selector(selectors)

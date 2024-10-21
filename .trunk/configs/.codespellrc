@@ -1,0 +1,5 @@
+[codespell]
+ignore-words-list = keypair,astroid,uvloop,crate
+skip = '.git'
+check-filenames =
+check-hidden =

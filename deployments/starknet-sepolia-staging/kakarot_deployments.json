@@ -1,0 +1,10 @@
+{
+  "Bridge": {
+    "address": "0x663f3ad617193148711d28f5334ee4ed07016602",
+    "starknet_address": "0x3c4fbbf15be984c1c17658f0b6ca0155c75ffc61551020d4a566165b2ce7a61"
+  },
+  "WETH": {
+    "address": "0x2e983a1ba5e8b38aaaec4b440b9ddcfbf72e15d1",
+    "starknet_address": "0x130a102efefe1bee562f6d014ba32499d578895781a17271458e228fbe0b346"
+  }
+}

@@ -5,7 +5,6 @@ import pytest_asyncio
 
 from kakarot_scripts.utils.kakarot import deploy
 from kakarot_scripts.utils.starknet import get_contract, get_deployments, invoke
-from tests.utils.errors import cairo_error
 
 ENTRY_TYPE_INDEX = {"SpotEntry": 0, "FutureEntry": 1, "GenericEntry": 2}
 
@@ -43,7 +42,7 @@ def serialize_data_type(data_type: dict) -> Tuple:
 
 @pytest_asyncio.fixture(scope="module")
 async def pragma_caller(owner):
-    pragma_oracle_address = get_deployments()["MockPragmaOracle"]["address"]
+    pragma_oracle_address = get_deployments()["MockPragmaOracle"]
     return await deploy(
         "CairoPrecompiles",
         "PragmaCaller",
@@ -137,20 +136,3 @@ class TestPragmaPrecompile:
             if data_type.get("FutureEntry")
             else 0
         )
-
-    @pytest.mark.parametrize(
-        "data_type", [{"SpotEntry": int.from_bytes(b"BTC/USD", byteorder="big")}]
-    )
-    async def test_should_fail_unauthorized_caller(self, pragma_caller, data_type):
-        await invoke(
-            "kakarot",
-            "set_authorized_cairo_precompile_caller",
-            int(pragma_caller.address, 16),
-            False,
-        )
-        solidity_input = serialize_data_type(data_type)
-
-        with cairo_error(
-            "EVM tx reverted, reverting SN tx because of previous calls to cairo precompiles"
-        ):
-            await pragma_caller.getDataMedianSpot(solidity_input)

@@ -1,0 +1,28 @@
+name: Reusable Unit Tests Workflow
+
+on:
+  workflow_call:
+    inputs:
+      run-fmt-check:
+        type: boolean
+        default: false
+        required: false
+
+permissions: read-all
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest-16-cores # trunk-ignore(actionlint/runner-label)
+    steps:
+      - uses: actions/checkout@v4
+      - uses: foundry-rs/setup-snfoundry@v3
+      - uses: software-mansion/setup-scarb@v1
+        with:
+          tool-versions: ./cairo/kakarot-ssj/.tool-versions
+
+      - name: Run format check
+        if: inputs.run-fmt-check
+        run: cd cairo/kakarot-ssj && scarb fmt --check
+
+      - name: Run tests
+        run: cd cairo/kakarot-ssj && scarb test

@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity 0.8.27;
 
+import {WhitelistedCallCairoLib} from "./WhitelistedCallCairoLib.sol";
 import {CairoLib} from "kakarot-lib/CairoLib.sol";
-
-using CairoLib for uint256;
 
 /// @notice EVM adapter into a Cairo ERC20 token
 /// @dev This implementation is highly experimental
@@ -12,6 +11,7 @@ using CairoLib for uint256;
 /// @author Kakarot
 /// @author Modified from Solmate (https://github.com/transmissions11/solmate/blob/main/src/tokens/ERC20.sol)
 contract DualVmToken {
+    using WhitelistedCallCairoLib for uint256;
     /*//////////////////////////////////////////////////////////////
                         CAIRO SPECIFIC VARIABLES
     //////////////////////////////////////////////////////////////*/

@@ -1,0 +1,24 @@
+{
+  "name": "kakarot-ssj",
+  "type": "module",
+  "devDependencies": {
+    "bun-types": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@ethereumjs/tx": "^5.0.0",
+    "@types/inquirer": "^9.0.7",
+    "dotenv": "^16.3.1",
+    "ethers": "^6.8.1",
+    "inquirer": "^9.2.12",
+    "rlp": "^3.0.0",
+    "starknet": "^5.19.5",
+    "viem": "^2.21.17"
+  },
+  "scripts": {
+    "compute_starknet_address": "bun run scripts/compute_starknet_address.ts",
+    "compute_create_address": "bun run scripts/compute_create_address.ts"
+  }
+}

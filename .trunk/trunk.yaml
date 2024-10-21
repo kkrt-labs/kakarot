@@ -1,10 +1,10 @@
 version: 0.1
 cli:
-  version: 1.22.4
+  version: 1.22.6
 plugins:
   sources:
     - id: trunk
-      ref: v1.6.2
+      ref: v1.6.3
       uri: https://github.com/trunk-io/plugins
 runtimes:
   enabled:
@@ -39,21 +39,21 @@ lint:
           read_output_from: stdout
           run_linter_from: workspace
   enabled:
-    - osv-scanner@1.8.4
-    - trivy@0.54.1
+    - osv-scanner@1.9.0
+    - trivy@0.56.1
     - cairo@SYSTEM
     - solidity@SYSTEM
-    - actionlint@1.7.1
-    - black@24.8.0
-    - checkov@3.2.242
+    - actionlint@1.7.3
+    - black@24.10.0
+    - checkov@3.2.257
     - codespell@2.3.0
     - git-diff-check
     - hadolint@2.12.0
     - isort@5.13.2
-    - markdownlint@0.41.0
+    - markdownlint@0.42.0
     - oxipng@9.1.2
     - prettier@3.3.3
-    - ruff@0.6.3
+    - ruff@0.6.9
     - shellcheck@0.10.0
     - shfmt@3.6.0
     - taplo@0.9.3
@@ -67,9 +67,14 @@ lint:
       paths: [tests, docker]
     - linters: [codespell]
       paths: [uv.lock]
+    - linters: [cairo]
+      paths:
+        - cairo/mock_pragma
+        - cairo/token
+        - cairo/utils
+        - cairo/kakarot-ssj/crates
     - linters: [ALL]
       paths:
-        - cairo1_contracts
         - logs*
         - lib*
         - resources*
@@ -82,7 +87,7 @@ lint:
         - solidity_contracts/src/WETH/**/*.sol
         - solidity_contracts/src/UniswapV2Router/**/*.sol
         - solidity_contracts/src/Solmate/**/*.sol
-        - solidity_contracts/src/starknet/**/*.sol
+        - solidity_contracts/src/Starknet/**/*.sol
 actions:
   disabled:
     - trunk-announce

@@ -22,6 +22,8 @@ load_dotenv()
 BLOCK_GAS_LIMIT = 7_000_000
 DEFAULT_GAS_PRICE = 1
 BEACON_ROOT_ADDRESS = "0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02"
+# see https://gist.github.com/rekmarks/a47bd5f2525936c4b8eee31a16345553
+MAX_SAFE_CHAIN_ID = 4503599627370476
 
 
 class NetworkType(Enum):
@@ -42,6 +44,7 @@ NETWORKS = {
         "max_wait": 60,
         "class_hash": 0x061DAC032F228ABEF9C6626F995015233097AE253A7F72D68552DB02F2971B8F,
         "voyager_api_url": "https://api.voyager.online/beta",
+        "argent_multisig_api": "https://cloud.argent-api.com/v1/multisig/starknet/mainnet",
     },
     "sepolia": {
         "name": "starknet-sepolia",
@@ -51,9 +54,23 @@ NETWORKS = {
         "type": NetworkType.STAGING,
         "chain_id": StarknetChainId.SEPOLIA,
         "check_interval": 1,
-        "max_wait": 10,
+        "max_wait": 30,
         "class_hash": 0x061DAC032F228ABEF9C6626F995015233097AE253A7F72D68552DB02F2971B8F,
         "voyager_api_url": "https://sepolia-api.voyager.online/beta",
+        "argent_multisig_api": "https://cloud.argent-api.com/v1/multisig/starknet/sepolia",
+    },
+    "sepolia-staging": {
+        "name": "starknet-sepolia-staging",
+        "explorer_url": "https://sepolia.starkscan.co/",
+        "rpc_url": f"https://rpc.nethermind.io/sepolia-juno/?apikey={os.getenv('NETHERMIND_API_KEY')}",
+        "l1_rpc_url": f"https://sepolia.infura.io/v3/{os.getenv('INFURA_KEY')}",
+        "type": NetworkType.STAGING,
+        "chain_id": StarknetChainId.SEPOLIA,
+        "check_interval": 1,
+        "max_wait": 30,
+        "class_hash": 0x061DAC032F228ABEF9C6626F995015233097AE253A7F72D68552DB02F2971B8F,
+        "voyager_api_url": "https://sepolia-api.voyager.online/beta",
+        "argent_multisig_api": "https://cloud.argent-api.com/v1/multisig/starknet/sepolia",
     },
     "starknet-devnet": {
         "name": "starknet-devnet",
@@ -73,10 +90,6 @@ NETWORKS = {
         "check_interval": 0.01,
         "max_wait": 3,
         "relayers": [
-            {
-                "address": 0xB3FF441A68610B30FD5E2ABBF3A1548EB6BA6F3559F2862BF2DC757E5828CA,
-                "private_key": 0x2BBF4F9FD0BBB2E60B0316C1FE0B76CF7A4D0198BD493CED9B8DF2A3A24D68A,
-            },
             {
                 "address": 0xE29882A1FCBA1E7E10CAD46212257FEA5C752A4F9B1B1EC683C503A2CF5C8A,
                 "private_key": 0x14D6672DCB4B77CA36A887E9A11CD9D637D5012468175829E9C6E770C61642,
@@ -192,7 +205,7 @@ try:
     if WEB3.is_connected():
         chain_id = WEB3.eth.chain_id
     else:
-        chain_id = starknet_chain_id % 2**53
+        chain_id = starknet_chain_id % MAX_SAFE_CHAIN_ID
 except (
     requests.exceptions.ConnectionError,
     requests.exceptions.MissingSchema,
@@ -202,12 +215,7 @@ except (
         f"⚠️  Could not get chain Id from {NETWORK['rpc_url']}: {e}, defaulting to KKRT"
     )
     starknet_chain_id = int.from_bytes(b"KKRT", "big")
-    chain_id = starknet_chain_id % (
-        # TODO: remove once Kakarot is redeployed on sepolia
-        2**53
-        if NETWORK["name"] != "starknet-sepolia"
-        else 2**32
-    )
+    chain_id = starknet_chain_id % MAX_SAFE_CHAIN_ID
 
 
 class ChainId(IntEnum):
@@ -218,30 +226,31 @@ class ChainId(IntEnum):
 NETWORK["chain_id"] = ChainId.chain_id
 
 ETH_TOKEN_ADDRESS = 0x49D36570D4E46F48E99674BD3FCC84644DDD6B96F7C741B1562B82F9E004DC7
+STRK_TOKEN_ADDRESS = 0x04718F5A0FC34CC1AF16A1CDEE98FFB20C31F5CD61D6AB07201858F4287C938D
+
 COINBASE = int(
     os.getenv("KAKAROT_COINBASE_RECIPIENT")
     or "0x20eB005C0b9c906691F885eca5895338E15c36De",  # Defaults to faucet on appchain sepolia
     16,
 )
-CAIRO_ZERO_DIR = Path("src")
-CAIRO_DIR = Path("cairo1_contracts")
-TESTS_DIR = Path("tests")
+CAIRO_ZERO_DIR = Path("cairo_zero")
+CAIRO_DIR = Path("cairo")
+TESTS_DIR_CAIRO_ZERO = Path("cairo_zero/tests")
+TESTS_DIR_END_TO_END = Path("tests")
 
 CONTRACTS = {
     p.stem: p
     for p in (
         list(CAIRO_ZERO_DIR.glob("**/*.cairo"))
-        + list(TESTS_DIR.glob("**/*.cairo"))
-        + list(CAIRO_DIR.glob("**/*.cairo"))
+        + list(TESTS_DIR_CAIRO_ZERO.glob("**/*.cairo"))
+        + list(TESTS_DIR_END_TO_END.glob("**/*.cairo"))
+        + [x for x in list(CAIRO_DIR.glob("**/*.cairo")) if "kakarot-ssj" not in str(x)]
     )
 }
 
 BUILD_DIR = Path("build")
 BUILD_DIR.mkdir(exist_ok=True, parents=True)
 BUILD_DIR_SSJ = BUILD_DIR / "ssj"
-
-DATA_DIR = Path("kakarot_scripts") / "data"
-
 
 DEPLOYMENTS_DIR = Path("deployments") / NETWORK["name"]
 DEPLOYMENTS_DIR.mkdir(exist_ok=True, parents=True)
@@ -281,29 +290,19 @@ DECLARED_CONTRACTS = [
     "UniversalLibraryCaller",
 ]
 
-# PRE-EIP155 TX
-MULTICALL3_DEPLOYER = "0x05f32b3cc3888453ff71b01135b34ff8e41263f2"
-MULTICALL3_SIGNED_TX = bytes.fromhex(
-    json.loads((DATA_DIR / "signed_txs.json").read_text())["multicall3"]
-)
-ARACHNID_PROXY_DEPLOYER = "0x3fab184622dc19b6109349b94811493bf2a45362"
-ARACHNID_PROXY_SIGNED_TX = bytes.fromhex(
-    json.loads((DATA_DIR / "signed_txs.json").read_text())["arachnid"]
-)
-CREATEX_DEPLOYER = "0xeD456e05CaAb11d66C4c797dD6c1D6f9A7F352b5"
-CREATEX_SIGNED_TX = bytes.fromhex(
-    json.loads((DATA_DIR / "signed_txs.json").read_text())["createx"]
-)
-
-EVM_PRIVATE_KEY = os.getenv("EVM_PRIVATE_KEY")
-EVM_ADDRESS = (
-    EVM_PRIVATE_KEY
-    and keys.PrivateKey(
-        bytes.fromhex(EVM_PRIVATE_KEY[2:])
-    ).public_key.to_checksum_address()
-)
-
 prefix = NETWORK["name"].upper().replace("-", "_")
+EVM_PRIVATE_KEY = os.getenv(f"{prefix}_EVM_PRIVATE_KEY")
+if EVM_PRIVATE_KEY is None:
+    logger.warning(
+        f"⚠️  {prefix}_EVM_PRIVATE_KEY not set, defaulting to EVM_PRIVATE_KEY"
+    )
+    EVM_PRIVATE_KEY = os.getenv("EVM_PRIVATE_KEY")
+    if EVM_PRIVATE_KEY is None:
+        raise ValueError("EVM_PRIVATE_KEY not set")
+EVM_ADDRESS = keys.PrivateKey(
+    bytes.fromhex(EVM_PRIVATE_KEY[2:])
+).public_key.to_checksum_address()
+
 NETWORK["account_address"] = os.environ.get(f"{prefix}_ACCOUNT_ADDRESS")
 if NETWORK["account_address"] is None:
     logger.warning(
@@ -335,24 +334,29 @@ class RelayerPool:
         return relayer
 
 
-NETWORK["relayers"] = RelayerPool(
-    NETWORK.get(
-        "relayers",
-        (
-            [
-                {
-                    "address": int(NETWORK["account_address"], 16),
-                    "private_key": int(NETWORK["private_key"], 16),
-                }
-            ]
-            if NETWORK["account_address"] is not None
-            and NETWORK["private_key"] is not None
-            else []
-        ),
-    )
-)
+if (
+    os.getenv(f"{prefix}_RELAYER_ACCOUNT_ADDRESS") is not None
+    and os.getenv(f"{prefix}_RELAYER_PRIVATE_KEY") is not None
+):
+    default_relayer = {
+        "address": int(os.environ[f"{prefix}_RELAYER_ACCOUNT_ADDRESS"], 16),
+        "private_key": int(os.environ[f"{prefix}_RELAYER_PRIVATE_KEY"], 16),
+    }
+elif NETWORK["account_address"] is not None and NETWORK["private_key"] is not None:
+    default_relayer = {
+        "address": int(NETWORK["account_address"], 16),
+        "private_key": int(NETWORK["private_key"], 16),
+    }
+else:
+    default_relayer = None
 
+if default_relayer is None and NETWORK.get("relayers") is None:
+    raise ValueError("No account nor relayers defined for this network")
+
+NETWORK["relayers"] = RelayerPool(NETWORK.get("relayers", [default_relayer]))
+
+kakarot_chain_ascii = bytes.fromhex(f"{ChainId.chain_id.value:014x}").lstrip(b"\x00")
 logger.info(
     f"ℹ️  Connected to Starknet chain id {bytes.fromhex(f'{ChainId.starknet_chain_id.value:x}')} "
-    f"and Kakarot chain id {bytes.fromhex(f'{ChainId.chain_id.value:x}')}"
+    f"and Kakarot chain id {kakarot_chain_ascii}"
 )

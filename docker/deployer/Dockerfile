@@ -14,14 +14,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-ENV POETRY_NO_INTERACTION=1 \
-    POETRY_VIRTUALENVS_IN_PROJECT=1 \
-    POETRY_VIRTUALENVS_CREATE=1 \
-    VIRTUAL_ENV=/app/kakarot/.venv \
+ENV VIRTUAL_ENV=/app/kakarot/.venv \
     PATH="/app/kakarot/.venv/bin:/root/.local/bin:$PATH"
 
 RUN --mount=type=cache,target=/root/.cache \
-    curl -sSL https://install.python-poetry.org | python3 -
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+
+RUN --mount=type=cache,target=/root/.cache \
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+ENV PATH="/root/.cargo/bin:$PATH"
 
 WORKDIR /app/kakarot
 
@@ -52,31 +54,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ARG GITHUB_TOKEN
 ENV GITHUB_TOKEN=${GITHUB_TOKEN}
 
-# install dependencies
-COPY poetry.lock .
-COPY pyproject.toml .
-COPY kakarot_scripts ./kakarot_scripts
-COPY README.md .
-COPY tests ./tests
-
-RUN --mount=type=cache,target=/root/.cache \
-    poetry install
-
-# split install in two steps to leverage docker cache
 COPY . .
 
+SHELL ["/bin/bash", "-c"]
+RUN  source "$HOME/.cargo/env" && uv venv && uv pip install -e .
 
 # Install asdf for multiple scarb versions
 RUN git clone --depth 1 https://github.com/asdf-vm/asdf.git "$HOME/.asdf" && \
     echo ". $HOME/.asdf/asdf.sh" >> "$HOME/.bashrc" && \
     echo ". $HOME/.asdf/asdf.sh" >> "$HOME/.profile"
 
-SHELL ["/bin/bash", "-c"]
-RUN source "$HOME/.asdf/asdf.sh" && asdf plugin add scarb && asdf install scarb 0.7.0  && asdf install scarb 2.6.5
-
+RUN source "$HOME/.asdf/asdf.sh" && asdf plugin add scarb && asdf install scarb 0.7.0  && asdf install scarb 2.6.5 && asdf install scarb 2.8.3
 
 RUN --mount=type=cache,target=/root/.cache \
-    source "$HOME/.asdf/asdf.sh" && make fetch-ssj-artifacts && make build && make build-sol
+    source "$HOME/.asdf/asdf.sh" && source "$HOME/.cargo/env" && make build && make build-sol
 
 
 ############################################
@@ -87,22 +78,20 @@ FROM base as deployer
 COPY --from=builder /app/kakarot/build ./build/
 COPY --from=builder /app/kakarot/kakarot_scripts/ ./kakarot_scripts/
 COPY --from=builder /app/kakarot/tests ./tests/
+COPY --from=builder /app/kakarot/.venv ./.venv
 
 # Cairo Smart contracts are used in deploy_kakarot.py
 # To limit the probability of this Dockerfile to break, we copy the entire src and not individual files
-COPY --from=builder /app/kakarot/src ./src/
+COPY --from=builder /app/kakarot/cairo_zero/ ./cairo_zero/
 
 # Default Solidity contracts are also used in deploy_kakarot.py
 COPY --from=builder /app/kakarot/solidity_contracts ./solidity_contracts/
 
 COPY --from=builder /app/kakarot/Makefile .
-COPY --from=builder /app/kakarot/poetry.lock .
+COPY --from=builder /app/kakarot/uv.lock .
 COPY --from=builder /app/kakarot/pyproject.toml .
 COPY --from=builder /app/kakarot/foundry.toml .
 COPY --from=builder /app/kakarot/README.md .
 
-RUN --mount=type=cache,target=/root/.cache \
-    poetry install --without dev
-
 # Deploy kakarot
-CMD ["python", "kakarot_scripts/deploy_kakarot.py"]
+CMD ["uv", "run", "deploy"]

@@ -1,0 +1,32 @@
+[package]
+name = "contracts"
+version = "0.1.0"
+edition = "2024_07"
+
+# See more keys and their definitions at https://docs.swmansion.com/scarb/docs/reference/manifest.html
+
+[dependencies]
+starknet.workspace = true
+evm = { path = "../evm" }
+openzeppelin = { path = "../openzeppelin" }
+utils = { path = "../utils" }
+
+[tool]
+fmt.workspace = true
+
+[[target.starknet-contract]]
+casm = true
+casm-add-pythonic-hints = true
+build-external-contracts = ["openzeppelin::token::erc20::erc20::ERC20"]
+
+[lib]
+name = "contracts"
+
+[dev-dependencies]
+snforge_std = { git = "https://github.com/foundry-rs/starknet-foundry.git", tag = "v0.31.0" }
+assert_macros = "2.8.2"
+snforge_utils = { path = "../snforge_utils" }
+
+[scripts]
+test = "snforge test --max-n-steps 4294967295"
+test-profiling = "snforge test --max-n-steps 4294967295 --build-profile"

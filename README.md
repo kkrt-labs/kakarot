@@ -79,7 +79,7 @@ The set of Cairo programs in this repository are represented below:
 
 ## Getting started
 
-To contribute, please check out
+To contribute and setup your development environment, please check out
 [the contribution guide](./docs/CONTRIBUTING.md).
 
 ## Build
@@ -88,7 +88,14 @@ The project uses [uv](https://github.com/astral-sh/uv) to manage python
 dependencies and run commands. To install uv:
 
 ```bash
-curl -L https://install.astral.sh | bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+To setup the project and install
+[all dependencies](docs/CONTRIBUTING.md#prerequisites):
+
+```bash
+make setup
 ```
 
 To build the CairoZero files:
