@@ -7,7 +7,7 @@ import "../Starknet/StarknetMessaging.sol";
    @notice Interface related to local messaging for Starknet.
    @author Glihm https://github.com/glihm/starknet-messaging-dev
 */
-interface IStarknetMessagingLocal {
+interface IStarknetMessagingLocalTmp {
     function addMessageHashesFromL2(
         uint256[] calldata msgHashes
     )
@@ -28,7 +28,7 @@ interface IStarknetMessagingLocal {
    DISCLAIMER:
    The purpose of this contract is for local development only.
 */
-contract StarknetMessagingLocal is StarknetMessaging, IStarknetMessagingLocal {
+contract StarknetMessagingLocalTmp is StarknetMessaging, IStarknetMessagingLocalTmp {
 
     /**
        @notice Hashes were added.

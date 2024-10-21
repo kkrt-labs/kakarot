@@ -3,17 +3,17 @@ pragma solidity >=0.8.0;
 import "forge-std/Test.sol";
 
 import {L1KakarotMessaging} from "../src/L1L2Messaging/L1KakarotMessaging.sol";
-import {StarknetMessagingLocal} from "../src/Starknet/StarknetMessagingLocal.sol";
+import {StarknetMessagingLocalTmp} from "../src/Starknet/StarknetMessagingLocalTmp.sol";
 import {AddressAliasHelper} from "../src/L1L2Messaging/AddressAliasHelper.sol";
 
 contract L1KakarotMessagingTest is Test {
     L1KakarotMessaging l1KakarotMessaging;
-    StarknetMessagingLocal starknetMessagingLocal;
+    StarknetMessagingLocalTmp StarknetMessagingLocalTmp;
     uint256 mockedKakarot = 0xFF1;
 
     function setUp() public {
-        starknetMessagingLocal = new StarknetMessagingLocal();
-        l1KakarotMessaging = new L1KakarotMessaging(address(starknetMessagingLocal), mockedKakarot);
+        StarknetMessagingLocalTmp = new StarknetMessagingLocalTmp();
+        l1KakarotMessaging = new L1KakarotMessaging(address(StarknetMessagingLocalTmp), mockedKakarot);
     }
 
     function getL1ToL2MsgHash(uint256 toAddress, uint256 selector, uint256[] memory payload, uint256 nonce)
@@ -29,7 +29,7 @@ contract L1KakarotMessagingTest is Test {
     }
 
     function test_sendMessageToL2(address to, uint248 value, bytes memory data) public {
-        vm.assume(value <= starknetMessagingLocal.getMaxL1MsgFee());
+        vm.assume(value <= StarknetMessagingLocalTmp.getMaxL1MsgFee());
         deal(address(this), 100 ether);
         l1KakarotMessaging.sendMessageToL2{value: 0.1 ether}(to, value, data);
 
@@ -46,7 +46,7 @@ contract L1KakarotMessagingTest is Test {
         bytes32 msgHash =
             getL1ToL2MsgHash(mockedKakarot, l1KakarotMessaging.HANDLE_L1_MESSAGE_SELECTOR(), convertedData, 0);
 
-        assertEq(starknetMessagingLocal.l1ToL2Messages(msgHash), 0.1 ether + 1);
+        assertEq(StarknetMessagingLocalTmp.l1ToL2Messages(msgHash), 0.1 ether + 1);
     }
 
     function test_consumeMessageFromL2(address fromAddress, bytes memory payload) public {
@@ -59,9 +59,9 @@ contract L1KakarotMessagingTest is Test {
         }
         // Ensures the consumeMessageFromL2 function is called with the correct parameters.
         vm.mockCall(
-            address(starknetMessagingLocal),
+            address(StarknetMessagingLocalTmp),
             abi.encodeWithSelector(
-                starknetMessagingLocal.consumeMessageFromL2.selector, mockedKakarot, convertedPayload
+                StarknetMessagingLocalTmp.consumeMessageFromL2.selector, mockedKakarot, convertedPayload
             ),
             abi.encode(true)
         );
