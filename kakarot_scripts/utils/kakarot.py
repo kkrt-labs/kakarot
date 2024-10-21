@@ -101,6 +101,8 @@ def get_solidity_artifacts(
                 f"Found: {target_solidity_file_path}"
             )
 
+        print(f"{target_solidity_file_path=}")
+
         target_compilation_output = [
             compilation
             for compilation in all_compilation_outputs
@@ -109,7 +111,19 @@ def get_solidity_artifacts(
             )
         ]
 
+        print(f"{target_compilation_output=}")
+
         if len(target_compilation_output) != 1:
+            import os
+
+            for root, dirs, files in os.walk(foundry_file["profile"]["default"]["out"]):
+                print(root)
+                print(dirs)
+                for file in files:
+                    print(file)
+
+            print(json.dumps(all_compilation_outputs, indent=2))
+
             raise ValueError(
                 f"Cannot locate a unique compilation output for target {target_solidity_file_path[0]}: "
                 f"found {len(target_compilation_output)} outputs:\n{target_compilation_output}"
