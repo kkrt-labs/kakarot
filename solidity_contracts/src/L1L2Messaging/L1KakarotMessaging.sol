@@ -2,7 +2,7 @@
 pragma solidity 0.8.27;
 
 import {AddressAliasHelper} from "./AddressAliasHelper.sol";
-import {IStarknetMessaging} from "../starknet/IStarknetMessaging.sol";
+import {IStarknetMessaging} from "../Starknet/IStarknetMessaging.sol";
 
 interface IL1KakarotMessaging {
     function sendMessageToL2(address to, uint248 value, bytes memory data) external payable;
