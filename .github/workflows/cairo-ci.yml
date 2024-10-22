@@ -1,0 +1,45 @@
+name: cairo-CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - "*"
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+concurrency:
+  group: cairo-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: read-all
+
+jobs:
+  paths-filter:
+    runs-on: ubuntu-latest
+    outputs:
+      protocol_handler: ${{ steps.filter.outputs.protocol_handler }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            protocol_handler:
+              - 'cairo/protocol_handler/**'
+
+  tests-unit:
+    runs-on: ubuntu-latest
+    needs: paths-filter
+    if: needs.paths-filter.outputs.protocol_handler == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: foundry-rs/setup-snfoundry@v3
+      - uses: software-mansion/setup-scarb@v1
+        with:
+          tool-versions: ./cairo/protocol_handler/.tool-versions
+
+      - name: Run tests
+        run: cd cairo/protocol_handler && scarb test
