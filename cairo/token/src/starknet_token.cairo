@@ -27,10 +27,7 @@ mod StarknetToken {
     }
 
     #[constructor]
-    fn constructor(ref self: ContractState, initial_supply: u256, recipient: ContractAddress) {
-        let name = "MyToken";
-        let symbol = "MTK";
-
+    fn constructor(ref self: ContractState, name: ByteArray, symbol: ByteArray, initial_supply: u256, recipient: ContractAddress) {
         self.erc20.initializer(name, symbol);
         self.erc20._mint(recipient, initial_supply);
     }

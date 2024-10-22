@@ -35,14 +35,15 @@ logger.setLevel(logging.INFO)
 
 async def deploy_starknet_token() -> Any:
     owner = await get_starknet_account()
-    address = await deploy_starknet("StarknetToken", int(1e18), owner.address)
+    address = await deploy_starknet(
+        "StarknetToken", "MyToken", "MTK", int(1e18), owner.address
+    )
     return get_contract_starknet("StarknetToken", address=address)
 
 
 async def deploy_dualvm_token(
     kakarot_address: str, starknet_token_address: str, deployer_account: Any = None
 ) -> Any:
-    breakpoint()
     dual_vm_token = await deploy_kakarot(
         "CairoPrecompiles",
         "DualVmToken",
@@ -64,16 +65,13 @@ async def deploy_dualvm_tokens() -> None:
     # %% Deploy DualVM Tokens
     kakarot = get_starknet_deployments()["kakarot"]
     evm_deployments = get_evm_deployments()
-    tokens = await get_tokens(NETWORK)
+    tokens = get_tokens_list(NETWORK)
 
     for token in tokens:
-        token_name = token["name"]
-        if token_name not in evm_deployments:
-            await deploy_new_token(token_name, token, kakarot, evm_deployments)
+        if token["name"] not in evm_deployments:
+            await deploy_new_token(token, kakarot, evm_deployments)
         else:
-            await verify_and_update_existing_token(
-                token_name, token, kakarot, evm_deployments
-            )
+            await verify_and_update_existing_token(token, kakarot, evm_deployments)
 
     logger.info("Finished processing all tokens")
     dump_evm_deployments(evm_deployments)
@@ -81,33 +79,34 @@ async def deploy_dualvm_tokens() -> None:
     # %%
 
 
-async def get_tokens(network) -> List[Dict[str, Any]]:
+def get_tokens_list(network) -> List[Dict[str, Any]]:
     """
     Get the list of tokens for a given network.
     If in dev mode, will return the sepolia token list.
     """
     if network["type"] == NetworkType.DEV:
-        return await load_tokens("sepolia")
-    if network["name"] not in ("mainnet", "sepolia"):
-        raise ValueError(f"No known token addresses for network: {network['name']}")
-    return await load_tokens(network["name"])
+        return load_tokens("sepolia")
+
+    return load_tokens(network["name"])
 
 
-async def load_tokens(network_name: str) -> List[Dict[str, Any]]:
-    file_name = network_name.replace("starknet-", "")
-    file_path = TOKEN_ADDRESSES_DIR / f"{file_name}.json"
+def load_tokens(network_name: str) -> List[Dict[str, Any]]:
+    file_path = TOKEN_ADDRESSES_DIR / f"{network_name}.json"
+    if not file_path.exists():
+        raise ValueError(f"No known token addresses for network: {network_name}")
+
     return json.loads(file_path.read_text())
 
 
 async def deploy_new_token(
-    token_name: str,
     token: Dict[str, Any],
     kakarot: str,
     evm_deployments: Dict[str, Any],
 ) -> None:
     """
-    Deploys a new DualVMToken for a corresponding Starknet ERC20 token.
+    Deploy a new DualVMToken for a corresponding Starknet ERC20 token.
     """
+    token_name = token["name"]
     l2_token_address = await ensure_starknet_token(token_name, token)
     contract = await deploy_dualvm_token(kakarot, l2_token_address)
     evm_deployments[token_name] = {
@@ -120,7 +119,6 @@ async def deploy_new_token(
 
 
 async def verify_and_update_existing_token(
-    token_name: str,
     token: Dict[str, Any],
     kakarot: str,
     evm_deployments: Dict[str, Any],
@@ -128,6 +126,7 @@ async def verify_and_update_existing_token(
     """
     Given an existing DualVMToken, verifies it is _actually_ deployed. If not, deploys a new one.
     """
+    token_name = token["name"]
     dualvm_token_address = evm_deployments[token_name]["starknet_address"]
     if not await get_class_hash_at(dualvm_token_address):
         l2_token_address = await ensure_starknet_token(token_name, token)

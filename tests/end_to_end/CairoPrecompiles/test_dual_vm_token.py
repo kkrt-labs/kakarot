@@ -13,13 +13,32 @@ from kakarot_scripts.utils.starknet import (
 from tests.utils.errors import cairo_error
 
 
+@pytest_asyncio.fixture(scope="session")
+async def dual_vm_token(owner):
+    evm_deployments = get_evm_deployments()
+    ether = evm_deployments["Ether"]["address"]
+    return await get_contract_evm(
+        "CairoPrecompiles",
+        "DualVmToken",
+        address=ether,
+        caller_eoa=owner.starknet_contract,
+    )
+
+
+@pytest_asyncio.fixture(scope="session")
+async def starknet_token(dual_vm_token):
+    starknet_address = await dual_vm_token.starknetToken()
+    deployer = await get_starknet_account()
+    return get_contract_starknet(
+        "StarknetToken", address=starknet_address, provider=deployer
+    )
+
+
 @pytest_asyncio.fixture(scope="function", autouse=True)
 async def fund_owner(owner, starknet_token, max_fee):
-    breakpoint()
     (balance_before,) = await starknet_token.functions["balance_of"].call(
         owner.starknet_contract.address
     )
-    breakpoint()
 
     amount = int(1e16)
     if balance_before > amount:
