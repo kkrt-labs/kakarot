@@ -86,7 +86,6 @@ async def new_eoa(deployer) -> Wallet:
         if balance < tx_cost:
             continue
 
-        breakpoint()
         await kakarot_eth.functions["transfer(uint256,uint256)"](
             deployer.address,
             balance - tx_cost,
