@@ -58,7 +58,7 @@ COPY . .
 COPY .env.example .env
 
 SHELL ["/bin/bash", "-c"]
-RUN  source "$HOME/.cargo/env" && uv venv && uv pip install -e .
+RUN  source "$HOME/.cargo/env" && uv sync --all-extras --dev
 
 # Install asdf for multiple scarb versions
 RUN git clone --depth 1 https://github.com/asdf-vm/asdf.git "$HOME/.asdf" && \
@@ -93,6 +93,9 @@ COPY --from=builder /app/kakarot/uv.lock .
 COPY --from=builder /app/kakarot/pyproject.toml .
 COPY --from=builder /app/kakarot/foundry.toml .
 COPY --from=builder /app/kakarot/README.md .
+COPY --from=builder /app/kakarot/.env.example .env
+COPY --from=builder /app/kakarot/conftest.py .
+ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
 
 # Deploy kakarot
 CMD ["uv", "run", "deploy"]
