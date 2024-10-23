@@ -8,24 +8,31 @@ use protocol_handler::{
     IProtocolHandlerDispatcher, IProtocolHandlerDispatcherTrait, ProtocolHandler
 };
 
-fn setup_contracts_for_testing() -> (
-    IProtocolHandlerDispatcher,
-    ContractClass,
-    ContractAddress,
-    ContractAddress,
-    ContractAddress,
-    Span<ContractAddress>
-) {
-    // Mock Kakarot, security council, operator and guardians
-    let kakarot_mock: ContractAddress = contract_address_const::<'kakarot_mock'>();
-    let security_council_mock: ContractAddress = contract_address_const::<
-        'security_council_mock'
-    >();
-    let operator_mock: ContractAddress = contract_address_const::<'operator_mock'>();
-    let guardians: Span<ContractAddress> = array![
+fn kakarot_mock() -> ContractAddress {
+    contract_address_const::<'security_council_mock'>()
+}
+
+fn security_council_mock() -> ContractAddress {
+    contract_address_const::<'security_council_mock'>()
+}
+
+fn operator_mock() -> ContractAddress {
+    contract_address_const::<'operator_mock'>()
+}
+
+fn guardians_mock() -> Span<ContractAddress> {
+    array![
         contract_address_const::<'guardian_mock_1'>(), contract_address_const::<'guardian_mock_2'>()
     ]
-        .span();
+        .span()
+}
+
+fn setup_contracts_for_testing() -> (IProtocolHandlerDispatcher, ContractClass) {
+    // Mock Kakarot, security council, operator and guardians
+    let kakarot_mock: ContractAddress = kakarot_mock();
+    let security_council_mock: ContractAddress = security_council_mock();
+    let operator_mock: ContractAddress = operator_mock();
+    let guardians: Span<ContractAddress> = guardians_mock();
 
     // Construct the calldata for the ProtocolHandler contrustor
     let mut constructor_calldata: Array::<felt252> = array![
@@ -38,32 +45,30 @@ fn setup_contracts_for_testing() -> (
     // Get The dispatcher for the ProtocolHandler
     let protocol_handler = IProtocolHandlerDispatcher { contract_address };
 
-    return (
-        protocol_handler, *contract, kakarot_mock, security_council_mock, operator_mock, guardians
-    );
+    return (protocol_handler, *contract);
 }
 
 #[test]
 #[should_panic(expected: 'Caller is missing role')]
 fn test_protocol_emergency_execution_fail_wrong_caller() {
-    let (protocol_handler, _, kakarot_mock, _, _, _) = setup_contracts_for_testing();
+    let (protocol_handler, _) = setup_contracts_for_testing();
 
     // Change caller to random caller address
     let random_caller = contract_address_const::<'random_caller'>();
     start_cheat_caller_address(protocol_handler.contract_address, random_caller);
 
     // Call emergency_execution, should fail as caller is not security council
-    let call = Call { to: kakarot_mock, selector: 0, calldata: [].span() };
+    let call = Call { to: kakarot_mock(), selector: 0, calldata: [].span() };
     protocol_handler.emergency_execution(call);
 }
 
 #[test]
 #[should_panic(expected: 'ONLY_KAKAROT_CAN_BE_CALLED')]
 fn test_protocol_emergency_execution_fail_wrong_destination() {
-    let (protocol_handler, _, _, security_council_mock, _, _) = setup_contracts_for_testing();
+    let (protocol_handler, _) = setup_contracts_for_testing();
 
     // Change caller to security council
-    start_cheat_caller_address(protocol_handler.contract_address, security_council_mock);
+    start_cheat_caller_address(protocol_handler.contract_address, security_council_mock());
 
     // Construct the Call to a random address
     let random_called_address = contract_address_const::<'random_called_address'>();
@@ -75,14 +80,13 @@ fn test_protocol_emergency_execution_fail_wrong_destination() {
 
 #[test]
 fn test_protocol_emergency_execution_should_pass() {
-    let (protocol_handler, contract, kakarot_mock, security_council_mock, _, _) =
-        setup_contracts_for_testing();
+    let (protocol_handler, contract) = setup_contracts_for_testing();
 
     // Change caller to security council
-    start_cheat_caller_address(protocol_handler.contract_address, security_council_mock);
+    start_cheat_caller_address(protocol_handler.contract_address, security_council_mock());
 
     // Mock the call to Kakarot upgrade function
-    mock_call::<()>(kakarot_mock, selector!("upgrade"), (), 1);
+    mock_call::<()>(kakarot_mock(), selector!("upgrade"), (), 1);
 
     // Construct the Call to protocol handler and call emergency_execution
     // Should pass as caller is security council and call is to Kakarot
@@ -90,7 +94,7 @@ fn test_protocol_emergency_execution_should_pass() {
     let mut serialized_calldata: Array::<felt252> = array![];
     Serde::serialize(@calldata, ref serialized_calldata);
     let call = Call {
-        to: kakarot_mock, selector: selector!("upgrade"), calldata: serialized_calldata.span()
+        to: kakarot_mock(), selector: selector!("upgrade"), calldata: serialized_calldata.span()
     };
 
     // Spy on the events
@@ -114,7 +118,7 @@ fn test_protocol_emergency_execution_should_pass() {
 #[test]
 #[should_panic(expected: 'Caller is missing role')]
 fn test_protocol_upgrade_fail_wrong_caller() {
-    let (protocol_handler, contract, _, _, _, _) = setup_contracts_for_testing();
+    let (protocol_handler, contract) = setup_contracts_for_testing();
 
     // Change caller to random caller address
     let random_caller = contract_address_const::<'random_caller'>();
@@ -125,14 +129,13 @@ fn test_protocol_upgrade_fail_wrong_caller() {
 }
 
 fn test_protocol_upgrade_should_pass() {
-    let (protocol_handler, contract, kakarot_mock, _, operator_mock, _) =
-        setup_contracts_for_testing();
+    let (protocol_handler, contract) = setup_contracts_for_testing();
 
     // Mock the call to Kakarot upgrade function
-    mock_call::<()>(kakarot_mock, selector!("upgrade"), (), 1);
+    mock_call::<()>(kakarot_mock(), selector!("upgrade"), (), 1);
 
     // Change caller to security council
-    start_cheat_caller_address(protocol_handler.contract_address, operator_mock);
+    start_cheat_caller_address(protocol_handler.contract_address, operator_mock());
 
     // Spy on the events
     let mut spy = spy_events();
@@ -157,7 +160,7 @@ fn test_protocol_upgrade_should_pass() {
 #[test]
 #[should_panic(expected: 'Caller is missing role')]
 fn test_protocol_handler_transfer_ownership_should_fail_wrong_caller() {
-    let (protocol_handler, _, _, _, _, _) = setup_contracts_for_testing();
+    let (protocol_handler, _) = setup_contracts_for_testing();
 
     // Change caller to not security council
     let not_security_council = contract_address_const::<'not_security_council'>();
@@ -170,14 +173,13 @@ fn test_protocol_handler_transfer_ownership_should_fail_wrong_caller() {
 
 #[test]
 fn test_protocol_handler_transfer_ownership_should_pass() {
-    let (protocol_handler, _, kakarot_mock, security_council_mock, _, _) =
-        setup_contracts_for_testing();
+    let (protocol_handler, _) = setup_contracts_for_testing();
 
     // Change caller to security council
-    start_cheat_caller_address(protocol_handler.contract_address, security_council_mock);
+    start_cheat_caller_address(protocol_handler.contract_address, security_council_mock());
 
     // Mock the call to Kakarot transfer_ownership
-    mock_call::<()>(kakarot_mock, selector!("transfer_ownership"), (), 1);
+    mock_call::<()>(kakarot_mock(), selector!("transfer_ownership"), (), 1);
 
     // Spy on the events
     let mut spy = spy_events();
@@ -204,7 +206,7 @@ fn test_protocol_handler_transfer_ownership_should_pass() {
 #[test]
 #[should_panic(expected: 'Caller is missing role')]
 fn test_protocol_handler_soft_pause_should_fail_wrong_caller() {
-    let (protocol_handler, _, _, _, _, _) = setup_contracts_for_testing();
+    let (protocol_handler, _) = setup_contracts_for_testing();
 
     // Change caller to random caller address
     let random_caller = contract_address_const::<'random_caller'>();
@@ -216,12 +218,13 @@ fn test_protocol_handler_soft_pause_should_fail_wrong_caller() {
 
 #[test]
 fn test_protocol_handler_soft_pause_should_pass() {
-    let (protocol_handler, _, kakarot_mock, _, _, guardians) = setup_contracts_for_testing();
+    let (protocol_handler, _) = setup_contracts_for_testing();
 
     // Mock the call to kakarot pause function
-    mock_call::<()>(kakarot_mock, selector!("pause"), (), 1);
+    mock_call::<()>(kakarot_mock(), selector!("pause"), (), 1);
 
-    // Change caller to guardian
+    // Change caller to a guardian
+    let guardians = guardians_mock();
     start_cheat_caller_address(protocol_handler.contract_address, *guardians[0]);
 
     // Spy on the events
@@ -249,7 +252,7 @@ fn test_protocol_handler_soft_pause_should_pass() {
 #[test]
 #[should_panic(expected: 'Caller is missing role')]
 fn test_protocol_handler_hard_pause_should_fail_wrong_caller() {
-    let (protocol_handler, _, _, _, _, _) = setup_contracts_for_testing();
+    let (protocol_handler, _) = setup_contracts_for_testing();
 
     // Change caller to not security council
     let not_security_council = contract_address_const::<'not_security_council'>();
@@ -261,14 +264,13 @@ fn test_protocol_handler_hard_pause_should_fail_wrong_caller() {
 
 #[test]
 fn test_protocol_handler_hard_pause_should_pass() {
-    let (protocol_handler, _, kakarot_mock, security_council_mock, _, _) =
-        setup_contracts_for_testing();
+    let (protocol_handler, _) = setup_contracts_for_testing();
 
     // Change caller to security council
-    start_cheat_caller_address(protocol_handler.contract_address, security_council_mock);
+    start_cheat_caller_address(protocol_handler.contract_address, security_council_mock());
 
     // Mock the call to kakarot pause function
-    mock_call::<()>(kakarot_mock, selector!("pause"), (), 1);
+    mock_call::<()>(kakarot_mock(), selector!("pause"), (), 1);
 
     // Spy on the events
     let mut spy = spy_events();
@@ -297,7 +299,7 @@ fn test_protocol_handler_hard_pause_should_pass() {
 fn test_protocol_handler_unpause_should_fail_wrong_caller_when_too_soon() {
     // Block timestamp is 0 in tests, changing it to 10
     start_cheat_block_timestamp_global(10);
-    let (protocol_handler, _, _, _, _, _) = setup_contracts_for_testing();
+    let (protocol_handler, _) = setup_contracts_for_testing();
 
     // Simulate pausing by writing in the storage
     // Find the storage address for the ProtocolFrozenUntil
@@ -323,8 +325,7 @@ fn test_protocol_handler_unpause_should_fail_wrong_caller_when_too_soon() {
 fn test_protocol_handler_unpause_should_pass_security_council() {
     // Block timestamp is 0 in tests changing it to 10
     start_cheat_block_timestamp_global(10);
-    let (protocol_handler, _, kakarot_mock, security_council_mock, _, _) =
-        setup_contracts_for_testing();
+    let (protocol_handler, _) = setup_contracts_for_testing();
 
     // Simulate pausing by writing in the storage
     // Find the storage address for the ProtocolFrozenUntil
@@ -339,10 +340,10 @@ fn test_protocol_handler_unpause_should_pass_security_council() {
     );
 
     // Change the caller to security council
-    start_cheat_caller_address(protocol_handler.contract_address, security_council_mock);
+    start_cheat_caller_address(protocol_handler.contract_address, security_council_mock());
 
     // Mock call to kakarot unpause function
-    mock_call::<()>(kakarot_mock, selector!("unpause"), (), 1);
+    mock_call::<()>(kakarot_mock(), selector!("unpause"), (), 1);
 
     // Spy on the events
     let mut spy = spy_events();
@@ -366,7 +367,7 @@ fn test_protocol_handler_unpause_should_pass_security_council() {
 fn test_protocol_handler_unpause_should_pass_after_delay() {
     // Block timestamp is 0 in tests
     start_cheat_block_timestamp_global(10);
-    let (protocol_handler, _, kakarot_mock, _, _, _) = setup_contracts_for_testing();
+    let (protocol_handler, _) = setup_contracts_for_testing();
 
     // Simulate pausing by writing in the storage
     // Find the storage address for the ProtocolFrozenUntil
@@ -381,7 +382,7 @@ fn test_protocol_handler_unpause_should_pass_after_delay() {
     );
 
     // Mock call to kakarot unpause function
-    mock_call::<()>(kakarot_mock, selector!("unpause"), (), 1);
+    mock_call::<()>(kakarot_mock(), selector!("unpause"), (), 1);
 
     // Spy on the events
     let mut spy = spy_events();

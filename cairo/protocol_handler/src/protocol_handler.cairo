@@ -57,10 +57,7 @@ pub mod ProtocolHandler {
     use starknet::event::EventEmitter;
     use starknet::account::Call;
     use starknet::{ContractAddress, ClassHash, get_block_timestamp, SyscallResultTrait};
-    use starknet::storage::{
-        Map, StoragePointerReadAccess,
-        StoragePointerWriteAccess
-    };
+    use starknet::storage::{Map, StoragePointerReadAccess, StoragePointerWriteAccess};
     use openzeppelin_access::accesscontrol::AccessControlComponent;
     use openzeppelin_introspection::src5::SRC5Component;
     use crate::kakarot_interface::{IKakarotDispatcher, IKakarotDispatcherTrait};
