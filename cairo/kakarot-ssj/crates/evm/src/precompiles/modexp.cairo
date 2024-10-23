@@ -172,14 +172,31 @@ fn mod_exp_loop_inner(n: u384, bit: u384, base: u384, res: u384) -> (u384, u384)
     (outputs.get_output(new_res), outputs.get_output(new_base))
 }
 
-// Compute the modular exponentiation
-// x^y mod n
+/// Computes the modular exponentiation x^y mod n up to 384 bits.
+/// The algorithm uses the binary expansion of the exponent from right to left,
+/// and use iterated squaring-and-multiply implemented using a circuit.
+/// Resource: <https://en.wikipedia.org/wiki/Modular_exponentiation#Right-to-left-binary-method>
+///
+/// # Arguments
+///
+/// * `x` a `u384` value representing the base.
+/// * `y` a `u384` value representing the exponent.
+/// * `n` a `u384` value representing the modulus.
+///
+/// # Returns
+///
+/// * `u384` - The result of the modular exponentiation x^y mod n.
 pub fn modexp_circuit(x: u384, y: u384, n: u384) -> u384 {
-    println!("{:?} {:?} {:?}", x, y, n);
-    if x.is_zero() {
+    if n.is_zero() {
         return 0.into();
     }
-    if n.is_zero() {
+    if n == 1.into() {
+        return 0.into();
+    }
+    if y.is_zero() {
+        return 1.into();
+    }
+    if x.is_zero() {
         return 0.into();
     }
 
@@ -198,7 +215,7 @@ pub fn modexp_circuit(x: u384, y: u384, n: u384) -> u384 {
 
 // Returns the bits of the 384 bit integer in little endian format.
 fn get_u384_bits_little(s: u384) -> Array<felt252> {
-    let mut bits = ArrayTrait::new();
+    let mut bits = array![];
     let mut s_limb0: u128 = Into::<_, felt252>::into(s.limb0).try_into().unwrap();
     while s_limb0 != 0 {
         let (q, r) = core::traits::DivRem::div_rem(s_limb0, 2);
@@ -360,7 +377,17 @@ mod tests {
         );
     }
 
-    //#[test]
+    #[test]
+    fn test_edge_case_circuit() {
+        assert_eq!(mod_exp_circuit(12.into(), 42.into(), 0.into()), 0.into(), "wrong result");
+        assert_eq!(mod_exp_circuit(12.into(), 42.into(), 1.into()), 0.into(), "wrong result");
+        assert_eq!(mod_exp_circuit(0.into(), 42.into(), 42.into()), 0.into(), "wrong result");
+        assert_eq!(mod_exp_circuit(42.into(), 0.into(), 42.into()), 1.into(), "wrong result");
+        assert_eq!(mod_exp_circuit(0.into(), 0.into(), 42.into()), 1.into(), "wrong result");
+    }
+
+
+    #[test]
     fn test_modexp_precompile_input_output_worst() {
         let mut calldata = array![];
         let l0f: u128 = Into::<_, felt252>::into(PREV_PRIME_384_M2.limb0).try_into().unwrap();
@@ -406,7 +433,9 @@ mod tests {
             for _i in 2..size - 1 {
                 modulus.append(0);
             };
-            if size > 2 {modulus.append((delta.into() / 256_u16).try_into().unwrap());}
+            if size > 2 {
+                modulus.append((delta.into() / 256_u16).try_into().unwrap());
+            }
             modulus.append((delta % 256).try_into().unwrap());
 
             let mut base: Array<u8> = Default::default();
@@ -415,7 +444,9 @@ mod tests {
             for _i in 2..size - 1 {
                 base.append(0);
             };
-            if size > 2 {base.append((delta_base.into() / 256_u16).try_into().unwrap());}
+            if size > 2 {
+                base.append((delta_base.into() / 256_u16).try_into().unwrap());
+            }
             base.append((delta_base % 256).try_into().unwrap());
 
             let delta_exponent = delta - 1;
@@ -424,7 +455,9 @@ mod tests {
             for _i in 2..size - 1 {
                 exponent.append(0);
             };
-            if size > 2 { exponent.append((delta_exponent.into() / 256_u16).try_into().unwrap()); }
+            if size > 2 {
+                exponent.append((delta_exponent.into() / 256_u16).try_into().unwrap());
+            }
             exponent.append((delta_exponent % 256).try_into().unwrap());
 
             let size_bytes = size.to_be_bytes().pad_left_with_zeroes(32);
