@@ -309,9 +309,8 @@ fn calculate_iteration_count(exp_length: u64, exp_highp: u256) -> u64 {
 
 #[cfg(test)]
 mod tests {
-    use core::circuit::{u96, u384};
+    use core::circuit::u384;
     use core::result::ResultTrait;
-    use core::starknet::EthAddress;
 
     use crate::precompiles::modexp::ModExp;
     use crate::test_data::test_data_modexp::{
@@ -323,7 +322,7 @@ mod tests {
 
     use super::modexp_circuit;
 
-    use utils::traits::bytes::{U8SpanExTrait, FromBytes, ToBytes};
+    use utils::traits::bytes::{U8SpanExTrait, ToBytes};
 
     const TWO_31: u256 = 2147483648;
     const PREV_PRIME_384: u384 =
@@ -378,14 +377,13 @@ mod tests {
     }
 
     #[test]
-    fn test_edge_case_circuit() {
-        assert_eq!(mod_exp_circuit(12.into(), 42.into(), 0.into()), 0.into(), "wrong result");
-        assert_eq!(mod_exp_circuit(12.into(), 42.into(), 1.into()), 0.into(), "wrong result");
-        assert_eq!(mod_exp_circuit(0.into(), 42.into(), 42.into()), 0.into(), "wrong result");
-        assert_eq!(mod_exp_circuit(42.into(), 0.into(), 42.into()), 1.into(), "wrong result");
-        assert_eq!(mod_exp_circuit(0.into(), 0.into(), 42.into()), 1.into(), "wrong result");
+    fn test_modexp_edge_case_circuit() {
+        assert_eq!(modexp_circuit(12.into(), 42.into(), 0.into()), 0.into());
+        assert_eq!(modexp_circuit(12.into(), 42.into(), 1.into()), 0.into());
+        assert_eq!(modexp_circuit(0.into(), 42.into(), 42.into()), 0.into());
+        assert_eq!(modexp_circuit(42.into(), 0.into(), 42.into()), 1.into());
+        assert_eq!(modexp_circuit(0.into(), 0.into(), 42.into()), 1.into());
     }
-
 
     #[test]
     fn test_modexp_precompile_input_output_worst() {
@@ -469,7 +467,7 @@ mod tests {
             calldata.append_span(exponent.span());
             calldata.append_span(modulus.span());
 
-            let (gas, result) = ModExp::exec(calldata.span()).unwrap();
+            let (_, result) = ModExp::exec(calldata.span()).unwrap();
             let expected_result_bytes = 1_u8.to_be_bytes();
 
             assert_eq!(result, expected_result_bytes.pad_left_with_zeroes(size));
