@@ -11,6 +11,7 @@ openzeppelin = { git = "https://github.com/OpenZeppelin/cairo-contracts.git", ta
 
 [dev-dependencies]
 snforge_std = { git = "https://github.com/foundry-rs/starknet-foundry.git", tag = "v0.31.0" }
+snforge_utils = { path = "../snforge_utils" }
 
 [[target.starknet-contract]]
 casm = true

@@ -74,6 +74,7 @@ lint:
         - cairo/utils
         - cairo/kakarot-ssj/crates
         - cairo/protocol_handler
+        - cairo/snforge_utils
     - linters: [ALL]
       paths:
         - logs*
