@@ -98,10 +98,10 @@ mod ProtocolHandler {
 
     #[storage]
     pub struct Storage {
-        Kakarot: ContractAddress,
-        Operator: ContractAddress,
-        Guardians: Map<ContractAddress, bool>,
-        ProtocolFrozenUntil: u64,
+        kakarot: IKakarotDispatcher,
+        operator: ContractAddress,
+        guardians: Map<ContractAddress, bool>,
+        protocol_frozen_until: u64,
         #[substorage(v0)]
         accesscontrol: AccessControlComponent::Storage,
         #[substorage(v0)]
@@ -162,21 +162,21 @@ mod ProtocolHandler {
     #[constructor]
     fn constructor(
         ref self: ContractState,
-        kakarot_: ContractAddress,
-        security_council_: ContractAddress,
-        operator_: ContractAddress,
-        mut guardians_: Span<ContractAddress>,
+        kakarot: ContractAddress,
+        security_council: ContractAddress,
+        operator: ContractAddress,
+        mut guardians: Span<ContractAddress>,
     ) {
         // Store the Kakarot address
-        self.Kakarot.write(kakarot_);
+        self.kakarot.write(IKakarotDispatcher { contract_address: kakarot });
 
         // AccessControl-related initialization
         self.accesscontrol.initializer();
 
         // Grant roles
-        self.accesscontrol._grant_role(SECURITY_COUNCIL_ROLE, security_council_);
-        self.accesscontrol._grant_role(OPERATOR_ROLE, operator_);
-        for guardian in guardians_ {
+        self.accesscontrol._grant_role(SECURITY_COUNCIL_ROLE, security_council);
+        self.accesscontrol._grant_role(OPERATOR_ROLE, operator);
+        for guardian in guardians {
             self.accesscontrol._grant_role(GUARDIAN_ROLE, *guardian);
         };
     }
@@ -191,8 +191,8 @@ mod ProtocolHandler {
             // Check only security council can call
             self.accesscontrol.assert_only_role(SECURITY_COUNCIL_ROLE);
 
-            // Check if the call is to the Kakarot
-            let kakarot = self.Kakarot.read();
+            // Check if the call is to the Kakarot contract
+            let kakarot = self.kakarot.read().contract_address;
             let Call { to, selector, calldata } = call;
             assert(to == kakarot, 'ONLY_KAKAROT_CAN_BE_CALLED');
 
@@ -208,7 +208,7 @@ mod ProtocolHandler {
             self.accesscontrol.assert_only_role(OPERATOR_ROLE);
 
             // Call the Kakarot upgrade function
-            let kakarot = self.get_kakarot_dispatcher();
+            let kakarot = self.kakarot.read();
             kakarot.upgrade(new_class_hash);
 
             // Emit Upgrade event
@@ -220,7 +220,7 @@ mod ProtocolHandler {
             self.accesscontrol.assert_only_role(SECURITY_COUNCIL_ROLE);
 
             // Call the Kakarot transfer_ownership function
-            let kakarot = self.get_kakarot_dispatcher();
+            let kakarot = self.kakarot.read();
             kakarot.transfer_ownership(new_owner);
 
             // Emit TransferOwnership event
@@ -232,10 +232,10 @@ mod ProtocolHandler {
             self.accesscontrol.assert_only_role(GUARDIAN_ROLE);
 
             // Cache the protocol frozen until timestamp
-            let protocolFrozenUntil = get_block_timestamp().into() + SOFT_PAUSE_DELAY;
+            let protocol_frozen_until = get_block_timestamp().into() + SOFT_PAUSE_DELAY;
 
             // Update storage
-            self.ProtocolFrozenUntil.write(protocolFrozenUntil);
+            self.protocol_frozen_until.write(protocol_frozen_until);
 
             // Call the Kakarot pause function
             let kakarot = self.get_kakarot_dispatcher();
@@ -250,13 +250,13 @@ mod ProtocolHandler {
             self.accesscontrol.assert_only_role(SECURITY_COUNCIL_ROLE);
 
             // Cache the protocol frozen until timestamp
-            let protocolFrozenUntil = get_block_timestamp().into() + HARD_PAUSE_DELAY;
+            let protocol_frozen_until = get_block_timestamp().into() + HARD_PAUSE_DELAY;
 
             // Update storage
-            self.ProtocolFrozenUntil.write(protocolFrozenUntil);
+            self.protocol_frozen_until.write(protocol_frozen_until);
 
             // Call the Kakarot pause function
-            let kakarot = self.get_kakarot_dispatcher();
+            let kakarot = self.kakarot.read();
             kakarot.pause();
 
             // Emit HardPause event
@@ -265,28 +265,20 @@ mod ProtocolHandler {
 
         fn unpause(ref self: ContractState) {
             // Check only security council can call unpause if delay is not passed
-            let too_soon = get_block_timestamp().into() < self.ProtocolFrozenUntil.read();
+            let too_soon = get_block_timestamp().into() < self.protocol_frozen_until.read();
             if too_soon {
                 self.accesscontrol.assert_only_role(SECURITY_COUNCIL_ROLE);
             }
 
             // Call the Kakarot unpause function
-            let kakarot = self.get_kakarot_dispatcher();
+            let kakarot = self.kakarot.read();
             kakarot.unpause();
 
             // Update storage
-            self.ProtocolFrozenUntil.write(0);
+            self.protocol_frozen_until.write(0);
 
             // Emit Unpause event
             self.emit(Unpause {});
         }
     }
 
-    #[generate_trait]
-    impl InternalImpl of InternalTrait {
-        fn get_kakarot_dispatcher(ref self: ContractState) -> IKakarotDispatcher {
-            let kakarot_address = self.Kakarot.read();
-            IKakarotDispatcher { contract_address: kakarot_address }
-        }
-    }
-}
