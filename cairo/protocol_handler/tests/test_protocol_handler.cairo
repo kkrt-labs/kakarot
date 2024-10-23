@@ -1,14 +1,11 @@
 use snforge_std::{
     ContractClassTrait, ContractClass, declare, DeclareResultTrait, EventSpyAssertionsTrait,
-    start_cheat_block_timestamp_global, start_cheat_caller_address, mock_call, spy_events, store,
-    load
+    start_cheat_block_timestamp_global, start_cheat_caller_address, mock_call, spy_events, store
 };
 use starknet::{ContractAddress, contract_address_const, get_block_timestamp};
 use starknet::account::Call;
-use starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess};
-use starknet::Felt252TryIntoContractAddress;
 use protocol_handler::{
-    IProtocolHandlerDispatcher, IProtocolHandlerDispatcherTrait, IProtocolHandler, ProtocolHandler
+    IProtocolHandlerDispatcher, IProtocolHandlerDispatcherTrait, ProtocolHandler
 };
 
 fn setup_contracts_for_testing() -> (
@@ -305,7 +302,7 @@ fn test_protocol_handler_unpause_should_fail_wrong_caller_when_too_soon() {
     // Simulate pausing by writing in the storage
     // Find the storage address for the ProtocolFrozenUntil
     let mut state = ProtocolHandler::contract_state_for_testing();
-    let storage_address = state.ProtocolFrozenUntil;
+    let storage_address = state.protocol_frozen_until;
     let value = (get_block_timestamp() * 10);
     let mut serialized_value: Array::<felt252> = array![];
     Serde::serialize(@value, ref serialized_value);
@@ -332,7 +329,7 @@ fn test_protocol_handler_unpause_should_pass_security_council() {
     // Simulate pausing by writing in the storage
     // Find the storage address for the ProtocolFrozenUntil
     let mut state = ProtocolHandler::contract_state_for_testing();
-    let storage_address = state.ProtocolFrozenUntil;
+    let storage_address = state.protocol_frozen_until;
     let value = (get_block_timestamp() * 10);
     let mut serialized_value: Array::<felt252> = array![];
     Serde::serialize(@value, ref serialized_value);
@@ -374,7 +371,7 @@ fn test_protocol_handler_unpause_should_pass_after_delay() {
     // Simulate pausing by writing in the storage
     // Find the storage address for the ProtocolFrozenUntil
     let mut state = ProtocolHandler::contract_state_for_testing();
-    let storage_address = state.ProtocolFrozenUntil;
+    let storage_address = state.protocol_frozen_until;
     let value = get_block_timestamp() - 1;
     let mut serialized_value: Array::<felt252> = array![];
     Serde::serialize(@value, ref serialized_value);

@@ -1,5 +1,4 @@
-use starknet::account::Call;
-use starknet::{ContractAddress, ClassHash, EthAddress};
+use starknet::{ContractAddress, ClassHash};
 
 #[starknet::interface]
 pub trait IKakarot<TContractState> {
