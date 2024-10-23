@@ -1,11 +1,16 @@
 use snforge_std::{
-    ContractClassTrait, ContractClass, declare, DeclareResultTrait, EventSpyAssertionsTrait,
+    ContractClassTrait, ContractClass, declare, DeclareResultTrait, EventSpyTrait,
     start_cheat_block_timestamp_global, start_cheat_caller_address, mock_call, spy_events, store
 };
 use starknet::{ContractAddress, contract_address_const, get_block_timestamp};
 use starknet::account::Call;
+use starknet::class_hash::ClassHash;
 use protocol_handler::{
     IProtocolHandlerDispatcher, IProtocolHandlerDispatcherTrait, ProtocolHandler
+};
+
+use snforge_utils::snforge_utils::{
+    EventsFilterBuilderTrait, ContractEventsTrait, assert_called_with
 };
 
 fn kakarot_mock() -> ContractAddress {
@@ -101,18 +106,17 @@ fn test_protocol_emergency_execution_should_pass() {
     let mut spy = spy_events();
     protocol_handler.emergency_execution(call);
 
+    // Assert that upgrade was called on Kakarot
+    assert_called_with::<ClassHash>(kakarot_mock(), selector!("upgrade"), contract.class_hash);
+
     // Check the EmergencyExecution event is emitted
-    spy
-        .assert_emitted(
-            @array![
-                (
-                    protocol_handler.contract_address,
-                    ProtocolHandler::Event::EmergencyExecution(
-                        ProtocolHandler::EmergencyExecution { call: call }
-                    )
-                )
-            ]
-        );
+    let expected = ProtocolHandler::Event::EmergencyExecution(
+        ProtocolHandler::EmergencyExecution { call: call }
+    );
+    let contract_events = EventsFilterBuilderTrait::from_events(@spy.get_events())
+        .with_contract_address(protocol_handler.contract_address)
+        .build();
+    contract_events.assert_emitted(@expected);
 }
 
 #[test]
@@ -143,18 +147,17 @@ fn test_protocol_upgrade_should_pass() {
     // Call the protocol handler upgrade, should pass as caller is operator
     protocol_handler.upgrade(contract.class_hash);
 
+    // Assert that upgrade was called on Kakarot
+    assert_called_with::<ClassHash>(kakarot_mock(), selector!("upgrade"), contract.class_hash);
+
     // Check the TransferOwnership event is emitted
-    spy
-        .assert_emitted(
-            @array![
-                (
-                    protocol_handler.contract_address,
-                    ProtocolHandler::Event::Upgrade(
-                        ProtocolHandler::Upgrade { new_class_hash: contract.class_hash }
-                    )
-                )
-            ]
-        );
+    let expected = ProtocolHandler::Event::Upgrade(
+        ProtocolHandler::Upgrade { new_class_hash: contract.class_hash }
+    );
+    let contract_events = EventsFilterBuilderTrait::from_events(@spy.get_events())
+        .with_contract_address(protocol_handler.contract_address)
+        .build();
+    contract_events.assert_emitted(@expected);
 }
 
 #[test]
@@ -188,18 +191,19 @@ fn test_protocol_handler_transfer_ownership_should_pass() {
     let new_owner = contract_address_const::<'new_owner'>();
     protocol_handler.transfer_ownership(new_owner);
 
+    // Assert that transfer_ownership was called on Kakarot
+    assert_called_with::<
+        ContractAddress
+    >(kakarot_mock(), selector!("transfer_ownership"), new_owner);
+
     // Check the TransferOwnership event is emitted
-    spy
-        .assert_emitted(
-            @array![
-                (
-                    protocol_handler.contract_address,
-                    ProtocolHandler::Event::TransferOwnership(
-                        ProtocolHandler::TransferOwnership { new_owner: new_owner }
-                    )
-                )
-            ]
-        );
+    let expected = ProtocolHandler::Event::TransferOwnership(
+        ProtocolHandler::TransferOwnership { new_owner: new_owner }
+    );
+    let contract_events = EventsFilterBuilderTrait::from_events(@spy.get_events())
+        .with_contract_address(protocol_handler.contract_address)
+        .build();
+    contract_events.assert_emitted(@expected);
 }
 
 
@@ -233,20 +237,19 @@ fn test_protocol_handler_soft_pause_should_pass() {
     // Call the protocol handler soft_pause, should pass as caller is guardian
     protocol_handler.soft_pause();
 
+    // Assert that pause was called on Kakarot
+    assert_called_with::<()>(kakarot_mock(), selector!("pause"), ());
+
     // Check the SoftPause event is emitted
-    spy
-        .assert_emitted(
-            @array![
-                (
-                    protocol_handler.contract_address,
-                    ProtocolHandler::Event::SoftPause(
-                        ProtocolHandler::SoftPause {
-                            protocol_frozen_until: ProtocolHandler::SOFT_PAUSE_DELAY // Blocktimestamp is 0 in tests
-                        }
-                    )
-                )
-            ]
-        );
+    let expected = ProtocolHandler::Event::SoftPause(
+        ProtocolHandler::SoftPause {
+            protocol_frozen_until: ProtocolHandler::SOFT_PAUSE_DELAY // Blocktimestamp is 0 in tests
+        }
+    );
+    let contract_events = EventsFilterBuilderTrait::from_events(@spy.get_events())
+        .with_contract_address(protocol_handler.contract_address)
+        .build();
+    contract_events.assert_emitted(@expected);
 }
 
 #[test]
@@ -278,20 +281,19 @@ fn test_protocol_handler_hard_pause_should_pass() {
     // Call the protocol handler hard_pause, should pass as caller is security council
     protocol_handler.hard_pause();
 
+    // Assert that pause was called on Kakarot
+    assert_called_with::<()>(kakarot_mock(), selector!("pause"), ());
+
     // Check the HardPause event is emitted
-    spy
-        .assert_emitted(
-            @array![
-                (
-                    protocol_handler.contract_address,
-                    ProtocolHandler::Event::HardPause(
-                        ProtocolHandler::HardPause {
-                            protocol_frozen_until: ProtocolHandler::HARD_PAUSE_DELAY // Blocktimestamp is 0 in tests
-                        }
-                    )
-                )
-            ]
-        );
+    let expected = ProtocolHandler::Event::HardPause(
+        ProtocolHandler::HardPause {
+            protocol_frozen_until: ProtocolHandler::HARD_PAUSE_DELAY // Blocktimestamp is 0 in tests
+        }
+    );
+    let contract_events = EventsFilterBuilderTrait::from_events(@spy.get_events())
+        .with_contract_address(protocol_handler.contract_address)
+        .build();
+    contract_events.assert_emitted(@expected);
 }
 
 #[test]
@@ -351,16 +353,15 @@ fn test_protocol_handler_unpause_should_pass_security_council() {
     // Call the protocol handler unpause, should pass as caller is security council
     protocol_handler.unpause();
 
+    // Assert that unpause was called on Kakarot
+    assert_called_with::<()>(kakarot_mock(), selector!("unpause"), ());
+
     // Check the Unpause event is emitted
-    spy
-        .assert_emitted(
-            @array![
-                (
-                    protocol_handler.contract_address,
-                    ProtocolHandler::Event::Unpause(ProtocolHandler::Unpause {})
-                )
-            ]
-        );
+    let expected = ProtocolHandler::Event::Unpause(ProtocolHandler::Unpause {});
+    let contract_events = EventsFilterBuilderTrait::from_events(@spy.get_events())
+        .with_contract_address(protocol_handler.contract_address)
+        .build();
+    contract_events.assert_emitted(@expected);
 }
 
 #[test]
@@ -390,14 +391,13 @@ fn test_protocol_handler_unpause_should_pass_after_delay() {
     // Call the protocol handler unpause, should pass as caller is security council
     protocol_handler.unpause();
 
+    // Assert that unpause was called on Kakarot
+    assert_called_with::<()>(kakarot_mock(), selector!("unpause"), ());
+
     // Check the Unpause event is emitted
-    spy
-        .assert_emitted(
-            @array![
-                (
-                    protocol_handler.contract_address,
-                    ProtocolHandler::Event::Unpause(ProtocolHandler::Unpause {})
-                )
-            ]
-        );
+    let expected = ProtocolHandler::Event::Unpause(ProtocolHandler::Unpause {});
+    let contract_events = EventsFilterBuilderTrait::from_events(@spy.get_events())
+        .with_contract_address(protocol_handler.contract_address)
+        .build();
+    contract_events.assert_emitted(@expected);
 }

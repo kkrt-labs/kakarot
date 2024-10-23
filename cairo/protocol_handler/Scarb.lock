@@ -109,6 +109,7 @@ version = "0.1.0"
 dependencies = [
  "openzeppelin",
  "snforge_std",
+ "snforge_utils",
 ]
 
 [[package]]
@@ -123,3 +124,7 @@ source = "git+https://github.com/foundry-rs/starknet-foundry.git?tag=v0.31.0#72e
 dependencies = [
  "snforge_scarb_plugin",
 ]
+
+[[package]]
+name = "snforge_utils"
+version = "0.1.0"
