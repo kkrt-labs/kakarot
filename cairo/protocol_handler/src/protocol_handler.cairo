@@ -2,7 +2,7 @@ use starknet::account::Call;
 use starknet::{ContractAddress, ClassHash};
 
 #[starknet::interface]
-trait IProtocolHandler<TContractState> {
+pub trait IProtocolHandler<TContractState> {
     /// Execute a call to the Kakarot contract.
     /// Only the security council can call this function.
     /// # Arguments
@@ -53,12 +53,12 @@ trait IProtocolHandler<TContractState> {
 }
 
 #[starknet::contract]
-mod ProtocolHandler {
+pub mod ProtocolHandler {
     use starknet::event::EventEmitter;
     use starknet::account::Call;
     use starknet::{ContractAddress, ClassHash, get_block_timestamp, SyscallResultTrait};
     use starknet::storage::{
-        Map, StorageMapReadAccess, StorageMapWriteAccess, StoragePointerReadAccess,
+        Map, StoragePointerReadAccess,
         StoragePointerWriteAccess
     };
     use openzeppelin_access::accesscontrol::AccessControlComponent;
@@ -89,8 +89,8 @@ mod ProtocolHandler {
     const GUARDIAN_ROLE: felt252 = selector!("GUARDIAN_ROLE");
     const OPERATOR_ROLE: felt252 = selector!("OPERATOR_ROLE");
     // Pause delay
-    const SOFT_PAUSE_DELAY: u64 = 12 * 60 * 60; // 12 hours
-    const HARD_PAUSE_DELAY: u64 = 7 * 24 * 60 * 60; // 7 days
+    pub const SOFT_PAUSE_DELAY: u64 = 12 * 60 * 60; // 12 hours
+    pub const HARD_PAUSE_DELAY: u64 = 7 * 24 * 60 * 60; // 7 days
 
     //* ------------------------------------------------------------------------ *//
     //*                                  STORAGE                                 *//
@@ -98,10 +98,10 @@ mod ProtocolHandler {
 
     #[storage]
     pub struct Storage {
-        kakarot: IKakarotDispatcher,
-        operator: ContractAddress,
-        guardians: Map<ContractAddress, bool>,
-        protocol_frozen_until: u64,
+        pub kakarot: IKakarotDispatcher,
+        pub operator: ContractAddress,
+        pub guardians: Map<ContractAddress, bool>,
+        pub protocol_frozen_until: u64,
         #[substorage(v0)]
         accesscontrol: AccessControlComponent::Storage,
         #[substorage(v0)]
@@ -114,7 +114,7 @@ mod ProtocolHandler {
 
     #[event]
     #[derive(Drop, starknet::Event)]
-    enum Event {
+    pub enum Event {
         EmergencyExecution: EmergencyExecution,
         Upgrade: Upgrade,
         TransferOwnership: TransferOwnership,
@@ -128,32 +128,32 @@ mod ProtocolHandler {
     }
 
     #[derive(Drop, starknet::Event)]
-    struct EmergencyExecution {
-        call: Call
+    pub struct EmergencyExecution {
+        pub call: Call
     }
 
     #[derive(Drop, starknet::Event)]
-    struct Upgrade {
-        new_class_hash: ClassHash
+    pub struct Upgrade {
+        pub new_class_hash: ClassHash
     }
 
     #[derive(Drop, starknet::Event)]
-    struct TransferOwnership {
-        new_owner: ContractAddress
+    pub struct TransferOwnership {
+        pub new_owner: ContractAddress
     }
 
     #[derive(Drop, starknet::Event)]
-    struct SoftPause {
-        protocol_frozen_until: u64,
+    pub struct SoftPause {
+        pub protocol_frozen_until: u64,
     }
 
     #[derive(Drop, starknet::Event)]
-    struct HardPause {
-        protocol_frozen_until: u64,
+    pub struct HardPause {
+        pub protocol_frozen_until: u64,
     }
 
     #[derive(Drop, starknet::Event)]
-    struct Unpause {}
+    pub struct Unpause {}
 
     //* ------------------------------------------------------------------------ *//
     //*                                CONSTRUCTOR                               *//
@@ -238,11 +238,11 @@ mod ProtocolHandler {
             self.protocol_frozen_until.write(protocol_frozen_until);
 
             // Call the Kakarot pause function
-            let kakarot = self.get_kakarot_dispatcher();
+            let kakarot = self.kakarot.read();
             kakarot.pause();
 
             // Emit SoftPause event
-            self.emit(SoftPause { protocol_frozen_until: protocolFrozenUntil });
+            self.emit(SoftPause { protocol_frozen_until: protocol_frozen_until });
         }
 
         fn hard_pause(ref self: ContractState) {
@@ -260,7 +260,7 @@ mod ProtocolHandler {
             kakarot.pause();
 
             // Emit HardPause event
-            self.emit(HardPause { protocol_frozen_until: protocolFrozenUntil });
+            self.emit(HardPause { protocol_frozen_until: protocol_frozen_until });
         }
 
         fn unpause(ref self: ContractState) {
@@ -281,4 +281,4 @@ mod ProtocolHandler {
             self.emit(Unpause {});
         }
     }
-
+}
