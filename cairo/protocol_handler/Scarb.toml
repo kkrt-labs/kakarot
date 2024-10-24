@@ -12,6 +12,7 @@ openzeppelin = { git = "https://github.com/OpenZeppelin/cairo-contracts.git", ta
 [dev-dependencies]
 snforge_std = { git = "https://github.com/foundry-rs/starknet-foundry.git", tag = "v0.31.0" }
 snforge_utils = { path = "../snforge_utils" }
+assert_macros = "2.8.2"
 
 [[target.starknet-contract]]
 casm = true
@@ -19,3 +20,9 @@ casm-add-pythonic-hints = true
 
 [scripts]
 test = "snforge test"
+test-coverage = "snforge test --coverage"
+
+[profile.dev.cairo]
+unstable-add-statements-code-locations-debug-info = true
+unstable-add-statements-functions-debug-info = true
+inlining-strategy = "avoid"

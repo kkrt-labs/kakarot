@@ -70,6 +70,53 @@ pub trait IProtocolHandler<TContractState> {
     /// * `UNAUTHORIZED_SELECTOR` in case the selector is not authorized
     /// * `ONLY_KAKAROT_CAN_BE_CALLED` in case the call is not to the Kakarot contract
     fn execute_call(ref self: TContractState, call: Call);
+
+    /// Change the operator of the Kakarot contract.
+    /// Only the security council can call this function.
+    /// # Arguments
+    /// * `new_operator_address` - The new operator address
+    ///
+    /// # Panics
+    /// * `Caller is missing role` in case the caller is not the security council
+    fn change_operator(ref self: TContractState, new_operator_address: ContractAddress);
+
+    /// Change the security council of the Kakarot contract.
+    /// Only the security council can call this function.
+    /// # Arguments
+    /// * `new_security_council_address` - The new security council address
+    ///
+    /// # Panics
+    /// * `Caller is missing role` in case the caller is not the security council
+    fn change_security_council(
+        ref self: TContractState, new_security_council_address: ContractAddress
+    );
+
+    /// Change the gas price admin of the Kakarot contract.
+    /// Only the security council can call this function.
+    /// # Arguments
+    /// * `new_gas_price_admin` - The new gas price admin address
+    ///
+    /// # Panics
+    /// * `Caller is missing role` in case the caller is not the security council
+    fn change_gas_price_admin(ref self: TContractState, new_gas_price_admin: ContractAddress);
+
+    /// Change the guardians of the Kakarot contract.
+    /// Only the security council can call this function.
+    /// # Arguments
+    /// * `new_guardians_address` - The new guardians address
+    ///
+    /// # Panics
+    /// * `Caller is missing role` in case the caller is not the security council
+    fn add_guardian(ref self: TContractState, new_guardian_address: ContractAddress);
+
+    /// Remove a guardian from the Kakarot contract.
+    /// Only the security council can call this function.
+    /// # Arguments
+    /// * `guardian_address` - The guardian address to be removed
+    ///
+    /// # Panics
+    /// * `Caller is missing role` in case the caller is not the security council
+    fn remove_guardian(ref self: TContractState, guardian_address: ContractAddress);
 }
 
 #[starknet::contract]
@@ -104,10 +151,10 @@ pub mod ProtocolHandler {
     //* ------------------------------------------------------------------------ *//
 
     // Access controls roles
-    const SECURITY_COUNCIL_ROLE: felt252 = selector!("SECURITY_COUNCIL_ROLE");
-    const OPERATOR_ROLE: felt252 = selector!("OPERATOR_ROLE");
-    const GUARDIAN_ROLE: felt252 = selector!("GUARDIAN_ROLE");
-    const GAS_PRICE_ADMIN_ROLE: felt252 = selector!("GAS_PRICE_ADMIN_ROLE");
+    pub const SECURITY_COUNCIL_ROLE: felt252 = selector!("SECURITY_COUNCIL_ROLE");
+    pub const OPERATOR_ROLE: felt252 = selector!("OPERATOR_ROLE");
+    pub const GUARDIAN_ROLE: felt252 = selector!("GUARDIAN_ROLE");
+    pub const GAS_PRICE_ADMIN_ROLE: felt252 = selector!("GAS_PRICE_ADMIN_ROLE");
     // Pause delay
     pub const SOFT_PAUSE_DELAY: u64 = 12 * 60 * 60; // 12 hours
     pub const HARD_PAUSE_DELAY: u64 = 7 * 24 * 60 * 60; // 7 days
@@ -130,6 +177,7 @@ pub mod ProtocolHandler {
     #[storage]
     pub struct Storage {
         pub kakarot: IKakarotDispatcher,
+        pub security_council: ContractAddress,
         pub operator: ContractAddress,
         pub guardians: Map<ContractAddress, bool>,
         pub gas_price_admin: ContractAddress,
@@ -213,19 +261,11 @@ pub mod ProtocolHandler {
         gas_price_admin: ContractAddress,
         mut guardians: Span<ContractAddress>
     ) {
-        // Store the Kakarot address
+        // Store the Kakarot, security council, operator and gas price admin addresses
         self.kakarot.write(IKakarotDispatcher { contract_address: kakarot });
-
-        // AccessControl-related initialization
-        self.accesscontrol.initializer();
-
-        // Grant roles
-        self.accesscontrol._grant_role(SECURITY_COUNCIL_ROLE, security_council);
-        self.accesscontrol._grant_role(OPERATOR_ROLE, operator);
-        for guardian in guardians {
-            self.accesscontrol._grant_role(GUARDIAN_ROLE, *guardian);
-        };
-        self.accesscontrol._grant_role(GAS_PRICE_ADMIN_ROLE, gas_price_admin);
+        self.security_council.write(security_council);
+        self.operator.write(operator);
+        self.gas_price_admin.write(gas_price_admin);
 
         // Store the authorized selectors for the operator
         self.authorized_operator_selector.write(selector!("set_native_token"), true);
@@ -245,6 +285,17 @@ pub mod ProtocolHandler {
         self
             .authorized_operator_selector
             .write(selector!("set_l1_messaging_contract_address"), true);
+
+        // AccessControl-related initialization
+        self.accesscontrol.initializer();
+
+        // Grant roles
+        self.accesscontrol._grant_role(SECURITY_COUNCIL_ROLE, security_council);
+        self.accesscontrol._grant_role(OPERATOR_ROLE, operator);
+        for guardian in guardians {
+            self.accesscontrol._grant_role(GUARDIAN_ROLE, *guardian);
+        };
+        self.accesscontrol._grant_role(GAS_PRICE_ADMIN_ROLE, gas_price_admin);
     }
 
     #[abi(embed_v0)]
@@ -385,6 +436,70 @@ pub mod ProtocolHandler {
 
             // Emit Event Execution event
             self.emit(Execution { call });
+        }
+
+        //* ------------------------------------------------------------------------ *//
+        //*                             SELF MANAGEMENT                              *//
+        //* ------------------------------------------------------------------------ *//
+
+        fn change_operator(ref self: ContractState, new_operator_address: ContractAddress) {
+            // Check only security council can call
+            self.accesscontrol.assert_only_role(SECURITY_COUNCIL_ROLE);
+
+            // Revoke the OPERATOR_ROLE from the current operator
+            self.accesscontrol._revoke_role(OPERATOR_ROLE, self.operator.read());
+
+            // Grant role to the new operator
+            self.accesscontrol._grant_role(OPERATOR_ROLE, new_operator_address);
+
+            // Update the operator
+            self.operator.write(new_operator_address);
+        }
+
+        fn change_security_council(
+            ref self: ContractState, new_security_council_address: ContractAddress
+        ) {
+            // Check only security council can call
+            self.accesscontrol.assert_only_role(SECURITY_COUNCIL_ROLE);
+
+            // Revoke the SECURITY_COUNCIL_ROLE from the current security council
+            self.accesscontrol._revoke_role(SECURITY_COUNCIL_ROLE, self.security_council.read());
+
+            // Grant role to the new security council
+            self.accesscontrol._grant_role(SECURITY_COUNCIL_ROLE, new_security_council_address);
+
+            // Update the security council
+            self.security_council.write(new_security_council_address);
+        }
+
+        fn change_gas_price_admin(ref self: ContractState, new_gas_price_admin: ContractAddress) {
+            // Check only security council can call
+            self.accesscontrol.assert_only_role(SECURITY_COUNCIL_ROLE);
+
+            // Revoke the GAS_PRICE_ADMIN_ROLE from the current gas price admin
+            self.accesscontrol._revoke_role(GAS_PRICE_ADMIN_ROLE, self.gas_price_admin.read());
+
+            // Grant role to the new gas price admin
+            self.accesscontrol._grant_role(GAS_PRICE_ADMIN_ROLE, new_gas_price_admin);
+
+            // Update the gas price admin
+            self.gas_price_admin.write(new_gas_price_admin);
+        }
+
+        fn add_guardian(ref self: ContractState, new_guardian_address: ContractAddress) {
+            // Check only security council can call
+            self.accesscontrol.assert_only_role(SECURITY_COUNCIL_ROLE);
+
+            // Grant the GUARDIAN_ROLE to the new guardian
+            self.accesscontrol._grant_role(GUARDIAN_ROLE, new_guardian_address);
+        }
+
+        fn remove_guardian(ref self: ContractState, guardian_address: ContractAddress) {
+            // Check only security council can call
+            self.accesscontrol.assert_only_role(SECURITY_COUNCIL_ROLE);
+
+            // Revoke the GUARDIAN_ROLE from the guardian
+            self.accesscontrol._revoke_role(GUARDIAN_ROLE, guardian_address);
         }
     }
 }
