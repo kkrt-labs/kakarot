@@ -96,6 +96,7 @@ pub mod ProtocolHandler {
 
     pub mod errors {
         pub const ONLY_KAKAROT_CAN_BE_CALLED: felt252 = 'ONLY_KAKAROT_CAN_BE_CALLED';
+        pub const PROTOCOL_ALREADY_PAUSED: felt252 = 'PROTOCOL_ALREADY_PAUSED';
     }
 
     //* ------------------------------------------------------------------------ *//
@@ -236,6 +237,10 @@ pub mod ProtocolHandler {
         fn soft_pause(ref self: ContractState) {
             // Check only guardians can call
             self.accesscontrol.assert_only_role(GUARDIAN_ROLE);
+
+            // Check if the protocol is already paused
+            let protocol_frozen_until = self.protocol_frozen_until.read();
+            assert(protocol_frozen_until == 0, errors::PROTOCOL_ALREADY_PAUSED);
 
             // Cache the protocol frozen until timestamp
             let protocol_frozen_until = get_block_timestamp().into() + SOFT_PAUSE_DELAY;
