@@ -221,6 +221,31 @@ fn test_protocol_handler_soft_pause_should_fail_wrong_caller() {
 }
 
 #[test]
+#[should_panic(expected: 'PROTOCOL_ALREADY_PAUSED')]
+fn test_protocol_handler_soft_pause_should_fail_already_paused() {
+    let (protocol_handler, _) = setup_contracts_for_testing();
+
+    // Simulate pausing by writing in the storage
+    // Find the storage address for the ProtocolFrozenUntil
+    let mut state = ProtocolHandler::contract_state_for_testing();
+    let storage_address = state.protocol_frozen_until;
+    let value = (get_block_timestamp() + 1);
+    let mut serialized_value: Array::<felt252> = array![];
+    Serde::serialize(@value, ref serialized_value);
+    // Store the value in the storage of the protocol handler
+    store(
+        protocol_handler.contract_address, storage_address.__base_address__, serialized_value.span()
+    );
+
+    // Change caller to a guardian
+    let guardians = guardians_mock();
+    start_cheat_caller_address(protocol_handler.contract_address, *guardians[0]);
+
+    // Call the protocol handler soft_pause, should fail as protocol is already paused
+    protocol_handler.soft_pause();
+}
+
+#[test]
 fn test_protocol_handler_soft_pause_should_pass() {
     let (protocol_handler, _) = setup_contracts_for_testing();
 
