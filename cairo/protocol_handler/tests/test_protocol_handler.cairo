@@ -6,9 +6,9 @@ use starknet::{ContractAddress, contract_address_const, get_block_timestamp};
 use starknet::account::Call;
 use starknet::class_hash::ClassHash;
 use protocol_handler::{
-    IProtocolHandlerDispatcher, IProtocolHandlerDispatcherTrait, ProtocolHandler
+    IProtocolHandlerDispatcher, IProtocolHandlerDispatcherTrait, ProtocolHandler,
+    IProtocolHandlerSafeDispatcher, IProtocolHandlerSafeDispatcherTrait
 };
-
 use snforge_utils::snforge_utils::{
     EventsFilterBuilderTrait, ContractEventsTrait, assert_called_with
 };
@@ -32,18 +32,27 @@ fn guardians_mock() -> Span<ContractAddress> {
         .span()
 }
 
+fn gas_price_admin_mock() -> ContractAddress {
+    contract_address_const::<'gas_price_admin_mock'>()
+}
+
 fn setup_contracts_for_testing() -> (IProtocolHandlerDispatcher, ContractClass) {
     // Mock Kakarot, security council, operator and guardians
     let kakarot_mock: ContractAddress = kakarot_mock();
     let security_council_mock: ContractAddress = security_council_mock();
     let operator_mock: ContractAddress = operator_mock();
+    let gas_price_admin_mock: ContractAddress = gas_price_admin_mock();
     let guardians: Span<ContractAddress> = guardians_mock();
 
     // Construct the calldata for the ProtocolHandler contrustor
     let mut constructor_calldata: Array::<felt252> = array![
-        kakarot_mock.into(), security_council_mock.into(), operator_mock.into()
+        kakarot_mock.into(),
+        security_council_mock.into(),
+        operator_mock.into(),
+        gas_price_admin_mock.into()
     ];
     Serde::serialize(@guardians, ref constructor_calldata);
+
     let contract = declare("ProtocolHandler").unwrap().contract_class();
     let (contract_address, _) = contract.deploy(@constructor_calldata).unwrap();
 
@@ -425,4 +434,184 @@ fn test_protocol_handler_unpause_should_pass_after_delay() {
         .with_contract_address(protocol_handler.contract_address)
         .build();
     contract_events.assert_emitted(@expected);
+}
+
+#[test]
+#[should_panic(expected: 'Caller is missing role')]
+fn test_protocol_handler_execute_call_should_fail_wrong_caller() {
+    let (protocol_handler, _) = setup_contracts_for_testing();
+
+    // Change caller to random caller address
+    let random_caller = contract_address_const::<'random_caller'>();
+    start_cheat_caller_address(protocol_handler.contract_address, random_caller);
+
+    // Call the protocol handler execute_call, should fail as caller is not operator
+    let call = Call { to: kakarot_mock(), selector: 0, calldata: [].span() };
+    protocol_handler.execute_call(call);
+}
+
+#[test]
+#[should_panic(expected: 'UNAUTHORIZED_SELECTOR')]
+fn test_protocol_handler_execute_call_should_fail_unauthorized_selector() {
+    let (protocol_handler, _) = setup_contracts_for_testing();
+
+    // Change caller to operator
+    start_cheat_caller_address(protocol_handler.contract_address, operator_mock());
+
+    // Construct the Call to a random address
+    let random_called_address = contract_address_const::<'random_called_address'>();
+    let call = Call { to: random_called_address, selector: 0, calldata: [].span() };
+
+    // Call the protocol handler execute_call, should fail as the selector is not authorized
+    protocol_handler.execute_call(call);
+}
+
+#[test]
+#[should_panic(expected: 'ONLY_KAKAROT_CAN_BE_CALLED')]
+fn test_protocol_handler_execute_call_should_fail_wrong_destination() {
+    let (protocol_handler, _) = setup_contracts_for_testing();
+
+    // Change caller to operator
+    start_cheat_caller_address(protocol_handler.contract_address, operator_mock());
+
+    // Construct the Call to kakarot
+    let random_called_address = contract_address_const::<'random_called_address'>();
+    let call = Call {
+        to: random_called_address, selector: selector!("set_native_token"), calldata: [].span()
+    };
+
+    // Call the protocol handler execute_call, should fail as the call is not to Kakarot
+    protocol_handler.execute_call(call);
+}
+
+#[test]
+#[should_panic(expected: 'Caller is missing role')]
+fn test_protocol_handler_set_base_fee_wrong_caller() {
+    let (protocol_handler, _) = setup_contracts_for_testing();
+
+    // Change caller to random caller address
+    let random_caller = contract_address_const::<'random_caller'>();
+    start_cheat_caller_address(protocol_handler.contract_address, random_caller);
+
+    // Call the protocol handler set_base_fee, should fail as caller is not operator
+    protocol_handler.set_base_fee(0);
+}
+
+#[test]
+fn test_protocol_handler_set_base_fee_should_pass() {
+    let (protocol_handler, _) = setup_contracts_for_testing();
+
+    // Change caller to gas price admin
+    start_cheat_caller_address(protocol_handler.contract_address, gas_price_admin_mock());
+
+    // Mock the call to Kakarot set_base_fee function
+    mock_call::<()>(kakarot_mock(), selector!("set_base_fee"), (), 1);
+
+    // Spy on the events
+    let mut spy = spy_events();
+
+    // Call the protocol handler set_base_fee, should pass as caller is gas price admin
+    protocol_handler.set_base_fee(0);
+
+    // Assert that unpause was called on Kakarot
+    assert_called_with::<felt252>(kakarot_mock(), selector!("set_base_fee"), 0);
+
+    // Check the BaseFeeChanged event is emitted
+    let expected = ProtocolHandler::Event::BaseFeeChanged(
+        ProtocolHandler::BaseFeeChanged { new_base_fee: 0 }
+    );
+    let contract_events = EventsFilterBuilderTrait::from_events(@spy.get_events())
+        .with_contract_address(protocol_handler.contract_address)
+        .build();
+    contract_events.assert_emitted(@expected);
+}
+
+#[test]
+fn test_protocol_handler_execute_call_wrong_selector_should_fail() {
+    let (protocol_handler, _) = setup_contracts_for_testing();
+
+    let unauthoried_selectors = [
+        selector!("upgrade"),
+        selector!("transfer_ownership"),
+        selector!("pause"),
+        selector!("unpause"),
+    ];
+
+    // Change the caller to operator
+    start_cheat_caller_address(protocol_handler.contract_address, operator_mock());
+
+    // Get SafeDispatcher of protocolHandler
+    let safe_dispatcher = IProtocolHandlerSafeDispatcher {
+        contract_address: protocol_handler.contract_address
+    };
+
+    for selector in unauthoried_selectors
+        .span() {
+            // Mock the call to the Kakarot entrypoint
+            mock_call::<()>(kakarot_mock(), *selector, (), 1);
+
+            // Construct the Call to protocol handler and call execute_call
+            // Should pass as caller is operator and call is to Kakarot
+            let call = Call { to: kakarot_mock(), selector: *selector, calldata: [].span() };
+
+            // Call the protocol handler execute_call
+            #[feature("safe_dispatcher")]
+            match safe_dispatcher.execute_call(call) {
+                Result::Ok(_) => panic!("Entrypoint did not panic"),
+                Result::Err(panic_data) => {
+                    assert(*panic_data.at(0) == 'UNAUTHORIZED_SELECTOR', *panic_data.at(0));
+                }
+            };
+        }
+}
+
+
+#[test]
+fn test_protocol_handler_execute_call_should_pass() {
+    let (protocol_handler, _) = setup_contracts_for_testing();
+
+    let authorized_selectors = [
+        selector!("set_native_token"),
+        selector!("set_coinbase"),
+        selector!("set_prev_randao"),
+        selector!("set_block_gas_limit"),
+        selector!("set_account_contract_class_hash"),
+        selector!("set_uninitialized_account_class_hash"),
+        selector!("set_authorized_cairo_precompile_caller"),
+        selector!("set_cairo1_helpers_class_hash"),
+        selector!("upgrade_account"),
+        selector!("set_authorized_pre_eip155_tx"),
+        selector!("set_l1_messaging_contract_address"),
+    ];
+
+    // Change caller to operator
+    start_cheat_caller_address(protocol_handler.contract_address, operator_mock());
+
+    for selector in authorized_selectors
+        .span() {
+            // Mock the call to Kakarot entrypoint
+            mock_call::<()>(kakarot_mock(), *selector, (), 1);
+
+            // Construct the Call to protocol handler and call execute_call
+            // Should pass as caller is operator and call is to Kakarot
+            let call = Call { to: kakarot_mock(), selector: *selector, calldata: [].span() };
+
+            // Spy on the events
+            let mut spy = spy_events();
+
+            // Call the protocol handler execute_call
+            protocol_handler.execute_call(call);
+
+            // Assert that selector was called on Kakarot
+            assert_called_with::<()>(kakarot_mock(), *selector, ());
+
+            // Check the ExecuteCall event is emitted
+            let expected = ProtocolHandler::Event::Execution(
+                ProtocolHandler::Execution { call: call }
+            );
+            let contract_events = EventsFilterBuilderTrait::from_events(@spy.get_events())
+                .with_contract_address(protocol_handler.contract_address)
+                .build();
+            contract_events.assert_emitted(@expected);
+        }
 }
