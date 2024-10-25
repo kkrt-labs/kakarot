@@ -89,6 +89,15 @@ pub mod ProtocolHandler {
     pub const SOFT_PAUSE_DELAY: u64 = 12 * 60 * 60; // 12 hours
     pub const HARD_PAUSE_DELAY: u64 = 7 * 24 * 60 * 60; // 7 days
 
+
+    //* ------------------------------------------------------------------------ *//
+    //*                                  ERRORS                                  *//
+    //* ------------------------------------------------------------------------ *//
+
+    pub mod errors {
+        pub const ONLY_KAKAROT_CAN_BE_CALLED: felt252 = 'ONLY_KAKAROT_CAN_BE_CALLED';
+    }
+
     //* ------------------------------------------------------------------------ *//
     //*                                  STORAGE                                 *//
     //* ------------------------------------------------------------------------ *//
@@ -191,7 +200,7 @@ pub mod ProtocolHandler {
             // Check if the call is to the Kakarot contract
             let kakarot = self.kakarot.read().contract_address;
             let Call { to, selector, calldata } = call;
-            assert(to == kakarot, 'ONLY_KAKAROT_CAN_BE_CALLED');
+            assert(to == kakarot, errors::ONLY_KAKAROT_CAN_BE_CALLED);
 
             // Call Kakarot with syscall
             starknet::syscalls::call_contract_syscall(to, selector, calldata).unwrap_syscall();
