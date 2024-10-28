@@ -48,7 +48,12 @@ async def deploy_starknet_contracts(account):
         class_hash["Cairo1Helpers"],
         BLOCK_GAS_LIMIT,
     )
-    coinbase = (await call("EVM", "get_coinbase"))[0]
+    try:
+        coinbase = (
+            await call("EVM", "get_coinbase", address=starknet_deployments["EVM"])
+        )[0]
+    except Exception:
+        coinbase = None
     if coinbase != COINBASE:
         logger.info(f"ℹ️  Setting EVM coinbase to {COINBASE}")
         await invoke(
