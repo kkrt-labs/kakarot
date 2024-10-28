@@ -175,6 +175,7 @@ markers = [
   "SLOAD",
   "NoCI",
   "slow",
+  "EvmPrecompiles",
 ]
 env = [
   "PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION = python",
