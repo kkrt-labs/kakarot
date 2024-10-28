@@ -58,7 +58,7 @@ COPY . .
 COPY .env.example .env
 
 SHELL ["/bin/bash", "-c"]
-RUN  source "$HOME/.cargo/env" && uv sync --all-extras --dev
+RUN  source "$HOME/.cargo/env"
 
 # Install asdf for multiple scarb versions
 RUN git clone --depth 1 https://github.com/asdf-vm/asdf.git "$HOME/.asdf" && \
@@ -67,6 +67,7 @@ RUN git clone --depth 1 https://github.com/asdf-vm/asdf.git "$HOME/.asdf" && \
 
 RUN source "$HOME/.asdf/asdf.sh" && asdf plugin add scarb && asdf install scarb 0.7.0  && asdf install scarb 2.6.5 && asdf install scarb 2.8.3
 
+RUN uv sync --all-extras --dev
 RUN --mount=type=cache,target=/root/.cache \
     source "$HOME/.asdf/asdf.sh" && source "$HOME/.cargo/env" && make build && make build-sol
 
@@ -84,6 +85,7 @@ COPY --from=builder /app/kakarot/.venv ./.venv
 # Cairo Smart contracts are used in deploy_kakarot.py
 # To limit the probability of this Dockerfile to break, we copy the entire src and not individual files
 COPY --from=builder /app/kakarot/cairo_zero/ ./cairo_zero/
+COPY --from=builder /app/kakarot/cairo/ ./cairo/
 
 # Default Solidity contracts are also used in deploy_kakarot.py
 COPY --from=builder /app/kakarot/solidity_contracts ./solidity_contracts/
