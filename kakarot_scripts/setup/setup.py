@@ -102,7 +102,9 @@ def setup_local() -> None:
         logger.info("Docker is already installed.")
 
     install_dependency(
-        "foundry", "curl -L https://foundry.paradigm.xyz | bash && foundryup", "forge"
+        "foundry",
+        "curl -L https://foundry.paradigm.xyz | bash && exec $SHELL && foundryup",
+        "forge",
     )
 
     # Install asdf and related tools
