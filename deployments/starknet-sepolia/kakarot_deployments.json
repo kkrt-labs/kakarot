@@ -18,5 +18,17 @@
   "Coinbase": {
     "address": "0xccaa1b04b831ea3e547d4fe4359e0c2f5b34b749",
     "starknet_address": "0x152c78b2d1229464d461bc323801739bf7a439d049685f59c506b356d0da1bb"
+  },
+  "Multicall3": {
+    "address": "0xca11bde05977b3631167028862be2a173976ca11",
+    "starknet_address": "0x2dde6ca425942c0decd3908bc923ad2cd83edae11e27068fd77881cf51bd3bd"
+  },
+  "ArachnidProxy": {
+    "address": "0x4e59b44847b379578588920ca78fbf26c0b4956c",
+    "starknet_address": "0x7cd414bed2e300ecfd409cf07c4f53906408e93e87d69812728f25ce5be7179"
+  },
+  "CreateX": {
+    "address": "0xba5ed099633d3b313e4d5f7bdc1305d3c28ba5ed",
+    "starknet_address": "0x2361be1b7ded312bfc16c2547eaaf2308d3c9b6aa9037d8fc9ee57329f00951"
   }
 }

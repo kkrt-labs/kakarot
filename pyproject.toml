@@ -16,6 +16,7 @@ dependencies = [
 [project.scripts]
 setup = "kakarot_scripts.setup.setup:main"
 compile = "kakarot_scripts.compile_kakarot:main"
+declare = "kakarot_scripts.deployment.declarations:main_sync"
 deploy = "kakarot_scripts.deployment.main:main_sync"
 ef_tests = "kakarot_scripts.ef_tests.fetch:generate_tests"
 
