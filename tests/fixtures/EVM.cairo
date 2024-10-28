@@ -34,6 +34,7 @@ from kakarot.kakarot import (
     get_cairo1_helpers_class_hash,
     get_native_token,
     set_coinbase,
+    get_coinbase,
 )
 from backend.starknet import Starknet, Internals as StarknetInternals
 from utils.dict import dict_keys, dict_values

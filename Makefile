@@ -34,6 +34,9 @@ katana: ;
 build: $(SSJ_DIR)
 	uv run compile
 
+declare: build build-sol
+	uv run declare
+
 deploy: build build-sol
 	uv run deploy
 

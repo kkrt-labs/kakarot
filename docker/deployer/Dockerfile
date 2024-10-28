@@ -23,6 +23,8 @@ RUN --mount=type=cache,target=/root/.cache \
 RUN --mount=type=cache,target=/root/.cache \
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
+ENV PATH="/root/.cargo/bin:$PATH"
+
 WORKDIR /app/kakarot
 
 ############################################
@@ -53,9 +55,10 @@ ARG GITHUB_TOKEN
 ENV GITHUB_TOKEN=${GITHUB_TOKEN}
 
 COPY . .
+COPY .env.example .env
 
 SHELL ["/bin/bash", "-c"]
-RUN  source "$HOME/.cargo/env" && uv venv && uv pip install -e .
+RUN  source "$HOME/.cargo/env"
 
 # Install asdf for multiple scarb versions
 RUN git clone --depth 1 https://github.com/asdf-vm/asdf.git "$HOME/.asdf" && \
@@ -64,6 +67,7 @@ RUN git clone --depth 1 https://github.com/asdf-vm/asdf.git "$HOME/.asdf" && \
 
 RUN source "$HOME/.asdf/asdf.sh" && asdf plugin add scarb && asdf install scarb 0.7.0  && asdf install scarb 2.6.5 && asdf install scarb 2.8.3
 
+RUN uv sync --all-extras --dev
 RUN --mount=type=cache,target=/root/.cache \
     source "$HOME/.asdf/asdf.sh" && source "$HOME/.cargo/env" && make build && make build-sol
 
@@ -81,6 +85,7 @@ COPY --from=builder /app/kakarot/.venv ./.venv
 # Cairo Smart contracts are used in deploy_kakarot.py
 # To limit the probability of this Dockerfile to break, we copy the entire src and not individual files
 COPY --from=builder /app/kakarot/cairo_zero/ ./cairo_zero/
+COPY --from=builder /app/kakarot/cairo/ ./cairo/
 
 # Default Solidity contracts are also used in deploy_kakarot.py
 COPY --from=builder /app/kakarot/solidity_contracts ./solidity_contracts/
@@ -90,6 +95,9 @@ COPY --from=builder /app/kakarot/uv.lock .
 COPY --from=builder /app/kakarot/pyproject.toml .
 COPY --from=builder /app/kakarot/foundry.toml .
 COPY --from=builder /app/kakarot/README.md .
+COPY --from=builder /app/kakarot/.env.example .env
+COPY --from=builder /app/kakarot/conftest.py .
+ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
 
 # Deploy kakarot
 CMD ["uv", "run", "deploy"]

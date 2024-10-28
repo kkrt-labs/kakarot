@@ -11,6 +11,7 @@ from kakarot_scripts.constants import (
     RPC_CLIENT,
     NetworkType,
 )
+from kakarot_scripts.utils.starknet import call
 from kakarot_scripts.utils.starknet import deploy as deploy_starknet
 from kakarot_scripts.utils.starknet import (
     dump_deployments,
@@ -30,13 +31,14 @@ logger.setLevel(logging.INFO)
 # %%
 async def deploy_starknet_contracts(account):
 
-    # %% Deployments
+    # %% Declarations
     class_hash = get_declarations()
     starknet_deployments = get_deployments()
 
     if NETWORK["type"] is NetworkType.PROD:
         return
 
+    # %% Deployments
     starknet_deployments["EVM"] = await deploy_starknet(
         "EVM",
         account.address,
@@ -46,12 +48,20 @@ async def deploy_starknet_contracts(account):
         class_hash["Cairo1Helpers"],
         BLOCK_GAS_LIMIT,
     )
-    await invoke(
-        "EVM",
-        "set_coinbase",
-        COINBASE,
-        address=starknet_deployments["EVM"],
-    )
+    try:
+        coinbase = (
+            await call("EVM", "get_coinbase", address=starknet_deployments["EVM"])
+        )[0]
+    except Exception:
+        coinbase = None
+    if coinbase != COINBASE:
+        logger.info(f"ℹ️  Setting EVM coinbase to {COINBASE}")
+        await invoke(
+            "EVM",
+            "set_coinbase",
+            COINBASE,
+            address=starknet_deployments["EVM"],
+        )
     starknet_deployments["Counter"] = await deploy_starknet("Counter")
     starknet_deployments["MockPragmaOracle"] = await deploy_starknet("MockPragmaOracle")
     starknet_deployments["MockPragmaSummaryStats"] = await deploy_starknet(

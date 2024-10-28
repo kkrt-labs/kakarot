@@ -1,6 +1,6 @@
 # Kakarot Components and Deployment
 
-The entire Kakarot protocol is composed of 2 different kind of Starknet
+The entire Kakarot protocol is composed of 2 different kinds of Starknet
 contracts:
 
 - Kakarot
