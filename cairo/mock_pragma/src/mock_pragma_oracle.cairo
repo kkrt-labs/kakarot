@@ -1,4 +1,4 @@
-use pragma::entry::structs::{DataType, AggregationMode, PragmaPricesResponse};
+use pragma_lib::types::{DataType, AggregationMode, PragmaPricesResponse};
 
 #[starknet::interface]
 trait IOracle<TContractState> {
@@ -22,7 +22,7 @@ trait IMockPragmaOracle<TContractState> {
 #[starknet::contract]
 mod MockPragmaOracle {
     use starknet::ContractAddress;
-    use pragma::entry::structs::{DataType, AggregationMode, PragmaPricesResponse};
+    use pragma_lib::types::{DataType, AggregationMode, PragmaPricesResponse};
 
     use super::{IOracle, IMockPragmaOracle};
 

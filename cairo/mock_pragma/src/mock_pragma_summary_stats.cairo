@@ -1,4 +1,4 @@
-use pragma::entry::structs::{DataType, AggregationMode};
+use pragma_lib::types::{DataType, AggregationMode};
 
 #[starknet::interface]
 trait ISummaryStats<TContractState> {
@@ -32,8 +32,8 @@ trait ISummaryStats<TContractState> {
 mod MockPragmaSummaryStats {
     use core::zeroable::Zeroable;
     use starknet::ContractAddress;
-    use pragma::entry::structs::{DataType, AggregationMode};
-    use pragma::oracle::oracle::{IPragmaABIDispatcher, IPragmaABIDispatcherTrait};
+    use pragma_lib::types::{DataType, AggregationMode};
+    use pragma_lib::abi::{IPragmaABIDispatcher, IPragmaABIDispatcherTrait};
 
     use super::ISummaryStats;
 
@@ -43,14 +43,9 @@ mod MockPragmaSummaryStats {
     }
 
     #[constructor]
-    fn constructor(
-        ref self: ContractState,
-        pragma_oracle_address: ContractAddress
-    ) {
+    fn constructor(ref self: ContractState, pragma_oracle_address: ContractAddress) {
         assert(!pragma_oracle_address.is_zero(), 'Pragma Oracle cannot be 0');
-        let pragma_oracle = IPragmaABIDispatcher {
-            contract_address: pragma_oracle_address
-        };
+        let pragma_oracle = IPragmaABIDispatcher { contract_address: pragma_oracle_address };
         self.pragma_oracle.write(pragma_oracle);
     }
 
