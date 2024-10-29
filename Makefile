@@ -29,6 +29,10 @@ $(SSJ_ZIP):
 setup:
 	@python kakarot_scripts/setup/setup.py $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 	uv sync --all-extras --dev
+
+setup-ci:
+	uv sync --all-extras --dev
+
 katana: ;
 
 build: $(SSJ_DIR)
