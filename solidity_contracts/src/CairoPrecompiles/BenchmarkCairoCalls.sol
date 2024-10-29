@@ -21,16 +21,16 @@ contract BenchmarkCairoCalls {
 
     function empty() external {}
 
-    function callCairoWithFeltInputs(uint32 n_felt_input) external {
+    function callCairoWithFeltInputs(uint256 n_felt_input) external {
         uint256[] memory data = new uint256[](n_felt_input + 1);
         data[0] = n_felt_input;
-        for (uint32 i = 1; i <= n_felt_input; i++) {
+        for (uint256 i = 1; i <= n_felt_input; i++) {
             data[i] = MAX_FELT;
         }
         cairoContract.callCairo(FUNCTION_SELECTOR_RECEIVE_FELT_INPUTS, data);
     }
 
-    function callCairoWithBytesOutput(uint32 n_felt_output) external {
+    function callCairoWithBytesOutput(uint256 n_felt_output) external {
         uint256[] memory data = new uint256[](1);
         data[0] = n_felt_output;
         bytes memory output = cairoContract.callCairo(FUNCTION_SELECTOR_PRODUCE_BYTES_OUTPUT, data);
