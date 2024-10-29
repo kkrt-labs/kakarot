@@ -12,7 +12,7 @@ from kakarot_scripts.utils.starknet import get_contract, get_deployments, invoke
 @dataclass
 class Entry:
     key: int
-    expiration_timestamp: Optional[int]
+    expiration_timestamp: Optional[int] = None
     is_generic: bool = False
 
     @property
