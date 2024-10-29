@@ -43,12 +43,14 @@ class AggregationMode(Enum):
         return list(AggregationMode).index(self)
 
 
-def serialize_cairo_response(cairo_dict: OrderedDict) -> Tuple:
+def serialize_cairo_response(cairo_response: OrderedDict | Tuple) -> Tuple:
     """
     Serialize the return data of a Cairo call to a tuple
     with the same format as the one returned by the Solidity contract.
     """
     # A None value in the Cairo response is equivalent to a value 0 in the Solidity response.
+    if isinstance(cairo_dict, tuple):
+        return cairo_response
     return tuple(value if value is not None else 0 for value in cairo_dict.values())
 
 
