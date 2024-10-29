@@ -43,29 +43,29 @@ contract PragmaCaller {
     }
 
     struct PragmaCalculateMeanRequest {
-        AggregationMode aggregationMode;
         DataType dataType;
         uint256 pairId;
         uint256 expirationTimestamp;
         uint64 startTimestamp;
         uint64 endTimestamp;
+        AggregationMode aggregationMode;
     }
 
     struct PragmaCalculateVolatilityRequest {
-        AggregationMode aggregationMode;
         DataType dataType;
         uint256 pairId;
         uint256 expirationTimestamp;
         uint64 startTimestamp;
         uint64 endTimestamp;
         uint64 numSamples;
+        AggregationMode aggregationMode;
     }
 
     struct PragmaCalculateTwapRequest {
-        AggregationMode aggregationMode;
         DataType dataType;
         uint256 pairId;
         uint256 expirationTimestamp;
+        AggregationMode aggregationMode;
         uint64 startTimestamp;
         uint64 durationInSeconds;
     }
