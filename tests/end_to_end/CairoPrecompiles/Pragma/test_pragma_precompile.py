@@ -193,7 +193,7 @@ class TestPragmaPrecompile:
         assert res_maybe_expiration_timestamp == (
             # behavior coded inside the mock
             mocked_last_updated_timestamp + 1000
-            if data_type.get("FutureEntry")
+            if data_type.expiration_timestamp is not None
             else 0
         )
 
@@ -240,7 +240,7 @@ class TestPragmaPrecompile:
         (cairo_res,) = await cairo_pragma_summary_stats.functions[
             "calculate_mean"
         ].call(
-            data_type.to_tuple(),
+            data_type.to_dict(),
             0,
             0,
             aggregation_mode.to_tuple(),
@@ -305,7 +305,7 @@ class TestPragmaPrecompile:
         (cairo_res,) = await cairo_pragma_summary_stats.functions[
             "calculate_volatility"
         ].call(
-            data_type.to_tuple(),
+            data_type.to_dict(),
             0,
             0,
             0,
@@ -371,7 +371,7 @@ class TestPragmaPrecompile:
         (cairo_res,) = await cairo_pragma_summary_stats.functions[
             "calculate_twap"
         ].call(
-            data_type.to_tuple(),
+            data_type.to_dict(),
             aggregation_mode.to_tuple(),
             0,
             0,
