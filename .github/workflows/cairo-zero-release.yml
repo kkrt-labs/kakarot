@@ -51,7 +51,7 @@ jobs:
           enable-cache: true
           cache-dependency-glob: uv.lock
       - name: Install dependencies
-        run: make setup
+        run: make setup-ci
       - name: Compile all the cairo files
         run: make build
       - name: Zip the build
