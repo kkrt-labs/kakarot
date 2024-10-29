@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional, OrderedDict, Tuple, List
+from typing import List, Optional, OrderedDict, Tuple
 
 import pytest
 import pytest_asyncio
