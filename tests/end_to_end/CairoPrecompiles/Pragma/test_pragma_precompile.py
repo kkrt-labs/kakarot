@@ -260,6 +260,8 @@ class TestPragmaPrecompile:
             _,
             mocked_price,
             mocked_decimals,
+            _,
+            _,
         ) = mocked_values
         assert res_price == mocked_price
         assert res_decimals == mocked_decimals
@@ -326,6 +328,8 @@ class TestPragmaPrecompile:
             _,
             mocked_price,
             mocked_decimals,
+            _,
+            _,
         ) = mocked_values
         assert res_price == mocked_price
         assert res_decimals == mocked_decimals
@@ -391,6 +395,8 @@ class TestPragmaPrecompile:
             _,
             mocked_price,
             mocked_decimals,
+            _,
+            _,
         ) = mocked_values
         assert res_price == mocked_price
         assert res_decimals == mocked_decimals
