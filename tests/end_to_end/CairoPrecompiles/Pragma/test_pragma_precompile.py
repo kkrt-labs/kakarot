@@ -49,9 +49,9 @@ def serialize_cairo_response(cairo_response: OrderedDict | Tuple) -> Tuple:
     with the same format as the one returned by the Solidity contract.
     """
     # A None value in the Cairo response is equivalent to a value 0 in the Solidity response.
-    if isinstance(cairo_dict, tuple):
+    if isinstance(cairo_response, tuple):
         return cairo_response
-    return tuple(value if value is not None else 0 for value in cairo_dict.values())
+    return tuple(value if value is not None else 0 for value in cairo_response.values())
 
 
 def serialize_cairo_inputs(*args) -> Tuple[int, ...]:
