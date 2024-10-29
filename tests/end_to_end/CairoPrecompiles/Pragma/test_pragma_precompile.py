@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import OrderedDict, Tuple
+from typing import Optional, OrderedDict, Tuple
 
 import pytest
 import pytest_asyncio
@@ -54,17 +54,12 @@ def serialize_cairo_response(cairo_dict: OrderedDict) -> Tuple:
 
 def serialize_cairo_inputs(*args) -> Tuple[int, ...]:
     """
-    Serialize arguments to the same format as the one expected by the Solidity
-    contract.
-
-    Args:
-        *args: Variable number of arguments. Each argument can be:
-            - AggregationMode: will be serialized using .serialize()
-            - Entry: will be serialized using .to_tuple()
-            - int: will be used as-is
-
-    Returns:
-        Tuple[int, ...]: A flattened tuple containing only integers
+    Serialize the provided arguments to the same format as the one expected by
+    the Solidity contract.
+    Each arguments must be either:
+        * an `Entry`,
+        * an `AggregationMode`,
+        * a `int`.
     """
     serialized_inputs = []
     for arg in args:
@@ -383,6 +378,7 @@ class TestPragmaPrecompile:
         )
         solidity_input = serialize_cairo_inputs(data_type, aggregation_mode, 0, 0)
         sol_res = await pragma_caller.calculateTwap(solidity_input)
+        serialized_cairo_res = serialize_cairo_response(cairo_res)
         assert serialized_cairo_res == sol_res
 
         (
