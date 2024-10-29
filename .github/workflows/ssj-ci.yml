@@ -69,7 +69,7 @@ jobs:
           python-version-file: .python-version
 
       - name: Install dependencies
-        run: make setup
+        run: make setup-ci
 
       - name: Load performance artifacts
         uses: actions/download-artifact@v3
