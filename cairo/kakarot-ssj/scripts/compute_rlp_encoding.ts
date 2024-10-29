@@ -1,11 +1,9 @@
-// This js script helps in creating unsigned and signed RLP data for tests
-
-import { ethers, toBeArray } from "ethers";
-import dotevn from "dotenv";
+import { ethers } from "ethers";
+import dotenv from "dotenv";
 import readline from "readline";
-import { readFileSync } from "fs";
+import { readFileSync, existsSync } from "fs";
 
-dotevn.config();
+dotenv.config();
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -13,7 +11,7 @@ const rl = readline.createInterface({
 });
 
 const question = (query: string): Promise<string> => {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     rl.question(query, (answer) => {
       resolve(answer);
     });
@@ -21,140 +19,114 @@ const question = (query: string): Promise<string> => {
 };
 
 const main = async () => {
-  const { Transaction, Wallet } = ethers;
-  const { decodeRlp, getBytes } = ethers;
+  const { Transaction, Wallet, keccak256, RLP } = ethers;
 
   if (!process.env.PRIVATE_KEY_RLP_SCRIPT) {
-    console.log(
-      "missing private key in environment, please provide PRIVATE_KEY_RLP_SCRIPT environment variable",
+    console.error(
+      "Missing private key in environment. Please provide PRIVATE_KEY_RLP_SCRIPT in .env"
     );
     process.exit(1);
   }
 
   const wallet = new Wallet(process.env.PRIVATE_KEY_RLP_SCRIPT);
-  console.log("address of the wallet is", wallet.address);
+  console.log("Address of the wallet:", wallet.address);
 
   let tx_type = parseInt(
     await question(
-      "enter transaction, 0: legacy, 1: 2930, 2:1559, 3: inc_counter, 4: y_parity_false eip1559: ",
-    ),
+      "Enter transaction type (0: legacy, 1: 2930, 2: 1559, 3: inc_counter, 4: y_parity_false eip1559): "
+    )
   );
 
-  // for type 0 and type 1
-  let tx;
-
+  let txFilePath: string;
   switch (tx_type) {
     case 0:
-      tx = JSON.parse(
-        readFileSync("./scripts/data/input_legacy_tx.json", "utf-8"),
-      );
+      txFilePath = "./scripts/data/input_legacy_tx.json";
       break;
     case 1:
-      tx = JSON.parse(
-        readFileSync("./scripts/data/input_access_list_tx.json", "utf-8"),
-      );
+      txFilePath = "./scripts/data/input_access_list_tx.json";
       break;
     case 2:
-      tx = JSON.parse(
-        readFileSync("./scripts/data/input_fee_tx.json", "utf-8"),
-      );
+      txFilePath = "./scripts/data/input_fee_tx.json";
       break;
     case 3:
       tx_type = 1;
-      tx = JSON.parse(
-        readFileSync(
-          "./scripts/data/input_eip_2930_counter_inc_tx.json",
-          "utf-8",
-        ),
-      );
+      txFilePath = "./scripts/data/input_eip_2930_counter_inc_tx.json";
       break;
     case 4:
       tx_type = 2;
-      tx = JSON.parse(
-        readFileSync(
-          "./scripts/data/input_eip1559_y_parity_false.json",
-          "utf-8",
-        ),
-      );
+      txFilePath = "./scripts/data/input_eip1559_y_parity_false.json";
       break;
     default:
-      throw new Error(
-        `transaction type ${tx_type} isn't a valid transaction type`,
-      );
+      throw new Error(`Invalid transaction type: ${tx_type}`);
   }
 
+  if (!existsSync(txFilePath)) {
+    throw new Error(`Transaction file not found: ${txFilePath}`);
+  }
+
+  const tx = JSON.parse(readFileSync(txFilePath, "utf-8"));
   const transaction = Transaction.from(tx);
   transaction.type = tx_type;
 
-  let signed_tx = await wallet.signTransaction(transaction);
+  const signed_tx = await wallet.signTransaction(transaction);
+  console.log("Unsigned serialized tx:", transaction.unsignedSerialized);
+  console.log("Unsigned transaction hash:", transaction.hash);
 
-  console.log("unsigned serialized tx ----->", transaction.unsignedSerialized);
-  console.log("unsigned transaction hash", transaction.hash);
+  const unsignedBytes = ethers.getBytes(transaction.unsignedSerialized);
+  console.log("Unsigned RLP encoded bytes:");
+  console.log(unsignedBytes.map((v) => `${v},`).join(" "));
 
-  // const bytes = getBytes(signedTX);
-  const bytes = getBytes(transaction.unsignedSerialized);
+  const unsignedBytes2 = Uint8Array.from(
+    transaction.type === 0 ? unsignedBytes : unsignedBytes.slice(1)
+  );
+  let decodedRlp = RLP.decode(unsignedBytes2);
+  console.log("Decoded RLP for unsigned transaction:\n", decodedRlp);
 
-  console.log("unsigned RLP encoded bytes for the transaction: ");
+  const signedBytes = ethers.getBytes(signed_tx);
+  console.log("Signed RLP encoded bytes:");
+  console.log(signedBytes.map((v) => `${v},`).join(" "));
 
-  // this prints unsigned RLP encoded bytes of the transaction
-  bytes.forEach((v) => {
-    console.log(v, ",");
-  });
-  console.log("\n");
+  const signedBytes2 = Uint8Array.from(
+    transaction.type === 0 ? signedBytes : signedBytes.slice(1)
+  );
+  decodedRlp = RLP.decode(signedBytes2);
+  console.log("Signed decoded RLP for signed transaction:\n", decodedRlp);
 
-  let bytes2 = Uint8Array.from(transaction.type == 0 ? bytes : bytes.slice(1));
+  const hash = keccak256(unsignedBytes);
+  console.log("Hash over which the signature was made:", hash);
 
-  let decodedRlp = decodeRlp(bytes2);
-  console.log("decoded RLP is for unsigned transaction ....\n", decodedRlp);
-
-  let bytes3 = getBytes(signed_tx);
-
-  console.log("signed RLP encoded bytes for the transaction: ");
-
-  // this prints unsigned RLP encoded bytes of the transaction
-  bytes3.forEach((v) => {
-    console.log(v, ",");
-  });
-  console.log("\n");
-
-  bytes3 = Uint8Array.from(transaction.type == 0 ? bytes3 : bytes3.slice(1));
-  decodedRlp = decodeRlp(bytes3);
-  console.log("signed decoded RLP for signed transaction ....\n", decodedRlp);
-
-  const hash = ethers.keccak256(bytes);
-  console.log("the hash over which the signature was made:", hash);
-
-  console.log("signature details: ");
+  console.log("Signature details:");
   const v = decodedRlp[decodedRlp.length - 3];
   const r = decodedRlp[decodedRlp.length - 2];
   const s = decodedRlp[decodedRlp.length - 1];
 
   const y_parity =
-    tx_type == 0
+    tx_type === 0
       ? get_y_parity(BigInt(v), BigInt(tx.chainId))
-      : parseInt(v, 16) == 1;
-  console.log("r: ", r);
-  console.log("s: ", s);
-  if (tx_type == 0) {
-    console.log("v: ", v);
+      : parseInt(v, 16) === 1;
+  console.log("r:", r);
+  console.log("s:", s);
+  if (tx_type === 0) {
+    console.log("v:", v);
   }
-  console.log("y parity: ", y_parity);
+  console.log("y parity:", y_parity);
 
+  rl.close();
   process.exit(0);
 };
 
 const get_y_parity = (v: bigint, chain_id: bigint): boolean => {
   let y_parity = v - (chain_id * BigInt(2) + BigInt(35));
-  if (y_parity == BigInt(0) || y_parity == BigInt(1)) {
-    return y_parity == BigInt(1);
+  if (y_parity === BigInt(0) || y_parity === BigInt(1)) {
+    return y_parity === BigInt(1);
   }
 
   y_parity = v - (chain_id * BigInt(2) + BigInt(36));
-  if (y_parity == BigInt(0) || y_parity == BigInt(1)) {
-    return y_parity == BigInt(1);
+  if (y_parity === BigInt(0) || y_parity === BigInt(1)) {
+    return y_parity === BigInt(1);
   }
 
-  throw new Error("invalid v value");
+  throw new Error("Invalid v value");
 };
 
 main();
