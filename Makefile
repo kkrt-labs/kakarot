@@ -31,6 +31,7 @@ setup:
 	uv sync --all-extras --dev
 
 setup-ci:
+	cp .env.example .env
 	uv sync --all-extras --dev
 
 katana: ;
