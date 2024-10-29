@@ -52,7 +52,7 @@ def serialize_cairo_response(cairo_dict: OrderedDict) -> Tuple:
     return tuple(value if value is not None else 0 for value in cairo_dict.values())
 
 
-def serialize_cairo_inputs(*args) -> Tuple[int, ...]:
+def serialize_cairo_inputs(*args) -> List[int]:
     """
     Serialize the provided arguments to the same format as the one expected by
     the Solidity contract.
@@ -75,7 +75,7 @@ def serialize_cairo_inputs(*args) -> Tuple[int, ...]:
             raise TypeError(
                 f"Unsupported type: {type(arg)}. Must be AggregationMode, Entry, or int"
             )
-    return tuple(serialized_inputs)
+    return serialized_inputs
 
 
 @pytest_asyncio.fixture(scope="module")
