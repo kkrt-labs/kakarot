@@ -43,14 +43,12 @@ class AggregationMode(Enum):
         return list(AggregationMode).index(self)
 
 
-def serialize_cairo_response(cairo_response: OrderedDict | Tuple) -> Tuple:
+def serialize_cairo_response(cairo_response: OrderedDict) -> Tuple:
     """
     Serialize the return data of a Cairo call to a tuple
     with the same format as the one returned by the Solidity contract.
     """
     # A None value in the Cairo response is equivalent to a value 0 in the Solidity response.
-    if isinstance(cairo_response, tuple):
-        return cairo_response
     return tuple(value if value is not None else 0 for value in cairo_response.values())
 
 
@@ -249,8 +247,7 @@ class TestPragmaPrecompile:
         )
         solidity_input = serialize_cairo_inputs(data_type, 0, 0, aggregation_mode)
         sol_res = await pragma_caller.calculateMean(solidity_input)
-        serialized_cairo_res = serialize_cairo_response(cairo_res)
-        assert serialized_cairo_res == sol_res
+        assert cairo_res == sol_res
 
         (
             res_price,
@@ -317,8 +314,7 @@ class TestPragmaPrecompile:
         )
         solidity_input = serialize_cairo_inputs(data_type, 0, 0, 0, aggregation_mode)
         sol_res = await pragma_caller.calculateVolatility(solidity_input)
-        serialized_cairo_res = serialize_cairo_response(cairo_res)
-        assert serialized_cairo_res == sol_res
+        assert cairo_res == sol_res
 
         (
             res_price,
@@ -384,8 +380,7 @@ class TestPragmaPrecompile:
         )
         solidity_input = serialize_cairo_inputs(data_type, aggregation_mode, 0, 0)
         sol_res = await pragma_caller.calculateTwap(solidity_input)
-        serialized_cairo_res = serialize_cairo_response(cairo_res)
-        assert serialized_cairo_res == sol_res
+        assert cairo_res == sol_res
 
         (
             res_price,
