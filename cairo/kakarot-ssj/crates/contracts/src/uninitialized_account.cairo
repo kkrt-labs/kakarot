@@ -22,26 +22,29 @@ pub mod UninitializedAccount {
     use core::starknet::SyscallResultTrait;
     use core::starknet::syscalls::{library_call_syscall, replace_class_syscall};
     use core::starknet::{ContractAddress, get_caller_address};
-    use crate::components::ownable::ownable_component::InternalTrait;
-    use crate::components::ownable::ownable_component;
+    use openzeppelin::access::ownable::OwnableComponent;
     use crate::kakarot_core::interface::{IKakarotCoreDispatcher, IKakarotCoreDispatcherTrait};
 
     // Add ownable component
-    component!(path: ownable_component, storage: ownable, event: OwnableEvent);
+    component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
     #[abi(embed_v0)]
-    impl OwnableImpl = ownable_component::Ownable<ContractState>;
-    impl OwnableInternal = ownable_component::InternalImpl<ContractState>;
+    impl OwnableImpl = OwnableComponent::OwnableImpl<ContractState>;
+    #[abi(embed_v0)]
+    impl OwnableCamelOnlyImpl =
+        OwnableComponent::OwnableCamelOnlyImpl<ContractState>;
+    impl InternalImplOwnable = OwnableComponent::InternalImpl<ContractState>;
 
     #[storage]
     struct Storage {
         #[substorage(v0)]
-        ownable: ownable_component::Storage,
+        ownable: OwnableComponent::Storage,
     }
 
     #[event]
     #[derive(Drop, starknet::Event)]
     enum Event {
-        OwnableEvent: ownable_component::Event
+        #[flat]
+        OwnableEvent: OwnableComponent::Event,
     }
 
     #[constructor]

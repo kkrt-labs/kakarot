@@ -11,7 +11,7 @@ pub mod KakarotCore {
         StoragePointerWriteAccess
     };
     use core::starknet::{EthAddress, ContractAddress, ClassHash, get_contract_address};
-    use crate::components::ownable::{ownable_component};
+    use openzeppelin::access::ownable::OwnableComponent;
     use crate::components::upgradeable::{IUpgradeable, upgradeable_component};
     use crate::kakarot_core::eth_rpc;
     use crate::kakarot_core::interface::IKakarotCore;
@@ -19,7 +19,7 @@ pub mod KakarotCore {
     use evm::model::account::AccountTrait;
     use utils::helpers::compute_starknet_address;
 
-    component!(path: ownable_component, storage: ownable, event: OwnableEvent);
+    component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
     component!(path: upgradeable_component, storage: upgradeable, event: UpgradeableEvent);
 
     /// STORAGE ///
@@ -36,7 +36,7 @@ pub mod KakarotCore {
         pub Kakarot_block_gas_limit: u64,
         // Components
         #[substorage(v0)]
-        ownable: ownable_component::Storage,
+        ownable: OwnableComponent::Storage,
         #[substorage(v0)]
         upgradeable: upgradeable_component::Storage,
     }
@@ -46,7 +46,8 @@ pub mod KakarotCore {
     #[event]
     #[derive(Drop, starknet::Event)]
     pub enum Event {
-        OwnableEvent: ownable_component::Event,
+        #[flat]
+        OwnableEvent: OwnableComponent::Event,
         UpgradeableEvent: upgradeable_component::Event,
         AccountDeployed: AccountDeployed,
         AccountClassHashChange: AccountClassHashChange,
@@ -114,7 +115,10 @@ pub mod KakarotCore {
 
     // Public-facing "ownable" functions
     #[abi(embed_v0)]
-    impl OwnableImpl = ownable_component::Ownable<ContractState>;
+    impl OwnableImpl = OwnableComponent::OwnableImpl<ContractState>;
+    #[abi(embed_v0)]
+    impl OwnableCamelOnlyImpl =
+        OwnableComponent::OwnableCamelOnlyImpl<ContractState>;
 
     /// Public-facing "ethereum" functions
     /// Used to make EVM-related actions through Kakarot.
@@ -211,7 +215,7 @@ pub mod KakarotCore {
     /// INTERNAL-FACING FUNCTIONS ///
 
     // Internal-facing "ownable" functions
-    impl OwnableInternalImpl = ownable_component::InternalImpl<ContractState>;
+    impl InternalImplOwnable = OwnableComponent::InternalImpl<ContractState>;
 
     // Internal-facing "upgradeable" functions
     impl UpgradeableImpl = upgradeable_component::Upgradeable<ContractState>;

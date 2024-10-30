@@ -59,9 +59,7 @@ pub mod AccountContract {
     use core::starknet::{
         EthAddress, ClassHash, get_caller_address, get_tx_info, get_block_timestamp
     };
-    use crate::components::ownable::IOwnable;
-    use crate::components::ownable::ownable_component::InternalTrait;
-    use crate::components::ownable::ownable_component;
+    use openzeppelin::access::ownable::OwnableComponent;
     use crate::errors::KAKAROT_REENTRANCY;
     use crate::kakarot_core::eth_rpc::{IEthRPCDispatcher, IEthRPCDispatcherTrait};
     use crate::kakarot_core::interface::{IKakarotCoreDispatcher, IKakarotCoreDispatcherTrait};
@@ -73,10 +71,13 @@ pub mod AccountContract {
     use utils::traits::DefaultSignature;
 
     // Add ownable component
-    component!(path: ownable_component, storage: ownable, event: OwnableEvent);
+    component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
     #[abi(embed_v0)]
-    impl OwnableImpl = ownable_component::Ownable<ContractState>;
-    impl OwnableInternal = ownable_component::InternalImpl<ContractState>;
+    impl OwnableImpl = OwnableComponent::OwnableImpl<ContractState>;
+    #[abi(embed_v0)]
+    impl OwnableCamelOnlyImpl =
+        OwnableComponent::OwnableCamelOnlyImpl<ContractState>;
+    impl InternalImplOwnable = OwnableComponent::InternalImpl<ContractState>;
 
 
     const VERSION: u32 = 000_001_000;
@@ -93,14 +94,15 @@ pub mod AccountContract {
         pub(crate) Account_evm_address: EthAddress,
         pub(crate) Account_code_hash: u256,
         #[substorage(v0)]
-        ownable: ownable_component::Storage
+        ownable: OwnableComponent::Storage,
     }
 
     #[event]
     #[derive(Drop, starknet::Event)]
     pub enum Event {
         transaction_executed: TransactionExecuted,
-        OwnableEvent: ownable_component::Event
+        #[flat]
+        OwnableEvent: OwnableComponent::Event,
     }
 
     #[derive(Drop, starknet::Event, Debug)]
