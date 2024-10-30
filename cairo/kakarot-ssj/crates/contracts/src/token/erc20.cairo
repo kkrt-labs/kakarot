@@ -6,16 +6,16 @@ pub mod ERC20 {
 
     component!(path: ERC20Component, storage: erc20, event: ERC20Event);
     component!(path: SRC5Component, storage: src5, event: SRC5Event);
-    
+
     #[abi(embed_v0)]
     impl ERC20Impl = ERC20Component::ERC20Impl<ContractState>;
     #[abi(embed_v0)]
     impl ERC20MetadataImpl = ERC20Component::ERC20MetadataImpl<ContractState>;
     #[abi(embed_v0)]
     impl ERC20CamelOnlyImpl = ERC20Component::ERC20CamelOnlyImpl<ContractState>;
-    
+
     impl ERC20InternalImpl = ERC20Component::InternalImpl<ContractState>;
-    
+
     #[abi(embed_v0)]
     impl SRC5Impl = SRC5Component::SRC5Impl<ContractState>;
     impl SRC5InternalImpl = SRC5Component::InternalImpl<ContractState>;
@@ -84,11 +84,13 @@ pub mod ERC20 {
 
     #[generate_trait]
     impl PrivateImpl of PrivateTrait {
-         fn _increase_allowance(
+        fn _increase_allowance(
             ref self: ContractState, spender: ContractAddress, added_value: u256
         ) -> bool {
             let caller = get_caller_address();
-            self.erc20._approve(caller, spender, self.erc20.allowance(caller, spender) + added_value);
+            self
+                .erc20
+                ._approve(caller, spender, self.erc20.allowance(caller, spender) + added_value);
             true
         }
 
@@ -96,9 +98,12 @@ pub mod ERC20 {
             ref self: ContractState, spender: ContractAddress, subtracted_value: u256
         ) -> bool {
             let caller = get_caller_address();
-            self.erc20._approve(
+            self
+                .erc20
+                ._approve(
                     caller, spender, self.erc20.allowance(caller, spender) - subtracted_value
                 );
             true
+        }
     }
-}}
+}
