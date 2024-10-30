@@ -42,9 +42,24 @@ pub mod constants {
 }
 
 pub fn deploy_native_token() -> IERC20CamelDispatcher {
-    let calldata: Array<felt252> = array![
-        'STARKNET_ETH', 'ETH', 0x00, 0xfffffffffffffffffffffffffff, constants::ETH_BANK().into()
-    ];
+    // let calldata: Array<felt252> = array![
+    //     'STARKNET_ETH', 'ETH', 0x00, 0xfffffffffffffffffffffffffff, constants::ETH_BANK().into()
+    // ];
+    let name: ByteArray = "STARKNET_ETH";
+    let symbol: ByteArray = "ETH";
+    // let initial_supply: u256 = 0xfffffffffffffffffffffffffff;
+    let initial_supply: u256 = u256 { high: 0x00, low: 0xfffffffffffffffffffffffffff };
+
+      let mut calldata = array![];
+    //   calldata.append_serde(name);
+    //   calldata.append_serde(symbol);
+    //   calldata.append_serde(initial_supply);
+    //   calldata.append_serde(constants::ETH_BANK().into());
+            name.serialize(ref calldata);
+            symbol.serialize(ref calldata);
+            initial_supply.serialize(ref calldata);
+            constants::ETH_BANK().serialize(ref calldata);
+
     let class = declare("ERC20").unwrap().contract_class().class_hash;
     let maybe_address = deploy_syscall(*class, 0, calldata.span(), false);
     match maybe_address {

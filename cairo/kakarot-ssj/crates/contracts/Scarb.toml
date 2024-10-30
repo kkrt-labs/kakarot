@@ -8,8 +8,8 @@ edition = "2024_07"
 [dependencies]
 starknet.workspace = true
 evm = { path = "../evm" }
-openzeppelin = { path = "../openzeppelin" }
 utils = { path = "../utils" }
+openzeppelin = { git = "https://github.com/openzeppelin/cairo-contracts", tag="v0.16.0" }
 
 [tool]
 fmt.workspace = true
@@ -17,7 +17,7 @@ fmt.workspace = true
 [[target.starknet-contract]]
 casm = true
 casm-add-pythonic-hints = true
-build-external-contracts = ["openzeppelin::token::erc20::erc20::ERC20"]
+# build-external-contracts = ["openzeppelin::token::erc20::erc20::ERC20"]
 
 [lib]
 name = "contracts"

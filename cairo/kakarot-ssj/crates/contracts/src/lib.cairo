@@ -35,3 +35,7 @@ pub mod test_contracts {
 pub mod mocks {
     pub mod cairo1_helpers_fixture;
 }
+
+pub mod token {
+    pub mod erc20;
+}
