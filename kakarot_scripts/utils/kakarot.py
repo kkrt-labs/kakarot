@@ -22,7 +22,7 @@ from hexbytes import HexBytes
 from starknet_py.net.account.account import Account
 from starknet_py.net.client_errors import ClientError
 from starknet_py.net.signer.stark_curve_signer import KeyPair
-from starkware.starknet.public.abi import starknet_keccak
+from starkware.starknet.public.abi import get_selector_from_name, starknet_keccak
 from web3 import Web3
 from web3._utils.abi import abi_to_signature, get_abi_output_types, map_abi_data
 from web3._utils.events import get_event_data
@@ -278,7 +278,14 @@ async def deploy(
             await _call_starknet("kakarot", "get_starknet_address", evm_address)
         ).starknet_address
     else:
-        starknet_address, evm_address = response
+        evm_contract_deployed = [
+            event
+            for event in receipt.events
+            if event.keys == [get_selector_from_name("evm_contract_deployed")]
+            and event.from_address == _get_starknet_deployments()["kakarot"]
+        ]
+        assert len(evm_contract_deployed) == 1
+        evm_address, starknet_address = evm_contract_deployed[0].data
     contract.address = Web3.to_checksum_address(f"0x{evm_address:040x}")
     contract.starknet_address = starknet_address
     logger.info(f"✅ {contract_name} deployed at: {contract.address}")

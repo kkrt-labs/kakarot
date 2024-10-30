@@ -39,7 +39,6 @@ from utils.utils import Helpers
 from utils.array import count_not_zero
 from utils.uint256 import uint256_sub, uint256_add
 from utils.maths import unsigned_div_rem
-from utils.bytes import felt_to_bytes20
 
 // @title EVM instructions processing.
 // @notice This file contains functions related to the processing of EVM instructions.

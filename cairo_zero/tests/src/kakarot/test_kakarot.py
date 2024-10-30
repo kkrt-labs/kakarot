@@ -514,11 +514,9 @@ class TestKakarot:
                 value=0,
                 data="604580600e600039806000f350fe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf3",
             )
-            code_bytes = bytes(evm["return_data"])
-            codehash = keccak(code_bytes)
             assert (
-                codehash.hex()
-                == "2fa86add0aed31f33a762c9d88e807c475bd51d0f52bd0955754b2608f7e4989"
+                "2fa86add0aed31f33a762c9d88e807c475bd51d0f52bd0955754b2608f7e4989"
+                == keccak(bytes(evm["return_data"])).hex()
             )
 
     class TestEthChainIdEntrypoint:
