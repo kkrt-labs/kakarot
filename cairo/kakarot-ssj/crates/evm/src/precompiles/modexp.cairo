@@ -319,10 +319,8 @@ mod tests {
         test_modexp_eip198_example_2_data, test_modexp_nagydani_1_square_data,
         test_modexp_nagydani_1_qube_data
     };
-
-    use super::modexp_circuit;
-
     use utils::traits::bytes::{U8SpanExTrait, ToBytes};
+    use super::modexp_circuit;
 
     const TWO_31: u256 = 2147483648;
     const PREV_PRIME_384: u384 =
@@ -476,22 +474,6 @@ mod tests {
         }
     }
 
-    //#[test]
-    fn test_modexp_modsize0_returndatasizeFiller_filler() {
-        let (calldata, expected) = test_modexp_modsize0_returndatasizeFiller_data();
-        let (gas, result) = ModExp::exec(calldata).unwrap();
-        assert_eq!(result, expected);
-        assert_eq!(gas, 44_954);
-    }
-
-    //#[test]
-    fn test_modexp_create2callPrecompiles_test0_berlin() {
-        let (calldata, expected) = test_modexp_create2callPrecompiles_test0_berlin_data();
-        let (gas, result) = ModExp::exec(calldata).unwrap();
-        assert_eq!(result, expected);
-        assert_eq!(gas, 1_360);
-    }
-
     #[test]
     fn test_modexp_eip198_example_1() {
         let (calldata, expected) = test_modexp_eip198_example_1_data();
@@ -505,25 +487,6 @@ mod tests {
     fn test_modexp_eip198_example_2() {
         let (calldata, expected) = test_modexp_eip198_example_2_data();
         let expected_gas = 1_360;
-        let (gas, result) = ModExp::exec(calldata).unwrap();
-        assert_eq!(result, expected);
-        assert_eq!(gas, expected_gas);
-    }
-
-
-    //#[test]
-    fn test_modexp_nagydani_1_square() {
-        let (calldata, expected) = test_modexp_nagydani_1_square_data();
-        let expected_gas = 200;
-        let (gas, result) = ModExp::exec(calldata).unwrap();
-        assert_eq!(result, expected);
-        assert_eq!(gas, expected_gas);
-    }
-
-    //#[test]
-    fn test_modexp_nagydani_1_qube() {
-        let (calldata, expected) = test_modexp_nagydani_1_qube_data();
-        let expected_gas = 200;
         let (gas, result) = ModExp::exec(calldata).unwrap();
         assert_eq!(result, expected);
         assert_eq!(gas, expected_gas);
