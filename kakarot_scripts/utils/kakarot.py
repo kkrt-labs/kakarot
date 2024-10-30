@@ -284,8 +284,25 @@ async def deploy(
             if event.keys == [get_selector_from_name("evm_contract_deployed")]
             and event.from_address == _get_starknet_deployments()["kakarot"]
         ]
-        assert len(evm_contract_deployed) == 1
-        evm_address, starknet_address = evm_contract_deployed[0].data
+        if len(evm_contract_deployed) == 1:
+            evm_address, starknet_address = evm_contract_deployed[0].data
+        else:
+            deployed_codes = [
+                await eth_get_code(event.data[0]) for event in evm_contract_deployed
+            ]
+            deployed_codes = [
+                i
+                for i, code in enumerate(deployed_codes)
+                if len(code) == len(contract.bytecode_runtime)
+            ]
+            if len(deployed_codes) == 1:
+                evm_address, starknet_address = evm_contract_deployed[
+                    deployed_codes[0]
+                ].data
+            else:
+                raise EvmTransactionError(
+                    f"Failed to get evm address from receipt {receipt}"
+                )
     contract.address = Web3.to_checksum_address(f"0x{evm_address:040x}")
     contract.starknet_address = starknet_address
     logger.info(f"✅ {contract_name} deployed at: {contract.address}")
