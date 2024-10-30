@@ -72,7 +72,9 @@ async def main():
         logger.error("❌ Coinbase is set to 0, all transaction fees will be lost")
     else:
         logger.info(f"✅ Coinbase set to: 0x{coinbase_address:040x}")
-        coinbase = await get_contract("Kakarot", "Coinbase", address=coinbase_address)
+        coinbase = await get_contract(
+            "Kakarot", "Coinbase", address=f"0x{coinbase_address:040x}"
+        )
         coinbase_balance = await eth_balance_of(coinbase_address)
         if coinbase_balance / 1e18 > 0.001:
             logger.info(
