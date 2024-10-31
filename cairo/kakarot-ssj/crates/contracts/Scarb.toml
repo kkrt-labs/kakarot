@@ -9,7 +9,7 @@ edition = "2024_07"
 starknet.workspace = true
 evm = { path = "../evm" }
 utils = { path = "../utils" }
-openzeppelin = { git = "https://github.com/openzeppelin/cairo-contracts", tag="v0.16.0" }
+openzeppelin = { git = "https://github.com/openzeppelin/cairo-contracts", tag="v0.18.0" }
 
 [tool]
 fmt.workspace = true
