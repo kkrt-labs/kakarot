@@ -11,17 +11,16 @@ pub mod KakarotCore {
         StoragePointerWriteAccess
     };
     use core::starknet::{EthAddress, ContractAddress, ClassHash, get_contract_address};
-    use openzeppelin::access::ownable::OwnableComponent;
-    use crate::components::upgradeable::{IUpgradeable, upgradeable_component};
     use crate::kakarot_core::eth_rpc;
     use crate::kakarot_core::interface::IKakarotCore;
     use evm::backend::starknet_backend;
     use evm::model::account::AccountTrait;
+    use openzeppelin::access::ownable::OwnableComponent;
+    use openzeppelin::upgrades::upgradeable::UpgradeableComponent;
     use utils::helpers::compute_starknet_address;
 
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
-    component!(path: upgradeable_component, storage: upgradeable, event: UpgradeableEvent);
-
+    component!(path: UpgradeableComponent, storage: upgradeable, event: UpgradeableEvent);
     /// STORAGE ///
 
     #[storage]
@@ -38,7 +37,7 @@ pub mod KakarotCore {
         #[substorage(v0)]
         ownable: OwnableComponent::Storage,
         #[substorage(v0)]
-        upgradeable: upgradeable_component::Storage,
+        upgradeable: UpgradeableComponent::Storage,
     }
 
     /// EVENTS ///
@@ -48,7 +47,8 @@ pub mod KakarotCore {
     pub enum Event {
         #[flat]
         OwnableEvent: OwnableComponent::Event,
-        UpgradeableEvent: upgradeable_component::Event,
+        #[flat]
+        UpgradeableEvent: UpgradeableComponent::Event,
         AccountDeployed: AccountDeployed,
         AccountClassHashChange: AccountClassHashChange,
         EOAClassHashChange: EOAClassHashChange,
@@ -151,7 +151,7 @@ pub mod KakarotCore {
 
         fn upgrade(ref self: ContractState, new_class_hash: ClassHash) {
             self.ownable.assert_only_owner();
-            self.upgradeable.upgrade_contract(new_class_hash);
+            self.upgradeable.upgrade(new_class_hash);
         }
 
         fn get_account_contract_class_hash(self: @ContractState) -> ClassHash {
@@ -218,5 +218,5 @@ pub mod KakarotCore {
     impl InternalImplOwnable = OwnableComponent::InternalImpl<ContractState>;
 
     // Internal-facing "upgradeable" functions
-    impl UpgradeableImpl = upgradeable_component::Upgradeable<ContractState>;
+    impl UpgradeableInternalImpl = UpgradeableComponent::InternalImpl<ContractState>;
 }

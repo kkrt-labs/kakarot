@@ -59,11 +59,11 @@ pub mod AccountContract {
     use core::starknet::{
         EthAddress, ClassHash, get_caller_address, get_tx_info, get_block_timestamp
     };
-    use openzeppelin::access::ownable::OwnableComponent;
     use crate::errors::KAKAROT_REENTRANCY;
     use crate::kakarot_core::eth_rpc::{IEthRPCDispatcher, IEthRPCDispatcherTrait};
     use crate::kakarot_core::interface::{IKakarotCoreDispatcher, IKakarotCoreDispatcherTrait};
     use crate::storage::StorageBytecode;
+    use openzeppelin::access::ownable::OwnableComponent;
     use openzeppelin::token::erc20::interface::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
     use super::OutsideExecution;
     use utils::eth_transaction::transaction::TransactionTrait;

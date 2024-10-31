@@ -1,6 +1,5 @@
 pub mod account_contract;
 pub mod cairo1_helpers;
-pub mod components;
 
 pub mod errors;
 

@@ -22,8 +22,8 @@ pub mod UninitializedAccount {
     use core::starknet::SyscallResultTrait;
     use core::starknet::syscalls::{library_call_syscall, replace_class_syscall};
     use core::starknet::{ContractAddress, get_caller_address};
-    use openzeppelin::access::ownable::OwnableComponent;
     use crate::kakarot_core::interface::{IKakarotCoreDispatcher, IKakarotCoreDispatcherTrait};
+    use openzeppelin::access::ownable::OwnableComponent;
 
     // Add ownable component
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
