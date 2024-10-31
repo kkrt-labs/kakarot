@@ -1109,8 +1109,8 @@ namespace Internals {
         // Update gas and return data - we know gas_left > code_deposit_cost
         tempvar evm = new model.EVM(
             message=evm.message,
-            return_data_len=2,
-            return_data=cast(evm.message.address, felt*),
+            return_data_len=evm.return_data_len,
+            return_data=evm.return_data,
             program_counter=evm.program_counter,
             stopped=evm.stopped,
             gas_left=evm.gas_left - code_deposit_cost,

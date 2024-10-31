@@ -497,6 +497,28 @@ class TestKakarot:
                 )
             assert not evm["reverted"]
 
+        @SyscallHandler.patch("IAccount.is_valid_jumpdest", lambda addr, data: [1])
+        @SyscallHandler.patch("IAccount.get_code_hash", lambda addr, data: [0x1, 0x1])
+        @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0x1, 0x1])
+        def test_create_tx_returndata_should_be_20_bytes_evm_address(self, cairo_run):
+            """
+            Bug reported by Protofire for the simulation of the create tx using eth_call.
+            https://github.com/safe-global/safe-singleton-factory.
+            """
+            evm, _, _, _ = cairo_run(
+                "eth_call",
+                origin=0xE1CB04A0FA36DDD16A06EA828007E35E1A3CBC37,
+                to=None,
+                gas_limit=1000000,
+                gas_price=100,
+                value=0,
+                data="604580600e600039806000f350fe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf3",
+            )
+            assert (
+                "2fa86add0aed31f33a762c9d88e807c475bd51d0f52bd0955754b2608f7e4989"
+                == keccak(bytes(evm["return_data"])).hex()
+            )
+
     class TestEthChainIdEntrypoint:
         @given(chain_id=integers(min_value=0, max_value=2**64 - 1))
         def test_should_return_chain_id_modulo_max_safe_chain_id(
