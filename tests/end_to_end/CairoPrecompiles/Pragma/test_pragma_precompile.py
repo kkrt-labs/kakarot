@@ -9,7 +9,7 @@ from kakarot_scripts.utils.kakarot import deploy
 from kakarot_scripts.utils.starknet import get_contract, get_deployments, invoke
 
 
-@dataclass
+@dataclass(frozen=True)
 class Entry:
     key: int
     expiration_timestamp: Optional[int] = None
@@ -131,7 +131,7 @@ class TestPragmaPrecompile:
                     key=int.from_bytes(b"ETH/USD", byteorder="big"),
                     expiration_timestamp=0,
                 ),
-                AggregationMode.MEDIAN,
+                AggregationMode.MEAN,
                 (
                     int.from_bytes(b"ETH/USD", byteorder="big"),
                     4000,
@@ -216,7 +216,7 @@ class TestPragmaPrecompile:
                     key=int.from_bytes(b"ETH/USD", byteorder="big"),
                     expiration_timestamp=0,
                 ),
-                AggregationMode.MEDIAN,
+                AggregationMode.MEAN,
                 (
                     int.from_bytes(b"ETH/USD", byteorder="big"),
                     4000,
@@ -282,7 +282,7 @@ class TestPragmaPrecompile:
                     key=int.from_bytes(b"ETH/USD", byteorder="big"),
                     expiration_timestamp=0,
                 ),
-                AggregationMode.MEDIAN,
+                AggregationMode.MEAN,
                 (
                     int.from_bytes(b"ETH/USD", byteorder="big"),
                     4000,
@@ -349,7 +349,7 @@ class TestPragmaPrecompile:
                     key=int.from_bytes(b"ETH/USD", byteorder="big"),
                     expiration_timestamp=0,
                 ),
-                AggregationMode.MEDIAN,
+                AggregationMode.MEAN,
                 (
                     int.from_bytes(b"ETH/USD", byteorder="big"),
                     4000,
