@@ -79,34 +79,6 @@ pub mod MockContractUpgradeableV1 {
     }
 }
 
-// #[starknet::contract]
-// pub mod MockContractUpgradeableV1 {
-//     use openzeppelin::upgrades::upgradeable::UpgradeableComponent;
-//     use super::IMockContractUpgradeable;
-//     component!(path: UpgradeableComponent, storage: upgradeable, event: UpgradeableEvent);
-
-//             impl UpgradeableInternalImpl = UpgradeableComponent::InternalImpl<ContractState>;
-
-//     #[storage]
-//     struct Storage {
-//         #[substorage(v0)]
-//         upgradeable: UpgradeableComponent::Storage
-//     }
-
-//     #[event]
-//     #[derive(Drop, starknet::Event)]
-//     pub enum Event {
-//         upgradeableEvent: UpgradeableComponent::Event
-//     }
-
-//     #[abi(embed_v0)]
-//     impl MockContractUpgradeableImpl of IMockContractUpgradeable<ContractState> {
-//         fn version(self: @ContractState) -> felt252 {
-//             1
-//         }
-//     }
-// }
-
 #[cfg(test)]
 mod tests {
     use core::starknet::syscalls::{deploy_syscall};
