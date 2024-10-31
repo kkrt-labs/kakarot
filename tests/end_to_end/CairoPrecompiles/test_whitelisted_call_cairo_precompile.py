@@ -75,7 +75,7 @@ class TestCairoPrecompiles:
             assert new_count == count
 
         async def test_should_fail_precompile_caller_not_whitelisted(
-            self, cairo_counter, max_fee
+            self, cairo_counter
         ):
             cairo_counter_caller = await deploy(
                 "CairoPrecompiles",
