@@ -112,7 +112,7 @@ mod tests {
             account_starknet_address, selector!("get_evm_address"), account_evm_address
         );
         start_mock_call(
-            native_token_address, selector!("balanceOf"), Bounded::<u256>::MAX
+            native_token_address, selector!("balance_of"), Bounded::<u256>::MAX
         ); // Min to pay for gas + value
 
         (kakarot_state, native_token_address)
@@ -265,7 +265,7 @@ mod tests {
             }
         );
 
-        start_mock_call(native_token_address, selector!("balanceOf"), Bounded::<u256>::MIN);
+        start_mock_call(native_token_address, selector!("balance_of"), Bounded::<u256>::MIN);
 
         // Test that the function performs validation and assert expected results
         validate_eth_tx(@kakarot_state, tx);
