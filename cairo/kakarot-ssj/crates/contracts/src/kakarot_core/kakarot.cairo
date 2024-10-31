@@ -116,9 +116,6 @@ pub mod KakarotCore {
     // Public-facing "ownable" functions
     #[abi(embed_v0)]
     impl OwnableImpl = OwnableComponent::OwnableImpl<ContractState>;
-    #[abi(embed_v0)]
-    impl OwnableCamelOnlyImpl =
-        OwnableComponent::OwnableCamelOnlyImpl<ContractState>;
 
     /// Public-facing "ethereum" functions
     /// Used to make EVM-related actions through Kakarot.

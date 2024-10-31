@@ -17,7 +17,6 @@ fmt.workspace = true
 [[target.starknet-contract]]
 casm = true
 casm-add-pythonic-hints = true
-# build-external-contracts = ["openzeppelin::token::erc20::erc20::ERC20"]
 
 [lib]
 name = "contracts"

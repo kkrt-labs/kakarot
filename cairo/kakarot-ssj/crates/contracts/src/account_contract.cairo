@@ -64,7 +64,7 @@ pub mod AccountContract {
     use crate::kakarot_core::interface::{IKakarotCoreDispatcher, IKakarotCoreDispatcherTrait};
     use crate::storage::StorageBytecode;
     use openzeppelin::access::ownable::OwnableComponent;
-    use openzeppelin::token::erc20::interface::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
+    use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
     use super::OutsideExecution;
     use utils::eth_transaction::transaction::TransactionTrait;
     use utils::serialization::{deserialize_signature, deserialize_bytes, serialize_bytes};
@@ -74,9 +74,6 @@ pub mod AccountContract {
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
     #[abi(embed_v0)]
     impl OwnableImpl = OwnableComponent::OwnableImpl<ContractState>;
-    #[abi(embed_v0)]
-    impl OwnableCamelOnlyImpl =
-        OwnableComponent::OwnableCamelOnlyImpl<ContractState>;
     impl InternalImplOwnable = OwnableComponent::InternalImpl<ContractState>;
 
 
@@ -134,7 +131,7 @@ pub mod AccountContract {
             // To internally perform value transfer of the network's native
             // token (which conforms to the ERC20 standard), we need to give the
             // KakarotCore contract infinite allowance
-            IERC20CamelDispatcher { contract_address: native_token }
+            IERC20Dispatcher { contract_address: native_token }
                 .approve(kakarot_address, Bounded::<u256>::MAX);
 
             kakarot.register_account(evm_address);
