@@ -181,6 +181,7 @@ elif os.getenv("RPC_URL") is not None:
         "type": NetworkType.PROD,
         "check_interval": float(os.getenv("CHECK_INTERVAL", 0.1)),
         "max_wait": float(os.getenv("MAX_WAIT", 30)),
+        "l1_rpc_url": os.getenv("L1_RPC_URL"),
     }
 else:
     NETWORK = NETWORKS["katana"]
