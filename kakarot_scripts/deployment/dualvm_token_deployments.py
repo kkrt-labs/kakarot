@@ -16,6 +16,7 @@ from kakarot_scripts.utils.kakarot import deploy as deploy_kakarot
 from kakarot_scripts.utils.kakarot import deploy_and_fund_evm_address
 from kakarot_scripts.utils.kakarot import dump_deployments as dump_evm_deployments
 from kakarot_scripts.utils.kakarot import get_deployments as get_evm_deployments
+from kakarot_scripts.utils.starknet import call_contract
 from kakarot_scripts.utils.starknet import deploy as deploy_starknet
 from kakarot_scripts.utils.starknet import execute_calls, get_class_hash_at
 from kakarot_scripts.utils.starknet import get_contract as get_contract_starknet
@@ -30,9 +31,9 @@ from kakarot_scripts.utils.starknet import (
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+
 # %%
-
-
 async def deploy_starknet_token() -> Any:
     owner = await get_starknet_account()
     address = await deploy_starknet(
@@ -64,10 +65,15 @@ async def deploy_dualvm_token(
 async def deploy_dualvm_tokens() -> None:
     # %% Deploy DualVM Tokens
     kakarot = get_starknet_deployments()["kakarot"]
+    kakarot_native_token = (
+        await call_contract("kakarot", "get_native_token")
+    ).native_token_address
     evm_deployments = get_evm_deployments()
     tokens = get_tokens_list(NETWORK)
-
     for token in tokens:
+        if int(token["l2_token_address"], 16) == kakarot_native_token:
+            logger.info(f"Skipping {token['name']} as it is the native token")
+            continue
         if token["name"] not in evm_deployments:
             await deploy_new_token(token, kakarot, evm_deployments)
         else:
@@ -91,11 +97,16 @@ def get_tokens_list(network) -> List[Dict[str, Any]]:
 
 
 def load_tokens(network_name: str) -> List[Dict[str, Any]]:
+    """
+    Load the list of tokens for a given network, using the starknet.io token list.
+    Filters out entries without an l2_token_address (which are not bridged tokens).
+    """
     file_path = TOKEN_ADDRESSES_DIR / f"{network_name}.json"
     if not file_path.exists():
         raise ValueError(f"No known token addresses for network: {network_name}")
 
-    return json.loads(file_path.read_text())
+    tokens = json.loads(file_path.read_text())
+    return [token for token in tokens if "l2_token_address" in token]
 
 
 async def deploy_new_token(
@@ -107,7 +118,7 @@ async def deploy_new_token(
     Deploy a new DualVMToken for a corresponding Starknet ERC20 token.
     """
     token_name = token["name"]
-    l2_token_address = await ensure_starknet_token(token_name, token)
+    l2_token_address = await get_starknet_token(token)
     contract = await deploy_dualvm_token(kakarot, l2_token_address)
     evm_deployments[token_name] = {
         "address": int(contract.address, 16),
@@ -129,7 +140,7 @@ async def verify_and_update_existing_token(
     token_name = token["name"]
     dualvm_token_address = evm_deployments[token_name]["starknet_address"]
     if not await get_class_hash_at(dualvm_token_address):
-        l2_token_address = await ensure_starknet_token(token_name, token)
+        l2_token_address = await get_starknet_token(token)
         contract = await deploy_dualvm_token(kakarot, l2_token_address)
         evm_deployments[token_name] = {
             "address": int(contract.address, 16),
@@ -142,11 +153,12 @@ async def verify_and_update_existing_token(
         logger.info(f"Existing DualVMToken for {token_name} is valid")
 
 
-async def ensure_starknet_token(token_name: str, token: Dict[str, Any]) -> str:
+async def get_starknet_token(token: Dict[str, Any]) -> str:
     """
-    Ensure a Starknet ERC20 token exists for a given dualVM token.
-    If not, deploys a new one in dev networks, or returns the starknet address in production networks.
+    Return the starknet address of the ERC20 token corresponding to a given dualVM token.
+    If it doesn't exist yet, deploys a new one in dev networks.
     """
+    token_name = token["name"]
     if NETWORK["type"] == NetworkType.DEV:
         try:
             RPC_CLIENT.get_class_hash_at(token["l2_token_address"])
