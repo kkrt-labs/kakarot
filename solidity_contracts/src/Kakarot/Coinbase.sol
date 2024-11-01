@@ -1,23 +1,30 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.27;
 
-import {DualVmToken} from "../CairoPrecompiles/DualVmToken.sol";
 import {Ownable2Step, Ownable} from "@openzeppelin-contracts/access/Ownable2Step.sol";
+import {CairoLib} from "kakarot-lib/CairoLib.sol";
 
 contract Coinbase is Ownable2Step {
-    /// @dev The EVM address of the DualVmToken for Kakarot ETH.
-    DualVmToken public immutable kakarotEth;
+    using CairoLib for uint256;
+
+    uint256 public immutable nativeTokenStarknetAddress;
 
     /// Constructor sets the owner of the contract
-    constructor(address _kakarotEth) Ownable(msg.sender) {
-        kakarotEth = DualVmToken(_kakarotEth);
+    constructor(uint256 _nativeTokenStarknetAddress) Ownable(msg.sender) {
+        nativeTokenStarknetAddress = _nativeTokenStarknetAddress;
     }
 
-    /// @notice Withdraws ETH from the contract to a Starknet address
-    /// @dev DualVmToken.balanceOf(this) is the same as address(this).balance
+    /// @notice Withdraws the native token collected by the contract to an address
+    /// @dev Uses CairoLib to make a StarknetCall to transfer this contract's balance to a starknet address.
     /// @param toStarknetAddress The Starknet address to withdraw to
     function withdraw(uint256 toStarknetAddress) external onlyOwner {
         uint256 balance = address(this).balance;
-        kakarotEth.transfer(toStarknetAddress, balance);
+        uint128 balanceLow = uint128(balance & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF);
+        uint128 balanceHigh = uint128(balance >> 128);
+        uint256[] memory data = new uint256[](3);
+        data[0] = toStarknetAddress; // recipient
+        data[1] = balanceLow;
+        data[2] = balanceHigh;
+        nativeTokenStarknetAddress.callCairo("transfer", data);
     }
 }
