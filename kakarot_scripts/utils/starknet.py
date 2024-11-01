@@ -670,7 +670,7 @@ async def invoke(
     """
     account = account or await get_starknet_account()
     logger.info(
-        f"ℹ️  Invoking {contract_id}.{function_name}({(json.dumps(calldata) if len(json.dumps(calldata)) < 100 else '...') if calldata else ''})"
+        f"ℹ️  Invoking {contract_id}.{function_name}({(json.dumps(calldata) if len(json.dumps(calldata)) < 50 else '...') if calldata else ''})"
     )
     if isinstance(contract_id, int):
         call = Call(
