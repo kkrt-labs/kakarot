@@ -1,7 +1,6 @@
 # %% Imports
 import logging
 
-from eth_utils.address import to_checksum_address
 from uvloop import run
 
 from kakarot_scripts.constants import EVM_ADDRESS, NETWORK, RPC_CLIENT, NetworkType
@@ -9,7 +8,7 @@ from kakarot_scripts.utils.kakarot import deploy as deploy_evm
 from kakarot_scripts.utils.kakarot import deploy_and_fund_evm_address
 from kakarot_scripts.utils.kakarot import dump_deployments as dump_evm_deployments
 from kakarot_scripts.utils.kakarot import get_deployments as get_evm_deployments
-from kakarot_scripts.utils.starknet import call, execute_calls
+from kakarot_scripts.utils.starknet import call, call_contract, execute_calls
 from kakarot_scripts.utils.starknet import get_deployments as get_starknet_deployments
 from kakarot_scripts.utils.starknet import (
     get_starknet_account,
@@ -60,11 +59,10 @@ async def deploy_evm_contracts():
     # %% Coinbase
     coinbase = (await call("kakarot", "get_coinbase")).coinbase
     if evm_deployments.get("Coinbase", {}).get("address") != coinbase:
-        contract = await deploy_evm(
-            "Kakarot",
-            "Coinbase",
-            to_checksum_address(f'{evm_deployments["Ether"]["address"]:040x}'),
-        )
+        kakarot_native_token = (
+            await call_contract("kakarot", "get_native_token")
+        ).native_token_address
+        contract = await deploy_evm("Kakarot", "Coinbase", kakarot_native_token)
         evm_deployments["Coinbase"] = {
             "address": int(contract.address, 16),
             "starknet_address": contract.starknet_address,
