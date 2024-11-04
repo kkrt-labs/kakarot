@@ -10,7 +10,7 @@ contract DualVmTokenHack {
     }
 
     function tryApproveEvm() external returns (bool success) {
-        (success,) = target.delegatecall(
+        (success,) = target.delegatecall{gas: 30000}(
             abi.encodeWithSelector(bytes4(keccak256("approve(address,uint256)")), address(this), AMOUNT)
         );
     }

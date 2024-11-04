@@ -13,8 +13,8 @@ from tests.utils.constants import (
 )
 from tests.utils.syscall_handler import SyscallHandler
 
-AUTHORIZED_CALLER_CODE = 0xA7071ED
-UNAUTHORIZED_CALLER_CODE = 0xC0C0C0
+AUTHORIZED_CALLER_ADDRESS = 0xA7071ED
+UNAUTHORIZED_CALLER_ADDRESS = 0xC0C0C0
 CALLER_ADDRESS = 0x123ABC432
 
 
@@ -80,7 +80,7 @@ class TestPrecompiles:
         class TestKakarotPrecompiles:
             @SyscallHandler.patch(
                 "Kakarot_authorized_cairo_precompiles_callers",
-                AUTHORIZED_CALLER_CODE,
+                AUTHORIZED_CALLER_ADDRESS,
                 1,
             )
             @SyscallHandler.patch("deploy", lambda *_: [0])
@@ -103,8 +103,7 @@ class TestPrecompiles:
                         + f"{0x60:064x}"  # data_offset
                         + f"{0x00:064x}"  # data_len
                     ),
-                    caller_code_address=AUTHORIZED_CALLER_CODE,
-                    caller_address=CALLER_ADDRESS,
+                    caller_address=AUTHORIZED_CALLER_ADDRESS,
                     message_address=0x75001,
                 )
                 assert not bool(reverted)
@@ -116,25 +115,26 @@ class TestPrecompiles:
 
             @SyscallHandler.patch(
                 "Kakarot_authorized_cairo_precompiles_callers",
-                AUTHORIZED_CALLER_CODE,
+                AUTHORIZED_CALLER_ADDRESS,
                 1,
             )
             @SyscallHandler.patch(
                 "Kakarot_evm_to_starknet_address", CALLER_ADDRESS, 0x1234
             )
+            @SyscallHandler.patch_deploy(lambda class_hash, data: [0])
             @pytest.mark.parametrize(
-                "address, caller_code_address, input_data, expected_return_data, expected_reverted",
+                "address, caller_address, input_data, expected_return_data, expected_reverted",
                 [
                     (
                         0x75001,
-                        AUTHORIZED_CALLER_CODE,
+                        AUTHORIZED_CALLER_ADDRESS,
                         bytes.fromhex("0abcdef0"),
                         b"Kakarot: OutOfBoundsRead",
                         True,
                     ),  # invalid input
                     (
                         0x75001,
-                        AUTHORIZED_CALLER_CODE,
+                        AUTHORIZED_CALLER_ADDRESS,
                         bytes.fromhex(
                             f"{0xc0de:064x}"
                             + f"{get_selector_from_name('inc'):064x}"
@@ -146,7 +146,7 @@ class TestPrecompiles:
                     ),  # call_contract
                     (
                         0x75001,
-                        AUTHORIZED_CALLER_CODE,
+                        AUTHORIZED_CALLER_ADDRESS,
                         bytes.fromhex(
                             f"{0xc0de:064x}"
                             + f"{get_selector_from_name('get'):064x}"
@@ -159,7 +159,7 @@ class TestPrecompiles:
                     ),  # call_contract with return data
                     (
                         0x75001,
-                        UNAUTHORIZED_CALLER_CODE,
+                        UNAUTHORIZED_CALLER_ADDRESS,
                         bytes.fromhex("0abcdef0"),
                         b"Kakarot: unauthorizedPrecompile",
                         True,
@@ -176,7 +176,7 @@ class TestPrecompiles:
                 self,
                 cairo_run,
                 address,
-                caller_code_address,
+                caller_address,
                 input_data,
                 expected_return_data,
                 expected_reverted,
@@ -197,15 +197,14 @@ class TestPrecompiles:
                         "test__precompiles_run",
                         address=address,
                         input=input_data,
-                        caller_code_address=caller_code_address,
-                        caller_address=CALLER_ADDRESS,
+                        caller_address=caller_address,
                         message_address=address,
                     )
                 assert bool(reverted) == expected_reverted
                 assert bytes(return_data) == expected_return_data
                 assert gas_used == (
                     CAIRO_PRECOMPILE_GAS
-                    if caller_code_address == AUTHORIZED_CALLER_CODE
+                    if caller_address == AUTHORIZED_CALLER_ADDRESS
                     else 0
                 )
                 return
@@ -213,7 +212,7 @@ class TestPrecompiles:
         class TestKakarotMessaging:
             @SyscallHandler.patch(
                 "Kakarot_authorized_cairo_precompiles_callers",
-                AUTHORIZED_CALLER_CODE,
+                AUTHORIZED_CALLER_ADDRESS,
                 1,
             )
             @SyscallHandler.patch(
@@ -221,11 +220,11 @@ class TestPrecompiles:
                 0xC0DE,
             )
             @pytest.mark.parametrize(
-                "address, caller_code_address, input_data, to_address, expected_reverted_return_data, expected_reverted",
+                "address, caller_address, input_data, to_address, expected_reverted_return_data, expected_reverted",
                 [
                     (
                         0x75002,
-                        AUTHORIZED_CALLER_CODE,
+                        AUTHORIZED_CALLER_ADDRESS,
                         encode(
                             ["uint160", "bytes"], [0xC0DE, encode(["uint128"], [0x2A])]
                         ),
@@ -235,7 +234,7 @@ class TestPrecompiles:
                     ),
                     (
                         0x75002,
-                        AUTHORIZED_CALLER_CODE,
+                        AUTHORIZED_CALLER_ADDRESS,
                         encode(["uint160", "bytes"], [0xC0DE, 0x2A.to_bytes(1, "big")]),
                         0xC0DE,
                         b"",
@@ -243,7 +242,7 @@ class TestPrecompiles:
                     ),
                     (
                         0x75002,
-                        UNAUTHORIZED_CALLER_CODE,
+                        UNAUTHORIZED_CALLER_ADDRESS,
                         bytes.fromhex("0abcdef0"),
                         0xC0DE,
                         b"Kakarot: unauthorizedPrecompile",
@@ -258,7 +257,7 @@ class TestPrecompiles:
             )
             def test__cairo_message(
                 self,
-                caller_code_address,
+                caller_address,
                 cairo_run,
                 address,
                 input_data,
@@ -271,8 +270,7 @@ class TestPrecompiles:
                     "test__precompiles_run",
                     address=address,
                     input=input_data,
-                    caller_code_address=caller_code_address,
-                    caller_address=CALLER_ADDRESS,
+                    caller_address=caller_address,
                     message_address=address,
                 )
                 if expected_reverted:

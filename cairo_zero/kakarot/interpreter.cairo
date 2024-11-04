@@ -67,20 +67,11 @@ namespace Interpreter {
             let is_precompile = PrecompilesHelpers.is_precompile(evm.message.code_address.evm);
             if (is_precompile != FALSE) {
                 let parent_context = evm.message.parent;
-                let is_parent_zero = Helpers.is_zero(cast(parent_context, felt));
-                if (is_parent_zero != FALSE) {
-                    // Case A: The precompile is called straight from an EOA
-                    tempvar caller_code_address = evm.message.caller;
-                } else {
-                    // Case B: The precompile is called from a contract
-                    tempvar caller_code_address = parent_context.evm.message.code_address.evm;
-                }
                 tempvar caller_address = evm.message.caller;
                 let (output_len, output, gas_used, revert_code) = Precompiles.exec_precompile(
                     evm.message.code_address.evm,
                     evm.message.calldata_len,
                     evm.message.calldata,
-                    caller_code_address,
                     caller_address,
                     evm.message.address.evm,
                 );
@@ -101,8 +92,14 @@ namespace Interpreter {
                 }
                 let range_check_ptr = [ap - 2];
                 let evm = cast([ap - 1], model.EVM*);
+
+                // Only count the cairo precompile if it was executed and did not revert.
+                // If it did revert, we're ensured no state changes were made in the cairo call.
                 let is_cairo_precompile_called = PrecompilesHelpers.is_kakarot_precompile(
                     evm.message.code_address.evm
+                );
+                let is_cairo_precompile_executed = is_cairo_precompile_called * (
+                    1 - precompile_reverted
                 );
                 tempvar message = new model.Message(
                     bytecode=evm.message.bytecode,
@@ -120,7 +117,7 @@ namespace Interpreter {
                     is_create=evm.message.is_create,
                     depth=evm.message.depth,
                     env=evm.message.env,
-                    cairo_precompile_called=is_cairo_precompile_called,
+                    cairo_precompile_called=is_cairo_precompile_executed,
                 );
                 tempvar evm = new model.EVM(
                     message=message,
