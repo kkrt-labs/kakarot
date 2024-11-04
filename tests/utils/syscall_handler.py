@@ -44,10 +44,11 @@ def cairo_recover_eth_address(class_hash, calldata):
     s = U256(uint256_to_int(calldata[4], calldata[5]))
     y_parity = U256(calldata[6])
 
+    # r and s must have been validated by the precompile preparation
     if 0 >= r or r >= SECP256K1N:
-        return [0, 0]
+        raise ValueError("Invalid r value")
     if 0 >= s or s >= SECP256K1N:
-        return [0, 0]
+        raise ValueError("Invalid s value")
     try:
         public_key = secp256k1_recover(r, s, y_parity, msg_hash)
     except Exception:

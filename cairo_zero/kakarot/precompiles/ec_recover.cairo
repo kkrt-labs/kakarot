@@ -4,14 +4,15 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_keccak.keccak import finalize_keccak
 from starkware.cairo.common.bool import FALSE
-from starkware.cairo.common.math_cmp import RC_BOUND
+from starkware.cairo.common.math_cmp import RC_BOUND, is_nn
 from starkware.cairo.common.cairo_secp.ec import EcPoint
 from starkware.cairo.common.cairo_secp.bigint import BigInt3
 from starkware.cairo.common.cairo_secp.signature import (
     recover_public_key,
     public_key_point_to_eth_address,
 )
-from starkware.cairo.common.uint256 import Uint256, uint256_reverse_endian
+from starkware.cairo.common.uint256 import Uint256, uint256_reverse_endian, uint256_lt
+from utils.uint256 import uint256_eq
 from starkware.cairo.common.cairo_secp.bigint import bigint_to_uint256
 from starkware.cairo.common.keccak_utils.keccak_utils import keccak_add_uint256s
 from starkware.cairo.common.memset import memset
@@ -30,6 +31,9 @@ from utils.maths import unsigned_div_rem
 namespace PrecompileEcRecover {
     const PRECOMPILE_ADDRESS = 0x01;
     const GAS_COST_EC_RECOVER = 3000;
+
+    const SECP256K1N_HIGH = 0xfffffffffffffffffffffffffffffffe;
+    const SECP256K1N_LOW = 0xbaaedce6af48a03bbfd25e8cd0364141;
 
     // @notice Run the precompile.
     // @param input_len The length of input array.
@@ -61,6 +65,23 @@ namespace PrecompileEcRecover {
         let msg_hash = Helpers.bytes_to_uint256(32, input_padded);
         let r = Helpers.bytes_to_uint256(32, input_padded + 32 * 2);
         let s = Helpers.bytes_to_uint256(32, input_padded + 32 * 3);
+
+        let SECP256K1N = Uint256(low=SECP256K1N_LOW, high=SECP256K1N_HIGH);
+        let (is_valid_upper_r) = uint256_lt(r, SECP256K1N);
+        let (is_valid_upper_s) = uint256_lt(s, SECP256K1N);
+        let is_valid_upper_bound = is_valid_upper_r * is_valid_upper_s;
+        if (is_valid_upper_bound == FALSE) {
+            let (output) = alloc();
+            return (0, output, GAS_COST_EC_RECOVER, 0);
+        }
+
+        let (is_invalid_lower_r) = uint256_eq(r, Uint256(low=0, high=0));
+        let (is_invalid_lower_s) = uint256_eq(s, Uint256(low=0, high=0));
+        let is_invalid_lower_bound = is_invalid_lower_r + is_invalid_lower_s;
+        if (is_invalid_lower_bound != FALSE) {
+            let (output) = alloc();
+            return (0, output, GAS_COST_EC_RECOVER, 0);
+        }
 
         // v - 27, see recover_public_key comment
         let (helpers_class) = Kakarot_cairo1_helpers_class_hash.read();
