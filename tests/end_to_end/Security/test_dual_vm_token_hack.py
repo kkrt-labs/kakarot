@@ -58,7 +58,7 @@ class TestDualVmToken:
         async def test_malicious_approve_address_should_fail_nodelegatecaltest_malicious_approve_address_should_fail_nodelegatecall(
             self, dual_vm_token, hack_vm_token, owner
         ):
-            result = await hack_vm_token.functions["tryApproveEvm()"]()
+            result = await hack_vm_token.functions["tryApproveEvm()"](gas_limit=1000000)
             call_succeeded = int.from_bytes(bytes(result["response"]), "big")
             assert call_succeeded == 0
 

@@ -90,7 +90,7 @@ async def new_eoa(deployer) -> Wallet:
         address=get_deployments()["Coinbase"]["address"],
     )
     gas_price = (await call("kakarot", "get_base_fee")).base_fee
-    gas_limit = 40_000
+    gas_limit = 100_000
     tx_cost = gas_limit * gas_price
     for wallet in deployed:
         balance = await eth_balance_of(wallet.address)
