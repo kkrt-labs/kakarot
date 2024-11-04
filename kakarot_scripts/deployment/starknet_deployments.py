@@ -47,6 +47,7 @@ async def deploy_starknet_contracts(account):
         class_hash["uninitialized_account"],
         class_hash["Cairo1Helpers"],
         BLOCK_GAS_LIMIT,
+        NETWORK["chain_id"],
     )
     try:
         coinbase = (

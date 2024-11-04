@@ -524,7 +524,10 @@ class TestKakarot:
         def test_should_return_chain_id_modulo_max_safe_chain_id(
             self, cairo_run, chain_id
         ):
-            with patch.dict(SyscallHandler.tx_info, {"chain_id": chain_id}):
+            with (
+                patch.dict(SyscallHandler.tx_info, {"chain_id": chain_id}),
+                SyscallHandler.patch("Kakarot_chain_id", chain_id),
+            ):
                 res = cairo_run("test__eth_chain_id")
                 assert res == chain_id % MAX_SAFE_CHAIN_ID
 
@@ -559,6 +562,7 @@ class TestKakarot:
                 )
 
         @SyscallHandler.patch("IAccount.get_nonce", lambda addr, data: [1])
+        @SyscallHandler.patch("Kakarot_chain_id", CHAIN_ID)
         @pytest.mark.parametrize("tx", TRANSACTIONS)
         def test_should_raise_invalid_nonce(self, cairo_run, tx):
             # explicitly set the nonce in transaction to be different from the patch
@@ -571,8 +575,9 @@ class TestKakarot:
                     tx_data=tx_data,
                 )
 
-        @given(gas_limit=integers(min_value=2**64, max_value=2**248 - 1))
+        @SyscallHandler.patch("Kakarot_chain_id", CHAIN_ID)
         @SyscallHandler.patch("IAccount.get_nonce", lambda _, __: [34])
+        @given(gas_limit=integers(min_value=2**64, max_value=2**248 - 1))
         def test_raise_gas_limit_too_high(self, cairo_run, gas_limit):
             tx = {
                 "type": 2,
@@ -595,8 +600,9 @@ class TestKakarot:
                     tx_data=tx_data,
                 )
 
-        @given(maxFeePerGas=integers(min_value=2**128, max_value=2**248 - 1))
+        @SyscallHandler.patch("Kakarot_chain_id", CHAIN_ID)
         @SyscallHandler.patch("IAccount.get_nonce", lambda _, __: [34])
+        @given(maxFeePerGas=integers(min_value=2**128, max_value=2**248 - 1))
         def test_raise_max_fee_per_gas_too_high(self, cairo_run, maxFeePerGas):
             tx = {
                 "type": 2,
@@ -619,6 +625,7 @@ class TestKakarot:
                     tx_data=tx_data,
                 )
 
+        @SyscallHandler.patch("Kakarot_chain_id", CHAIN_ID)
         @pytest.mark.parametrize("tx", TRANSACTIONS)
         def test_raise_transaction_gas_limit_too_high(self, cairo_run, tx):
             tx_data = list(rlp_encode_signed_data(tx))
@@ -635,6 +642,7 @@ class TestKakarot:
 
         @SyscallHandler.patch("Kakarot_block_gas_limit", TRANSACTION_GAS_LIMIT)
         @SyscallHandler.patch("Kakarot_base_fee", TRANSACTION_GAS_LIMIT * 10**10)
+        @SyscallHandler.patch("Kakarot_chain_id", CHAIN_ID)
         @pytest.mark.parametrize("tx", TRANSACTIONS)
         def test_raise_max_fee_per_gas_too_low(self, cairo_run, tx):
             tx_data = list(rlp_encode_signed_data(tx))
@@ -659,6 +667,7 @@ class TestKakarot:
 
         @SyscallHandler.patch("Kakarot_block_gas_limit", TRANSACTION_GAS_LIMIT)
         @SyscallHandler.patch("IAccount.get_nonce", lambda _, __: [34])
+        @SyscallHandler.patch("Kakarot_chain_id", CHAIN_ID)
         @given(max_priority_fee_too_high())
         def test_raise_max_priority_fee_too_high(
             self, cairo_run, max_priority_fee_too_high
@@ -687,6 +696,7 @@ class TestKakarot:
         @SyscallHandler.patch("IERC20.balanceOf", lambda _, __: [0, 0])
         @SyscallHandler.patch("Kakarot_block_gas_limit", TRANSACTION_GAS_LIMIT)
         @SyscallHandler.patch("IAccount.get_evm_address", lambda _, __: [0xABDE1])
+        @SyscallHandler.patch("Kakarot_chain_id", CHAIN_ID)
         @pytest.mark.parametrize("tx", TRANSACTIONS)
         def test_raise_not_enough_ETH_balance(self, cairo_run, tx):
             tx_data = list(rlp_encode_signed_data(tx))
