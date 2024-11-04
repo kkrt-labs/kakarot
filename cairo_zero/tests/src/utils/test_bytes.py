@@ -70,9 +70,27 @@ class TestBytes:
                     "memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base\nassert res < ids.bound, f'split_int(): Limb {res} is out of range.'",
                     f"if ids.value == {n} and ids.bytes_len == 0:\n    memory[ids.output] = 0\nelse:\n    memory[ids.output] = (int(ids.value) % PRIME) % ids.base",
                 ),
-                cairo_error(message="bytes_len is not the minimal possible"),
+                cairo_error(
+                    message=[
+                        "bytes_len is not the minimal possible",
+                        "Value is not empty",
+                    ]
+                ),
             ):
                 cairo_run("test__felt_to_bytes_little", n=n)
+
+        def test_should_raise_finding_39_code4rena_2024_09(
+            self, cairo_program, cairo_run
+        ):
+            with (
+                patch_hint(
+                    cairo_program,
+                    "memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base\nassert res < ids.bound, f'split_int(): Limb {res} is out of range.'",
+                    "memory[ids.output] = 2 if ids.bytes_len < 3 else (int(ids.value) % PRIME) % ids.base\nprint(f'[DEBUG] Byte value: {memory[ids.output]}')",
+                ),
+                cairo_error(message="bytes_len is not the minimal possible"),
+            ):
+                cairo_run("test__felt_to_bytes_little", n=3)
 
     class TestFeltToBytes:
         @given(n=integers(min_value=0, max_value=2**248 - 1))
