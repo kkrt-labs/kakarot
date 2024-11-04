@@ -323,33 +323,6 @@ namespace Kakarot {
         return ();
     }
 
-    // @notice Writes to an account's bytecode
-    // @param evm_address The evm address of the account.
-    // @param bytecode_len The length of the bytecode.
-    // @param bytecode The bytecode to write.
-    func write_account_bytecode{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        evm_address: felt, bytecode_len: felt, bytecode: felt*
-    ) {
-        alloc_locals;
-        let starknet_address = Account.get_starknet_address(evm_address);
-        IAccount.write_bytecode(starknet_address, bytecode_len, bytecode);
-        let code_hash = Account.compute_code_hash(bytecode_len, bytecode);
-        IAccount.set_code_hash(starknet_address, code_hash);
-        return ();
-    }
-
-    // @notice Writes to an account's nonce
-    // @param evm_address The evm address of the account.
-    // @param nonce The nonce to write.
-    func write_account_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        evm_address: felt, nonce: felt
-    ) {
-        alloc_locals;
-        let starknet_address = Account.get_starknet_address(evm_address);
-        IAccount.set_nonce(starknet_address, nonce);
-        return ();
-    }
-
     // @notice Upgrades an account to a new contract implementation.
     // @param evm_address The evm address of the account.
     // @param new_class_hash The new class hash of the account.

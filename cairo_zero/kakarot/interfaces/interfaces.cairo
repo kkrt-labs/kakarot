@@ -172,13 +172,7 @@ namespace IKakarot {
     func register_account(evm_address: felt) {
     }
 
-    func write_account_bytecode(evm_address: felt, bytecode_len: felt, bytecode: felt*) {
-    }
-
     func upgrade_account(evm_address: felt, new_class: felt) {
-    }
-
-    func write_account_nonce(evm_address: felt, nonce: felt) {
     }
 
     func set_authorized_pre_eip155_tx(sender_address: felt, msg_hash: felt) {
