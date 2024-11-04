@@ -3,4 +3,8 @@ coverage:
     project:
       default:
         target: auto # auto compares coverage to the previous base commit
+        threshold: 5 # 5% threshold
+    patch:
+      default:
+        target: 0
   precision: 1
