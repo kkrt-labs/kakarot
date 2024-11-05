@@ -5,25 +5,17 @@ from eth_utils import keccak
 from eth_utils.address import to_checksum_address
 
 from kakarot_scripts.utils.kakarot import deploy, eth_balance_of, fund_address
-from kakarot_scripts.utils.starknet import invoke
+from kakarot_scripts.utils.starknet import call_contract
 from tests.utils.errors import evm_error
 
 
 @pytest_asyncio.fixture(scope="package")
-async def kakarot_eth(kakarot, eth):
-    token = await deploy(
-        "CairoPrecompiles", "DualVmToken", kakarot.address, eth.address
-    )
-    await invoke(
-        "kakarot", "set_authorized_cairo_precompile_caller", int(token.address, 16), 1
-    )
-    return token
-
-
-@pytest_asyncio.fixture(scope="package")
-async def coinbase(owner, kakarot_eth):
+async def coinbase(owner):
+    kakarot_native_token = (
+        await call_contract("kakarot", "get_native_token")
+    ).native_token_address
     return await deploy(
-        "Kakarot", "Coinbase", kakarot_eth.address, caller_eoa=owner.starknet_contract
+        "Kakarot", "Coinbase", kakarot_native_token, caller_eoa=owner.starknet_contract
     )
 
 
