@@ -67,6 +67,7 @@ async def deploy_evm_contracts():
             "address": int(contract.address, 16),
             "starknet_address": contract.starknet_address,
         }
+        logger.info(f"✅ Coinbase deployed at {contract.address}")
         await invoke("kakarot", "set_coinbase", int(contract.address, 16))
 
     # %% Tear down

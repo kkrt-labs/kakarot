@@ -2,8 +2,8 @@ import pytest
 import pytest_asyncio
 from eth_utils import keccak
 
-from kakarot_scripts.utils.kakarot import get_contract as get_contract_evm
-from kakarot_scripts.utils.kakarot import get_deployments as get_evm_deployments
+from kakarot_scripts.utils.kakarot import deploy as deploy_kakarot
+from kakarot_scripts.utils.starknet import deploy as deploy_starknet
 from kakarot_scripts.utils.starknet import get_contract as get_contract_starknet
 from kakarot_scripts.utils.starknet import (
     get_starknet_account,
@@ -13,25 +13,35 @@ from kakarot_scripts.utils.starknet import (
 from tests.utils.errors import cairo_error
 
 
-@pytest_asyncio.fixture(scope="session")
-async def dual_vm_token(owner):
-    evm_deployments = get_evm_deployments()
-    ether = evm_deployments["Ether"]["address"]
-    return await get_contract_evm(
+@pytest_asyncio.fixture(scope="function")
+async def starknet_token(owner):
+    address = await deploy_starknet(
+        "StarknetToken",
+        "MyToken",
+        "MTK",
+        int(2**256 - 1),
+        owner.starknet_contract.address,
+    )
+    return get_contract_starknet("StarknetToken", address=address)
+
+
+@pytest_asyncio.fixture(scope="function")
+async def dual_vm_token(kakarot, starknet_token, owner):
+    dual_vm_token = await deploy_kakarot(
         "CairoPrecompiles",
         "DualVmToken",
-        address=ether,
+        kakarot.address,
+        starknet_token.address,
         caller_eoa=owner.starknet_contract,
     )
 
-
-@pytest_asyncio.fixture(scope="session")
-async def starknet_token(dual_vm_token):
-    starknet_address = await dual_vm_token.starknetToken()
-    deployer = await get_starknet_account()
-    return get_contract_starknet(
-        "StarknetToken", address=starknet_address, provider=deployer
+    await invoke(
+        "kakarot",
+        "set_authorized_cairo_precompile_caller",
+        int(dual_vm_token.address, 16),
+        True,
     )
+    return dual_vm_token
 
 
 @pytest_asyncio.fixture(scope="function", autouse=True)
@@ -54,30 +64,7 @@ async def fund_owner(owner, starknet_token, max_fee):
     (balance,) = await starknet_token.functions["balance_of"].call(
         owner.starknet_contract.address
     )
-    assert (
-        balance >= amount
-    ), f"Transfer failed. Expected min balance: {amount}, Actual balance: {balance}"
-
-
-@pytest_asyncio.fixture(scope="function")
-async def starknet_token(owner):
-    address = await deploy_starknet(
-        "StarknetToken", int(2**256 - 1), owner.starknet_contract.address
-    )
-    return get_contract_starknet("StarknetToken", address=address)
-
-
-
-@pytest_asyncio.fixture(scope="function")
-async def dual_vm_token(owner):
-    evm_deployments = get_evm_deployments()
-    ether = evm_deployments["Ether"]["address"]
-    return await get_contract_evm(
-        "CairoPrecompiles",
-        "DualVmToken",
-        address=ether,
-        caller_eoa=owner.starknet_contract,
-    )
+    assert balance >= amount
 
 
 @pytest.mark.asyncio(scope="module")
