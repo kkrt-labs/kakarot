@@ -53,8 +53,10 @@ async def main():
     # %% EVM Deployments
     await deploy_pre_eip155_senders()
     await deploy_evm_contracts()
-    await deploy_dualvm_tokens()
     await execute_calls()
+
+    # DualVM Tokens deployment have their own invoke batching strategy
+    await deploy_dualvm_tokens()
 
     await whitelist_pre_eip155_txs()
     await execute_calls()

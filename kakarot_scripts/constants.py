@@ -25,6 +25,8 @@ BEACON_ROOT_ADDRESS = "0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02"
 # see https://gist.github.com/rekmarks/a47bd5f2525936c4b8eee31a16345553
 MAX_SAFE_CHAIN_ID = 4503599627370476
 
+TOKEN_ADDRESSES_DIR = Path("starknet-addresses/bridged_tokens")
+
 
 class NetworkType(Enum):
     PROD = "prod"
@@ -45,6 +47,7 @@ NETWORKS = {
         "class_hash": 0x061DAC032F228ABEF9C6626F995015233097AE253A7F72D68552DB02F2971B8F,
         "voyager_api_url": "https://api.voyager.online/beta",
         "argent_multisig_api": "https://cloud.argent-api.com/v1/multisig/starknet/mainnet",
+        "token_addresses_file": TOKEN_ADDRESSES_DIR / "mainnet.json",
     },
     "sepolia": {
         "name": "sepolia",
@@ -58,6 +61,7 @@ NETWORKS = {
         "class_hash": 0x061DAC032F228ABEF9C6626F995015233097AE253A7F72D68552DB02F2971B8F,
         "voyager_api_url": "https://sepolia-api.voyager.online/beta",
         "argent_multisig_api": "https://cloud.argent-api.com/v1/multisig/starknet/sepolia",
+        "token_addresses_file": TOKEN_ADDRESSES_DIR / "sepolia.json",
     },
     "staging": {
         "name": "staging",
@@ -71,6 +75,7 @@ NETWORKS = {
         "class_hash": 0x061DAC032F228ABEF9C6626F995015233097AE253A7F72D68552DB02F2971B8F,
         "voyager_api_url": "https://sepolia-api.voyager.online/beta",
         "argent_multisig_api": "https://cloud.argent-api.com/v1/multisig/starknet/sepolia",
+        "token_addresses_file": TOKEN_ADDRESSES_DIR / "sepolia.json",
     },
     "starknet-devnet": {
         "name": "starknet-devnet",
@@ -89,6 +94,7 @@ NETWORKS = {
         "type": NetworkType.DEV,
         "check_interval": 0.01,
         "max_wait": 3,
+        "token_addresses_file": TOKEN_ADDRESSES_DIR / "sepolia.json",
         "relayers": [
             {
                 "address": 0xE29882A1FCBA1E7E10CAD46212257FEA5C752A4F9B1B1EC683C503A2CF5C8A,
@@ -211,7 +217,6 @@ CAIRO_ZERO_DIR = Path("cairo_zero")
 CAIRO_DIR = Path("cairo")
 TESTS_DIR_CAIRO_ZERO = Path("cairo_zero/tests")
 TESTS_DIR_END_TO_END = Path("tests")
-TOKEN_ADDRESSES_DIR = Path("starknet-addresses/bridged_tokens")
 
 CONTRACTS = {
     p.stem: p

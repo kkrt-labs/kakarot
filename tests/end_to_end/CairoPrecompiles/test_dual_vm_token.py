@@ -15,6 +15,7 @@ async def starknet_token(owner):
         "StarknetToken",
         "MyToken",
         "MTK",
+        18,
         int(2**256 - 1),
         owner.starknet_contract.address,
     )

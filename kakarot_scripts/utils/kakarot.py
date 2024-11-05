@@ -318,7 +318,7 @@ def dump_deployments(deployments):
         {
             name: {
                 **deployment,
-                "address": hex(deployment["address"]),
+                "address": Web3.to_checksum_address(f"0x{deployment['address']:040x}"),
                 "starknet_address": hex(deployment["starknet_address"]),
             }
             for name, deployment in deployments.items()

@@ -16,7 +16,7 @@ from kakarot_scripts.utils.starknet import (
     wait_for_transaction,
 )
 from tests.end_to_end.bytecodes import test_cases
-from tests.utils.constants import TRANSACTION_GAS_LIMIT, ZERO_ADDRESS
+from tests.utils.constants import TRANSACTION_GAS_LIMIT
 from tests.utils.helpers import (
     extract_memory_from_execute,
     generate_random_evm_address,
