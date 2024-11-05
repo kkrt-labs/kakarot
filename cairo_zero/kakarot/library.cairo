@@ -414,4 +414,17 @@ namespace Kakarot {
             0, l1_sender, to, 2100000000, 1, value_u256, data_len, data, 0, access_list
         );
     }
+
+    // @notice Initialize the chain ID
+    // @param chain_id The chain ID
+    func initialize_chain_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        chain_id: felt
+    ) {
+        with_attr error_message("Kakarot: chain_id already initialized") {
+            let (current_chain_id) = Kakarot_chain_id.read();
+            assert current_chain_id = 0;
+        }
+        Kakarot_chain_id.write(chain_id);
+        return ();
+    }
 }

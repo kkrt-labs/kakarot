@@ -70,6 +70,16 @@ func unpause{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() 
     return ();
 }
 
+// @notice chain_id initializer
+@external
+func initialize_chain_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    chain_id: felt
+) {
+    Ownable.assert_only_owner();
+    Kakarot.initialize_chain_id(chain_id);
+    return ();
+}
+
 // Constructor
 @constructor
 func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(

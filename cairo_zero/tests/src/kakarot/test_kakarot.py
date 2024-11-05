@@ -97,7 +97,6 @@ class TestKakarot:
             )
 
     class TestUnpause:
-
         @SyscallHandler.patch("Ownable_owner", 0xDEAD)
         def test_should_assert_only_owner(self, cairo_run):
             with cairo_error(message="Ownable: caller is not the owner"):
@@ -184,6 +183,31 @@ class TestKakarot:
                 address=get_storage_var_address("Kakarot_prev_randao"),
                 value=prev_randao,
             )
+
+    class TestInitializeChainId:
+        @SyscallHandler.patch("Ownable_owner", 0xDEAD)
+        def test_should_assert_only_owner(self, cairo_run):
+            with cairo_error(message="Ownable: caller is not the owner"):
+                cairo_run("test__initialize_chain_id", chain_id=0xABC)
+
+        @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
+        def test_should_initialize_chain_id(self, cairo_run):
+            chain_id = 0x123
+
+            cairo_run("test__initialize_chain_id", chain_id=chain_id)
+            SyscallHandler.mock_storage.assert_any_call(
+                address=get_storage_var_address("Kakarot_chain_id"),
+                value=chain_id,
+            )
+
+        @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
+        def test_should_fail_initialize_chain_id_twice(self, cairo_run):
+            chain_id = 0x123
+            with (
+                cairo_error(message="Kakarot: chain_id already initialized"),
+                SyscallHandler.patch("Kakarot_chain_id", chain_id),
+            ):
+                cairo_run("test__initialize_chain_id", chain_id=chain_id)
 
     class TestBlockGasLimit:
         @SyscallHandler.patch("Ownable_owner", 0xDEAD)
