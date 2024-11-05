@@ -151,7 +151,7 @@ def get_solidity_artifacts(
 async def get_contract(
     contract_app: str,
     contract_name: str,
-    address=None,
+    address: Optional[int] = None,
     caller_eoa: Optional[Account] = None,
 ) -> Web3Contract:
     artifacts = get_solidity_artifacts(contract_app, contract_name)

@@ -158,7 +158,7 @@ class TestPlainOpcodes:
             assert len(events["CreateAddress(address)"]) == count
             for create_event in events["CreateAddress(address)"]:
                 deployed_counter = await get_contract(
-                    "PlainOpcodes", "Counter", address=create_event["_address"]
+                    "PlainOpcodes", "Counter", address=int(create_event["_address"], 16)
                 )
                 assert await deployed_counter.count() == 0
 
@@ -188,7 +188,7 @@ class TestPlainOpcodes:
         ):
             receipt = (await plain_opcodes.createCounterAndCall())["receipt"]
             events = plain_opcodes.events.parse_events(receipt)
-            address = events["CreateAddress(address)"][0]["_address"]
+            address = int(events["CreateAddress(address)"][0]["_address"], 16)
             counter = await get_contract("PlainOpcodes", "Counter", address=address)
             assert await counter.count() == 0
 
@@ -197,7 +197,7 @@ class TestPlainOpcodes:
         ):
             receipt = (await plain_opcodes.createCounterAndInvoke())["receipt"]
             events = plain_opcodes.events.parse_events(receipt)
-            address = events["CreateAddress(address)"][0]["_address"]
+            address = int(events["CreateAddress(address)"][0]["_address"], 16)
             counter = await get_contract("PlainOpcodes", "Counter", address=address)
             assert await counter.count() == 1
 
@@ -221,7 +221,7 @@ class TestPlainOpcodes:
             contract_with_selfdestruct = await get_contract(
                 "PlainOpcodes",
                 "ContractWithSelfdestructMethod",
-                address=events["Create2Address(address)"][0]["_address"],
+                address=int(events["Create2Address(address)"][0]["_address"], 16),
             )
             pre_code = await eth_get_code(contract_with_selfdestruct.address)
             assert pre_code
@@ -263,7 +263,7 @@ class TestPlainOpcodes:
             deployed_counter = await get_contract(
                 "PlainOpcodes",
                 "Counter",
-                address=events["Create2Address(address)"][0]["_address"],
+                address=int(events["Create2Address(address)"][0]["_address"], 16),
             )
             assert await deployed_counter.count() == 0
             assert await eth_get_transaction_count(deployed_counter.address) == 1

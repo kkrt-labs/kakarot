@@ -56,7 +56,7 @@ class TestUniswapV2Factory:
             pair = await get_contract(
                 "UniswapV2",
                 "UniswapV2Pair",
-                address=pair_evm_address,
+                address=int(pair_evm_address, 16),
             )
             assert await pair.factory() == factory.address
             assert await pair.token0() == token_0
