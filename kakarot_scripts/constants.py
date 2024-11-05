@@ -89,7 +89,7 @@ NETWORKS = {
         "type": NetworkType.DEV,
         "check_interval": 0.01,
         "max_wait": 3,
-       "relayers": [
+        "relayers": [
             {
                 "address": 0xE29882A1FCBA1E7E10CAD46212257FEA5C752A4F9B1B1EC683C503A2CF5C8A,
                 "private_key": 0x14D6672DCB4B77CA36A887E9A11CD9D637D5012468175829E9C6E770C61642,

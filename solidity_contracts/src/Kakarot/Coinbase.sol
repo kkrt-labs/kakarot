@@ -14,12 +14,14 @@ contract Coinbase is Ownable2Step {
         nativeTokenStarknetAddress = _nativeTokenStarknetAddress;
     }
 
+    receive() external payable {}
+
     /// @notice Withdraws the native token collected by the contract to an address
     /// @dev Uses CairoLib to make a StarknetCall to transfer this contract's balance to a starknet address.
     /// @param toStarknetAddress The Starknet address to withdraw to
     function withdraw(uint256 toStarknetAddress) external onlyOwner {
         uint256 balance = address(this).balance;
-        uint128 balanceLow = uint128(balance & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF);
+        uint128 balanceLow = uint128(balance);
         uint128 balanceHigh = uint128(balance >> 128);
         uint256[] memory data = new uint256[](3);
         data[0] = toStarknetAddress; // recipient
