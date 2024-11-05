@@ -34,7 +34,8 @@ async def deploy_dualvm_tokens() -> None:
 
     # The lazy execution must be done before we check the deployments succeeded, as the l2 contracts
     # need to be deployed first
-    register_lazy_account(await get_starknet_account())
+    account = await get_starknet_account()
+    register_lazy_account(account)
 
     kakarot_address = get_starknet_deployments()["kakarot"]
     evm_deployments = get_evm_deployments()
@@ -121,11 +122,9 @@ async def deploy_dualvm_tokens() -> None:
 
     await execute_calls()
     dump_evm_deployments(evm_deployments)
-    remove_lazy_account(await get_starknet_account())
+    remove_lazy_account(account)
 
     # Check deployments
-    # Reload evm deployments to get the proper formatting of addresses.
-    evm_deployments = get_evm_deployments()
     for token in tokens_to_deploy:
         token_contract = await get_solidity_contract(
             "CairoPrecompiles", "DualVmToken", evm_deployments[token["name"]]["address"]

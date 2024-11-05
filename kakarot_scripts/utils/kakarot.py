@@ -151,17 +151,23 @@ def get_solidity_artifacts(
 async def get_contract(
     contract_app: str,
     contract_name: str,
-    address=None,
+    address: Optional[int | str] = None,
     caller_eoa: Optional[Account] = None,
 ) -> Web3Contract:
     artifacts = get_solidity_artifacts(contract_app, contract_name)
+
+    address = int(address, 16) if isinstance(address, str) else address
 
     bytecode, bytecode_runtime = await link_libraries(artifacts)
 
     contract = cast(
         Web3Contract,
         WEB3.eth.contract(
-            address=to_checksum_address(address) if address is not None else address,
+            address=(
+                to_checksum_address(f"{address:040x}")
+                if address is not None
+                else address
+            ),
             abi=artifacts["abi"],
             bytecode=bytecode,
         ),
