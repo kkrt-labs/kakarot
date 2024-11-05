@@ -34,34 +34,6 @@ logger.setLevel(logging.INFO)
 
 
 # %%
-async def deploy_starknet_token() -> Any:
-    owner = await get_starknet_account()
-    address = await deploy_starknet(
-        "StarknetToken", "MyToken", "MTK", int(1e18), owner.address
-    )
-    return get_contract_starknet("StarknetToken", address=address)
-
-
-async def deploy_dualvm_token(
-    kakarot_address: str, starknet_token_address: str, deployer_account: Any = None
-) -> Any:
-    dual_vm_token = await deploy_kakarot(
-        "CairoPrecompiles",
-        "DualVmToken",
-        kakarot_address,
-        int(starknet_token_address, 16),
-        caller_eoa=deployer_account,
-    )
-
-    await invoke(
-        "kakarot",
-        "set_authorized_cairo_precompile_caller",
-        int(dual_vm_token.address, 16),
-        True,
-    )
-    return dual_vm_token
-
-
 async def deploy_dualvm_tokens() -> None:
     # %% Deploy DualVM Tokens
     kakarot = get_starknet_deployments()["kakarot"]
@@ -69,7 +41,7 @@ async def deploy_dualvm_tokens() -> None:
         await call_contract("kakarot", "get_native_token")
     ).native_token_address
     evm_deployments = get_evm_deployments()
-    tokens = get_tokens_list(NETWORK)
+    tokens = get_tokens_list()
     for token in tokens:
         if int(token["l2_token_address"], 16) == kakarot_native_token:
             logger.info(f"Skipping {token['name']} as it is the native token")
@@ -77,23 +49,24 @@ async def deploy_dualvm_tokens() -> None:
         if token["name"] not in evm_deployments:
             await deploy_new_token(token, kakarot, evm_deployments)
         else:
-            await verify_and_update_existing_token(token, kakarot, evm_deployments)
+            is_deployed = await check_dualvm_token_deployment(token, evm_deployments)
+            if not is_deployed:
+                await deploy_new_token(token, kakarot, evm_deployments)
 
-    logger.info("Finished processing all tokens")
+    logger.info("Finished processing all DualVM tokens")
     dump_evm_deployments(evm_deployments)
-    logger.info("Updated EVM deployments have been saved")
     # %%
 
 
-def get_tokens_list(network) -> List[Dict[str, Any]]:
+def get_tokens_list() -> List[Dict[str, Any]]:
     """
     Get the list of tokens for a given network.
     If in dev mode, will return the sepolia token list.
     """
-    if network["type"] == NetworkType.DEV:
+    if NETWORK["type"] == NetworkType.DEV:
         return load_tokens("sepolia")
 
-    return load_tokens(network["name"])
+    return load_tokens(NETWORK["name"])
 
 
 def load_tokens(network_name: str) -> List[Dict[str, Any]]:
@@ -111,7 +84,7 @@ def load_tokens(network_name: str) -> List[Dict[str, Any]]:
 
 async def deploy_new_token(
     token: Dict[str, Any],
-    kakarot: str,
+    kakarot_address: str,
     evm_deployments: Dict[str, Any],
 ) -> None:
     """
@@ -119,7 +92,19 @@ async def deploy_new_token(
     """
     token_name = token["name"]
     l2_token_address = await get_starknet_token(token)
-    contract = await deploy_dualvm_token(kakarot, l2_token_address)
+    contract = await deploy_kakarot(
+        "CairoPrecompiles",
+        "DualVmToken",
+        kakarot_address,
+        int(l2_token_address, 16),
+    )
+
+    await invoke(
+        "kakarot",
+        "set_authorized_cairo_precompile_caller",
+        int(contract.address, 16),
+        True,
+    )
     evm_deployments[token_name] = {
         "address": int(contract.address, 16),
         "starknet_address": contract.starknet_address,
@@ -129,28 +114,19 @@ async def deploy_new_token(
     )
 
 
-async def verify_and_update_existing_token(
+async def check_dualvm_token_deployment(
     token: Dict[str, Any],
-    kakarot: str,
     evm_deployments: Dict[str, Any],
-) -> None:
+) -> bool:
     """
-    Given an existing DualVMToken, verifies it is _actually_ deployed. If not, deploys a new one.
+    Given an existing DualVMToken, verifies it is _actually_ deployed.
     """
     token_name = token["name"]
     dualvm_token_address = evm_deployments[token_name]["starknet_address"]
-    if not await get_class_hash_at(dualvm_token_address):
-        l2_token_address = await get_starknet_token(token)
-        contract = await deploy_dualvm_token(kakarot, l2_token_address)
-        evm_deployments[token_name] = {
-            "address": int(contract.address, 16),
-            "starknet_address": contract.starknet_address,
-        }
-        logger.info(
-            f"Deployed new DualVMToken for {token_name} at address {contract.address}"
-        )
+    if await get_class_hash_at(dualvm_token_address):
+        return True
     else:
-        logger.info(f"Existing DualVMToken for {token_name} is valid")
+        return False
 
 
 async def get_starknet_token(token: Dict[str, Any]) -> str:
@@ -176,6 +152,14 @@ async def get_starknet_token(token: Dict[str, Any]) -> str:
             f"Using existing Starknet token for {token_name} at address {token['l2_token_address']}"
         )
     return token["l2_token_address"]
+
+
+async def deploy_starknet_token() -> Any:
+    owner = await get_starknet_account()
+    address = await deploy_starknet(
+        "StarknetToken", "MyToken", "MTK", int(1e18), owner.address
+    )
+    return get_contract_starknet("StarknetToken", address=address)
 
 
 # %% Run
