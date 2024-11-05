@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0.
 pragma solidity ^0.8.0;
 
-import "../starknet/StarknetMessaging.sol";
+import "../starknet/Starknet.sol";
 
 /**
    @notice Interface related to local messaging for Starknet.
@@ -28,7 +28,7 @@ interface IStarknetMessagingLocal {
    DISCLAIMER:
    The purpose of this contract is for local development only.
 */
-contract StarknetMessagingLocal is StarknetMessaging, IStarknetMessagingLocal {
+contract StarknetMessagingLocal is Starknet, IStarknetMessagingLocal {
 
     /**
        @notice Hashes were added.

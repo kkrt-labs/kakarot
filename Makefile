@@ -10,7 +10,7 @@ endif
 KKRT_SSJ_RELEASE_ID = 176384150
 # Kakarot SSJ artifacts for precompiles.
 KKRT_SSJ_BUILD_ARTIFACT_URL = $(shell curl -L https://api.github.com/repos/kkrt-labs/kakarot-ssj/releases/${KKRT_SSJ_RELEASE_ID} | jq -r '.assets[0].browser_download_url')
-KATANA_VERSION = v1.0.0-alpha.14
+MADARA_VERSION = d188aa91
 ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
 BUILD_DIR = build
@@ -45,7 +45,7 @@ test: deploy
 test-unit: build-sol
 	uv run pytest tests/src -m "not NoCI" -n logical --seed 42
 
-test-end-to-end: deploy
+test-end-to-end: madara-test-deploy
 	uv run pytest tests/end_to_end --seed 42
 
 format:
@@ -67,16 +67,16 @@ build-sol:
 	git submodule update --init --recursive
 	forge build --names --force
 
-install-katana:
-	cargo install --git https://github.com/dojoengine/dojo --locked --tag "${KATANA_VERSION}" katana
+install-madara:
+	cargo install --git https://github.com/madara-alliance/madara.git --locked --rev "${MADARA_VERSION}"
 
-run-katana:
-	katana --chain-id test --validate-max-steps 6000000 --invoke-max-steps 14000000 --eth-gas-price 0 --strk-gas-price 0 --disable-fee --seed 0
-
-run-anvil:
-	anvil --block-base-fee-per-gas 1
+madara-test-deploy: run-nodes deploy
+	@echo "Deploying Starknet Core contract and restarting Madara..."
+	uv run python .madara/deploy_core_contract.py
+	pkill madara
+	sleep 1
+	madara --devnet --l1-endpoint=http://localhost:8545 --chain-config-override eth_core_contract_address=0x5FbDB2315678afecb367f032d93F642f64180aa3 &
 
 run-nodes:
-	@echo "Starting Anvil and Katana in messaging mode"
-	@anvil --block-base-fee-per-gas 1 &
-	@katana --chain-id test --validate-max-steps 6000000 --invoke-max-steps 14000000 --eth-gas-price 0 --strk-gas-price 0 --disable-fee --messaging .katana/messaging_config.json --seed 0
+	anvil --block-base-fee-per-gas 1 &
+	madara --devnet &

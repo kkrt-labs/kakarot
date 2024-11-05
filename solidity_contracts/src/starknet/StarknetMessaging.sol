@@ -1,5 +1,5 @@
 /*
-  Copyright 2019-2022 StarkWare Industries Ltd.
+  Copyright 2019-2024 StarkWare Industries Ltd.
 
   Licensed under the Apache License, Version 2.0 (the "License").
   You may not use this file except in compliance with the License.
@@ -17,13 +17,12 @@
 pragma solidity ^0.8.0;
 
 import "./IStarknetMessaging.sol";
-import "./NamedStorage.sol";
+import "./starkware/solidity/libraries/NamedStorage8.sol";
 
 /**
   Implements sending messages to L2 by adding them to a pipe and consuming messages from L2 by
   removing them from a different pipe. A deriving contract can handle the former pipe and add items
   to the latter pipe while interacting with L2.
-  Adapted from https://github.com/starkware-libs/cairo-lang/blob/master/src/starkware/starknet/solidity/StarknetMessaging.sol
 */
 contract StarknetMessaging is IStarknetMessaging {
     /*
@@ -52,7 +51,7 @@ contract StarknetMessaging is IStarknetMessaging {
       Returns the msg_fee + 1 for the message with the given 'msgHash',
       or 0 if no message with such a hash is pending.
     */
-    function l1ToL2Messages(bytes32 msgHash) external view returns (uint256) {
+    function l1ToL2Messages(bytes32 msgHash) external view override returns (uint256) {
         return l1ToL2Messages()[msgHash];
     }
 

@@ -1,5 +1,5 @@
 /*
-  Copyright 2019-2022 StarkWare Industries Ltd.
+  Copyright 2019-2024 StarkWare Industries Ltd.
 
   Licensed under the Apache License, Version 2.0 (the "License").
   You may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
   and limitations under the License.
 */
 // SPDX-License-Identifier: Apache-2.0.
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.24;
 
 interface IStarknetMessagingEvents {
     // This event needs to be compatible with the one defined in Output.sol.

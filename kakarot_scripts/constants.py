@@ -125,8 +125,8 @@ NETWORKS = {
         "rpc_url": os.getenv("MADARA_RPC_URL", "http://127.0.0.1:9944"),
         "l1_rpc_url": "http://127.0.0.1:8545",
         "type": NetworkType.DEV,
-        "check_interval": 6,
-        "max_wait": 30,
+        "check_interval": 0.01,
+        "max_wait": 3,
     },
     "sharingan": {
         "name": "sharingan",

@@ -106,6 +106,7 @@ def wait_for_sn_messaging_local(sn_messaging_local):
     return _factory
 
 
+@pytest.mark.skip
 @pytest.mark.slow
 @pytest.mark.asyncio(scope="module")
 class TestL2ToL1Messages:

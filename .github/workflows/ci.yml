@@ -107,7 +107,7 @@ jobs:
   tests-end-to-end:
     runs-on: ubuntu-latest
     env:
-      STARKNET_NETWORK: katana
+      STARKNET_NETWORK: madara
       PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: python
     needs: paths-filter
     if:
@@ -119,11 +119,11 @@ jobs:
       needs.paths-filter.outputs.rust == 'true'
     steps:
       - uses: actions/checkout@v4
-      - name: Extract Katana Version
-        id: extract_katana_version
+      - name: Extract Madara Version
+        id: extract_madara_version
         run: |
-          KATANA_VERSION=$(grep -oP '^KATANA_VERSION = \K.*' Makefile)
-          echo "katana_version=$KATANA_VERSION" >> "$GITHUB_OUTPUT"
+          MADARA_VERSION=$(grep -oP '^MADARA_VERSION = \K.*' Makefile)
+          echo "madara_version=$MADARA_VERSION" >> "$GITHUB_OUTPUT"
       - uses: astral-sh/setup-uv@v2
         with:
           enable-cache: true
@@ -142,13 +142,13 @@ jobs:
         with:
           path: ~/.cargo/bin
           key: katana-${{ steps.extract_katana_version.outputs.katana_version }}
-      - name: Install Katana
+      - name: Install Madara
         if: steps.cached-katana.outputs.cache-hit != 'true'
-        run: make install-katana
+        run: make install-madara
       - name: Run tests
         run: |
           cp .env.example .env
-          make run-nodes & make test-end-to-end
+          make test-end-to-end
 
   forge-test:
     runs-on: ubuntu-latest
