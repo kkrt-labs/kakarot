@@ -161,7 +161,11 @@ async def get_contract(
     contract = cast(
         Web3Contract,
         WEB3.eth.contract(
-            address=to_checksum_address(address) if address is not None else address,
+            address=(
+                to_checksum_address(f"{address:040x}")
+                if address is not None
+                else address
+            ),
             abi=artifacts["abi"],
             bytecode=bytecode,
         ),
