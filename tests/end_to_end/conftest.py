@@ -94,6 +94,13 @@ async def new_eoa(deployer) -> Wallet:
             gas_price=gas_price,
         )
 
+        # Withdraw the funds to the deployer
+        await coinbase.functions["withdraw(uint256)"](
+            toStarknetAddress=deployer.address,
+            gas_limit=gas_limit,
+            gas_price=gas_price,
+        )
+
 
 @pytest_asyncio.fixture(scope="session")
 async def owner(new_eoa):
