@@ -3,6 +3,7 @@ import pytest_asyncio
 from eth_abi import encode
 from eth_utils import keccak
 from eth_utils.address import to_checksum_address
+from web3.contract import Contract as Web3Contract
 
 from kakarot_scripts.utils.kakarot import deploy, eth_balance_of, fund_address
 from kakarot_scripts.utils.starknet import call_contract
@@ -39,6 +40,18 @@ class TestCoinbase:
             )
             with evm_error(error):
                 await coinbase.withdraw(0xDEAD, caller_eoa=other.starknet_contract)
+
+    class TestReceive:
+        async def test_should_receive_ether(self, coinbase: Web3Contract, owner):
+            amount = 0.001
+            amount_wei = int(amount * 1e18)
+            await fund_address(owner.address, 0.001)
+            balance_coinbase_prev = await eth_balance_of(coinbase.address)
+            await coinbase.w3.eth.send_transaction(
+                caller_eoa=owner.starknet_contract, value=amount_wei
+            )
+            balance_coinbase_after = await eth_balance_of(coinbase.address)
+            assert balance_coinbase_after == balance_coinbase_prev + amount_wei
 
     class TestTransferOwnership:
 

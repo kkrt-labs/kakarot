@@ -87,7 +87,7 @@ async def new_eoa(deployer) -> Wallet:
             continue
 
         # Send the funds to the coinbase contract. The owner will be able to withdraw them.
-        await coinbase.functions["receiveEther()"](
+        await coinbase.w3.eth.send_transaction(
             caller_eoa=wallet.starknet_contract,
             value=balance - tx_cost,
             gas_limit=gas_limit,
