@@ -341,13 +341,13 @@ class TestKakarot:
             ).tx_count
             assert tx_count == 0
 
-            kakarot_eth = await get_solidity_contract(
-                "CairoPrecompiles",
-                "DualVmToken",
-                address=get_deployments()["KakarotETH"]["address"],
+            weth9 = await get_solidity_contract(
+                "WETH",
+                "WETH9",
+                address=get_deployments()["WETH9"]["address"],
             )
-            await kakarot_eth.functions["transfer(address,uint256)"](
-                ZERO_ADDRESS, 1, caller_eoa=eoa.starknet_contract
+            await weth9.functions["deposit()"](
+                caller_eoa=eoa.starknet_contract, value=1
             )
 
             tx_count = (
