@@ -59,8 +59,8 @@ NETWORKS = {
         "voyager_api_url": "https://sepolia-api.voyager.online/beta",
         "argent_multisig_api": "https://cloud.argent-api.com/v1/multisig/starknet/sepolia",
     },
-    "sepolia-staging": {
-        "name": "starknet-sepolia-staging",
+    "staging": {
+        "name": "staging",
         "explorer_url": "https://sepolia.starkscan.co/",
         "rpc_url": f"https://rpc.nethermind.io/sepolia-juno/?apikey={os.getenv('NETHERMIND_API_KEY')}",
         "l1_rpc_url": f"https://sepolia.infura.io/v3/{os.getenv('INFURA_KEY')}",

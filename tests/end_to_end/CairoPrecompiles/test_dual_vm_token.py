@@ -5,15 +5,11 @@ from eth_utils import keccak
 from kakarot_scripts.utils.kakarot import deploy as deploy_kakarot
 from kakarot_scripts.utils.starknet import deploy as deploy_starknet
 from kakarot_scripts.utils.starknet import get_contract as get_contract_starknet
-from kakarot_scripts.utils.starknet import (
-    get_starknet_account,
-    invoke,
-    wait_for_transaction,
-)
+from kakarot_scripts.utils.starknet import get_starknet_account, invoke
 from tests.utils.errors import cairo_error
 
 
-@pytest_asyncio.fixture(scope="function")
+@pytest_asyncio.fixture(scope="module")
 async def starknet_token(owner):
     address = await deploy_starknet(
         "StarknetToken",
@@ -25,7 +21,7 @@ async def starknet_token(owner):
     return get_contract_starknet("StarknetToken", address=address)
 
 
-@pytest_asyncio.fixture(scope="function")
+@pytest_asyncio.fixture(scope="module")
 async def dual_vm_token(kakarot, starknet_token, owner):
     dual_vm_token = await deploy_kakarot(
         "CairoPrecompiles",
@@ -42,29 +38,6 @@ async def dual_vm_token(kakarot, starknet_token, owner):
         True,
     )
     return dual_vm_token
-
-
-@pytest_asyncio.fixture(scope="function", autouse=True)
-async def fund_owner(owner, starknet_token, max_fee):
-    (balance_before,) = await starknet_token.functions["balance_of"].call(
-        owner.starknet_contract.address
-    )
-
-    amount = int(1e16)
-    if balance_before > amount:
-        return
-
-    tx = await starknet_token.functions["transfer"].invoke_v1(
-        owner.starknet_contract.address,
-        amount,
-        max_fee=max_fee,
-    )
-    await wait_for_transaction(tx.hash)
-
-    (balance,) = await starknet_token.functions["balance_of"].call(
-        owner.starknet_contract.address
-    )
-    assert balance >= amount
 
 
 @pytest.mark.asyncio(scope="module")
