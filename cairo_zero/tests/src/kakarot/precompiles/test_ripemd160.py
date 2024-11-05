@@ -1,6 +1,6 @@
 import pytest
 from Crypto.Hash import RIPEMD160
-from hypothesis import given, settings
+from hypothesis import example, given
 from hypothesis.strategies import binary
 
 
@@ -8,7 +8,9 @@ from hypothesis.strategies import binary
 @pytest.mark.slow
 class TestRIPEMD160:
     @given(msg_bytes=binary(min_size=1, max_size=200))
-    @settings(max_examples=3)
+    @example(
+        msg_bytes=b"abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmomnopnopq"
+    )  # https://github.com/code-423n4/2024-09-kakarot-findings/issues/50
     async def test_ripemd160_should_return_correct_hash(self, cairo_run, msg_bytes):
         precompile_hash = cairo_run("test__ripemd160", msg=list(msg_bytes))
 
