@@ -9,7 +9,7 @@ from kakarot_scripts.utils.starknet import get_starknet_account, invoke
 from tests.utils.errors import cairo_error
 
 
-@pytest_asyncio.fixture(scope="module")
+@pytest_asyncio.fixture(scope="package")
 async def starknet_token(owner):
     address = await deploy_starknet(
         "StarknetToken",
@@ -21,7 +21,7 @@ async def starknet_token(owner):
     return get_contract_starknet("StarknetToken", address=address)
 
 
-@pytest_asyncio.fixture(scope="module")
+@pytest_asyncio.fixture(scope="package")
 async def dual_vm_token(kakarot, starknet_token, owner):
     dual_vm_token = await deploy_kakarot(
         "CairoPrecompiles",
@@ -40,7 +40,7 @@ async def dual_vm_token(kakarot, starknet_token, owner):
     return dual_vm_token
 
 
-@pytest.mark.asyncio(scope="module")
+@pytest.mark.asyncio(scope="package")
 @pytest.mark.CairoPrecompiles
 class TestDualVmToken:
     class TestMetadata:
