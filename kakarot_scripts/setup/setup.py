@@ -7,7 +7,7 @@ import subprocess
 import sys
 from typing import Optional
 
-KATANA_VERSION = "v1.0.0-rc.0"
+KATANA_VERSION = "v1.0.0-alpha.16"
 ASDF_VERSION = "v0.14.1"
 
 SHELL_CONFIG_FILES = {
