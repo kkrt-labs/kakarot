@@ -10,8 +10,6 @@ MIN_BASE_FEE_PER_BLOB_GAS = 1
 
 CHAIN_ID = int.from_bytes(b"KKRT", "big")  # KKRT (0x4b4b5254) in ASCII
 BIG_CHAIN_ID = int.from_bytes(b"SN_SEPOLIA", "big")
-# see https://gist.github.com/rekmarks/a47bd5f2525936c4b8eee31a16345553
-MAX_SAFE_CHAIN_ID = 4503599627370476
 
 # Class hash of the cairo1 helpers
 CAIRO1_HELPERS_CLASS_HASH = 0xDEADBEEFABDE1E11A5

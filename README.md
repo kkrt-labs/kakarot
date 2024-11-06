@@ -240,6 +240,13 @@ on an underlying StarknetOS network.
 It is **not** a description on how to deploy a solidity contract on the Kakarot
 EVM.
 
+Note that the chosen `chain_id` when deploying is important:
+
+- To keep compatibility with metamask the max chain id is 4503599627370476 see
+  https://gist.github.com/rekmarks/a47bd5f2525936c4b8eee31a16345553
+- To be compatible with ledger the chain id needs to be inferior to 4 bytes see
+  https://github.com/kkrt-labs/kakarot/issues/1530
+
 The [deploy script](./kakarot_scripts/deploy_kakarot.py) relies on some env
 variables defined in a `.env` file located at the root of the project and loaded
 in the [constant file](./kakarot_scripts/constants.py). To get started, just

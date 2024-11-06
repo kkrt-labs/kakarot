@@ -130,7 +130,6 @@ namespace Kakarot {
         chain_id: felt
     ) {
         let (chain_id) = Kakarot_chain_id.read();
-        let (_, chain_id) = unsigned_div_rem(chain_id, Constants.MAX_SAFE_CHAIN_ID);
         return (chain_id=chain_id);
     }
 

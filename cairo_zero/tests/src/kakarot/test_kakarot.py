@@ -17,12 +17,7 @@ from web3._utils.normalizers import BASE_RETURN_NORMALIZERS
 from web3.exceptions import NoABIFunctionsFound
 
 from kakarot_scripts.ef_tests.fetch import EF_TESTS_PARSED_DIR
-from tests.utils.constants import (
-    CHAIN_ID,
-    MAX_SAFE_CHAIN_ID,
-    TRANSACTION_GAS_LIMIT,
-    TRANSACTIONS,
-)
+from tests.utils.constants import CHAIN_ID, TRANSACTION_GAS_LIMIT, TRANSACTIONS
 from tests.utils.errors import cairo_error
 from tests.utils.helpers import felt_to_signed_int, rlp_encode_signed_data
 from tests.utils.syscall_handler import SyscallHandler, parse_state
@@ -545,15 +540,13 @@ class TestKakarot:
 
     class TestEthChainIdEntrypoint:
         @given(chain_id=integers(min_value=0, max_value=2**64 - 1))
-        def test_should_return_chain_id_modulo_max_safe_chain_id(
-            self, cairo_run, chain_id
-        ):
+        def test_should_return_chain_id(self, cairo_run, chain_id):
             with (
                 patch.dict(SyscallHandler.tx_info, {"chain_id": chain_id}),
                 SyscallHandler.patch("Kakarot_chain_id", chain_id),
             ):
                 res = cairo_run("test__eth_chain_id")
-                assert res == chain_id % MAX_SAFE_CHAIN_ID
+                assert res == chain_id
 
     class TestEthSendRawTransactionEntrypoint:
         @SyscallHandler.patch("Pausable_paused", 1)
