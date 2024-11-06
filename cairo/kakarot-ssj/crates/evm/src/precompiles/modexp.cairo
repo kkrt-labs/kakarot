@@ -1,12 +1,11 @@
 use core::circuit::CircuitElement as CE;
 use core::circuit::CircuitInput as CI;
 use core::circuit::{
-    u96, u384, circuit_add, circuit_sub, circuit_mul, EvalCircuitTrait, CircuitOutputsTrait,
+    u384, circuit_add, circuit_sub, circuit_mul, EvalCircuitTrait, CircuitOutputsTrait,
     CircuitModulus, CircuitInputs, AddInputResultTrait
 };
 use core::cmp::{min, max};
 use core::num::traits::Bounded;
-use core::num::traits::OverflowingAdd;
 use core::num::traits::Zero;
 use core::starknet::EthAddress;
 
@@ -16,6 +15,7 @@ use crate::precompiles::Precompile;
 use utils::traits::bytes::{U8SpanExTrait, FromBytes, ToBytes};
 use utils::traits::integer::BitsUsed;
 
+const MAX_INPUT_BYTE_SIZE: usize = 48; // Supports input up to 384 bits
 const HEADER_LENGTH: usize = 96;
 const MIN_GAS: u64 = 200;
 
@@ -56,45 +56,44 @@ pub impl ModExp of Precompile {
             }
         };
 
+        // We only support inputs up to 48 bytes. We can early return with an empty span if the
+        // input is larger than that.
+        if input.len() > HEADER_LENGTH + 3 * MAX_INPUT_BYTE_SIZE {
+            return Result::Ok((MIN_GAS, [].span()));
+        }
+
         // Handle a special case when both the base and mod length is zero
         if base_len == 0 && mod_len == 0 {
             return Result::Ok((MIN_GAS, [].span()));
         }
 
         // Used to extract ADJUSTED_EXPONENT_LENGTH.
-        let exp_highp_len = min(exp_len, 32);
+        let exp_start = HEADER_LENGTH + base_len;
+        let exp_head = input
+            .slice_right_padded(exp_start, min(32, exp_len))
+            .from_be_bytes_partial()
+            .expect('exp_head parsing failed');
 
-        let input = if input.len() >= HEADER_LENGTH {
-            input.slice(HEADER_LENGTH, input.len() - HEADER_LENGTH)
-        } else {
-            [].span()
-        };
+        let gas = calc_gas(base_len.into(), exp_len.into(), mod_len.into(), exp_head);
 
-        let exp_highp = {
-            // get right padded bytes so if data.len is less then exp_len we will get right padded
-            // zeroes.
-            let right_padded_highp = input.slice_right_padded(base_len, 32);
-            // If exp_len is less then 32 bytes get only exp_len bytes and do left padding.
-            let out = right_padded_highp.slice(0, exp_highp_len).pad_left_with_zeroes(32);
-            match out.from_be_bytes() {
-                Option::Some(result) => result,
-                Option::None => {
-                    return Result::Err(EVMError::InvalidParameter('failed to extract exp_highp'));
-                }
-            }
-        };
-
-        let gas = calc_gas(base_len.into(), exp_len.into(), mod_len.into(), exp_highp);
+        // OPERATION
 
         // Padding is needed if the input does not contain all 3 values.
-        let (mod_start_idx, _) = base_len.overflowing_add(exp_len);
-        let base = input.slice_right_padded(0, base_len).pad_left_with_zeroes(48);
-        let exponent = input.slice_right_padded(base_len, exp_len).pad_left_with_zeroes(48);
-        let modulus = input.slice_right_padded(mod_start_idx, mod_len).pad_left_with_zeroes(48);
+        let mod_start_idx = exp_start + exp_len;
+        let base = input
+            .slice_right_padded(HEADER_LENGTH, base_len)
+            .pad_left_with_zeroes(MAX_INPUT_BYTE_SIZE);
+        let exponent = input
+            .slice_right_padded(exp_start, exp_len)
+            .pad_left_with_zeroes(MAX_INPUT_BYTE_SIZE);
+        let modulus = input
+            .slice_right_padded(mod_start_idx, mod_len)
+            .pad_left_with_zeroes(MAX_INPUT_BYTE_SIZE);
 
-        let base: u384 = base.try_into().unwrap();
-        let exponent: u384 = exponent.try_into().unwrap();
-        let modulus: u384 = modulus.try_into().unwrap();
+        // inputs are guaranteed to be 48 bytes by the previous checks. safe unwraps.
+        let base: u384 = base.from_be_bytes().unwrap();
+        let exponent: u384 = exponent.from_be_bytes().unwrap();
+        let modulus: u384 = modulus.from_be_bytes().unwrap();
 
         let output = modexp_circuit(base, exponent, modulus);
         let limb0_128: u128 = Into::<_, felt252>::into(output.limb0).try_into().unwrap();
@@ -126,22 +125,6 @@ pub impl ModExp of Precompile {
     }
 }
 
-impl U8SpanTryIntoU384 of TryInto<Span<u8>, u384> {
-    fn try_into(self: Span<u8>) -> Option<u384> {
-        if self.len() != 48 {
-            return Option::None;
-        }
-        let limb3_128: u128 = self.slice(0, 12).pad_left_with_zeroes(16).from_be_bytes().unwrap();
-        let limb2_128: u128 = self.slice(12, 12).pad_left_with_zeroes(16).from_be_bytes().unwrap();
-        let limb1_128: u128 = self.slice(24, 12).pad_left_with_zeroes(16).from_be_bytes().unwrap();
-        let limb0_128: u128 = self.slice(36, 12).pad_left_with_zeroes(16).from_be_bytes().unwrap();
-        let limb0: u96 = Into::<_, felt252>::into(limb0_128).try_into().unwrap();
-        let limb1: u96 = Into::<_, felt252>::into(limb1_128).try_into().unwrap();
-        let limb2: u96 = Into::<_, felt252>::into(limb2_128).try_into().unwrap();
-        let limb3: u96 = Into::<_, felt252>::into(limb3_128).try_into().unwrap();
-        Option::Some(u384 { limb0, limb1, limb2, limb3 })
-    }
-}
 
 fn mod_exp_loop_inner(n: u384, bit: u384, base: u384, res: u384) -> (u384, u384) {
     let (_one, _base, _bit, _res) = (
@@ -187,10 +170,7 @@ fn mod_exp_loop_inner(n: u384, bit: u384, base: u384, res: u384) -> (u384, u384)
 ///
 /// * `u384` - The result of the modular exponentiation x^y mod n.
 pub fn modexp_circuit(x: u384, y: u384, n: u384) -> u384 {
-    if n.is_zero() {
-        return 0.into();
-    }
-    if n == 1.into() {
+    if n.is_zero() || n == 1.into() {
         return 0.into();
     }
     if y.is_zero() {
@@ -260,22 +240,19 @@ fn get_u384_bits_little(s: u384) -> Array<felt252> {
 
 // Calculate gas cost according to EIP 2565:
 // https://eips.ethereum.org/EIPS/eip-2565
-fn calc_gas(base_length: u64, exp_length: u64, mod_length: u64, exp_highp: u256) -> u64 {
+fn calc_gas(base_length: u64, exp_length: u64, mod_length: u64, exp_head: u256) -> u64 {
     let multiplication_complexity = calculate_multiplication_complexity(base_length, mod_length);
-
-    let iteration_count = calculate_iteration_count(exp_length, exp_highp);
-
+    let iteration_count = calculate_iteration_count(exp_length, exp_head);
     let gas = (multiplication_complexity * iteration_count.into()) / 3;
     let gas: u64 = gas.try_into().unwrap_or(Bounded::<u64>::MAX);
 
-    max(gas, 200)
+    max(gas, MIN_GAS)
 }
 
 fn calculate_multiplication_complexity(base_length: u64, mod_length: u64) -> u256 {
     let max_length = max(base_length, mod_length);
 
-    let _8: NonZero<u64> = 8_u64.try_into().unwrap();
-    let (words, rem) = DivRem::div_rem(max_length, _8);
+    let (words, rem) = DivRem::div_rem(max_length, 8);
 
     let words: u256 = if rem != 0 {
         (words + 1).into()
@@ -286,17 +263,17 @@ fn calculate_multiplication_complexity(base_length: u64, mod_length: u64) -> u25
     words * words
 }
 
-fn calculate_iteration_count(exp_length: u64, exp_highp: u256) -> u64 {
+fn calculate_iteration_count(exp_length: u64, exp_head: u256) -> u64 {
     let mut iteration_count: u64 = if exp_length < 33 {
-        if exp_highp == 0 {
+        if exp_head == 0 {
             0
         } else {
-            (exp_highp.bits_used() - 1).into()
+            (exp_head.bits_used() - 1).into()
         }
     } else {
         let length_part = 8 * (exp_length - 32);
-        let bits_part = if exp_highp != 0 {
-            exp_highp.bits_used() - 1
+        let bits_part = if exp_head != 0 {
+            exp_head.bits_used() - 1
         } else {
             0
         };
@@ -319,8 +296,8 @@ mod tests {
         test_modexp_eip198_example_2_data, test_modexp_nagydani_1_square_data,
         test_modexp_nagydani_1_qube_data
     };
-    use utils::traits::bytes::{U8SpanExTrait, ToBytes};
     use super::modexp_circuit;
+    use utils::traits::bytes::{U8SpanExTrait, ToBytes};
 
     const TWO_31: u256 = 2147483648;
     const PREV_PRIME_384: u384 =
@@ -418,7 +395,7 @@ mod tests {
     #[test]
     fn test_modexp_precompile_input_output_all_sizes() {
         #[cairofmt::skip]
-        let prime_deltas = array![7_u16, 3, 43, 15, 15, 21, 81, 13, 15, 13, 7, 61, 111, 25, 451, 
+        let prime_deltas = array![7_u16, 3, 43, 15, 15, 21, 81, 13, 15, 13, 7, 61, 111, 25, 451,
         51, 85, 175, 253, 7, 87, 427, 27, 133, 235, 375, 423, 735, 357, 115, 81, 297, 175,
          57, 45, 127, 61, 37, 91, 27, 15, 241, 231, 55, 105, 127, 115];
 

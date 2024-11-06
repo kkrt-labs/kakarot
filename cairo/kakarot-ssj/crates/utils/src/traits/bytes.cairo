@@ -1,8 +1,9 @@
+use core::circuit::{u384, u96};
 use core::cmp::min;
 use core::keccak::{cairo_keccak};
 use core::num::traits::{Zero, One, Bounded, BitSize, SaturatingAdd};
 use core::traits::{BitAnd};
-use crate::constants::{POW_2, POW_256_1, POW_256_REV};
+use crate::constants::POW_256_1;
 use crate::math::{Bitshift};
 use crate::traits::integer::{BytesUsedTrait, ByteSize, U256Trait};
 
@@ -458,6 +459,39 @@ pub impl FromBytesImpl<
 }
 
 
+/// An implementation of `FromBytes` specific to the `u384` circuit types.
+/// Only `from_be_bytes` is used in the codebase; as such, other methods panic with `not
+/// implemented`
+impl U384FromBytes of FromBytes<u384> {
+    fn from_be_bytes(self: Span<u8>) -> Option<u384> {
+        if self.len() != 48 {
+            return Option::None;
+        }
+        let limb3_128: u128 = self.slice(0, 12).pad_left_with_zeroes(16).from_be_bytes().unwrap();
+        let limb2_128: u128 = self.slice(12, 12).pad_left_with_zeroes(16).from_be_bytes().unwrap();
+        let limb1_128: u128 = self.slice(24, 12).pad_left_with_zeroes(16).from_be_bytes().unwrap();
+        let limb0_128: u128 = self.slice(36, 12).pad_left_with_zeroes(16).from_be_bytes().unwrap();
+        let limb0: u96 = Into::<_, felt252>::into(limb0_128).try_into().unwrap();
+        let limb1: u96 = Into::<_, felt252>::into(limb1_128).try_into().unwrap();
+        let limb2: u96 = Into::<_, felt252>::into(limb2_128).try_into().unwrap();
+        let limb3: u96 = Into::<_, felt252>::into(limb3_128).try_into().unwrap();
+        Option::Some(u384 { limb0, limb1, limb2, limb3 })
+    }
+
+    fn from_be_bytes_partial(self: Span<u8>) -> Option<u384> {
+        panic!("not implemented")
+    }
+
+    fn from_le_bytes(self: Span<u8>) -> Option<u384> {
+        panic!("not implemented")
+    }
+
+    fn from_le_bytes_partial(self: Span<u8>) -> Option<u384> {
+        panic!("not implemented")
+    }
+}
+
+
 #[generate_trait]
 pub impl ByteArrayExt of ByteArrayExTrait {
     /// Appends a span of bytes to the ByteArray
@@ -764,6 +798,94 @@ mod tests {
             let result = span.pad_right_with_zeroes(5);
 
             assert_eq!(result, expected);
+        }
+    }
+
+    mod u384_test {
+        use core::circuit::{u384};
+        use super::super::{FromBytes};
+        #[test]
+        fn test_u384_from_be_bytes() {
+            let span = [
+                0x30,
+                0x2f,
+                0x2e,
+                0x2d,
+                0x2c,
+                0x2b,
+                0x2a,
+                0x29,
+                0x28,
+                0x27,
+                0x26,
+                0x25,
+                0x24,
+                0x23,
+                0x22,
+                0x21,
+                0x20,
+                0x1f,
+                0x1e,
+                0x1d,
+                0x1c,
+                0x1b,
+                0x1a,
+                0x19,
+                0x18,
+                0x17,
+                0x16,
+                0x15,
+                0x14,
+                0x13,
+                0x12,
+                0x11,
+                0x10,
+                0x0f,
+                0x0e,
+                0x0d,
+                0x0c,
+                0x0b,
+                0x0a,
+                0x09,
+                0x08,
+                0x07,
+                0x06,
+                0x05,
+                0x04,
+                0x03,
+                0x02,
+                0x01
+            ].span();
+            let u384 = FromBytes::<u384>::from_be_bytes(span);
+            assert_eq!(
+                u384,
+                Option::Some(
+                    u384 {
+                        limb0: 0x0c0b0a090807060504030201,
+                        limb1: 0x1817161514131211100f0e0d,
+                        limb2: 0x24232221201f1e1d1c1b1a19,
+                        limb3: 0x302f2e2d2c2b2a2928272625
+                    }
+                )
+            );
+        }
+
+        #[test]
+        #[should_panic(expected: "not implemented")]
+        fn test_u384_from_be_bytes_partial() {
+            let u384 = FromBytes::<u384>::from_be_bytes_partial([].span());
+        }
+
+        #[test]
+        #[should_panic(expected: "not implemented")]
+        fn test_u384_from_le_bytes() {
+            let u384 = FromBytes::<u384>::from_le_bytes([].span());
+        }
+
+        #[test]
+        #[should_panic(expected: "not implemented")]
+        fn test_u384_from_le_bytes_partial() {
+            let u384 = FromBytes::<u384>::from_le_bytes_partial([].span());
         }
     }
 }
