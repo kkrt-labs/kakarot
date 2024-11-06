@@ -24,6 +24,23 @@ testname:
     - transStorageOK_d3g0v0_Cancun
     - 15_tstoreCannotBeDosd_d0g0v0_Cancun
     - 21_tstoreCannotBeDosdOOO_d0g0v0_Cancun
+  eip198_modexp_precompile:
+    - modexp__fork_Cancun_minus_blockchain_test_minus_EIP_minus_198_minus_case3_minus_raw_minus_input_minus_out_minus_of_minus_gas
+    - modexp__fork_Cancun_minus_blockchain_test_minus_EIP_minus_198_minus_case1
+    - modexp__fork_Cancun_minus_blockchain_test_minus_EIP_minus_198_minus_case2
+    - modexp__fork_Cancun_minus_blockchain_test_minus_EIP_minus_198_minus_case4_minus_extra_minus_data_07
+    - modexp__fork_Cancun_minus_blockchain_test_minus_EIP_minus_198_minus_case5_minus_raw_minus_input
+    - modexp__fork_Cancun_minus_blockchain_test_minus_ModExpInput_base_00_minus_exponent_00_minus_modulus_02_minus_ExpectedOutput_call_return_code_0x01_minus_returned_data_0x01
+    - modexp__fork_Cancun_minus_blockchain_test_minus_ModExpInput_base_01_minus_exponent_01_minus_modulus_02_minus_ExpectedOutput_call_return_code_0x01_minus_returned_data_0x01
+    - modexp__fork_Cancun_minus_blockchain_test_minus_ModExpInput_base_02_minus_exponent_01_minus_modulus_03_minus_ExpectedOutput_call_return_code_0x01_minus_returned_data_0x02
+    - modexp__fork_Cancun_minus_blockchain_test_minus_ModExpInput_base_02_minus_exponent_02_minus_modulus_05_minus_ExpectedOutput_call_return_code_0x01_minus_returned_data_0x04
+    - modexp__fork_Cancun_minus_blockchain_test_minus_ModExpInput_base__minus_exponent_01_minus_modulus_02_minus_ExpectedOutput_call_return_code_0x01_minus_returned_data_0x00
+    - modexp__fork_Cancun_minus_blockchain_test_minus_ModExpInput_base__minus_exponent__minus_modulus_0001_minus_ExpectedOutput_call_return_code_0x01_minus_returned_data_0x0000
+    - modexp__fork_Cancun_minus_blockchain_test_minus_ModExpInput_base__minus_exponent__minus_modulus_0002_minus_ExpectedOutput_call_return_code_0x01_minus_returned_data_0x0001
+    - modexp__fork_Cancun_minus_blockchain_test_minus_ModExpInput_base__minus_exponent__minus_modulus_00_minus_ExpectedOutput_call_return_code_0x01_minus_returned_data_0x00
+    - modexp__fork_Cancun_minus_blockchain_test_minus_ModExpInput_base__minus_exponent__minus_modulus_01_minus_ExpectedOutput_call_return_code_0x01_minus_returned_data_0x00
+    - modexp__fork_Cancun_minus_blockchain_test_minus_ModExpInput_base__minus_exponent__minus_modulus_02_minus_ExpectedOutput_call_return_code_0x01_minus_returned_data_0x01
+    - modexp__fork_Cancun_minus_blockchain_test_minus_ModExpInput_base__minus_exponent__minus_modulus__minus_ExpectedOutput_call_return_code_0x01_minus_returned_data_0x
   initcode:
     - contract_creating_tx__fork_Cancun_minus_blockchain_test_minus_over_limit_ones
     - contract_creating_tx__fork_Cancun_minus_blockchain_test_minus_over_limit_zeros
@@ -255,6 +272,8 @@ testname:
     - CallRipemd160_4_d0g0v0_Cancun
     - CallRipemd160_4_gas719_d0g0v0_Cancun
     - ecrecoverShortBuff_d0g0v0_Cancun
+    - modexpRandomInput_d2g0v0_Cancun
+    - modexpRandomInput_d2g1v0_Cancun
     - CALLBlake2f_d9g0v0_Cancun
     - CALLBlake2f_d9g1v0_Cancun
     - CALLBlake2f_d9g2v0_Cancun
@@ -326,6 +345,18 @@ testname:
     - precompsEIP2929Cancun_d313g0v0_Cancun
     - precompsEIP2929Cancun_d79g0v0_Cancun
     - precompsEIP2929Cancun_d97g0v0_Cancun
+    - modexp_d27g0v0_Cancun
+    - modexp_d27g1v0_Cancun
+    - modexp_d27g2v0_Cancun
+    - modexp_d27g3v0_Cancun
+    - modexp_d29g0v0_Cancun
+    - modexp_d29g1v0_Cancun
+    - modexp_d29g2v0_Cancun
+    - modexp_d29g3v0_Cancun
+    - modexp_d30g0v0_Cancun
+    - modexp_d30g1v0_Cancun
+    - modexp_d30g2v0_Cancun
+    - modexp_d30g3v0_Cancun
   stQuadraticComplexityTest:
     - Call20KbytesContract50_1_d0g0v0_Cancun
     - Call20KbytesContract50_2_d0g0v0_Cancun
