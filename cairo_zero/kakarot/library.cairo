@@ -395,6 +395,11 @@ namespace Kakarot {
         return l1_messaging_contract_address;
     }
 
+    // @notice Handle an L1 message
+    //         Gas is paid on L1 through the starknet messaging system hence this should not
+    //         revert due to OOG.
+    //         The gas limit is set to Constants.INFINITE_GAS.
+    //         The gas price is set to 0 so no gas is paid and no refund is given.
     func handle_l1_message{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -410,7 +415,7 @@ namespace Kakarot {
         let (access_list) = alloc();
 
         return eth_call(
-            0, l1_sender, to, 2100000000, 0, value_u256, data_len, data, 0, access_list
+            0, l1_sender, to, Constants.INFINITE_GAS, 0, value_u256, data_len, data, 0, access_list
         );
     }
 
