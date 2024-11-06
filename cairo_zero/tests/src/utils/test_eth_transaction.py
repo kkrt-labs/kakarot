@@ -28,6 +28,22 @@ class TestEthTransaction:
             with cairo_error():
                 cairo_run("test__decode", data=list(encode(list(transaction.values()))))
 
+        async def test_should_raise_if_chain_id_overflow_legacy_transaction(
+            self, cairo_run
+        ):
+            transaction = {
+                "nonce": 0,
+                "gasPrice": 234567897654321,
+                "gas": 2_000_000,
+                "to": "0xF0109fC8DF283027b6285cc889F5aA624EaC1F55",
+                "value": 1_000_000_000,
+                "data": b"",
+                "chainId": 2**252,
+            }
+            with cairo_error(message="assert_nn(31 - items[6].data_len);"):
+                encoded_unsigned_tx = rlp_encode_signed_data(transaction)
+                cairo_run("test__decode", data=list(encoded_unsigned_tx))
+
         @given(value=st.integers(min_value=2**248))
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
         @pytest.mark.parametrize(
