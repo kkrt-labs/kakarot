@@ -426,6 +426,10 @@ mod tests {
         assert_eq!(gas, expected_gas);
     }
 
+    // To test all input sizes, we use the fact that:
+    // For prime p, a^(p-1) mod p = 1, for all a. (Fermat's little theorem)
+    // Using prime_deltas we get a prime_i = 256^(i+2) + prime_deltas[i] of size i+2 bytes.
+    // We can then use p = prime_i and a = p - 2 and expect the result to be 1 with padding
     #[test]
     fn test_modexp_precompile_input_output_all_sizes() {
         #[cairofmt::skip]
