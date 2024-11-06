@@ -22,8 +22,9 @@ load_dotenv()
 BLOCK_GAS_LIMIT = 7_000_000
 DEFAULT_GAS_PRICE = 1
 BEACON_ROOT_ADDRESS = "0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02"
-# see https://gist.github.com/rekmarks/a47bd5f2525936c4b8eee31a16345553
-MAX_SAFE_CHAIN_ID = 4503599627370476
+
+# See https://github.com/kkrt-labs/kakarot/issues/1530
+MAX_LEDGER_CHAIN_ID = 2**32 - 1
 
 
 class NetworkType(Enum):
@@ -206,7 +207,8 @@ try:
     if WEB3.is_connected():
         chain_id = WEB3.eth.chain_id
     else:
-        chain_id = starknet_chain_id % MAX_SAFE_CHAIN_ID
+        # Before making any changes to chain_id see https://github.com/kkrt-labs/kakarot/issues/1530
+        chain_id = starknet_chain_id % MAX_LEDGER_CHAIN_ID
 except (
     requests.exceptions.ConnectionError,
     requests.exceptions.MissingSchema,
@@ -216,7 +218,8 @@ except (
         f"⚠️  Could not get chain Id from {NETWORK['rpc_url']}: {e}, defaulting to KKRT"
     )
     starknet_chain_id = int.from_bytes(b"KKRT", "big")
-    chain_id = starknet_chain_id % MAX_SAFE_CHAIN_ID
+    # Before making any changes to chain_id see https://github.com/kkrt-labs/kakarot/issues/1530
+    chain_id = starknet_chain_id % MAX_LEDGER_CHAIN_ID
 
 
 class ChainId(IntEnum):
@@ -224,6 +227,7 @@ class ChainId(IntEnum):
     starknet_chain_id = starknet_chain_id
 
 
+# Before making any changes to chain_id see https://github.com/kkrt-labs/kakarot/issues/1530
 NETWORK["chain_id"] = ChainId.chain_id
 
 ETH_TOKEN_ADDRESS = 0x49D36570D4E46F48E99674BD3FCC84644DDD6B96F7C741B1562B82F9E004DC7

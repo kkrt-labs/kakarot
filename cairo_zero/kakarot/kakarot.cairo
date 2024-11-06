@@ -70,6 +70,16 @@ func unpause{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() 
     return ();
 }
 
+// @notice chain_id initializer
+@external
+func initialize_chain_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    chain_id: felt
+) {
+    Ownable.assert_only_owner();
+    Kakarot.initialize_chain_id(chain_id);
+    return ();
+}
+
 // Constructor
 @constructor
 func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
@@ -79,6 +89,7 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     uninitialized_account_class_hash: felt,
     cairo1_helpers_class_hash: felt,
     block_gas_limit: felt,
+    chain_id: felt,
 ) {
     return Kakarot.constructor(
         owner,
@@ -87,6 +98,7 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
         uninitialized_account_class_hash,
         cairo1_helpers_class_hash,
         block_gas_limit,
+        chain_id,
     );
 }
 

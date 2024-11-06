@@ -23,6 +23,7 @@ from kakarot.storages import (
     Kakarot_coinbase,
     Kakarot_prev_randao,
     Kakarot_block_gas_limit,
+    Kakarot_chain_id,
     Kakarot_evm_to_starknet_address,
     Kakarot_authorized_cairo_precompiles_callers,
     Kakarot_l1_messaging_contract_address,
@@ -45,6 +46,7 @@ namespace Kakarot {
     // @param uninitialized_account_class_hash The class hash of the uninitialized account used for deterministic address calculation.
     // @param cairo1_helpers_class_hash The precompiles class hash for precompiles not implemented in Kakarot.
     // @param block_gas_limit The block gas limit.
+    // @param chain_id The chain ID.
     func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         owner: felt,
         native_token_address,
@@ -52,6 +54,7 @@ namespace Kakarot {
         uninitialized_account_class_hash,
         cairo1_helpers_class_hash,
         block_gas_limit,
+        chain_id: felt,
     ) {
         Ownable.initializer(owner);
         Kakarot_native_token_address.write(native_token_address);
@@ -59,6 +62,7 @@ namespace Kakarot {
         Kakarot_uninitialized_account_class_hash.write(uninitialized_account_class_hash);
         Kakarot_cairo1_helpers_class_hash.write(cairo1_helpers_class_hash);
         Kakarot_block_gas_limit.write(block_gas_limit);
+        Kakarot_chain_id.write(chain_id);
         return ();
     }
 
@@ -125,8 +129,7 @@ namespace Kakarot {
     func eth_chain_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
         chain_id: felt
     ) {
-        let (tx_info) = get_tx_info();
-        let (_, chain_id) = unsigned_div_rem(tx_info.chain_id, Constants.MAX_SAFE_CHAIN_ID);
+        let (chain_id) = Kakarot_chain_id.read();
         return (chain_id=chain_id);
     }
 
@@ -409,5 +412,18 @@ namespace Kakarot {
         return eth_call(
             0, l1_sender, to, 2100000000, 1, value_u256, data_len, data, 0, access_list
         );
+    }
+
+    // @notice Initialize the chain ID
+    // @param chain_id The chain ID
+    func initialize_chain_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        chain_id: felt
+    ) {
+        with_attr error_message("Kakarot: chain_id already initialized") {
+            let (current_chain_id) = Kakarot_chain_id.read();
+            assert current_chain_id = 0;
+        }
+        Kakarot_chain_id.write(chain_id);
+        return ();
     }
 }
