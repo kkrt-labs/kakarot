@@ -56,9 +56,11 @@ pub impl ModExp of Precompile {
             }
         };
 
-        // We only support inputs up to 48 bytes. We can early return with an empty span if the
-        // input is larger than that.
-        if input.len() > HEADER_LENGTH + 3 * MAX_INPUT_BYTE_SIZE {
+        // We only support inputs up to 48 bytes. We can early return with an empty span if any size
+        // is larger than that.
+        if base_len > MAX_INPUT_BYTE_SIZE
+            || exp_len > MAX_INPUT_BYTE_SIZE
+            || mod_len > MAX_INPUT_BYTE_SIZE {
             return Result::Ok((MIN_GAS, [].span()));
         }
 
@@ -388,6 +390,38 @@ mod tests {
         let (gas, result) = ModExp::exec(calldata.span()).unwrap();
         let expected_result = array![1].span().pad_left_with_zeroes(48);
         let expected_gas = 4596;
+        assert_eq!(result, expected_result);
+        assert_eq!(gas, expected_gas);
+    }
+
+    #[test]
+    fn test_modexp_precompile_size_gt_48_should_return_empty() {
+        let mut calldata = array![];
+        let size = array![49_u8].span().pad_left_with_zeroes(32);
+        calldata.append_span(size);
+        calldata.append_span(size);
+        calldata.append_span(size);
+
+        let (gas, result) = ModExp::exec(calldata.span()).unwrap();
+        let expected_result = [].span();
+        let expected_gas = 200;
+        assert_eq!(result, expected_result);
+        assert_eq!(gas, expected_gas);
+    }
+
+    #[test]
+    fn test_modexp_precompile_base_and_exp_zero_should_return_empty() {
+        let mut calldata = array![];
+        let size_zero = array![0].span().pad_left_with_zeroes(32);
+        let size_not_zero = array![48].span().pad_left_with_zeroes(32);
+
+        calldata.append_span(size_zero);
+        calldata.append_span(size_not_zero);
+        calldata.append_span(size_zero);
+
+        let (gas, result) = ModExp::exec(calldata.span()).unwrap();
+        let expected_result = [].span();
+        let expected_gas = 200;
         assert_eq!(result, expected_result);
         assert_eq!(gas, expected_gas);
     }
