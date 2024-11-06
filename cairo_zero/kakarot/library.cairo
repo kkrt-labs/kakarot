@@ -410,7 +410,7 @@ namespace Kakarot {
         let (access_list) = alloc();
 
         return eth_call(
-            0, l1_sender, to, 2100000000, 1, value_u256, data_len, data, 0, access_list
+            0, l1_sender, to, 2100000000, 0, value_u256, data_len, data, 0, access_list
         );
     }
 
