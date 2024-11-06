@@ -51,7 +51,7 @@ pub fn test_modexp_eip198_example_1_data() -> (Span<u8>, Span<u8>) {
     ].span();
     #[cairofmt::skip]
     let expected = [
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
     ].span();
 
     (calldata, expected)
