@@ -452,7 +452,7 @@ func finish{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(
     let len_8 = mswlen * 8;
     let (val_15) = uint32_or(factor, len_8);
 
-    let next_block = is_nn_le(55, len);
+    let next_block = is_nn_le(56, len);
     if (next_block == FALSE) {
         dict_write{dict_ptr=x}(14, val);
         dict_write{dict_ptr=x}(15, val_15);
