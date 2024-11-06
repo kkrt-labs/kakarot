@@ -38,6 +38,9 @@ impl ExponentiationImpl<
 > of Exponentiation<T> {
     fn pow(self: T, mut exponent: T) -> T {
         let zero = Zero::zero();
+        if exponent.is_zero() {
+            return One::one();
+        }
         if self.is_zero() {
             return zero;
         }
@@ -367,6 +370,7 @@ mod tests {
 
     #[test]
     fn test_wrapping_pow() {
+        assert(0_u256.wrapping_pow(0) == 1, '0^0 should be 1');
         assert(5_u256.wrapping_pow(10) == 9765625, '5^10 should be 9765625');
         assert(
             5_u256
@@ -382,6 +386,7 @@ mod tests {
 
     #[test]
     fn test_pow() {
+        assert(0_u256.pow(0) == 1, 'n^0 should be 1');
         assert(5_u256.pow(10) == 9765625, '5^10 should be 9765625');
         assert(5_u256.pow(45) == 28421709430404007434844970703125, '5^45 failed');
         assert(123456_u256.pow(0) == 1, 'n^0 should be 1');
