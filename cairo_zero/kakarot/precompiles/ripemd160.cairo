@@ -467,7 +467,9 @@ func finish{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(
     dict_to_array{dict_ptr=x}(arr_x, 16);
     let (buf, bufsize) = compress(buf, bufsize, arr_x, 16);
     // reset dict to all 0.
+    default_dict_finalize(start, x, 0);
     let (x) = default_dict_new(0);
+    tempvar start = x;
 
     dict_write{dict_ptr=x}(14, val);
     dict_write{dict_ptr=x}(15, val_15);
