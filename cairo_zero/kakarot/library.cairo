@@ -3,6 +3,7 @@
 %lang starknet
 
 from openzeppelin.access.ownable.library import Ownable
+from openzeppelin.security.reentrancyguard.library import ReentrancyGuard
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.starknet.common.syscalls import get_caller_address, get_tx_info
@@ -98,6 +99,9 @@ namespace Kakarot {
         access_list: felt*,
     ) -> (model.EVM*, model.State*, felt, felt) {
         alloc_locals;
+
+        ReentrancyGuard.start();
+
         let is_regular_tx = is_not_zero(to.is_some);
         let is_deploy_tx = 1 - is_regular_tx;
         let evm_contract_address = resolve_to(to, origin, nonce);
@@ -122,6 +126,8 @@ namespace Kakarot {
             access_list_len,
             access_list,
         );
+
+        ReentrancyGuard.end();
         return (evm, state, gas_used, required_gas);
     }
 

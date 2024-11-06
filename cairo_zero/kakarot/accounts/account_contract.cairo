@@ -320,8 +320,6 @@ func set_authorized_pre_eip155_tx{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*
 
 // @notice Execute a starknet call.
 // @dev Used when executing a Cairo Precompile. Used to preserve the caller address.
-// Reentrancy check is done, only `get_starknet_address` is allowed for Solidity contracts
-//      to be able to get the corresponding Starknet address in their calldata.
 // @param to The address to call.
 // @param function_selector The function selector to call.
 // @param calldata_len The length of the calldata array.
@@ -334,16 +332,6 @@ func execute_starknet_call{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range
     to: felt, function_selector: felt, calldata_len: felt, calldata: felt*
 ) -> (retdata_len: felt, retdata: felt*, success: felt) {
     Ownable.assert_only_owner();
-    let (kakarot_address) = Ownable.owner();
-    let is_get_starknet_address = Helpers.is_zero(
-        GET_STARKNET_ADDRESS_SELECTOR - function_selector
-    );
-    let is_kakarot = Helpers.is_zero(kakarot_address - to);
-    tempvar is_forbidden = is_kakarot * (1 - is_get_starknet_address);
-    if (is_forbidden != FALSE) {
-        let (error_len, error) = Errors.kakarotReentrancy();
-        return (error_len, error, FALSE);
-    }
     let (retdata_len, retdata) = call_contract(to, function_selector, calldata_len, calldata);
     return (retdata_len, retdata, TRUE);
 }
