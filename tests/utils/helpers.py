@@ -20,6 +20,14 @@ PERMIT_TYPEHASH = keccak(
 )
 
 
+def int_to_bytes(num: int) -> bytes:
+    return num.to_bytes((num.bit_length() + 7) // 8 or 1, "big")
+
+
+def int_to_string(num: int) -> str:
+    return int_to_bytes(num).decode("utf-8")
+
+
 def to_int(v: Union[str, int]) -> int:
     if isinstance(v, str):
         if v.startswith("0x"):

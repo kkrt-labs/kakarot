@@ -2,7 +2,6 @@
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict, List
 
 from uvloop import run
 
@@ -14,7 +13,6 @@ from kakarot_scripts.utils.kakarot import get_contract as get_solidity_contract
 from kakarot_scripts.utils.kakarot import get_deployments as get_evm_deployments
 from kakarot_scripts.utils.starknet import call_contract
 from kakarot_scripts.utils.starknet import deploy as deploy_starknet
-from kakarot_scripts.utils.starknet import execute_calls
 from kakarot_scripts.utils.starknet import get_deployments as get_starknet_deployments
 from kakarot_scripts.utils.starknet import (
     get_starknet_account,
@@ -22,6 +20,7 @@ from kakarot_scripts.utils.starknet import (
     register_lazy_account,
     remove_lazy_account,
 )
+from tests.utils.helpers import int_to_string
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -35,7 +34,10 @@ async def deploy_dualvm_tokens() -> None:
     # The lazy execution must be done before we check the deployments succeeded, as the l2 contracts
     # need to be deployed first
     account = await get_starknet_account()
-    register_lazy_account(account)
+
+    # Remove lazy account before we check the deployments succeeded, as the l2 contracts
+    # need to be deployed sequentially.
+    remove_lazy_account(account.address)
 
     kakarot_address = get_starknet_deployments()["kakarot"]
     evm_deployments = get_evm_deployments()
@@ -50,41 +52,50 @@ async def deploy_dualvm_tokens() -> None:
     kakarot_native_token = (
         await call_contract("kakarot", "get_native_token")
     ).native_token_address
+    kakarot_native_token_name = int_to_string(
+        (await call_contract("ERC20", "name", address=kakarot_native_token)).name
+    )
+    kakarot_native_token_symbol = int_to_string(
+        (await call_contract("ERC20", "symbol", address=kakarot_native_token)).symbol
+    )
 
     # Filter tokens based on deployment criteria
-    tokens_to_deploy: List[Dict[str, Any]] = []
     for token in tokens:
-        token_name = token["name"]
 
-        # Skip tokens without L2 address
+        # Skip if entry is not a token
         if "l2_token_address" not in token:
-            logger.info("Skipping %s: missing l2_token_address", token_name)
+            logger.info("Skipping %s: missing l2_token_address", token["name"])
             continue
 
         l2_token_address = int(token["l2_token_address"], 16)
 
         # Skip native token
-        if l2_token_address == kakarot_native_token:
-            logger.info("Skipping %s: native token", token_name)
+        if (
+            token["name"] == kakarot_native_token_name
+            and token["symbol"] == kakarot_native_token_symbol
+        ):
+            logger.info("Skipping %s: native token", token["name"])
             continue
 
-        # Skip if token is already deployed
-        if dualvm_token_deployment := evm_deployments.get(token_name):
+        # Check if DualVM token is a deployed contract on Starknet
+        if dualvm_token_deployment := evm_deployments.get(token["name"]):
             try:
                 await RPC_CLIENT.get_class_hash_at(
                     dualvm_token_deployment["starknet_address"]
                 )
-                logger.info("Skipping %s: already deployed on Starknet", token_name)
+                token_contract = await get_solidity_contract(
+                    "CairoPrecompiles",
+                    "DualVmToken",
+                    evm_deployments[token["name"]]["address"],
+                )
+                assert await token_contract.kakarot() == kakarot_address
+                logger.info("Skipping %s: already deployed on Starknet", token["name"])
                 continue
             except Exception:
-                # Token not deployed, include it in candidates
                 pass
 
-        tokens_to_deploy.append(token)
-
-    # Deploy tokens
-    for token in tokens_to_deploy:
-        l2_token_address = int(token["l2_token_address"], 16)
+        # DualVM token is not deployed, deploy one
+        # Check if the L2 token exists, if not deploy one
         try:
             await RPC_CLIENT.get_class_hash_at(l2_token_address)
         except Exception as e:
@@ -103,7 +114,6 @@ async def deploy_dualvm_tokens() -> None:
                 int(2**256 - 1),
                 owner.address,
             )
-            token["l2_token_address"] = hex(l2_token_address)
 
         if token["name"] not in evm_deployments:
             contract = await deploy_kakarot(
@@ -120,23 +130,17 @@ async def deploy_dualvm_tokens() -> None:
                 "starknet_address": contract.starknet_address,
             }
 
-    await execute_calls()
-    dump_evm_deployments(evm_deployments)
-    remove_lazy_account(account)
-
-    # Check deployments
-    for token in tokens_to_deploy:
         token_contract = await get_solidity_contract(
             "CairoPrecompiles", "DualVmToken", evm_deployments[token["name"]]["address"]
         )
-        assert await token_contract.starknetToken() == int(
-            token["l2_token_address"], 16
-        )
-        assert await token_contract.kakarot() == kakarot_address
+        assert await token_contract.starknetToken() == l2_token_address
         assert await token_contract.name() == token["name"]
         assert await token_contract.symbol() == token["symbol"]
         assert await token_contract.decimals() == token["decimals"]
+
+    dump_evm_deployments(evm_deployments)
     logger.info("Finished processing all DualVM tokens")
+    register_lazy_account(account.address)
 
 
 # %% Run
