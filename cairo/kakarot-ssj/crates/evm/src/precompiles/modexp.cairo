@@ -309,14 +309,14 @@ mod tests {
             limb2: 0xffffffffffffffffffffffff,
             limb3: 0xffffffffffffffffffffffff
         };
-    const PREV_PRIME_384_M1: u384 =
+    const PREV_PRIME_384_MINUS_1: u384 =
         u384 {
             limb0: 0xfffffffffffffffffffffec2,
             limb1: 0xffffffffffffffffffffffff,
             limb2: 0xffffffffffffffffffffffff,
             limb3: 0xffffffffffffffffffffffff
         };
-    const PREV_PRIME_384_M2: u384 =
+    const PREV_PRIME_384_MINUS_2: u384 =
         u384 {
             limb0: 0xfffffffffffffffffffffec1,
             limb1: 0xffffffffffffffffffffffff,
@@ -326,14 +326,14 @@ mod tests {
 
     #[test]
     fn test_modexp_circuit() {
-        let TWO_31_M1: u384 = 2147483647.into();
-        let TWO_31_M2: u384 = 2147483646.into();
-        assert_eq!(modexp_circuit(2.into(), TWO_31_M2, TWO_31_M1), 1.into(), "wrong result");
-        assert_eq!(modexp_circuit(3.into(), TWO_31_M2, TWO_31_M1), 1.into(), "wrong result");
-        assert_eq!(modexp_circuit(5.into(), TWO_31_M2, TWO_31_M1), 1.into(), "wrong result");
-        assert_eq!(modexp_circuit(7.into(), TWO_31_M2, TWO_31_M1), 1.into(), "wrong result");
-        assert_eq!(modexp_circuit(11.into(), TWO_31_M2, TWO_31_M1), 1.into(), "wrong result");
-        assert_eq!(modexp_circuit(2.into(), TWO_31_M2, TWO_31_M1.into()), 1.into(), "wrong result");
+        let TWO_31_MINUS_1: u384 = 2147483647.into();
+        let TWO_31_MINUS_2: u384 = 2147483646.into();
+        assert_eq!(modexp_circuit(2.into(), TWO_31_MINUS_2, TWO_31_MINUS_1), 1.into(), "wrong result");
+        assert_eq!(modexp_circuit(3.into(), TWO_31_MINUS_2, TWO_31_MINUS_1), 1.into(), "wrong result");
+        assert_eq!(modexp_circuit(5.into(), TWO_31_MINUS_2, TWO_31_MINUS_1), 1.into(), "wrong result");
+        assert_eq!(modexp_circuit(7.into(), TWO_31_MINUS_2, TWO_31_MINUS_1), 1.into(), "wrong result");
+        assert_eq!(modexp_circuit(11.into(), TWO_31_MINUS_2, TWO_31_MINUS_1), 1.into(), "wrong result");
+        assert_eq!(modexp_circuit(2.into(), TWO_31_MINUS_2, TWO_31_MINUS_1.into()), 1.into(), "wrong result");
         assert_eq!(modexp_circuit(2.into(), 5.into(), 30.into()), 2.into(), "wrong result");
         assert_eq!(
             modexp_circuit(
@@ -347,7 +347,7 @@ mod tests {
     #[test]
     fn test_modexp_circuit_worst_case() {
         assert_eq!(
-            modexp_circuit(PREV_PRIME_384_M2, PREV_PRIME_384_M1, PREV_PRIME_384),
+            modexp_circuit(PREV_PRIME_384_MINUS_2, PREV_PRIME_384_MINUS_1, PREV_PRIME_384),
             1.into(),
             "wrong result"
         );
@@ -365,8 +365,8 @@ mod tests {
     #[test]
     fn test_modexp_precompile_input_output_worst() {
         let mut calldata = array![];
-        let l0f: u128 = Into::<_, felt252>::into(PREV_PRIME_384_M2.limb0).try_into().unwrap();
-        let l1f: u128 = Into::<_, felt252>::into(PREV_PRIME_384_M2.limb1).try_into().unwrap();
+        let l0f: u128 = Into::<_, felt252>::into(PREV_PRIME_384_MINUS_2.limb0).try_into().unwrap();
+        let l1f: u128 = Into::<_, felt252>::into(PREV_PRIME_384_MINUS_2.limb1).try_into().unwrap();
         let size = array![48_u8].span().pad_left_with_zeroes(32);
         calldata.append_span(size);
         calldata.append_span(size);
@@ -425,8 +425,12 @@ mod tests {
 
     // To test all input sizes, we use the fact that:
     // For prime p, a^(p-1) mod p = 1, for all a. (Fermat's little theorem)
-    // Using prime_deltas we get a prime_i = 256^(i+2) + prime_deltas[i] of size i+2 bytes.
-    // We can then use p = prime_i and a = p - 2 and expect the result to be 1 with padding
+    // Using prime_deltas we get a p = 256^(i+1) + prime_deltas[i]
+    // The array prime_delta has been computed such that p is prime.
+    // That way, p is a prime of size m bytes for all 2 <= m <= 48.
+    // We use a = p - 2 to do the modexp check: (p-2)^(p-1) = 1 mod p
+    // We construct p as the u8 array [1, 0, 0, 0, ... , 0, 0, 0, prime_delta[i]]
+    //                                    |-----  i zeros  ----|
     #[test]
     fn test_modexp_precompile_input_output_all_sizes() {
         #[cairofmt::skip]
