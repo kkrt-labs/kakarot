@@ -37,7 +37,7 @@ async def kakarot_reentrancy(kakarot):
 
 
 @pytest_asyncio.fixture(scope="module")
-async def eth_call_calldata_fixture(kakarot, new_eoa):
+async def eth_call_calldata(kakarot, new_eoa):
     eoa = await new_eoa()
     return (
         kakarot.functions["eth_call"]
@@ -107,15 +107,15 @@ class TestCairoPrecompiles:
 
     class TestReentrancyKakarot:
         async def test_should_fail_when_reentrancy_cairo_call(
-            self, kakarot, kakarot_reentrancy, new_eoa, eth_call_calldata_fixture
+            self, kakarot, kakarot_reentrancy, new_eoa, eth_call_calldata
         ):
             with cairo_error("ReentrancyGuard: reentrant call"):
                 await kakarot_reentrancy.staticcallKakarot(
-                    "eth_call", eth_call_calldata_fixture
+                    "eth_call", eth_call_calldata
                 )
 
         async def test_should_fail_when_reentrancy_cairo_call_whitelisted(
-            self, kakarot, kakarot_reentrancy, new_eoa, eth_call_calldata_fixture
+            self, kakarot, kakarot_reentrancy, new_eoa, eth_call_calldata
         ):
             # Setup for whitelisted precompile
             await invoke(
@@ -127,7 +127,7 @@ class TestCairoPrecompiles:
 
             with cairo_error("ReentrancyGuard: reentrant call"):
                 await kakarot_reentrancy.whitelistedStaticcallKakarot(
-                    "eth_call", eth_call_calldata_fixture
+                    "eth_call", eth_call_calldata
                 )
 
             # TearDown
