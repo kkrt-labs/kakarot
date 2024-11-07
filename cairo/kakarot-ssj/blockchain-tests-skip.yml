@@ -287,6 +287,8 @@ testname:
     - CallEcrecover_Overflow_d4g0v0_Cancun
     - CallEcrecover_Overflow_d5g0v0_Cancun
     - CallRipemd160_5_d0g0v0_Cancun
+    - modexpRandomInput_d0g0v0_Cancun
+    - modexpRandomInput_d0g1v0_Cancun
   stPreCompiledContracts:
     - idPrecomps_d2g0v0_Cancun
     - idPrecomps_d7g0v0_Cancun
@@ -448,6 +450,10 @@ testname:
     - revertRetDataSize_d7g0v0_Cancun
     - revertRetDataSize_d8g0v0_Cancun
     - revertRetDataSize_d9g0v0_Cancun
+    # Next three tests are skipped because the input size is > 48 bits
+    - modexp_modsize0_returndatasize_d2g0v0_Cancun
+    - modexp_modsize0_returndatasize_d3g0v0_Cancun
+    - modexp_modsize0_returndatasize_d4g0v0_Cancun
   stRevertTest:
     - LoopCallsDepthThenRevert2_d0g0v0_Cancun
     - LoopCallsDepthThenRevert3_d0g0v0_Cancun
