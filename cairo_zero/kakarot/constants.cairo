@@ -39,7 +39,7 @@ namespace Constants {
     const FELT252_PRIME_LOW = 0x1;
 
     // Infinite gas handle_l1_message
-    const INFINITE_GAS = 2100000000;
+    const INFINITE_GAS = 2 ** 64 - 1;
 }
 
 // See model.Opcode:
