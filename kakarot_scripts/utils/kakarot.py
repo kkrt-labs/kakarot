@@ -44,6 +44,7 @@ from kakarot_scripts.constants import (
     ChainId,
 )
 from kakarot_scripts.data.pre_eip155_txs import PRE_EIP155_TX
+from kakarot_scripts.utils.relayers import RelayerPool
 from kakarot_scripts.utils.starknet import _max_fee
 from kakarot_scripts.utils.starknet import call
 from kakarot_scripts.utils.starknet import call as _call_starknet
@@ -684,7 +685,7 @@ async def send_starknet_transaction(
     packed_encoded_unsigned_tx: List[int],
     max_fee: Optional[int] = None,
 ):
-    relayer = next(NETWORK["relayers"])
+    relayer = await RelayerPool.get(evm_account.address)
     current_timestamp = (await RPC_CLIENT.get_block("latest")).timestamp
     outside_execution = {
         "caller": int.from_bytes(b"ANY_CALLER", "big"),
@@ -777,7 +778,7 @@ async def deploy_and_fund_evm_address(evm_address: str, amount: float):
             "kakarot",
             "deploy_externally_owned_account",
             int(evm_address, 16),
-            account=next(NETWORK["relayers"]),
+            account=await RelayerPool.get(int(evm_address, 16)),
         )
     return starknet_address
 

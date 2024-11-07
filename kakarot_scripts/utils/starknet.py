@@ -55,7 +55,6 @@ from kakarot_scripts.constants import (
     ETH_TOKEN_ADDRESS,
     NETWORK,
     RPC_CLIENT,
-    ChainId,
     NetworkType,
 )
 
@@ -72,6 +71,7 @@ _max_fee = int(0.05e18)
 _logs = defaultdict(list)
 _lazy_execute = defaultdict(bool)
 _multisig_account = defaultdict(bool)
+_single_sig_account = None
 
 # Dict to store selector to name mapping because argent api requires the name but calls have selector
 _selector_to_name = {get_selector_from_name("deployContract"): "deployContract"}
@@ -96,6 +96,8 @@ async def get_starknet_account(
     address=None,
     private_key=None,
 ) -> Account:
+    global _single_sig_account
+
     address = address or NETWORK["account_address"]
     if address is None:
         raise ValueError(
@@ -150,7 +152,18 @@ async def get_starknet_account(
             )
         if len(public_keys) > 1:
             register_multisig_account(address)
-            logger.info("ℹ️  Account is a multisig")
+            logger.info(
+                "ℹ️  Account is a multisig: "
+                "deploying a regular account for declarations"
+                "using the same private key and the multisig address as salt"
+            )
+            receipt = await deploy_starknet_account(
+                private_key=private_key, salt=address
+            )
+            _single_sig_account = await get_starknet_account(
+                address=receipt["address"], private_key=private_key
+            )
+
     else:
         logger.warning(
             f"⚠️ Unable to verify public key for account at address 0x{address:x}"
@@ -159,7 +172,7 @@ async def get_starknet_account(
     return Account(
         address=address,
         client=RPC_CLIENT,
-        chain=ChainId.starknet_chain_id,
+        chain=NETWORK["chain_id"].starknet_chain_id,
         key_pair=key_pair,
     )
 
@@ -169,7 +182,7 @@ async def get_eth_contract(provider=None) -> Contract:
     return Contract(
         ETH_TOKEN_ADDRESS,
         get_abi("ERC20"),
-        provider or next(NETWORK["relayers"]),
+        provider or await get_starknet_account(),
         cairo_version=0,
     )
 
@@ -202,19 +215,29 @@ async def fund_address(
         else:
             logger.info(f"{amount / 1e18} ETH minted to {hex(address)}")
     else:
-        account = funding_account or next(NETWORK["relayers"])
+        account = funding_account or await get_starknet_account()
         eth_contract = token_contract or await get_eth_contract(account)
         balance = await get_balance(account.address, eth_contract)
-        if balance < amount:
+        to_balance = await get_balance(address, eth_contract)
+        required_amount = amount - to_balance
+        if balance < required_amount:
             raise ValueError(
                 f"Cannot send {amount / 1e18} ETH from account 0x{account.address:064x} with current balance {balance / 1e18} ETH"
             )
-        prepared = eth_contract.functions["transfer"].prepare_invoke_v1(address, amount)
+        if required_amount <= 0:
+            return
+
+        logger.info(
+            f"ℹ️  Funding account {hex(address)} with {required_amount / 1e18} ETH"
+        )
+        prepared = eth_contract.functions["transfer"].prepare_invoke_v1(
+            address, required_amount
+        )
         tx = await prepared.invoke(max_fee=_max_fee)
 
         status = await wait_for_transaction(tx.hash)
         logger.info(
-            f"{status} {amount / 1e18} ETH sent from {hex(account.address)} to {hex(address)}"
+            f"{status} {required_amount / 1e18} ETH sent from {hex(account.address)} to {hex(address)}"
         )
         balance = (await eth_contract.functions["balanceOf"].call(address)).balance  # type: ignore
         logger.info(f"💰 Balance of {hex(address)}: {balance / 1e18}")
@@ -370,9 +393,10 @@ def compile_contract(contract):
     )
 
 
-async def deploy_starknet_account(class_hash=None, private_key=None, amount=1):
-    salt = random.randint(0, 2**251)
-    logger.info(f"ℹ️  Deploying account with salt {hex(salt)}")
+async def deploy_starknet_account(
+    class_hash=None, private_key=None, amount=1, salt=None
+):
+    salt = salt or random.randint(0, 2**251)
     private_key = private_key or NETWORK["private_key"]
     if private_key is None:
         raise ValueError(
@@ -389,9 +413,18 @@ async def deploy_starknet_account(class_hash=None, private_key=None, amount=1):
         constructor_calldata=constructor_calldata,
         deployer_address=0,
     )
-    logger.info(f"ℹ️  Funding account {hex(address)} with {amount} ETH")
     await fund_address(address, amount=amount)
-    logger.info("ℹ️  Deploying account")
+
+    try:
+        await RPC_CLIENT.get_class_hash_at(address)
+        logger.info(f"✅ Account at 0x{address:064x}")
+        return {
+            "address": address,
+        }
+    except Exception:
+        pass
+
+    logger.info(f"ℹ️  Deploying account with salt {hex(salt)}")
     try:
         res = await Account.deploy_account_v1(
             address=address,
@@ -449,7 +482,9 @@ async def declare(contract_name):
     except Exception:
         pass
 
-    account = next(NETWORK["relayers"])
+    account = await get_starknet_account()
+    if _multisig_account[account.address]:
+        account = _single_sig_account
 
     if artifact.sierra is not None:
         casm_compiled_contract = artifact.casm.read_text()

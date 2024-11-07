@@ -98,6 +98,7 @@ async def deploy_dualvm_tokens() -> None:
 
         # DualVM token is not deployed, deploy one
         # Check if the L2 token exists, if not deploy one
+        new_l2_token = False
         try:
             await RPC_CLIENT.get_class_hash_at(l2_token_address)
         except Exception as e:
@@ -105,7 +106,6 @@ async def deploy_dualvm_tokens() -> None:
                 raise ValueError(
                     f"Starknet token for {token['name']} doesn't exist on L2"
                 ) from e
-
             logger.info(f"⏳ {token['name']} doesn't exist on Starknet, deploying...")
             owner = await get_starknet_account()
             l2_token_address = await deploy_starknet(
@@ -116,8 +116,9 @@ async def deploy_dualvm_tokens() -> None:
                 int(2**256 - 1),
                 owner.address,
             )
+            new_l2_token = True
 
-        if token["name"] not in evm_deployments:
+        if token["name"] not in evm_deployments or new_l2_token:
             contract = await deploy_kakarot(
                 "CairoPrecompiles", "DualVmToken", kakarot_address, l2_token_address
             )

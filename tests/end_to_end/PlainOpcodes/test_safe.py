@@ -40,7 +40,7 @@ class TestSafe:
 
     class TestWithdrawCall:
         async def test_should_withdraw_call_eth(self, safe, owner):
-            await safe.deposit(value=ACCOUNT_BALANCE)
+            await safe.deposit(value=1)
 
             safe_balance = await safe.balance()
             owner_balance_before = await eth_balance_of(owner.address)
