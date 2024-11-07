@@ -26,6 +26,8 @@ BEACON_ROOT_ADDRESS = "0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02"
 # See https://github.com/kkrt-labs/kakarot/issues/1530
 MAX_LEDGER_CHAIN_ID = 2**32 - 1
 
+TOKEN_ADDRESSES_DIR = Path("starknet-addresses/bridged_tokens")
+
 
 class NetworkType(Enum):
     PROD = "prod"
@@ -35,7 +37,7 @@ class NetworkType(Enum):
 
 NETWORKS = {
     "mainnet": {
-        "name": "starknet-mainnet",
+        "name": "mainnet",
         "explorer_url": "https://starkscan.co",
         "rpc_url": f"https://rpc.nethermind.io/mainnet-juno/?apikey={os.getenv('NETHERMIND_API_KEY')}",
         "l1_rpc_url": f"https://mainnet.infura.io/v3/{os.getenv('INFURA_KEY')}",
@@ -46,9 +48,10 @@ NETWORKS = {
         "class_hash": 0x061DAC032F228ABEF9C6626F995015233097AE253A7F72D68552DB02F2971B8F,
         "voyager_api_url": "https://api.voyager.online/beta",
         "argent_multisig_api": "https://cloud.argent-api.com/v1/multisig/starknet/mainnet",
+        "token_addresses_file": TOKEN_ADDRESSES_DIR / "mainnet.json",
     },
     "sepolia": {
-        "name": "starknet-sepolia",
+        "name": "sepolia",
         "explorer_url": "https://sepolia.starkscan.co/",
         "rpc_url": f"https://rpc.nethermind.io/sepolia-juno/?apikey={os.getenv('NETHERMIND_API_KEY')}",
         "l1_rpc_url": f"https://sepolia.infura.io/v3/{os.getenv('INFURA_KEY')}",
@@ -59,9 +62,10 @@ NETWORKS = {
         "class_hash": 0x061DAC032F228ABEF9C6626F995015233097AE253A7F72D68552DB02F2971B8F,
         "voyager_api_url": "https://sepolia-api.voyager.online/beta",
         "argent_multisig_api": "https://cloud.argent-api.com/v1/multisig/starknet/sepolia",
+        "token_addresses_file": TOKEN_ADDRESSES_DIR / "sepolia.json",
     },
-    "sepolia-staging": {
-        "name": "starknet-sepolia-staging",
+    "staging": {
+        "name": "staging",
         "explorer_url": "https://sepolia.starkscan.co/",
         "rpc_url": f"https://rpc.nethermind.io/sepolia-juno/?apikey={os.getenv('NETHERMIND_API_KEY')}",
         "l1_rpc_url": f"https://sepolia.infura.io/v3/{os.getenv('INFURA_KEY')}",
@@ -72,6 +76,7 @@ NETWORKS = {
         "class_hash": 0x061DAC032F228ABEF9C6626F995015233097AE253A7F72D68552DB02F2971B8F,
         "voyager_api_url": "https://sepolia-api.voyager.online/beta",
         "argent_multisig_api": "https://cloud.argent-api.com/v1/multisig/starknet/sepolia",
+        "token_addresses_file": TOKEN_ADDRESSES_DIR / "sepolia.json",
     },
     "starknet-devnet": {
         "name": "starknet-devnet",
@@ -90,6 +95,7 @@ NETWORKS = {
         "type": NetworkType.DEV,
         "check_interval": 0.01,
         "max_wait": 3,
+        "token_addresses_file": TOKEN_ADDRESSES_DIR / "sepolia.json",
         "relayers": [
             {
                 "address": 0xE29882A1FCBA1E7E10CAD46212257FEA5C752A4F9B1B1EC683C503A2CF5C8A,
@@ -136,33 +142,6 @@ NETWORKS = {
         "l1_rpc_url": "http://127.0.0.1:8545",
         "type": NetworkType.DEV,
         "check_interval": 6,
-        "max_wait": 30,
-    },
-    "sharingan": {
-        "name": "sharingan",
-        "explorer_url": "",
-        "rpc_url": os.getenv("SHARINGAN_RPC_URL"),
-        "l1_rpc_url": "http://127.0.0.1:8545",
-        "type": NetworkType.PROD,
-        "check_interval": 6,
-        "max_wait": 30,
-    },
-    "kakarot-sepolia": {
-        "name": "kakarot-sepolia",
-        "explorer_url": "",
-        "rpc_url": os.getenv("KAKAROT_SEPOLIA_RPC_URL"),
-        "l1_rpc_url": f"https://sepolia.infura.io/v3/{os.getenv('INFURA_KEY')}",
-        "type": NetworkType.PROD,
-        "check_interval": 6,
-        "max_wait": 360,
-    },
-    "kakarot-staging": {
-        "name": "kakarot-staging",
-        "explorer_url": "",
-        "rpc_url": os.getenv("KAKAROT_STAGING_RPC_URL"),
-        "l1_rpc_url": f"https://sepolia.infura.io/v3/{os.getenv('INFURA_KEY')}",
-        "type": NetworkType.STAGING,
-        "check_interval": 1,
         "max_wait": 30,
     },
 }

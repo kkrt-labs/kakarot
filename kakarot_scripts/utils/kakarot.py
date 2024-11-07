@@ -151,17 +151,23 @@ def get_solidity_artifacts(
 async def get_contract(
     contract_app: str,
     contract_name: str,
-    address=None,
+    address: Optional[int | str] = None,
     caller_eoa: Optional[Account] = None,
 ) -> Web3Contract:
     artifacts = get_solidity_artifacts(contract_app, contract_name)
+
+    address = int(address, 16) if isinstance(address, str) else address
 
     bytecode, bytecode_runtime = await link_libraries(artifacts)
 
     contract = cast(
         Web3Contract,
         WEB3.eth.contract(
-            address=to_checksum_address(address) if address is not None else address,
+            address=(
+                to_checksum_address(f"{address:040x}")
+                if address is not None
+                else address
+            ),
             abi=artifacts["abi"],
             bytecode=bytecode,
         ),
@@ -182,6 +188,9 @@ async def get_contract(
     except NoABIFunctionsFound:
         pass
     contract.events.parse_events = MethodType(_parse_events, contract.events)
+    contract.w3.eth.send_transaction = MethodType(
+        _wrap_kakarot(fun=None, caller_eoa=caller_eoa), contract
+    )
     return contract
 
 
@@ -315,7 +324,7 @@ def dump_deployments(deployments):
         {
             name: {
                 **deployment,
-                "address": hex(deployment["address"]),
+                "address": Web3.to_checksum_address(f"0x{deployment['address']:040x}"),
                 "starknet_address": hex(deployment["starknet_address"]),
             }
             for name, deployment in deployments.items()
@@ -399,21 +408,26 @@ def _get_matching_logs_for_event(event_abi, log_receipts) -> List[dict]:
     return logs
 
 
-def _wrap_kakarot(fun: str, caller_eoa: Optional[Account] = None):
+def _wrap_kakarot(fun: Optional[str] = None, caller_eoa: Optional[Account] = None):
     """Wrap a contract function call with the Kakarot contract."""
 
     async def _wrapper(self, *args, **kwargs):
-        abi = self.get_function_by_signature(fun).abi
         gas_price = kwargs.pop("gas_price", DEFAULT_GAS_PRICE)
         gas_limit = kwargs.pop("gas_limit", TRANSACTION_GAS_LIMIT)
         value = kwargs.pop("value", 0)
         caller_eoa_ = kwargs.pop("caller_eoa", caller_eoa)
         max_fee = kwargs.pop("max_fee", None)
-        calldata = self.get_function_by_signature(fun)(
-            *args, **kwargs
-        )._encode_transaction_data()
 
-        if abi["stateMutability"] in ["pure", "view"]:
+        if fun is not None:
+            abi = self.get_function_by_signature(fun).abi
+            calldata = self.get_function_by_signature(fun)(
+                *args, **kwargs
+            )._encode_transaction_data()
+        else:
+            calldata = b""
+            abi = {}
+
+        if abi.get("stateMutability") in ["pure", "view"]:
             origin = (
                 int(caller_eoa_.signer.public_key.to_address(), 16)
                 if caller_eoa_
