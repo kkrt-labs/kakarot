@@ -247,6 +247,24 @@ class TestKakarot:
             assert result.return_data == []
             assert result.gas_used == 21_000
 
+    class TestEthCallJumpCreationCodeDeployTx:
+        async def test_eth_call_jump_creation_code_deploy_tx_should_succeed(
+            self, kakarot, new_eoa
+        ):
+            eoa = await new_eoa()
+            result = await kakarot.functions["eth_call"].call(
+                nonce=0,
+                origin=int(eoa.address, 16),
+                to={"is_some": 0, "value": 0},
+                gas_limit=TRANSACTION_GAS_LIMIT,
+                gas_price=1_000,
+                value=0,
+                data=bytes.fromhex("605f5f53605660015360025f5ff0"),
+                access_list=[],
+            )
+
+            assert result.success == 1
+
         async def test_eth_call_should_handle_uninitialized_class_update(
             self, kakarot, new_eoa, class_hashes
         ):
