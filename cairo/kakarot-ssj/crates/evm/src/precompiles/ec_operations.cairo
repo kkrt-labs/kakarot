@@ -1,5 +1,6 @@
 pub(crate) mod ec_add;
 pub(crate) mod ec_mul;
+pub(crate) mod ec_pairing;
 use core::circuit::CircuitElement as CE;
 use core::circuit::CircuitInput as CI;
 use core::circuit::{
