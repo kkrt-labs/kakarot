@@ -63,7 +63,7 @@ NETWORKS = {
     "sepolia-staging": {
         "name": "starknet-sepolia-staging",
         "explorer_url": "https://sepolia.starkscan.co/",
-        "rpc_url": f"https://rpc.nethermind.io/sepolia-juno/?apikey={os.getenv('NETHERMIND_API_KEY')}",
+        "rpc_url": os.getenv('SEPOLIA_STAGING_RPC_URL'),
         "l1_rpc_url": f"https://sepolia.infura.io/v3/{os.getenv('INFURA_KEY')}",
         "type": NetworkType.STAGING,
         "chain_id": StarknetChainId.SEPOLIA,
