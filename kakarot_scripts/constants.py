@@ -1,15 +1,17 @@
 import json
 import logging
 import os
+from dataclasses import dataclass
 from enum import Enum, IntEnum
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional, Union
 
 import requests
 from dotenv import load_dotenv
 from eth_keys import keys
 from starknet_py.net.account.account import Account
 from starknet_py.net.full_node_client import FullNodeClient
+from starknet_py.net.models import AddressRepresentation
 from starknet_py.net.models.chains import StarknetChainId
 from starknet_py.net.signer.stark_curve_signer import KeyPair
 from web3 import Web3
@@ -23,6 +25,8 @@ BLOCK_GAS_LIMIT = 7_000_000
 DEFAULT_GAS_PRICE = 1
 BEACON_ROOT_ADDRESS = "0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02"
 
+# see https://gist.github.com/rekmarks/a47bd5f2525936c4b8eee31a16345553
+MAX_SAFE_CHAIN_ID = 4503599627370476
 # See https://github.com/kkrt-labs/kakarot/issues/1530
 MAX_LEDGER_CHAIN_ID = 2**32 - 1
 
@@ -42,7 +46,7 @@ NETWORKS = {
         "rpc_url": f"https://rpc.nethermind.io/mainnet-juno/?apikey={os.getenv('NETHERMIND_API_KEY')}",
         "l1_rpc_url": f"https://mainnet.infura.io/v3/{os.getenv('INFURA_KEY')}",
         "type": NetworkType.PROD,
-        "chain_id": StarknetChainId.MAINNET,
+        "chain_id": StarknetChainId.MAINNET % MAX_LEDGER_CHAIN_ID,
         "check_interval": 1,
         "max_wait": 60,
         "class_hash": 0x061DAC032F228ABEF9C6626F995015233097AE253A7F72D68552DB02F2971B8F,
@@ -56,7 +60,7 @@ NETWORKS = {
         "rpc_url": f"https://rpc.nethermind.io/sepolia-juno/?apikey={os.getenv('NETHERMIND_API_KEY')}",
         "l1_rpc_url": f"https://sepolia.infura.io/v3/{os.getenv('INFURA_KEY')}",
         "type": NetworkType.STAGING,
-        "chain_id": StarknetChainId.SEPOLIA,
+        "chain_id": StarknetChainId.SEPOLIA % MAX_SAFE_CHAIN_ID,
         "check_interval": 1,
         "max_wait": 30,
         "class_hash": 0x061DAC032F228ABEF9C6626F995015233097AE253A7F72D68552DB02F2971B8F,
@@ -70,13 +74,24 @@ NETWORKS = {
         "rpc_url": f"https://rpc.nethermind.io/sepolia-juno/?apikey={os.getenv('NETHERMIND_API_KEY')}",
         "l1_rpc_url": f"https://sepolia.infura.io/v3/{os.getenv('INFURA_KEY')}",
         "type": NetworkType.STAGING,
-        "chain_id": StarknetChainId.SEPOLIA,
+        "chain_id": StarknetChainId.SEPOLIA % MAX_SAFE_CHAIN_ID,
         "check_interval": 1,
         "max_wait": 30,
         "class_hash": 0x061DAC032F228ABEF9C6626F995015233097AE253A7F72D68552DB02F2971B8F,
         "voyager_api_url": "https://sepolia-api.voyager.online/beta",
         "argent_multisig_api": "https://cloud.argent-api.com/v1/multisig/starknet/sepolia",
         "token_addresses_file": TOKEN_ADDRESSES_DIR / "sepolia.json",
+        "relayers": [
+            0x6C1F3FFF8CF85587B0AE9A5D048C99175224577029FE1D42B99FB646176F70C,
+            0xFAB442DAA53C06DBEE25DDBDE19E3E49A605789779AB5FB34F7D254D24151F,
+            0x3A452595A22A9D744B036E7337975F9E21E4AD3C94926C5FCE4383F83A78337,
+            0x5E94A16B0E90F32CBB976F65BC8C95EFB37FDC2B51B8B74416F28D68F8D9A80,
+            0x2A2BF721D3B6BED85742048C66D52C099F075632BF780F268C19408048F6F9B,
+            0x75BF8F49DBFF4ED97818D58304B23D62D9C5F4BAF0ADE98BED574BF5CE6932A,
+            0x6EA72C5314B476CBEE569938CA50D45F7F5D9155DF6AEF9F9D4E3A9C7BEE5DE,
+            0x398834CF02D4A7EAA9DFB4FA07F1DD1DED47CEA7F4592C2742FEA86B616F269,
+            0x3B4AB40CD413D10BA42A34010980E30FD1E52181E97D949D4CD87BD31279B6,
+        ],
     },
     "starknet-devnet": {
         "name": "starknet-devnet",
@@ -93,6 +108,7 @@ NETWORKS = {
         "rpc_url": os.getenv("KATANA_RPC_URL", "http://127.0.0.1:5050"),
         "l1_rpc_url": "http://127.0.0.1:8545",
         "type": NetworkType.DEV,
+        "chain_id": int.from_bytes(b"KKRT", "big") % MAX_LEDGER_CHAIN_ID,
         "check_interval": 0.01,
         "max_wait": 3,
         "token_addresses_file": TOKEN_ADDRESSES_DIR / "sepolia.json",
@@ -186,8 +202,7 @@ try:
     if WEB3.is_connected():
         chain_id = WEB3.eth.chain_id
     else:
-        # Before making any changes to chain_id see https://github.com/kkrt-labs/kakarot/issues/1530
-        chain_id = starknet_chain_id % MAX_LEDGER_CHAIN_ID
+        chain_id = NETWORK["chain_id"]
 except (
     requests.exceptions.ConnectionError,
     requests.exceptions.MissingSchema,
@@ -196,9 +211,7 @@ except (
     logger.info(
         f"⚠️  Could not get chain Id from {NETWORK['rpc_url']}: {e}, defaulting to KKRT"
     )
-    starknet_chain_id = int.from_bytes(b"KKRT", "big")
-    # Before making any changes to chain_id see https://github.com/kkrt-labs/kakarot/issues/1530
-    chain_id = starknet_chain_id % MAX_LEDGER_CHAIN_ID
+    chain_id = starknet_chain_id = int.from_bytes(b"KKRT", "big")
 
 
 class ChainId(IntEnum):
@@ -301,14 +314,33 @@ if NETWORK["private_key"] is None:
     NETWORK["private_key"] = os.getenv("PRIVATE_KEY")
 
 
+@dataclass
+class Relayer:
+    address: AddressRepresentation
+    private_key: Optional[int] = (
+        int(NETWORK["private_key"], 16) if NETWORK["private_key"] else None
+    )
+
+
 class RelayerPool:
-    def __init__(self, relayers: List[Dict[str, int]]):
+    def __init__(
+        self,
+        accounts: Union[List[Dict[str, int]], List[AddressRepresentation]],
+    ):
+        relayers = [
+            (
+                Relayer(**account)
+                if isinstance(account, dict)
+                else Relayer(address=account)
+            )
+            for account in accounts
+        ]
         self.relayer_accounts = [
             Account(
-                address=relayer["address"],
+                address=relayer.address,
                 client=RPC_CLIENT,
                 chain=ChainId.starknet_chain_id,
-                key_pair=KeyPair.from_private_key(relayer["private_key"]),
+                key_pair=KeyPair.from_private_key(relayer.private_key),
             )
             for relayer in relayers
         ]

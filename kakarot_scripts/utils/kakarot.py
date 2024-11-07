@@ -1,6 +1,7 @@
 import functools
 import json
 import logging
+import math
 import re
 import time
 from collections import defaultdict
@@ -609,6 +610,11 @@ async def eth_balance_of(address: Union[int, str]):
     return await get_balance(starknet_address)
 
 
+@alru_cache
+async def eth_chain_id():
+    return (await call("kakarot", "eth_chain_id")).chain_id
+
+
 async def eth_send_transaction(
     to: Union[int, str],
     data: Union[str, bytes],
@@ -635,7 +641,7 @@ async def eth_send_transaction(
 
     payload = {
         "type": 0x1,
-        "chainId": NETWORK["chain_id"],
+        "chainId": await eth_chain_id(),
         "nonce": nonce,
         "gas": gas,
         "gasPrice": gas_price,
@@ -709,7 +715,8 @@ async def send_starknet_transaction(
         account=relayer,
     )
 
-    attempts = NETWORK["max_wait"] // NETWORK["check_interval"]
+    check_interval = math.ceil(NETWORK["check_interval"])
+    attempts = NETWORK["max_wait"] // check_interval
     for _ in range(attempts):
         try:
             receipt = await RPC_CLIENT.get_transaction_receipt(tx_hash)
@@ -717,7 +724,7 @@ async def send_starknet_transaction(
         except Exception:
             # Sometime the RPC_CLIENT is too fast and the first pool raises with
             # starknet_py.net.client_errors.ClientError: Client failed with code 29. Message: Transaction hash not found
-            time.sleep(NETWORK["check_interval"])
+            time.sleep(check_interval)
     else:
         raise ValueError(f"❌ Transaction not found: {tx_hash}")
 

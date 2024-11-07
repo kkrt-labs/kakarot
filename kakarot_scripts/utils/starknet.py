@@ -5,6 +5,7 @@ import logging
 import random
 import re
 import subprocess
+import time
 from collections import defaultdict, namedtuple
 from copy import deepcopy
 from datetime import datetime
@@ -371,6 +372,7 @@ def compile_contract(contract):
 
 async def deploy_starknet_account(class_hash=None, private_key=None, amount=1):
     salt = random.randint(0, 2**251)
+    logger.info(f"ℹ️  Deploying account with salt {hex(salt)}")
     private_key = private_key or NETWORK["private_key"]
     if private_key is None:
         raise ValueError(
@@ -390,15 +392,28 @@ async def deploy_starknet_account(class_hash=None, private_key=None, amount=1):
     logger.info(f"ℹ️  Funding account {hex(address)} with {amount} ETH")
     await fund_address(address, amount=amount)
     logger.info("ℹ️  Deploying account")
-    res = await Account.deploy_account_v1(
-        address=address,
-        class_hash=class_hash,
-        salt=salt,
-        key_pair=key_pair,
-        client=RPC_CLIENT,
-        constructor_calldata=constructor_calldata,
-        max_fee=_max_fee,
-    )
+    try:
+        res = await Account.deploy_account_v1(
+            address=address,
+            class_hash=class_hash,
+            salt=salt,
+            key_pair=key_pair,
+            client=RPC_CLIENT,
+            constructor_calldata=constructor_calldata,
+            max_fee=_max_fee,
+        )
+    except Exception as e:
+        logger.info(f"❌ Error deploying account: {e}, waiting 5s before retrying")
+        time.sleep(5)
+        res = await Account.deploy_account_v1(
+            address=address,
+            class_hash=class_hash,
+            salt=salt,
+            key_pair=key_pair,
+            client=RPC_CLIENT,
+            constructor_calldata=constructor_calldata,
+            max_fee=_max_fee,
+        )
     status = await wait_for_transaction(res.hash)
     logger.info(f"{status} Account deployed at: 0x{res.account.address:064x}")
 
