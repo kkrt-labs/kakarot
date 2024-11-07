@@ -1,43 +1,43 @@
-import { hash } from 'starknet';
-import inquirer from 'inquirer';
+import { hash } from "starknet";
+import inquirer from "inquirer";
 
 inquirer
   .prompt([
     {
-      type: 'input',
-      name: 'classHashInput',
-      message: 'Enter the class hash:',
+      type: "input",
+      name: "classHashInput",
+      message: "Enter the class hash:",
       validate: (input) => {
-        if (input.trim() === '') {
-          return 'Class hash is required.';
+        if (input.trim() === "") {
+          return "Class hash is required.";
         }
         if (!/^0x[0-9a-fA-F]+$/.test(input.trim())) {
-          return 'Please enter a valid hexadecimal class hash.';
+          return "Please enter a valid hexadecimal class hash.";
         }
         return true;
       },
     },
     {
-      type: 'input',
-      name: 'saltInput',
-      message: 'Enter the salt',
-      default: '0x65766d5f61646472657373',
+      type: "input",
+      name: "saltInput",
+      message: "Enter the salt",
+      default: "0x65766d5f61646472657373",
       validate: (input) => {
         if (!/^0x[0-9a-fA-F]+$/.test(input.trim())) {
-          return 'Please enter a valid hexadecimal salt.';
+          return "Please enter a valid hexadecimal salt.";
         }
         return true;
       },
     },
     {
-      type: 'input',
-      name: 'deployerInput',
-      message: 'Enter the deployer address',
+      type: "input",
+      name: "deployerInput",
+      message: "Enter the deployer address",
       default:
-        '0x7753aaa1814b9f978fd93b66453ae87419b66d764fbf9313847edeb0283ef63',
+        "0x7753aaa1814b9f978fd93b66453ae87419b66d764fbf9313847edeb0283ef63",
       validate: (input) => {
         if (!/^0x[0-9a-fA-F]+$/.test(input.trim())) {
-          return 'Please enter a valid hexadecimal deployer address.';
+          return "Please enter a valid hexadecimal deployer address.";
         }
         return true;
       },
@@ -55,9 +55,9 @@ inquirer
         salt,
         classHash,
         CONSTRUCTOR_CALLDATA,
-        deployerAddress
+        deployerAddress,
       );
     }
 
-    console.log('Computed Starknet Address: ' + compute_starknet_address());
+    console.log("Computed Starknet Address: " + compute_starknet_address());
   });

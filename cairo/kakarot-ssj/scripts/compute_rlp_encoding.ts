@@ -23,7 +23,7 @@ const main = async () => {
 
   if (!process.env.PRIVATE_KEY_RLP_SCRIPT) {
     console.error(
-      "Missing private key in environment. Please provide PRIVATE_KEY_RLP_SCRIPT in .env"
+      "Missing private key in environment. Please provide PRIVATE_KEY_RLP_SCRIPT in .env",
     );
     process.exit(1);
   }
@@ -33,8 +33,8 @@ const main = async () => {
 
   let tx_type = parseInt(
     await question(
-      "Enter transaction type (0: legacy, 1: 2930, 2: 1559, 3: inc_counter, 4: y_parity_false eip1559): "
-    )
+      "Enter transaction type (0: legacy, 1: 2930, 2: 1559, 3: inc_counter, 4: y_parity_false eip1559): ",
+    ),
   );
 
   let txFilePath: string;
@@ -77,7 +77,7 @@ const main = async () => {
   console.log(unsignedBytes.map((v) => `${v},`).join(" "));
 
   const unsignedBytes2 = Uint8Array.from(
-    transaction.type === 0 ? unsignedBytes : unsignedBytes.slice(1)
+    transaction.type === 0 ? unsignedBytes : unsignedBytes.slice(1),
   );
   let decodedRlp = RLP.decode(unsignedBytes2);
   console.log("Decoded RLP for unsigned transaction:\n", decodedRlp);
@@ -87,7 +87,7 @@ const main = async () => {
   console.log(signedBytes.map((v) => `${v},`).join(" "));
 
   const signedBytes2 = Uint8Array.from(
-    transaction.type === 0 ? signedBytes : signedBytes.slice(1)
+    transaction.type === 0 ? signedBytes : signedBytes.slice(1),
   );
   decodedRlp = RLP.decode(signedBytes2);
   console.log("Signed decoded RLP for signed transaction:\n", decodedRlp);

@@ -40,7 +40,8 @@ prompt([
     message: "Enter salt or press Enter for default [0xbeef]:",
     default: "0xbeef",
     when: (answers) => answers.opcode === "CREATE2",
-    filter: (value) => value.startsWith("0x") ? (value as Hex) : ("0x" + value as Hex),
+    filter: (value) =>
+      value.startsWith("0x") ? (value as Hex) : (("0x" + value) as Hex),
   },
 ]).then((answers) => {
   let address: Address;
