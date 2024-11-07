@@ -3,7 +3,6 @@ import pytest_asyncio
 
 from kakarot_scripts.constants import DEFAULT_GAS_PRICE
 from kakarot_scripts.utils.kakarot import deploy, eth_balance_of
-from tests.utils.constants import ACCOUNT_BALANCE
 
 
 @pytest_asyncio.fixture(scope="package")
@@ -14,23 +13,21 @@ async def safe():
 @pytest.mark.asyncio(scope="package")
 @pytest.mark.Safe
 class TestSafe:
-    class TestReceive:
+    class TestDeposit:
         async def test_should_receive_eth(self, safe):
             balance_before = await safe.balance()
-            await safe.deposit(value=ACCOUNT_BALANCE)
+            await safe.deposit(value=1)
             balance_after = await safe.balance()
-            assert balance_after - balance_before == ACCOUNT_BALANCE
+            assert balance_after - balance_before == 1
 
     class TestWithdrawTransfer:
         async def test_should_withdraw_transfer_eth(self, safe, owner):
-            await safe.deposit(value=ACCOUNT_BALANCE)
+            await safe.deposit(value=1)
 
             safe_balance = await safe.balance()
             owner_balance_before = await eth_balance_of(owner.address)
 
-            gas_used = (
-                await safe.withdrawTransfer(caller_eoa=owner.starknet_contract)
-            )["gas_used"]
+            gas_used = (await safe.withdrawTransfer())["gas_used"]
 
             owner_balance_after = await eth_balance_of(owner.address)
             assert await safe.balance() == 0

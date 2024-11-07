@@ -4,7 +4,6 @@ import logging
 from uvloop import run
 
 from kakarot_scripts.constants import EVM_ADDRESS, L1_RPC_PROVIDER, NETWORK
-from kakarot_scripts.deployment.declarations import declare_contracts
 from kakarot_scripts.deployment.dualvm_token_deployments import deploy_dualvm_tokens
 from kakarot_scripts.deployment.evm_deployments import deploy_evm_contracts
 from kakarot_scripts.deployment.kakarot_deployment import deploy_or_upgrade_kakarot
@@ -41,9 +40,6 @@ async def main():
     register_lazy_account(account.address)
     logger.info(f"ℹ️  Using account 0x{account.address:064x} as deployer")
     balance_before = await get_balance(account.address)
-
-    # %% Declarations
-    await declare_contracts()
 
     # %% Starknet Deployments
     await deploy_starknet_contracts(account)

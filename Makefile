@@ -42,7 +42,7 @@ build: $(SSJ_DIR)
 declare: build build-sol
 	uv run declare
 
-deploy: build build-sol
+deploy: declare
 	uv run deploy
 
 fetch-ef-tests:
