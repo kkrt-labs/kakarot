@@ -59,7 +59,7 @@ from kakarot_scripts.constants import (
     NetworkType,
 )
 
-logging.basicConfig()
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
@@ -150,7 +150,7 @@ async def get_starknet_account(
             )
         if len(public_keys) > 1:
             register_multisig_account(address)
-            logger.info("ℹ️ Account is a multisig")
+            logger.info("ℹ️  Account is a multisig")
     else:
         logger.warning(
             f"⚠️ Unable to verify public key for account at address 0x{address:x}"

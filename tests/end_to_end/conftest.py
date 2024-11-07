@@ -21,7 +21,7 @@ from kakarot_scripts.utils.starknet import (
 )
 from tests.utils.helpers import generate_random_private_key
 
-logging.basicConfig()
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 

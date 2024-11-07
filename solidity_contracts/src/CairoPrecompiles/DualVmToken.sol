@@ -60,11 +60,23 @@ contract DualVmToken {
 
     function name() external view returns (string memory) {
         bytes memory returnData = starknetToken.staticcallCairo("name");
+
+        // Legacy tokens return a felt for name instead of a ByteArray
+        if (returnData.length == 32) {
+            return string(returnData);
+        }
+
         return CairoLib.byteArrayToString(returnData);
     }
 
     function symbol() external view returns (string memory) {
         bytes memory returnData = starknetToken.staticcallCairo("symbol");
+
+        // Legacy tokens return a felt for name instead of a ByteArray
+        if (returnData.length == 32) {
+            return string(returnData);
+        }
+
         return CairoLib.byteArrayToString(returnData);
     }
 
