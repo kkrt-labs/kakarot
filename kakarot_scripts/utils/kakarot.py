@@ -709,13 +709,18 @@ async def send_starknet_transaction(
         account=relayer,
     )
 
-    try:
-        receipt = await RPC_CLIENT.get_transaction_receipt(tx_hash)
-    except Exception:
-        # Sometime the RPC_CLIENT is too fast and the first pool raises with
-        # starknet_py.net.client_errors.ClientError: Client failed with code 29. Message: Transaction hash not found
-        time.sleep(2)
-        receipt = await RPC_CLIENT.get_transaction_receipt(tx_hash)
+    attempts = NETWORK["max_wait"] // NETWORK["check_interval"]
+    for _ in range(attempts):
+        try:
+            receipt = await RPC_CLIENT.get_transaction_receipt(tx_hash)
+            break
+        except Exception:
+            # Sometime the RPC_CLIENT is too fast and the first pool raises with
+            # starknet_py.net.client_errors.ClientError: Client failed with code 29. Message: Transaction hash not found
+            time.sleep(NETWORK["check_interval"])
+    else:
+        raise ValueError(f"❌ Transaction not found: {tx_hash}")
+
     transaction_events = [
         event
         for event in receipt.events

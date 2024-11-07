@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from hypothesis import Phase, Verbosity, settings
 from starkware.cairo.lang.instances import LAYOUTS
 
-load_dotenv()
+load_dotenv(override=True)
 logging.getLogger("asyncio").setLevel(logging.ERROR)
 logger = logging.getLogger()
 

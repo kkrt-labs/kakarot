@@ -17,7 +17,7 @@ from web3 import Web3
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-load_dotenv()
+load_dotenv(override=True)
 
 BLOCK_GAS_LIMIT = 7_000_000
 DEFAULT_GAS_PRICE = 1
@@ -344,5 +344,5 @@ NETWORK["relayers"] = RelayerPool(NETWORK.get("relayers", [default_relayer]))
 kakarot_chain_ascii = bytes.fromhex(f"{ChainId.chain_id.value:014x}").lstrip(b"\x00")
 logger.info(
     f"ℹ️  Connected to Starknet chain id {bytes.fromhex(f'{ChainId.starknet_chain_id.value:x}')} "
-    f"and Kakarot chain id {kakarot_chain_ascii}"
+    f"and Kakarot chain id {kakarot_chain_ascii}\n\nNetwork: {NETWORK['name']}\n"
 )

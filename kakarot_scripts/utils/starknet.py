@@ -453,6 +453,7 @@ async def declare(contract_name):
             compiled_contract=artifact.casm.read_text()
         )
 
+        nonce = await account.get_nonce(block_number="pending")
         tx_hash = compute_transaction_hash(
             tx_hash_prefix=TransactionHashPrefix.DECLARE,
             version=1,
@@ -461,7 +462,7 @@ async def declare(contract_name):
             calldata=[deployed_class_hash],
             max_fee=_max_fee,
             chain_id=account.signer.chain_id.value,
-            additional_data=[await account.get_nonce()],
+            additional_data=[nonce],
         )
         signature = message_signature(
             msg_hash=tx_hash, priv_key=account.signer.private_key
@@ -471,7 +472,7 @@ async def declare(contract_name):
             sender_address=account.address,
             max_fee=_max_fee,
             signature=signature,
-            nonce=await account.get_nonce(),
+            nonce=nonce,
             version=1,
         )
         params = _create_broadcasted_txn(transaction=transaction)
@@ -566,7 +567,12 @@ async def execute_calls():
 
 @lazy_execute
 async def execute_v1(account, calls):
+    for call in calls:
+        # Convert calldata to int (in case some boolean values are passed)
+        call.calldata = [int(data) for data in call.calldata]
+
     calldata = _parse_calls(await account.cairo_version, calls)
+    nonce = await account.get_nonce(block_number="pending")
     msg_hash = compute_transaction_hash(
         tx_hash_prefix=TransactionHashPrefix.INVOKE,
         version=1,
@@ -575,7 +581,7 @@ async def execute_v1(account, calls):
         calldata=calldata,
         max_fee=_max_fee,
         chain_id=NETWORK["chain_id"].starknet_chain_id,
-        additional_data=[await account.get_nonce()],
+        additional_data=[nonce],
     )
     signature = message_signature(
         msg_hash=msg_hash, priv_key=account.signer.private_key, seed=None
@@ -583,7 +589,7 @@ async def execute_v1(account, calls):
     transaction = InvokeV1(
         version=1,
         signature=signature,
-        nonce=await account.get_nonce(),
+        nonce=nonce,
         max_fee=_max_fee,
         sender_address=account.address,
         calldata=calldata,
@@ -610,8 +616,10 @@ async def execute_v1(account, calls):
         response = requests.post(
             f"{NETWORK['argent_multisig_api']}/0x{account.address:064x}/request",
             json=data,
-        )
-        content = response.json()["content"]
+        ).json()
+        content = response.get("content")
+        if content is None:
+            raise ValueError(f"❌ Multisig transaction rejected: {response}")
         transaction_id = content["id"]
         status = content["state"]
         while status not in {"TX_ACCEPTED_L2", "REVERTED", "REJECTED"}:
