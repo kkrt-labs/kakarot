@@ -130,6 +130,26 @@ class TestKakarot:
                     if event.from_address != eth.address
                 ] == events
 
+        # https://github.com/code-423n4/2024-09-kakarot-findings/issues/44
+        async def test_execute_jump_creation_code(self, evm: Contract, origin):
+            params = {
+                "value": 0,
+                "code": "605f5f53605660015360025f5ff0",
+                "calldata": "",
+                "stack": "0000000000000000000000000000000000000000000000000000000000000000",
+                "memory": "",
+                "return_data": "",
+                "success": 1,
+            }
+            result = await evm.functions["evm_call"].call(
+                origin=origin,
+                value=int(params["value"]),
+                bytecode=hex_string_to_bytes_array(params["code"]),
+                calldata=hex_string_to_bytes_array(params["calldata"]),
+                access_list=[],
+            )
+            assert result.success == params["success"]
+
     class TestGetStarknetAddress:
         async def test_should_return_same_as_deployed_address(self, new_eoa):
             eoa = await new_eoa()
