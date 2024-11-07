@@ -3,7 +3,7 @@ import logging
 
 from uvloop import run
 
-from kakarot_scripts.constants import EVM_ADDRESS, L1_RPC_PROVIDER, NETWORK
+from kakarot_scripts.constants import EVM_ADDRESS, L1_RPC_PROVIDER
 from kakarot_scripts.deployment.dualvm_token_deployments import deploy_dualvm_tokens
 from kakarot_scripts.deployment.evm_deployments import deploy_evm_contracts
 from kakarot_scripts.deployment.kakarot_deployment import deploy_or_upgrade_kakarot
@@ -86,15 +86,6 @@ async def main():
     )
     logger.info(
         f"💰  Coinbase balance: {await eth_balance_of(coinbase_address) / 1e18} ETH"
-    )
-    logger.info(
-        "💰  Relayers balance:\n"
-        + "\n".join(
-            [
-                f"  0x{account.address:064x}: {await get_balance(account.address) / 1e18} ETH"
-                for account in NETWORK["relayers"].relayer_accounts
-            ]
-        )
     )
     l2_balance = await eth_balance_of(EVM_ADDRESS) / 1e18
     l1_balance = L1_RPC_PROVIDER.eth.get_balance(EVM_ADDRESS) / 1e18
