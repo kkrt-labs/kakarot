@@ -79,7 +79,8 @@ contract DualVmToken {
 
     function totalSupply() external view returns (uint256) {
         bytes memory returnData = starknetToken.staticcallCairo("total_supply");
-        return abi.decode(returnData, (uint256));
+        (uint128 valueLow, uint128 valueHigh) = abi.decode(returnData, (uint128, uint128));
+        return uint256(valueLow) + (uint256(valueHigh) << 128);
     }
 
     /// @dev This function is used to get the balance of an evm account

@@ -63,6 +63,7 @@ async def deploy_or_upgrade_kakarot(owner):
             class_hash["uninitialized_account"],  # uninitialized_account_class_hash_
             class_hash["Cairo1Helpers"],
             BLOCK_GAS_LIMIT,
+            NETWORK["chain_id"],
         )
         await invoke(
             "kakarot",

@@ -47,6 +47,7 @@ async def deploy_starknet_contracts(account):
         class_hash["uninitialized_account"],
         class_hash["Cairo1Helpers"],
         BLOCK_GAS_LIMIT,
+        NETWORK["chain_id"],
     )
     try:
         coinbase = (
@@ -64,6 +65,10 @@ async def deploy_starknet_contracts(account):
         )
     starknet_deployments["Counter"] = await deploy_starknet("Counter")
     starknet_deployments["MockPragmaOracle"] = await deploy_starknet("MockPragmaOracle")
+    starknet_deployments["MockPragmaSummaryStats"] = await deploy_starknet(
+        "MockPragmaSummaryStats",
+        starknet_deployments["MockPragmaOracle"],
+    )
     starknet_deployments["UniversalLibraryCaller"] = await deploy_starknet(
         "UniversalLibraryCaller"
     )

@@ -23,6 +23,7 @@ from kakarot.kakarot import (
     handle_l1_message,
     pause,
     unpause,
+    initialize_chain_id,
 )
 from kakarot.model import model
 from kakarot.account import Account
@@ -278,5 +279,12 @@ func test__pause{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 
 func test__unpause{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
     unpause();
+    return ();
+}
+
+func test__initialize_chain_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+    tempvar chain_id;
+    %{ ids.chain_id = program_input["chain_id"] %}
+    initialize_chain_id(chain_id);
     return ();
 }

@@ -3,6 +3,8 @@ from ethereum.base_types import U256
 from ethereum.crypto.elliptic_curve import SECP256K1N, secp256k1_recover
 from ethereum.crypto.hash import Hash32, keccak256
 from ethereum.utils.byte import left_pad_zero_bytes
+from hypothesis import given
+from hypothesis import strategies as st
 
 from tests.utils.helpers import ec_sign, generate_random_private_key
 
@@ -34,9 +36,11 @@ def ecrecover(data):
 
 @pytest.mark.EC_RECOVER
 class TestEcRecover:
-    def test_should_return_evm_address_in_bytes32(self, cairo_run):
+    @given(message=st.binary(min_size=1, max_size=1000))
+    def test_valid_signature(self, message, cairo_run):
+        """Test with valid signatures generated from random messages."""
         private_key = generate_random_private_key()
-        msg = keccak256(b"test message")
+        msg = keccak256(message)
         (v, r, s) = ec_sign(msg, private_key)
 
         input_data = [
@@ -47,25 +51,53 @@ class TestEcRecover:
         ]
 
         padded_address, _ = ecrecover(input_data)
-
         [output] = cairo_run("test__ec_recover", input=input_data)
-
         assert bytes(output) == bytes(padded_address)
 
-    def test_should_fail_when_input_len_is_not_128(self, cairo_run):
-        [output] = cairo_run("test__ec_recover", input=[])
+    @given(input_length=st.integers(min_value=0, max_value=127))
+    def test_invalid_input_length(self, input_length, cairo_run):
+        """Test with various invalid input lengths."""
+        input_data = [0] * input_length
+        [output] = cairo_run("test__ec_recover", input=input_data)
         assert output == []
 
-    def test_should_fail_when_recovery_identifier_is_neither_27_nor_28(self, cairo_run):
-        private_key = generate_random_private_key()
-        msg = keccak256(b"test message")
-        (_, r, s) = ec_sign(msg, private_key)
-        v = 1
+    @given(
+        v=st.integers(min_value=0, max_value=26) | st.integers(min_value=29),
+        msg=st.binary(min_size=32, max_size=32),
+        r=st.integers(min_value=1, max_value=SECP256K1N - 1),
+        s=st.integers(min_value=1, max_value=SECP256K1N - 1),
+    )
+    def test_invalid_v(self, v, msg, r, s, cairo_run):
+        """Test with invalid v values."""
         input_data = [
             *msg,
             *v.to_bytes(32, "big"),
-            *r,
-            *s,
+            *r.to_bytes(32, "big"),
+            *s.to_bytes(32, "big"),
         ]
         [output] = cairo_run("test__ec_recover", input=input_data)
         assert output == []
+
+    @given(
+        v=st.integers(min_value=27, max_value=28),
+        msg=st.binary(min_size=32, max_size=32),
+        r=st.integers(min_value=0, max_value=2**256 - 1),
+        s=st.integers(min_value=0, max_value=2**256 - 1),
+    )
+    def test_parameter_boundaries(self, cairo_run, v, msg, r, s):
+        """Test `r` and `s` parameter validation including boundary conditions."""
+        input_data = [
+            *msg,
+            *v.to_bytes(32, "big"),
+            *r.to_bytes(32, "big"),
+            *s.to_bytes(32, "big"),
+        ]
+
+        py_result = ecrecover(input_data)
+        [cairo_result] = cairo_run("test__ec_recover", input=input_data)
+
+        if py_result is None:
+            assert cairo_result == []
+        else:
+            py_address, _ = py_result
+            assert bytes(cairo_result) == bytes(py_address)

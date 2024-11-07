@@ -17,12 +17,7 @@ from web3._utils.normalizers import BASE_RETURN_NORMALIZERS
 from web3.exceptions import NoABIFunctionsFound
 
 from kakarot_scripts.ef_tests.fetch import EF_TESTS_PARSED_DIR
-from tests.utils.constants import (
-    CHAIN_ID,
-    MAX_SAFE_CHAIN_ID,
-    TRANSACTION_GAS_LIMIT,
-    TRANSACTIONS,
-)
+from tests.utils.constants import CHAIN_ID, TRANSACTION_GAS_LIMIT, TRANSACTIONS
 from tests.utils.errors import cairo_error
 from tests.utils.helpers import felt_to_signed_int, rlp_encode_signed_data
 from tests.utils.syscall_handler import SyscallHandler, parse_state
@@ -97,7 +92,6 @@ class TestKakarot:
             )
 
     class TestUnpause:
-
         @SyscallHandler.patch("Ownable_owner", 0xDEAD)
         def test_should_assert_only_owner(self, cairo_run):
             with cairo_error(message="Ownable: caller is not the owner"):
@@ -184,6 +178,31 @@ class TestKakarot:
                 address=get_storage_var_address("Kakarot_prev_randao"),
                 value=prev_randao,
             )
+
+    class TestInitializeChainId:
+        @SyscallHandler.patch("Ownable_owner", 0xDEAD)
+        def test_should_assert_only_owner(self, cairo_run):
+            with cairo_error(message="Ownable: caller is not the owner"):
+                cairo_run("test__initialize_chain_id", chain_id=0xABC)
+
+        @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
+        def test_should_initialize_chain_id(self, cairo_run):
+            chain_id = 0x123
+
+            cairo_run("test__initialize_chain_id", chain_id=chain_id)
+            SyscallHandler.mock_storage.assert_any_call(
+                address=get_storage_var_address("Kakarot_chain_id"),
+                value=chain_id,
+            )
+
+        @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
+        def test_should_fail_initialize_chain_id_twice(self, cairo_run):
+            chain_id = 0x123
+            with (
+                cairo_error(message="Kakarot: chain_id already initialized"),
+                SyscallHandler.patch("Kakarot_chain_id", chain_id),
+            ):
+                cairo_run("test__initialize_chain_id", chain_id=chain_id)
 
     class TestBlockGasLimit:
         @SyscallHandler.patch("Ownable_owner", 0xDEAD)
@@ -497,14 +516,37 @@ class TestKakarot:
                 )
             assert not evm["reverted"]
 
+        @SyscallHandler.patch("IAccount.is_valid_jumpdest", lambda addr, data: [1])
+        @SyscallHandler.patch("IAccount.get_code_hash", lambda addr, data: [0x1, 0x1])
+        @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0x1, 0x1])
+        def test_create_tx_returndata_should_be_20_bytes_evm_address(self, cairo_run):
+            """
+            Bug reported by Protofire for the simulation of the create tx using eth_call.
+            https://github.com/safe-global/safe-singleton-factory.
+            """
+            evm, _, _, _ = cairo_run(
+                "eth_call",
+                origin=0xE1CB04A0FA36DDD16A06EA828007E35E1A3CBC37,
+                to=None,
+                gas_limit=1000000,
+                gas_price=100,
+                value=0,
+                data="604580600e600039806000f350fe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf3",
+            )
+            assert (
+                "2fa86add0aed31f33a762c9d88e807c475bd51d0f52bd0955754b2608f7e4989"
+                == keccak(bytes(evm["return_data"])).hex()
+            )
+
     class TestEthChainIdEntrypoint:
         @given(chain_id=integers(min_value=0, max_value=2**64 - 1))
-        def test_should_return_chain_id_modulo_max_safe_chain_id(
-            self, cairo_run, chain_id
-        ):
-            with patch.dict(SyscallHandler.tx_info, {"chain_id": chain_id}):
+        def test_should_return_chain_id(self, cairo_run, chain_id):
+            with (
+                patch.dict(SyscallHandler.tx_info, {"chain_id": chain_id}),
+                SyscallHandler.patch("Kakarot_chain_id", chain_id),
+            ):
                 res = cairo_run("test__eth_chain_id")
-                assert res == chain_id % MAX_SAFE_CHAIN_ID
+                assert res == chain_id
 
     class TestEthSendRawTransactionEntrypoint:
         @SyscallHandler.patch("Pausable_paused", 1)
@@ -537,6 +579,7 @@ class TestKakarot:
                 )
 
         @SyscallHandler.patch("IAccount.get_nonce", lambda addr, data: [1])
+        @SyscallHandler.patch("Kakarot_chain_id", CHAIN_ID)
         @pytest.mark.parametrize("tx", TRANSACTIONS)
         def test_should_raise_invalid_nonce(self, cairo_run, tx):
             # explicitly set the nonce in transaction to be different from the patch
@@ -549,8 +592,9 @@ class TestKakarot:
                     tx_data=tx_data,
                 )
 
-        @given(gas_limit=integers(min_value=2**64, max_value=2**248 - 1))
+        @SyscallHandler.patch("Kakarot_chain_id", CHAIN_ID)
         @SyscallHandler.patch("IAccount.get_nonce", lambda _, __: [34])
+        @given(gas_limit=integers(min_value=2**64, max_value=2**248 - 1))
         def test_raise_gas_limit_too_high(self, cairo_run, gas_limit):
             tx = {
                 "type": 2,
@@ -573,8 +617,9 @@ class TestKakarot:
                     tx_data=tx_data,
                 )
 
-        @given(maxFeePerGas=integers(min_value=2**128, max_value=2**248 - 1))
+        @SyscallHandler.patch("Kakarot_chain_id", CHAIN_ID)
         @SyscallHandler.patch("IAccount.get_nonce", lambda _, __: [34])
+        @given(maxFeePerGas=integers(min_value=2**128, max_value=2**248 - 1))
         def test_raise_max_fee_per_gas_too_high(self, cairo_run, maxFeePerGas):
             tx = {
                 "type": 2,
@@ -597,6 +642,7 @@ class TestKakarot:
                     tx_data=tx_data,
                 )
 
+        @SyscallHandler.patch("Kakarot_chain_id", CHAIN_ID)
         @pytest.mark.parametrize("tx", TRANSACTIONS)
         def test_raise_transaction_gas_limit_too_high(self, cairo_run, tx):
             tx_data = list(rlp_encode_signed_data(tx))
@@ -613,6 +659,7 @@ class TestKakarot:
 
         @SyscallHandler.patch("Kakarot_block_gas_limit", TRANSACTION_GAS_LIMIT)
         @SyscallHandler.patch("Kakarot_base_fee", TRANSACTION_GAS_LIMIT * 10**10)
+        @SyscallHandler.patch("Kakarot_chain_id", CHAIN_ID)
         @pytest.mark.parametrize("tx", TRANSACTIONS)
         def test_raise_max_fee_per_gas_too_low(self, cairo_run, tx):
             tx_data = list(rlp_encode_signed_data(tx))
@@ -637,6 +684,7 @@ class TestKakarot:
 
         @SyscallHandler.patch("Kakarot_block_gas_limit", TRANSACTION_GAS_LIMIT)
         @SyscallHandler.patch("IAccount.get_nonce", lambda _, __: [34])
+        @SyscallHandler.patch("Kakarot_chain_id", CHAIN_ID)
         @given(max_priority_fee_too_high())
         def test_raise_max_priority_fee_too_high(
             self, cairo_run, max_priority_fee_too_high
@@ -665,6 +713,7 @@ class TestKakarot:
         @SyscallHandler.patch("IERC20.balanceOf", lambda _, __: [0, 0])
         @SyscallHandler.patch("Kakarot_block_gas_limit", TRANSACTION_GAS_LIMIT)
         @SyscallHandler.patch("IAccount.get_evm_address", lambda _, __: [0xABDE1])
+        @SyscallHandler.patch("Kakarot_chain_id", CHAIN_ID)
         @pytest.mark.parametrize("tx", TRANSACTIONS)
         def test_raise_not_enough_ETH_balance(self, cairo_run, tx):
             tx_data = list(rlp_encode_signed_data(tx))

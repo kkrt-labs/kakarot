@@ -1,5 +1,6 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.math import split_int, split_felt, assert_le_felt, assert_nn_le
+from starkware.cairo.common.math_cmp import is_nn
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.memset import memset
@@ -82,7 +83,9 @@ func felt_to_bytes_little{range_check_ptr}(dst: felt*, value: felt) -> felt {
     let range_check_ptr = [ap - 3];
     let value = [ap - 2];
     let bytes_len = [ap - 1];
-    assert value = 0;
+    with_attr error_message("Value is not empty") {
+        assert value = 0;
+    }
 
     let (pow256_address) = get_label_location(pow256_table);
     if (bytes_len == 1) {
@@ -97,6 +100,7 @@ func felt_to_bytes_little{range_check_ptr}(dst: felt*, value: felt) -> felt {
     let lower_bound = [ap - 1];
     let upper_bound = pow256_address[bytes_len];
     with_attr error_message("bytes_len is not the minimal possible") {
+        assert_le_felt(bytes_len, 31);
         assert_le_felt(lower_bound, initial_value);
         assert_le_felt(initial_value, upper_bound - 1);
     }

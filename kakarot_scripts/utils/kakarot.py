@@ -22,7 +22,7 @@ from hexbytes import HexBytes
 from starknet_py.net.account.account import Account
 from starknet_py.net.client_errors import ClientError
 from starknet_py.net.signer.stark_curve_signer import KeyPair
-from starkware.starknet.public.abi import starknet_keccak
+from starkware.starknet.public.abi import get_selector_from_name, starknet_keccak
 from web3 import Web3
 from web3._utils.abi import abi_to_signature, get_abi_output_types, map_abi_data
 from web3._utils.events import get_event_data
@@ -151,17 +151,23 @@ def get_solidity_artifacts(
 async def get_contract(
     contract_app: str,
     contract_name: str,
-    address=None,
+    address: Optional[int | str] = None,
     caller_eoa: Optional[Account] = None,
 ) -> Web3Contract:
     artifacts = get_solidity_artifacts(contract_app, contract_name)
+
+    address = int(address, 16) if isinstance(address, str) else address
 
     bytecode, bytecode_runtime = await link_libraries(artifacts)
 
     contract = cast(
         Web3Contract,
         WEB3.eth.contract(
-            address=to_checksum_address(address) if address is not None else address,
+            address=(
+                to_checksum_address(f"{address:040x}")
+                if address is not None
+                else address
+            ),
             abi=artifacts["abi"],
             bytecode=bytecode,
         ),
@@ -182,6 +188,9 @@ async def get_contract(
     except NoABIFunctionsFound:
         pass
     contract.events.parse_events = MethodType(_parse_events, contract.events)
+    contract.w3.eth.send_transaction = MethodType(
+        _wrap_kakarot(fun=None, caller_eoa=caller_eoa), contract
+    )
     return contract
 
 
@@ -278,7 +287,31 @@ async def deploy(
             await _call_starknet("kakarot", "get_starknet_address", evm_address)
         ).starknet_address
     else:
-        starknet_address, evm_address = response
+        evm_contract_deployed = [
+            event
+            for event in receipt.events
+            if event.keys == [get_selector_from_name("evm_contract_deployed")]
+            and event.from_address == _get_starknet_deployments()["kakarot"]
+        ]
+        if len(evm_contract_deployed) == 1:
+            evm_address, starknet_address = evm_contract_deployed[0].data
+        else:
+            deployed_codes = [
+                await eth_get_code(event.data[0]) for event in evm_contract_deployed
+            ]
+            deployed_codes = [
+                i
+                for i, code in enumerate(deployed_codes)
+                if len(code) == len(contract.bytecode_runtime)
+            ]
+            if len(deployed_codes) == 1:
+                evm_address, starknet_address = evm_contract_deployed[
+                    deployed_codes[0]
+                ].data
+            else:
+                raise EvmTransactionError(
+                    f"Failed to get evm address from receipt {receipt}"
+                )
     contract.address = Web3.to_checksum_address(f"0x{evm_address:040x}")
     contract.starknet_address = starknet_address
     logger.info(f"✅ {contract_name} deployed at: {contract.address}")
@@ -291,7 +324,7 @@ def dump_deployments(deployments):
         {
             name: {
                 **deployment,
-                "address": hex(deployment["address"]),
+                "address": Web3.to_checksum_address(f"0x{deployment['address']:040x}"),
                 "starknet_address": hex(deployment["starknet_address"]),
             }
             for name, deployment in deployments.items()
@@ -375,21 +408,26 @@ def _get_matching_logs_for_event(event_abi, log_receipts) -> List[dict]:
     return logs
 
 
-def _wrap_kakarot(fun: str, caller_eoa: Optional[Account] = None):
+def _wrap_kakarot(fun: Optional[str] = None, caller_eoa: Optional[Account] = None):
     """Wrap a contract function call with the Kakarot contract."""
 
     async def _wrapper(self, *args, **kwargs):
-        abi = self.get_function_by_signature(fun).abi
         gas_price = kwargs.pop("gas_price", DEFAULT_GAS_PRICE)
         gas_limit = kwargs.pop("gas_limit", TRANSACTION_GAS_LIMIT)
         value = kwargs.pop("value", 0)
         caller_eoa_ = kwargs.pop("caller_eoa", caller_eoa)
         max_fee = kwargs.pop("max_fee", None)
-        calldata = self.get_function_by_signature(fun)(
-            *args, **kwargs
-        )._encode_transaction_data()
 
-        if abi["stateMutability"] in ["pure", "view"]:
+        if fun is not None:
+            abi = self.get_function_by_signature(fun).abi
+            calldata = self.get_function_by_signature(fun)(
+                *args, **kwargs
+            )._encode_transaction_data()
+        else:
+            calldata = b""
+            abi = {}
+
+        if abi.get("stateMutability") in ["pure", "view"]:
             origin = (
                 int(caller_eoa_.signer.public_key.to_address(), 16)
                 if caller_eoa_

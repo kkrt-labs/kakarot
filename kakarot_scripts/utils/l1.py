@@ -99,15 +99,18 @@ def prepare_l1_transaction(
     """Execute the data at the EVM contract on an L1 node."""
     evm_account = caller_eoa or EvmAccount.from_key(EVM_PRIVATE_KEY)
     transaction: TxParams = {
-        "chainId": L1_RPC_PROVIDER.eth.chain_id,
-        "nonce": L1_RPC_PROVIDER.eth.get_transaction_count(evm_account.address),
         "to": to_checksum_address(to) if to else "",
-        "gasPrice": L1_RPC_PROVIDER.eth.gas_price,
         "value": value or Wei(0),
         "data": data,
         "from": evm_account.address,
     }
     transaction["gas"] = L1_RPC_PROVIDER.eth.estimate_gas(transaction)
+    transaction["gasPrice"] = L1_RPC_PROVIDER.eth.gas_price
+    transaction["chainId"] = L1_RPC_PROVIDER.eth.chain_id
+    transaction["nonce"] = L1_RPC_PROVIDER.eth.get_transaction_count(
+        evm_account.address
+    )
+
     return transaction
 
 
@@ -171,7 +174,8 @@ def _wrap_web3(fun: str, caller_eoa_: Optional[LocalAccount] = None):
         )
 
         if abi["stateMutability"] in ["pure", "view"]:
-            result = L1_RPC_PROVIDER.eth.call(transaction)
+            # Setting gasPrice to 0 to avoid error due to sender balance to low
+            result = L1_RPC_PROVIDER.eth.call({**transaction, "gasPrice": 0})
             types = get_abi_output_types(abi)
             decoded = decode(types, bytes(result))
             normalized = map_abi_data(BASE_RETURN_NORMALIZERS, types, decoded)
