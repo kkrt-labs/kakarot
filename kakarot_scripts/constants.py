@@ -63,7 +63,9 @@ NETWORKS = {
     "sepolia-staging": {
         "name": "starknet-sepolia-staging",
         "explorer_url": "https://sepolia.starkscan.co/",
-        "rpc_url": os.getenv('SEPOLIA_STAGING_RPC_URL'),
+        "rpc_url": os.getenv(
+            "SEPOLIA_STAGING_RPC_URL", "https://starknet-sepolia.public.blastapi.io"
+        ),
         "l1_rpc_url": f"https://sepolia.infura.io/v3/{os.getenv('INFURA_KEY')}",
         "type": NetworkType.STAGING,
         "chain_id": StarknetChainId.SEPOLIA,
