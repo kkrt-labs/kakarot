@@ -28,11 +28,30 @@ async def cairo_counter_caller(cairo_counter):
 
 
 @pytest_asyncio.fixture(scope="module")
-async def kakarotReentrancy(kakarot):
+async def kakarot_reentrancy(kakarot):
     return await deploy(
         "CairoPrecompiles",
         "KakarotReentrancyTest",
         kakarot.address,
+    )
+
+
+@pytest_asyncio.fixture(scope="module")
+async def eth_call_calldata_fixture(kakarot, new_eoa):
+    eoa = await new_eoa()
+    return (
+        kakarot.functions["eth_call"]
+        .prepare_call(
+            nonce=0,
+            origin=int(eoa.address, 16),
+            to={"is_some": 1, "value": 0xDEAD},
+            gas_limit=41000,
+            gas_price=1_000,
+            value=1_000,
+            data=bytes(),
+            access_list=[],
+        )
+        .calldata
     )
 
 
@@ -88,41 +107,33 @@ class TestCairoPrecompiles:
 
     class TestReentrancyKakarot:
         async def test_should_fail_when_reentrancy_cairo_call(
-            self, kakarot, kakarotReentrancy, new_eoa
+            self, kakarot, kakarot_reentrancy, new_eoa, eth_call_calldata_fixture
         ):
-            eoa = await new_eoa()
-            kakarot_call = kakarot.functions["eth_call"].prepare_call(
-                nonce=0,
-                origin=int(eoa.address, 16),
-                to={"is_some": 1, "value": 0xDEAD},
-                gas_limit=41000,
-                gas_price=1_000,
-                value=1_000,
-                data=bytes(),
-                access_list=[],
-            )
             with cairo_error("ReentrancyGuard: reentrant call"):
-                await kakarotReentrancy.staticcallKakarot(
-                    "eth_call", kakarot_call.calldata
+                await kakarot_reentrancy.staticcallKakarot(
+                    "eth_call", eth_call_calldata_fixture
                 )
 
+        async def test_should_fail_when_reentrancy_cairo_call_whitelisted(
+            self, kakarot, kakarot_reentrancy, new_eoa, eth_call_calldata_fixture
+        ):
             # Setup for whitelisted precompile
             await invoke(
                 "kakarot",
                 "set_authorized_cairo_precompile_caller",
-                int(kakarotReentrancy.address, 16),
+                int(kakarot_reentrancy.address, 16),
                 True,
             )
 
             with cairo_error("ReentrancyGuard: reentrant call"):
-                await kakarotReentrancy.whitelistedStaticcallKakarot(
-                    "eth_call", kakarot_call.calldata
+                await kakarot_reentrancy.whitelistedStaticcallKakarot(
+                    "eth_call", eth_call_calldata_fixture
                 )
 
             # TearDown
             await invoke(
                 "kakarot",
                 "set_authorized_cairo_precompile_caller",
-                int(kakarotReentrancy.address, 16),
+                int(kakarot_reentrancy.address, 16),
                 False,
             )
