@@ -25,7 +25,7 @@ from tests.utils.helpers import (
 
 params_execute = [pytest.param(case.pop("params"), **case) for case in test_cases]
 
-logging.basicConfig()
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 

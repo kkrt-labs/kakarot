@@ -11,14 +11,6 @@
     "address": "0xd52042e28e6f726738A48497A0728Fc5977AF3F8",
     "starknet_address": "0x72ee3ae25c98b53e5f7879c7642112b82e804d4ac6c541a6e94f0670afd0d85"
   },
-  "KakarotETH": {
-    "address": "0x61B3bF630b719D54cE0D5256b598d40da1680Eec",
-    "starknet_address": "0x26b38fa9a6b88d0bcc3267585651206a6652bbd3ae6e0dc45cdbc69f6200ce2"
-  },
-  "KakarotSTRK": {
-    "address": "0x87Ce4c6e0BF156031e74a07C5b725800f9dF56CA",
-    "starknet_address": "0x6dd744038e504ee3252255509519a6e419534221a47b00f61966a3d80ec3b5b"
-  },
   "Coinbase": {
     "address": "0x7a2deE402F31632592e3c9270D4F12E450877F86",
     "starknet_address": "0x3b44d33827c5dbdec5a1b407de088f1941da9a576e24920de6c3b41f2047d7"
@@ -38,5 +30,29 @@
   "L2KakarotMessaging": {
     "address": "0xc9c677a629AAe7A149f5F0E7546394f2630e8E9e",
     "starknet_address": "0x4fc85a8f1dd13464031e996dec1aeb1734eac3141413577638e0529487137df"
+  },
+  "Starknet Token": {
+    "address": "0x8ffd5161d2a62020f5198FBfd28c470621187034",
+    "starknet_address": "0x399968119bf832072fcd40964ac876cccf8f0c3cc14168910feb1a52b399785"
+  },
+  "Starknet Voting Token": {
+    "address": "0x48b5435271917C8439d73f9456cB4074Bd1D07E6",
+    "starknet_address": "0x2a84cbf7e785f147ce409eea6a88af602793a1f0a416d4417a279a859fe1075"
+  },
+  "USDC": {
+    "address": "0x46B77dC345c2ad6991EfD10f654165108206219B",
+    "starknet_address": "0x16721decd06a035ff89d07f0af4a343d350eac928cc8925310dc0a103eff674"
+  },
+  "USDT": {
+    "address": "0x489d4482D00b09F444e01a38799C6C250F9BF55C",
+    "starknet_address": "0x2f0463914c51b40e9165a3eb271a9d67d67ebcab7cfd5a9594daf90ef7ce9c1"
+  },
+  "Wrapped BTC": {
+    "address": "0xAB49f91Df268bF260D100E431536520B6fB791de",
+    "starknet_address": "0x6c5ca7d5cbe3bb07b98a221b416dce194bfb84715a9161ee02140511366410e"
+  },
+  "Wrapped liquid staked Ether 2.0": {
+    "address": "0xBdaE60b4272856f87ABE843Aeb8E3fbC014419C5",
+    "starknet_address": "0x20cfffc3e25b98ba0dd5025667bca44f245687406226c36a0976e0eba1b514d"
   }
 }

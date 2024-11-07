@@ -27,7 +27,7 @@ from kakarot_scripts.utils.starknet import (
     remove_lazy_account,
 )
 
-logging.basicConfig()
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 

@@ -56,7 +56,7 @@ from kakarot_scripts.utils.uint256 import int_to_uint256
 from tests.utils.constants import TRANSACTION_GAS_LIMIT
 from tests.utils.helpers import pack_calldata, rlp_encode_signed_data
 
-logging.basicConfig()
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 

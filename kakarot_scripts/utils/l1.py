@@ -23,7 +23,7 @@ from kakarot_scripts.utils.kakarot import (
     get_solidity_artifacts,
 )
 
-logging.basicConfig()
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
