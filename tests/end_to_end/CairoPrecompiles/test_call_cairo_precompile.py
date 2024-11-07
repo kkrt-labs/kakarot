@@ -27,6 +27,15 @@ async def cairo_counter_caller(cairo_counter):
     )
 
 
+@pytest_asyncio.fixture(scope="module")
+async def kakarotReentrancy(kakarot):
+    return await deploy(
+        "CairoPrecompiles",
+        "KakarotReentrancyTest",
+        kakarot.address,
+    )
+
+
 @pytest.mark.asyncio(scope="module")
 @pytest.mark.CairoPrecompiles
 class TestCairoPrecompiles:
@@ -76,3 +85,44 @@ class TestCairoPrecompiles:
                 "EVM tx reverted, reverting SN tx because of previous calls to cairo precompiles"
             ):
                 await cairo_counter_caller.incrementCairoCounterCallcode()
+
+    class TestReentrancyKakarot:
+        async def test_should_fail_when_reentrancy_cairo_call(
+            self, kakarot, kakarotReentrancy, new_eoa
+        ):
+            eoa = await new_eoa()
+            kakarot_call = kakarot.functions["eth_call"].prepare_call(
+                nonce=0,
+                origin=int(eoa.address, 16),
+                to={"is_some": 1, "value": 0xDEAD},
+                gas_limit=41000,
+                gas_price=1_000,
+                value=1_000,
+                data=bytes(),
+                access_list=[],
+            )
+            with cairo_error("ReentrancyGuard: reentrant call"):
+                await kakarotReentrancy.staticcallKakarot(
+                    "eth_call", kakarot_call.calldata
+                )
+
+            # Setup for whitelisted precompile
+            await invoke(
+                "kakarot",
+                "set_authorized_cairo_precompile_caller",
+                int(kakarotReentrancy.address, 16),
+                True,
+            )
+
+            with cairo_error("ReentrancyGuard: reentrant call"):
+                await kakarotReentrancy.whitelistedStaticcallKakarot(
+                    "eth_call", kakarot_call.calldata
+                )
+
+            # TearDown
+            await invoke(
+                "kakarot",
+                "set_authorized_cairo_precompile_caller",
+                int(kakarotReentrancy.address, 16),
+                False,
+            )
