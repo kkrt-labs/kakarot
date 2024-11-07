@@ -8,11 +8,9 @@ venv
 
 # starknet
 deployments/*
-!deployments/kakarot-sepolia/
-!deployments/starknet-sepolia/
-!deployments/starknet-sepolia-staging/
-!deployments/starknet-mainnet/
-!deployments/kakarot-staging/
+!deployments/sepolia/
+!deployments/staging/
+!deployments/mainnet/
 artifacts
 build
 

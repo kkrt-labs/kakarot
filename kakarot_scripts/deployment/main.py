@@ -91,7 +91,7 @@ async def main():
         "💰  Relayers balance:\n"
         + "\n".join(
             [
-                f"  {hex(account.address)}: {await get_balance(account.address) / 1e18} ETH"
+                f"  0x{account.address:064x}: {await get_balance(account.address) / 1e18} ETH"
                 for account in NETWORK["relayers"].relayer_accounts
             ]
         )

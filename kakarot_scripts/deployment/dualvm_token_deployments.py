@@ -29,7 +29,7 @@ logger.setLevel(logging.INFO)
 
 # %%
 async def deploy_dualvm_tokens() -> None:
-    # %% Deploy DualVM Tokens
+    # %% Setup
 
     # The lazy execution must be done before we check the deployments succeeded, as the l2 contracts
     # need to be deployed first
@@ -59,7 +59,7 @@ async def deploy_dualvm_tokens() -> None:
         (await call_contract("ERC20", "symbol", address=kakarot_native_token)).symbol
     )
 
-    # Filter tokens based on deployment criteria
+    # %% Deploy DualVM Tokens
     for token in tokens:
 
         # Skip if entry is not a token
@@ -74,7 +74,7 @@ async def deploy_dualvm_tokens() -> None:
             token["name"] == kakarot_native_token_name
             and token["symbol"] == kakarot_native_token_symbol
         ):
-            logger.info("Skipping %s: native token", token["name"])
+            logger.info("ℹ️ Skipping %s: native token", token["name"])
             continue
 
         # Check if DualVM token is a deployed contract on Starknet
@@ -138,6 +138,7 @@ async def deploy_dualvm_tokens() -> None:
         assert await token_contract.symbol() == token["symbol"]
         assert await token_contract.decimals() == token["decimals"]
 
+    # %% Save deployments
     dump_evm_deployments(evm_deployments)
     logger.info("Finished processing all DualVM tokens")
     register_lazy_account(account.address)
