@@ -800,9 +800,10 @@ async def wait_for_transaction(tx_hash, account=None):
             retries=int(NETWORK["max_wait"] / NETWORK["check_interval"]),
         )
         return "✅"
-    except TransactionRejectedError as e:
-        if account:
-            _nonces[account.address] -= 1
+    except Exception as e:
+        if isinstance(e, TransactionRejectedError):
+            if account:
+                _nonces[account.address] -= 1
         logger.error(f"Error while waiting for transaction 0x{tx_hash:064x}: {e}")
         return "❌"
 
