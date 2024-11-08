@@ -292,8 +292,11 @@ slither . --foundry-out-directory solidity_contracts/build --ignore-compile --in
 
 ## Deeper dive
 
-This deep dive was written by Zellic as a result of their audit of Kakarot, as
-well as their preparation for the Code4rena competitive audit of the codebase.
+This deep dive was written by Zellic
+([Filippo Cremonese](https://github.com/fcremo)) as a result of their audit of
+Kakarot, as well as their preparation for the Code4rena competitive audit of the
+codebase. A more in-depth note can be found on
+[Code4rena](https://code4rena.com/audits/2024-09-kakarot).
 
 Kakarot consists of two major logical components: the core contract and the
 account contract.
