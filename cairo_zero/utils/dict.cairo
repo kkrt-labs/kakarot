@@ -1,5 +1,5 @@
 from starkware.cairo.common.dict_access import DictAccess
-from starkware.cairo.common.default_dict import default_dict_new
+from starkware.cairo.common.default_dict import default_dict_new, default_dict_finalize
 from starkware.cairo.common.dict import dict_write, dict_squash
 from starkware.cairo.common.math_cmp import is_not_zero
 from starkware.cairo.common.alloc import alloc
@@ -84,18 +84,11 @@ func default_dict_copy{range_check_ptr}(start: DictAccess*, end: DictAccess*) ->
     DictAccess*, DictAccess*
 ) {
     alloc_locals;
-    let (squashed_start, squashed_end) = dict_squash(start, end);
+    let (squashed_start, squashed_end) = default_dict_finalize(start, end, 0);
     local range_check_ptr = range_check_ptr;
     let dict_len = squashed_end - squashed_start;
 
-    local default_value;
-    if (dict_len == 0) {
-        assert default_value = 0;
-    } else {
-        assert default_value = squashed_start.prev_value;
-    }
-
-    let (local new_start) = default_dict_new(default_value);
+    let (local new_start) = default_dict_new(0);
     let new_ptr = new_start;
 
     if (dict_len == 0) {
@@ -110,11 +103,8 @@ func default_dict_copy{range_check_ptr}(start: DictAccess*, end: DictAccess*) ->
     let squashed_start = cast([ap - 3], DictAccess*);
     let dict_len = [ap - 2];
     let new_ptr = cast([ap - 1], DictAccess*);
-    let default_value = [fp + 1];
 
     let key = [squashed_start].key;
-    let prev_value = [squashed_start].prev_value;
-    assert prev_value = default_value;
     let new_value = [squashed_start].new_value;
 
     dict_write{dict_ptr=new_ptr}(key=key, new_value=new_value);
