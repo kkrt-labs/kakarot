@@ -25,11 +25,6 @@ logger.setLevel(logging.INFO)
 async def deploy_evm_contracts():
     # %% Deployments
     logger.info(f"ℹ️  Using account {EVM_ADDRESS} as deployer")
-
-    await deploy_and_fund_evm_address(
-        EVM_ADDRESS, amount=100 if NETWORK["type"] is NetworkType.DEV else 0.01
-    )
-
     evm_deployments = get_evm_deployments()
 
     # %% Pure EVM Tokens
@@ -67,7 +62,6 @@ async def deploy_evm_contracts():
             "address": int(contract.address, 16),
             "starknet_address": contract.starknet_address,
         }
-        logger.info(f"✅ Coinbase deployed at {contract.address}")
         await invoke("kakarot", "set_coinbase", int(contract.address, 16))
 
     # %% Tear down
@@ -86,6 +80,9 @@ async def main():
         logger.warn("⚠️  No EVM address provided, skipping EVM deployments")
         return
 
+    await deploy_and_fund_evm_address(
+        EVM_ADDRESS, amount=100 if NETWORK["type"] is NetworkType.DEV else 0.01
+    )
     account = await get_starknet_account()
     register_lazy_account(account.address)
     await deploy_evm_contracts()

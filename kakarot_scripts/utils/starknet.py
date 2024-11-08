@@ -798,14 +798,20 @@ class RelayerPool:
     @alru_cache
     async def create(cls, n, **kwargs):
         logger.info(f"ℹ️  Creating {n} relayer accounts")
-        accounts = []
-        for i in range(n):
-            receipt = await deploy_starknet_account(
-                salt=i + int(NETWORK["account_address"], 16), **kwargs
-            )
-            account = await get_starknet_account(address=receipt["address"])
-            accounts.append(account)
+
+        addresses = [
+            (
+                await deploy_starknet_account(
+                    salt=i + int(NETWORK["account_address"], 16), **kwargs
+                )
+            )["address"]
+            for i in range(n)
+        ]
         logger.info(f"✅ Created {n} relayer accounts")
+        await execute_calls()
+        accounts = [
+            await get_starknet_account(address=address) for address in addresses
+        ]
         return cls(accounts)
 
     def __next__(self) -> Account:
