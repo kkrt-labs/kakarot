@@ -859,7 +859,7 @@ namespace Interpreter {
         local bytecode: felt*;
         local calldata: felt*;
         local intrinsic_gas: felt;
-        local code_address: model.Address*;
+        let code_address = address;
         if (is_deploy_tx != FALSE) {
             let (empty: felt*) = alloc();
             let (init_code_words, _) = unsigned_div_rem(bytecode_len + 31, 32);
@@ -867,7 +867,6 @@ namespace Interpreter {
             assert bytecode = tmp_calldata;
             assert calldata = empty;
             assert intrinsic_gas = tmp_intrinsic_gas + Gas.CREATE + init_code_gas;
-            assert code_address = new model.Address(starknet=0, evm=0);
             let (valid_jumpdests_start, valid_jumpdests) = Helpers.initialize_jumpdests(
                 bytecode_len=bytecode_len, bytecode=bytecode
             );
@@ -878,7 +877,6 @@ namespace Interpreter {
             assert bytecode = tmp_bytecode;
             assert calldata = tmp_calldata;
             assert intrinsic_gas = tmp_intrinsic_gas;
-            assert code_address = address;
 
             let (new_dict) = default_dict_new(0);
             tempvar range_check_ptr = range_check_ptr;
@@ -1109,8 +1107,8 @@ namespace Internals {
         // Update gas and return data - we know gas_left > code_deposit_cost
         tempvar evm = new model.EVM(
             message=evm.message,
-            return_data_len=2,
-            return_data=cast(evm.message.address, felt*),
+            return_data_len=evm.return_data_len,
+            return_data=evm.return_data,
             program_counter=evm.program_counter,
             stopped=evm.stopped,
             gas_left=evm.gas_left - code_deposit_cost,

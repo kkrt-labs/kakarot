@@ -41,6 +41,10 @@ func Kakarot_block_gas_limit() -> (res: felt) {
 }
 
 @storage_var
+func Kakarot_chain_id() -> (res: felt) {
+}
+
+@storage_var
 func Kakarot_authorized_cairo_precompiles_callers(address: felt) -> (res: felt) {
 }
 

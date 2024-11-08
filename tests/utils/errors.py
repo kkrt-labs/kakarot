@@ -43,6 +43,11 @@ def cairo_error(message=None):
         else:
             error = re.search(r"Error message: (.*)", str(e.value))
         error = error.group(1) if error else str(e.value)
-        assert str(message) in error, f"Expected {message}, got {error}"
+        if isinstance(message, list):
+            assert any(
+                str(msg) in error for msg in message
+            ), f"Expected {message}, got {error}"
+        else:
+            assert str(message) in error, f"Expected {message}, got {error}"
     finally:
         pass

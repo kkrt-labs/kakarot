@@ -70,6 +70,16 @@ func unpause{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() 
     return ();
 }
 
+// @notice chain_id initializer
+@external
+func initialize_chain_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    chain_id: felt
+) {
+    Ownable.assert_only_owner();
+    Kakarot.initialize_chain_id(chain_id);
+    return ();
+}
+
 // Constructor
 @constructor
 func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
@@ -79,6 +89,7 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     uninitialized_account_class_hash: felt,
     cairo1_helpers_class_hash: felt,
     block_gas_limit: felt,
+    chain_id: felt,
 ) {
     return Kakarot.constructor(
         owner,
@@ -87,6 +98,7 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
         uninitialized_account_class_hash,
         cairo1_helpers_class_hash,
         block_gas_limit,
+        chain_id,
     );
 }
 
@@ -290,19 +302,6 @@ func register_account{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
     return Kakarot.register_account(evm_address);
 }
 
-// @notice Writes to an account's bytecode
-// @dev Writes the bytecode to the account's storage.
-// @param evm_address The evm address of the account.
-// @param bytecode_len The length of the bytecode.
-// @param bytecode The bytecode to write.
-@external
-func write_account_bytecode{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    evm_address: felt, bytecode_len: felt, bytecode: felt*
-) {
-    Ownable.assert_only_owner();
-    return Kakarot.write_account_bytecode(evm_address, bytecode_len, bytecode);
-}
-
 // @notice Upgrades the class of an account.
 // @param evm_address The evm address of the account.
 // @param new_class_hash The new class hash.
@@ -312,18 +311,6 @@ func upgrade_account{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
 ) {
     Ownable.assert_only_owner();
     return Kakarot.upgrade_account(evm_address, new_class_hash);
-}
-
-// @notice Writes to an account's nonce
-// @dev Writes the nonce to the account's storage.
-// @param evm_address The evm address of the account.
-// @param nonce The nonce to write.
-@external
-func write_account_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    evm_address: felt, nonce: felt
-) {
-    Ownable.assert_only_owner();
-    return Kakarot.write_account_nonce(evm_address, nonce);
 }
 
 // @notice Authorizes a pre-EIP155 transaction for a specific sender

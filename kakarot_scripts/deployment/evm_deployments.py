@@ -1,24 +1,21 @@
 # %% Imports
 import logging
 
-from eth_utils.address import to_checksum_address
 from uvloop import run
 
-from kakarot_scripts.constants import (
-    ETH_TOKEN_ADDRESS,
-    EVM_ADDRESS,
-    NETWORK,
-    RPC_CLIENT,
-    STRK_TOKEN_ADDRESS,
-    NetworkType,
-)
+from kakarot_scripts.constants import EVM_ADDRESS, NETWORK, RPC_CLIENT, NetworkType
 from kakarot_scripts.utils.kakarot import deploy as deploy_evm
 from kakarot_scripts.utils.kakarot import deploy_and_fund_evm_address
 from kakarot_scripts.utils.kakarot import dump_deployments as dump_evm_deployments
 from kakarot_scripts.utils.kakarot import get_deployments as get_evm_deployments
-from kakarot_scripts.utils.starknet import call, execute_calls
+from kakarot_scripts.utils.starknet import call, call_contract, execute_calls
 from kakarot_scripts.utils.starknet import get_deployments as get_starknet_deployments
-from kakarot_scripts.utils.starknet import invoke
+from kakarot_scripts.utils.starknet import (
+    get_starknet_account,
+    invoke,
+    register_lazy_account,
+    remove_lazy_account,
+)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -33,34 +30,16 @@ async def deploy_evm_contracts():
         EVM_ADDRESS, amount=100 if NETWORK["type"] is NetworkType.DEV else 0.01
     )
 
-    starknet_deployments = get_starknet_deployments()
     evm_deployments = get_evm_deployments()
 
-    # %% Tokens
+    # %% Pure EVM Tokens
     for (
         contract_app,
         contract_name,
         deployed_name,
-        cairo_precompile,
         *deployment_args,
     ) in [
-        ("WETH", "WETH9", "WETH9", False),
-        (
-            "CairoPrecompiles",
-            "DualVmToken",
-            "KakarotETH",
-            True,
-            starknet_deployments["kakarot"],
-            ETH_TOKEN_ADDRESS,
-        ),
-        (
-            "CairoPrecompiles",
-            "DualVmToken",
-            "KakarotSTRK",
-            True,
-            starknet_deployments["kakarot"],
-            STRK_TOKEN_ADDRESS,
-        ),
+        ("WETH", "WETH9", "WETH9"),
     ]:
         deployment = evm_deployments.get(deployed_name)
         if deployment is not None:
@@ -76,26 +55,19 @@ async def deploy_evm_contracts():
             "address": int(token.address, 16),
             "starknet_address": token.starknet_address,
         }
-        if cairo_precompile:
-            await invoke(
-                "kakarot",
-                "set_authorized_cairo_precompile_caller",
-                int(token.address, 16),
-                1,
-            )
 
     # %% Coinbase
     coinbase = (await call("kakarot", "get_coinbase")).coinbase
     if evm_deployments.get("Coinbase", {}).get("address") != coinbase:
-        contract = await deploy_evm(
-            "Kakarot",
-            "Coinbase",
-            to_checksum_address(f'{evm_deployments["KakarotETH"]["address"]:040x}'),
-        )
+        kakarot_native_token = (
+            await call_contract("kakarot", "get_native_token")
+        ).native_token_address
+        contract = await deploy_evm("Kakarot", "Coinbase", kakarot_native_token)
         evm_deployments["Coinbase"] = {
             "address": int(contract.address, 16),
             "starknet_address": contract.starknet_address,
         }
+        logger.info(f"✅ Coinbase deployed at {contract.address}")
         await invoke("kakarot", "set_coinbase", int(contract.address, 16))
 
     # %% Tear down
@@ -110,8 +82,15 @@ async def main():
         logger.error("❌ Kakarot is not deployed, exiting...")
         return
 
+    if not EVM_ADDRESS:
+        logger.warn("⚠️  No EVM address provided, skipping EVM deployments")
+        return
+
+    account = await get_starknet_account()
+    register_lazy_account(account.address)
     await deploy_evm_contracts()
     await execute_calls()
+    remove_lazy_account(account.address)
 
 
 def main_sync():

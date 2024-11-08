@@ -73,10 +73,10 @@ async def new_eoa(deployer) -> Wallet:
 
     yield _factory
 
-    kakarot_eth = await get_solidity_contract(
-        "CairoPrecompiles",
-        "DualVmToken",
-        address=get_deployments()["KakarotETH"]["address"],
+    coinbase = await get_solidity_contract(
+        "Kakarot",
+        "Coinbase",
+        address=get_deployments()["Coinbase"]["address"],
     )
     gas_price = (await call("kakarot", "get_base_fee")).base_fee
     gas_limit = 40_000
@@ -86,13 +86,20 @@ async def new_eoa(deployer) -> Wallet:
         if balance < tx_cost:
             continue
 
-        await kakarot_eth.functions["transfer(uint256,uint256)"](
-            deployer.address,
-            balance - tx_cost,
+        # Send the funds to the coinbase contract. The owner will be able to withdraw them.
+        await coinbase.w3.eth.send_transaction(
             caller_eoa=wallet.starknet_contract,
+            value=balance - tx_cost,
             gas_limit=gas_limit,
             gas_price=gas_price,
         )
+
+    # Withdraw the funds to the deployer
+    await coinbase.functions["withdraw(uint256)"](
+        toStarknetAddress=deployer.address,
+        gas_limit=gas_limit,
+        gas_price=gas_price,
+    )
 
 
 @pytest_asyncio.fixture(scope="session")

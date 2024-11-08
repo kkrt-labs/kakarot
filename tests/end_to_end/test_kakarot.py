@@ -5,11 +5,8 @@ import pytest_asyncio
 from starknet_py.contract import Contract
 
 from kakarot_scripts.constants import NETWORK, RPC_CLIENT
-from kakarot_scripts.utils.kakarot import (
-    get_eoa,
-    get_solidity_artifacts,
-    get_starknet_address,
-)
+from kakarot_scripts.utils.kakarot import get_contract as get_solidity_contract
+from kakarot_scripts.utils.kakarot import get_deployments, get_eoa, get_starknet_address
 from kakarot_scripts.utils.starknet import (
     call,
     deploy_starknet_account,
@@ -133,6 +130,26 @@ class TestKakarot:
                     if event.from_address != eth.address
                 ] == events
 
+        # https://github.com/code-423n4/2024-09-kakarot-findings/issues/44
+        async def test_execute_jump_creation_code(self, evm: Contract, origin):
+            params = {
+                "value": 0,
+                "code": "605f5f53605660015360025f5ff0",
+                "calldata": "",
+                "stack": "0000000000000000000000000000000000000000000000000000000000000000",
+                "memory": "",
+                "return_data": "",
+                "success": 1,
+            }
+            result = await evm.functions["evm_call"].call(
+                origin=origin,
+                value=int(params["value"]),
+                bytecode=hex_string_to_bytes_array(params["code"]),
+                calldata=hex_string_to_bytes_array(params["calldata"]),
+                access_list=[],
+            )
+            assert result.success == params["success"]
+
     class TestGetStarknetAddress:
         async def test_should_return_same_as_deployed_address(self, new_eoa):
             eoa = await new_eoa()
@@ -169,86 +186,6 @@ class TestKakarot:
             assert "Kakarot: account already registered" in receipt.revert_reason
 
     class TestSetAccountStorage:
-        class TestWriteAccountBytecode:
-            async def test_should_set_account_bytecode(self, new_eoa):
-                counter_artifacts = get_solidity_artifacts("PlainOpcodes", "Counter")
-                eoa = await new_eoa()
-                bytecode = list(
-                    bytes.fromhex(counter_artifacts["bytecode"]["object"][2:])
-                )
-
-                await invoke(
-                    "kakarot", "write_account_bytecode", int(eoa.address, 16), bytecode
-                )
-
-                stored_code = (
-                    await call(
-                        "account_contract",
-                        "bytecode",
-                        address=eoa.starknet_contract.address,
-                    )
-                ).bytecode
-                assert stored_code == bytecode
-
-            async def test_should_fail_not_owner(self, new_eoa, other):
-                counter_artifacts = get_solidity_artifacts("PlainOpcodes", "Counter")
-                eoa = await new_eoa()
-                bytecode = list(
-                    bytes.fromhex(counter_artifacts["bytecode"]["object"][2:])
-                )
-
-                tx_hash = await invoke(
-                    "kakarot",
-                    "write_account_bytecode",
-                    int(eoa.address, 16),
-                    bytecode,
-                    account=other,
-                )
-
-                receipt = await RPC_CLIENT.get_transaction_receipt(tx_hash)
-                assert receipt.execution_status.name == "REVERTED"
-                assert "Ownable: caller is not the owner" in receipt.revert_reason
-
-        class TestWriteAccountNonce:
-            async def test_should_set_account_nonce(self, new_eoa):
-                eoa = await new_eoa()
-                prev_nonce = (
-                    await call(
-                        "account_contract",
-                        "get_nonce",
-                        address=eoa.starknet_contract.address,
-                    )
-                ).nonce
-
-                await invoke(
-                    "kakarot",
-                    "write_account_nonce",
-                    int(eoa.address, 16),
-                    prev_nonce + 0xABDE1,
-                )
-
-                stored_nonce = (
-                    await call(
-                        "account_contract",
-                        "get_nonce",
-                        address=eoa.starknet_contract.address,
-                    )
-                ).nonce
-                assert stored_nonce == prev_nonce + 0xABDE1
-
-            async def test_should_fail_not_owner(self, new_eoa, other):
-                eoa = await new_eoa()
-                tx_hash = await invoke(
-                    "kakarot",
-                    "write_account_nonce",
-                    int(eoa.address, 16),
-                    0xABDE1,
-                    account=other,
-                )
-                receipt = await RPC_CLIENT.get_transaction_receipt(tx_hash)
-                assert receipt.execution_status.name == "REVERTED"
-                assert "Ownable: caller is not the owner" in receipt.revert_reason
-
         class TestSetAuthorizedPreEip155Tx:
             async def test_should_fail_not_owner(self, new_eoa, other):
                 eoa = await new_eoa()
@@ -309,6 +246,24 @@ class TestKakarot:
             assert result.success == 1
             assert result.return_data == []
             assert result.gas_used == 21_000
+
+    class TestEthCallJumpCreationCodeDeployTx:
+        async def test_eth_call_jump_creation_code_deploy_tx_should_succeed(
+            self, kakarot, new_eoa
+        ):
+            eoa = await new_eoa()
+            result = await kakarot.functions["eth_call"].call(
+                nonce=0,
+                origin=int(eoa.address, 16),
+                to={"is_some": 0, "value": 0},
+                gas_limit=TRANSACTION_GAS_LIMIT,
+                gas_price=1_000,
+                value=0,
+                data=bytes.fromhex("605f5f53605660015360025f5ff0"),
+                access_list=[],
+            )
+
+            assert result.success == 1
 
         async def test_eth_call_should_handle_uninitialized_class_update(
             self, kakarot, new_eoa, class_hashes
@@ -418,13 +373,20 @@ class TestKakarot:
             assert balance == 0x1234
 
         async def test_should_return_transaction_count(self, new_eoa):
-            eoa = await new_eoa()
+            eoa = await new_eoa(1)
             tx_count = (
                 await call("kakarot", "eth_get_transaction_count", int(eoa.address, 16))
             ).tx_count
             assert tx_count == 0
 
-            await invoke("kakarot", "write_account_nonce", int(eoa.address, 16), 1)
+            weth9 = await get_solidity_contract(
+                "WETH",
+                "WETH9",
+                address=get_deployments()["WETH9"]["address"],
+            )
+            await weth9.functions["deposit()"](
+                caller_eoa=eoa.starknet_contract, value=1
+            )
 
             tx_count = (
                 await call("kakarot", "eth_get_transaction_count", int(eoa.address, 16))

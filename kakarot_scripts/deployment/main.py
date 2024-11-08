@@ -5,6 +5,7 @@ from uvloop import run
 
 from kakarot_scripts.constants import EVM_ADDRESS, L1_RPC_PROVIDER, NETWORK
 from kakarot_scripts.deployment.declarations import declare_contracts
+from kakarot_scripts.deployment.dualvm_token_deployments import deploy_dualvm_tokens
 from kakarot_scripts.deployment.evm_deployments import deploy_evm_contracts
 from kakarot_scripts.deployment.kakarot_deployment import deploy_or_upgrade_kakarot
 from kakarot_scripts.deployment.messaging_deployments import (
@@ -54,6 +55,9 @@ async def main():
     await deploy_evm_contracts()
     await execute_calls()
 
+    # DualVM Tokens deployment have their own invoke batching strategy
+    await deploy_dualvm_tokens()
+
     await whitelist_pre_eip155_txs()
     await execute_calls()
 
@@ -72,9 +76,7 @@ async def main():
         logger.error("❌ Coinbase is set to 0, all transaction fees will be lost")
     else:
         logger.info(f"✅ Coinbase set to: 0x{coinbase_address:040x}")
-        coinbase = await get_contract(
-            "Kakarot", "Coinbase", address=f"0x{coinbase_address:040x}"
-        )
+        coinbase = await get_contract("Kakarot", "Coinbase", address=coinbase_address)
         coinbase_balance = await eth_balance_of(coinbase_address)
         if coinbase_balance / 1e18 > 0.001:
             logger.info(

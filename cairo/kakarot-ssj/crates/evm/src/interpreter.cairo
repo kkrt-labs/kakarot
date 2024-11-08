@@ -195,9 +195,6 @@ pub impl EVMImpl of EVMTrait {
             }
 
             let mut result = Self::process_create_message(message, ref env);
-            if result.is_success() {
-                result.return_data = message.target.evm.to_bytes().span();
-            }
             result
         } else {
             Self::process_message(message, ref env)

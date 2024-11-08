@@ -63,6 +63,19 @@ class TestPlainOpcodes:
 
             assert int.from_bytes(blockhash_invalid_number, byteorder="big") == 0
 
+        async def test_should_return_zero_for_last_10_blocks(
+            self, plain_opcodes, block_number
+        ):
+            last_10_block_hashes = [
+                await plain_opcodes.opcodeBlockHash(await block_number("latest") - i)
+                for i in range(10)
+            ]
+            # assert all blockhashes are zero
+            assert all(
+                int.from_bytes(blockhash, byteorder="big") == 0
+                for blockhash in last_10_block_hashes
+            )
+
     class TestAddress:
         async def test_should_return_self_address(self, plain_opcodes):
             address = await plain_opcodes.opcodeAddress()
