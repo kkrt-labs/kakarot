@@ -217,15 +217,15 @@ async def fund_address(
         logger.info(
             f"ℹ️  Funding account {hex(address)} with {required_amount / 1e18} ETH"
         )
-        prepared = eth_contract.functions["transfer"].prepare_invoke_v1(
-            address, required_amount
+        await invoke(
+            "ERC20",
+            "transfer",
+            address,
+            required_amount,
+            account=account,
+            address=eth_contract.address,
         )
-        tx = await prepared.invoke(max_fee=_max_fee)
 
-        status = await wait_for_transaction(tx.hash)
-        logger.info(
-            f"{status} {required_amount / 1e18} ETH sent from {hex(account.address)} to {hex(address)}"
-        )
         balance = (await eth_contract.functions["balanceOf"].call(address)).balance  # type: ignore
         logger.info(f"💰 Balance of {hex(address)}: {balance / 1e18}")
 
@@ -400,7 +400,10 @@ async def deploy_starknet_account(
         constructor_calldata=constructor_calldata,
         deployer_address=0,
     )
-    await fund_address(address, amount=amount)
+    current_balance = await get_balance(address)
+    required_amount = amount - current_balance
+    if required_amount > 0:
+        await fund_address(address, amount=required_amount)
 
     try:
         await RPC_CLIENT.get_class_hash_at(address)
