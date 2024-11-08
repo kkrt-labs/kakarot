@@ -25,12 +25,12 @@ class RelayerPool:
 
     @classmethod
     @alru_cache
-    async def create(cls, n):
+    async def create(cls, n, **kwargs):
         logger.info(f"ℹ️  Creating {n} relayer accounts")
         accounts = []
         for i in range(n):
             receipt = await deploy_starknet_account(
-                salt=i + int(NETWORK["account_address"], 16)
+                salt=i + int(NETWORK["account_address"], 16), **kwargs
             )
             account = await get_starknet_account(address=receipt["address"])
             accounts.append(account)
@@ -44,8 +44,8 @@ class RelayerPool:
 
     @classmethod
     @alru_cache
-    async def default(cls):
-        return await cls.create(NETWORK.get("relayers", 20))
+    async def default(cls, **kwargs):
+        return await cls.create(NETWORK.get("relayers", 20), **kwargs)
 
     @classmethod
     @alru_cache
@@ -57,11 +57,19 @@ class RelayerPool:
             salt % len(cls._cached_relayers.relayer_accounts)
         ]
 
-    @classmethod
-    async def withdraw_all(cls, to: int = int(NETWORK["account_address"], 16)):
-        relayers = await cls.default()
+    async def balances(self):
         eth_contract = await get_eth_contract()
-        for relayer in relayers.relayer_accounts:
+        return [
+            (
+                f"0x{relayer.address:064x}",
+                f"{(await eth_contract.functions['balanceOf'].call(relayer.address)).balance / 1e18:.2f} ETH",
+            )
+            for relayer in self.relayer_accounts
+        ]
+
+    async def withdraw_all(self, to: int = int(NETWORK["account_address"], 16)):
+        eth_contract = await get_eth_contract()
+        for relayer in self.relayer_accounts:
             balance = (
                 await eth_contract.functions["balanceOf"].call(relayer.address)
             ).balance
