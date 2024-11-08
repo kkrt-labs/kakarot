@@ -107,7 +107,7 @@ class TestCairoPrecompiles:
 
     class TestReentrancyKakarot:
         async def test_should_fail_when_reentrancy_cairo_call(
-            self, kakarot, kakarot_reentrancy, new_eoa, eth_call_calldata
+            self, kakarot_reentrancy, eth_call_calldata
         ):
             with cairo_error("ReentrancyGuard: reentrant call"):
                 await kakarot_reentrancy.staticcallKakarot(
@@ -115,7 +115,7 @@ class TestCairoPrecompiles:
                 )
 
         async def test_should_fail_when_reentrancy_cairo_call_whitelisted(
-            self, kakarot, kakarot_reentrancy, new_eoa, eth_call_calldata
+            self, kakarot_reentrancy, eth_call_calldata
         ):
             # Setup for whitelisted precompile
             await invoke(

@@ -799,19 +799,43 @@ class RelayerPool:
     async def create(cls, n, **kwargs):
         logger.info(f"ℹ️  Creating {n} relayer accounts")
 
+        private_key = NETWORK["private_key"]
+        public_key = KeyPair.from_private_key(int(private_key, 16)).public_key
         addresses = [
             (
                 await deploy_starknet_account(
-                    salt=i + int(NETWORK["account_address"], 16), **kwargs
+                    salt=i + public_key, **kwargs, private_key=private_key
                 )
             )["address"]
             for i in range(n)
         ]
         logger.info(f"✅ Created {n} relayer accounts")
         await execute_calls()
-        accounts = [
-            await get_starknet_account(address=address) for address in addresses
-        ]
+
+        eth_contract = await get_eth_contract()
+        accounts = []
+        for address in addresses:
+            account = await get_starknet_account(address=address)
+            # Give infinite allowance to the main account so it's easier to move funds
+            allowance = (
+                await call(
+                    "ERC20",
+                    "allowance",
+                    account.address,
+                    int(NETWORK["account_address"], 16),
+                    address=eth_contract.address,
+                )
+            ).remaining
+            if allowance != 2**256 - 1:
+                await invoke(
+                    "ERC20",
+                    "approve",
+                    int(NETWORK["account_address"], 16),
+                    2**256 - 1,
+                    account=account,
+                    address=eth_contract.address,
+                )
+            accounts.append(account)
         return cls(accounts)
 
     def __next__(self) -> Account:
@@ -845,6 +869,9 @@ class RelayerPool:
         ]
 
     async def withdraw_all(self, to: int = int(NETWORK["account_address"], 16)):
+        account = await get_starknet_account()
+        is_lazy = _lazy_execute[account.address]
+        _lazy_execute[account.address] = True
         eth_contract = await get_eth_contract()
         for relayer in self.relayer_accounts:
             balance = (
@@ -853,9 +880,12 @@ class RelayerPool:
             if balance > 0:
                 await invoke(
                     "ERC20",
-                    "transfer",
+                    "transferFrom",
+                    relayer.address,
                     to,
                     balance,
-                    account=relayer,
                     address=eth_contract.address,
+                    account=account,
                 )
+        await execute_calls()
+        _lazy_execute[account.address] = is_lazy
