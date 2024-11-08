@@ -76,7 +76,7 @@ async def main():
         coinbase_balance = await eth_balance_of(coinbase_address)
         if coinbase_balance / 1e18 > 0.001:
             logger.info(
-                f"ℹ️ Withdrawing {coinbase_balance / 1e18} ETH from Coinbase to Starknet deployer"
+                f"ℹ️  Withdrawing {coinbase_balance / 1e18} ETH from Coinbase to Starknet deployer"
             )
             await coinbase.withdraw(account.address)
 
