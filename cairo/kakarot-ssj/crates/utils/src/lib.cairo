@@ -14,3 +14,9 @@ pub mod set;
 pub mod test_data;
 pub mod traits;
 pub mod utils;
+
+// #[cfg(feature: 'pytest')]
+pub mod pytests {
+    pub mod json;
+    pub mod from_array;
+}
