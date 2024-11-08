@@ -44,8 +44,7 @@ from kakarot_scripts.constants import (
     ChainId,
 )
 from kakarot_scripts.data.pre_eip155_txs import PRE_EIP155_TX
-from kakarot_scripts.utils.relayers import RelayerPool
-from kakarot_scripts.utils.starknet import _max_fee
+from kakarot_scripts.utils.starknet import RelayerPool, _max_fee
 from kakarot_scripts.utils.starknet import call
 from kakarot_scripts.utils.starknet import call as _call_starknet
 from kakarot_scripts.utils.starknet import fund_address as _fund_starknet_address
