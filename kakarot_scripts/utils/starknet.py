@@ -611,6 +611,20 @@ async def get_nonce(account):
     global _nonces
     if account.address not in _nonces:
         _nonces[account.address] = await account.get_nonce(block_number="pending")
+
+    network_nonce = await account.get_nonce(block_number="pending")
+    retries = 10
+    while network_nonce != _nonces[account.address] and retries > 0:
+        logger.info(
+            f"⏳ Waiting for network nonce {network_nonce} to be {_nonces[account.address]}"
+        )
+        await asyncio.sleep(0.1)
+        network_nonce = await account.get_nonce(block_number="pending")
+        retries -= 1
+    if retries == 0:
+        # After 1 second, the nonce should have been updated by the network in any case
+        _nonces[account.address] = network_nonce
+
     nonce = _nonces[account.address]
     _nonces[account.address] += 1
     return nonce
