@@ -794,23 +794,51 @@ class RelayerPool:
         self.relayer_accounts = accounts
         self.index = 0
 
+    @staticmethod
+    def compute_addresses(n):
+        private_key = NETWORK["private_key"]
+        public_key = KeyPair.from_private_key(int(private_key, 16)).public_key
+        constructor_calldata = [public_key]
+        class_hash = NETWORK.get(
+            "class_hash", get_declarations().get("OpenzeppelinAccount")
+        )
+        return [
+            compute_address(
+                salt=public_key + i,
+                class_hash=class_hash,
+                constructor_calldata=constructor_calldata,
+                deployer_address=0,
+            )
+            for i in range(n)
+        ]
+
     @classmethod
     @alru_cache
     async def create(cls, n, **kwargs):
         logger.info(f"ℹ️  Creating {n} relayer accounts")
 
+        account = await get_starknet_account()
+        is_lazy = _lazy_execute[account.address]
+        _lazy_execute[account.address] = True
+        # Extracted the fund_address part to be able to fund all the accounts at once
         private_key = NETWORK["private_key"]
         public_key = KeyPair.from_private_key(int(private_key, 16)).public_key
+        addresses = cls.compute_addresses(n)
+        for address in addresses:
+            await fund_address(address, amount=kwargs.pop("amount", 1))
+
+        await execute_calls()
+        _lazy_execute[account.address] = is_lazy
+
         addresses = [
             (
                 await deploy_starknet_account(
-                    salt=i + public_key, **kwargs, private_key=private_key
+                    salt=i + public_key, amount=0, private_key=private_key
                 )
             )["address"]
             for i in range(n)
         ]
         logger.info(f"✅ Created {n} relayer accounts")
-        await execute_calls()
 
         eth_contract = await get_eth_contract()
         accounts = []
