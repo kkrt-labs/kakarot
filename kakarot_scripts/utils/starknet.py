@@ -43,6 +43,7 @@ from starknet_py.net.schemas.rpc import (
 )
 from starknet_py.net.signer.stark_curve_signer import KeyPair
 from starknet_py.net.udc_deployer.deployer import Deployer
+from starknet_py.transaction_errors import TransactionRejectedError
 from starkware.starknet.public.abi import get_selector_from_name
 
 from kakarot_scripts.constants import (
@@ -71,6 +72,7 @@ _max_fee = int(0.05e18)
 _logs = defaultdict(list)
 _lazy_execute = defaultdict(bool)
 _multisig_account = defaultdict(bool)
+_nonces = {}
 
 # Dict to store selector to name mapping because argent api requires the name but calls have selector
 _selector_to_name = {get_selector_from_name("deployContract"): "deployContract"}
@@ -493,7 +495,7 @@ async def declare(contract_name):
             compiled_contract=artifact.casm.read_text()
         )
 
-        nonce = await account.get_nonce(block_number="pending")
+        nonce = await get_nonce(account)
         tx_hash = compute_transaction_hash(
             tx_hash_prefix=TransactionHashPrefix.DECLARE,
             version=1,
@@ -527,7 +529,7 @@ async def declare(contract_name):
         )
         deployed_class_hash = resp.class_hash
 
-    status = await wait_for_transaction(resp.transaction_hash)
+    status = await wait_for_transaction(resp.transaction_hash, account)
 
     logger.info(f"{status} {contract_name} class hash: {hex(resp.class_hash)}")
     return deployed_class_hash
@@ -605,6 +607,15 @@ async def execute_calls():
     _logs = defaultdict(list)
 
 
+async def get_nonce(account):
+    global _nonces
+    if account.address not in _nonces:
+        _nonces[account.address] = await account.get_nonce(block_number="pending")
+    nonce = _nonces[account.address]
+    _nonces[account.address] += 1
+    return nonce
+
+
 @lazy_execute
 async def execute_v1(account, calls):
     for call in calls:
@@ -612,7 +623,7 @@ async def execute_v1(account, calls):
         call.calldata = [int(data) for data in call.calldata]
 
     calldata = _parse_calls(await account.cairo_version, calls)
-    nonce = await account.get_nonce(block_number="pending")
+    nonce = await get_nonce(account)
     msg_hash = compute_transaction_hash(
         tx_hash_prefix=TransactionHashPrefix.INVOKE,
         version=1,
@@ -697,7 +708,7 @@ async def execute_v1(account, calls):
         ),
     )
 
-    status = await wait_for_transaction(res.transaction_hash)
+    status = await wait_for_transaction(res.transaction_hash, account)
     logger.info(f"{status} 0x{res.transaction_hash:064x}")
     return res
 
@@ -767,7 +778,7 @@ async def call(contract: Union[str, int], *args, **kwargs):
 
 
 @functools.wraps(RPC_CLIENT.wait_for_tx)
-async def wait_for_transaction(tx_hash):
+async def wait_for_transaction(tx_hash, account=None):
     try:
         await RPC_CLIENT.wait_for_tx(
             tx_hash,
@@ -775,7 +786,9 @@ async def wait_for_transaction(tx_hash):
             retries=int(NETWORK["max_wait"] / NETWORK["check_interval"]),
         )
         return "✅"
-    except Exception as e:
+    except TransactionRejectedError as e:
+        if account:
+            _nonces[account.address] -= 1
         logger.error(f"Error while waiting for transaction 0x{tx_hash:064x}: {e}")
         return "❌"
 
