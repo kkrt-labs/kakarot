@@ -113,7 +113,6 @@ def setup_local() -> None:
         run_command(
             f"git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch {ASDF_VERSION}",
             "Failed to install asdf",
-            version=ASDF_VERSION,
         )
         shell_config = get_shell_config_file()
         if shell_config:

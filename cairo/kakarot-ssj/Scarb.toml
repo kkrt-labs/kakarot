@@ -13,5 +13,11 @@ license-file = "LICENSE"
 [workspace.dependencies]
 starknet = "2.8.2"
 
+# required to avoid:
+# error: Invalid order of type declarations for serialization.
+# tracking: https://github.com/starkware-libs/cairo/issues/6607
+[cairo]
+sierra-replace-ids = false
+
 [workspace.tool.fmt]
 sort-module-level-items = true

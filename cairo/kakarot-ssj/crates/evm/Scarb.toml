@@ -23,3 +23,9 @@ fmt.workspace = true
 [scripts]
 test = "snforge test --max-n-steps 4294967295"
 test-profiling = "snforge test --max-n-steps 4294967295 --build-profile"
+
+# required to avoid:
+# error: Invalid order of type declarations for serialization.
+# tracking: https://github.com/starkware-libs/cairo/issues/6607
+[cairo]
+sierra-replace-ids = false
