@@ -43,7 +43,7 @@ func test__dict_keys__should_return_keys{range_check_ptr}() {
 }
 
 func test__default_dict_copy__should_return_copied_dict{range_check_ptr}() {
-    let default_value = 0xdead;
+    let default_value = 0;
     let (dict_ptr_start) = default_dict_new(default_value);
     let dict_ptr = dict_ptr_start;
     let key = 0x7e1;
