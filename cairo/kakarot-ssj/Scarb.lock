@@ -33,8 +33,8 @@ dependencies = [
 
 [[package]]
 name = "garaga"
-version = "0.1.0"
-source = "git+https://github.com/keep-starknet-strange/garaga.git?rev=c741f55#c741f558f8275f278b34a7c47751cf26acab3da9"
+version = "0.14.0"
+source = "git+https://github.com/keep-starknet-strange/garaga.git?branch=g2#7b1b9168347063d26b791c88a30440f9fc723c86"
 
 [[package]]
 name = "openzeppelin"

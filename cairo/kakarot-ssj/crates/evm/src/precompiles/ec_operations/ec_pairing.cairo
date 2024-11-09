@@ -1,22 +1,24 @@
+use core::num::traits::Zero;
 use core::starknet::{EthAddress};
 use crate::errors::EVMError;
 use crate::precompiles::Precompile;
 use crate::precompiles::ec_operations::{is_on_curve, BN254_PRIME};
 use garaga::circuits::tower_circuits::run_BN254_E12T_MUL_circuit;
 use garaga::definitions::G1G2Pair;
-use garaga::ec_ops::{G1PointImpl};
-use garaga::ec_ops_g2::{G2PointImpl};
+use garaga::ec_ops_g2::{G2PointTrait, ec_mul as ec_mul_g2};
 
 use garaga::single_pairing_tower::{
     E12TOne, G1Point, G2Point, miller_loop_bn254_tower, final_exp_bn254_tower, u384
 };
-use utils::traits::bytes::FromBytes;
 use utils::constants::{ONE_32_BYTES, ZERO_32_BYTES};
+use utils::traits::bytes::FromBytes;
 
 const BASE_COST: u64 = 45000;
 const PAIRING_COST: u64 = 34000;
 const U256_BYTES_LEN: usize = 32;
 const GARAGA_BN254_CURVE_INDEX: u32 = 0;
+const BN254_CURVE_ORDER: u256 =
+    21888242871839275222246405745257275088548364400416034343698204186575808495617;
 
 pub impl EcPairing of Precompile {
     fn address() -> EthAddress {
@@ -28,14 +30,9 @@ pub impl EcPairing of Precompile {
 
         let gas = PAIRING_COST * n.into() + BASE_COST;
 
-        // "The input must always be a multiple of 6 32-byte values. 0 inputs is valid and returns
-        // 1"
-        // https://www.evm.codes/precompiled?fork=cancun#0x08
-
-        if rem != 0 || n == 1 {
+        if rem != 0 {
             // rem != 0: input length must be a multiple of 196
-            // n == 1: single pairing is non-degerative by definition, can't be 1.
-            return Result::Err(EVMError::InvalidParameter('invalid ec_pairing input'));
+            return Result::Err(EVMError::InvalidParameter('invalid ec_pairing input length'));
         }
         if n == 0 {
             return Result::Ok((BASE_COST, ONE_32_BYTES.span()));
@@ -52,21 +49,46 @@ pub impl EcPairing of Precompile {
                 let x0: u256 = input.slice(offset + 96, U256_BYTES_LEN).from_be_bytes().unwrap();
                 let y1: u256 = input.slice(offset + 128, U256_BYTES_LEN).from_be_bytes().unwrap();
                 let y0: u256 = input.slice(offset + 160, U256_BYTES_LEN).from_be_bytes().unwrap();
-                let x_384: u384 = x.into();
-                let y_384: u384 = y.into();
-                let p = G1Point { x: x_384, y: y_384 };
-                let q = G2Point { x0: x0.into(), x1: x1.into(), y0: y0.into(), y1: y1.into() };
 
-                if !is_on_curve(x_384, y_384)
-                    || !q.is_on_curve(GARAGA_BN254_CURVE_INDEX)
-                    || x >= BN254_PRIME
+                if x >= BN254_PRIME
                     || y >= BN254_PRIME
                     || x0 >= BN254_PRIME
                     || x1 >= BN254_PRIME
                     || y0 >= BN254_PRIME
                     || y1 >= BN254_PRIME {
                     everything_ok = false;
+                    break;
                 }
+
+                // If p and q are not the point at infinity, check that it's they're on the curve.
+                let x_384: u384 = x.into();
+                let y_384: u384 = y.into();
+                let p = G1Point { x: x_384, y: y_384 };
+                let p_infinity = p.is_zero();
+                if (!p_infinity) {
+                    if (!is_on_curve(x_384, y_384)) {
+                        everything_ok = false;
+                        break;
+                    }
+                }
+
+                let q = G2Point { x0: x0.into(), x1: x1.into(), y0: y0.into(), y1: y1.into() };
+                let q_infinity = q.is_zero();
+                if (!q_infinity) {
+                    if (!q.is_on_curve(GARAGA_BN254_CURVE_INDEX)) {
+                        everything_ok = false;
+                        break;
+                    }
+                }
+
+                // Subgroup check
+                // Cofactor for G1 group is 1, so we don't need to check for `p`
+                let q_mul_r = ec_mul_g2(q, BN254_CURVE_ORDER, GARAGA_BN254_CURVE_INDEX).unwrap();
+                if (!q_mul_r.is_zero()) {
+                    everything_ok = false;
+                    break;
+                }
+
                 pairs.append(G1G2Pair { p: p, q: q });
                 offset += 192;
             };
@@ -86,21 +108,35 @@ pub impl EcPairing of Precompile {
     }
 }
 
-// Assumes len is >= 2.
+// Assumes len is >= 1.
 // Assumes pairs are on curve.
 // Returns true if Π e(Pi,Qi) = 1 where e is the optimal ate pairing on BN254
-fn ec_pairing(pairs: Span<G1G2Pair>) -> bool {
-    let pair_0 = pairs.at(0);
-    let (mut m) = miller_loop_bn254_tower(*pair_0.p, *pair_0.q);
+fn ec_pairing(mut pairs: Span<G1G2Pair>) -> bool {
+    let n_pairs = pairs.len();
+    let pair_0 = pairs.pop_front().unwrap();
+    let (mut m,) = match pair_0.p.is_zero() || pair_0.q.is_zero() {
+        true => {
+            if n_pairs == 1 {
+                return true;
+            }
+            (E12TOne::one(),)
+        },
+        false => { miller_loop_bn254_tower(*pair_0.p, *pair_0.q) }
+    };
 
-    for i in 1_usize
-        ..pairs
-            .len() {
-                let pair_i = pairs.at(i);
-                let (__m) = miller_loop_bn254_tower(*pair_i.p, *pair_i.q);
-                let (_m) = run_BN254_E12T_MUL_circuit(m, __m);
-                m = _m;
-            };
+    // The original input had only one pair
+    if n_pairs == 1 {
+        return final_exp_bn254_tower(m).is_one();
+    };
+
+    for pair_i in pairs {
+        let (__m,) = match pair_i.p.is_zero() || pair_i.q.is_zero() {
+            true => { (E12TOne::one(),) },
+            false => { miller_loop_bn254_tower(*pair_i.p, *pair_i.q) }
+        };
+        let (_m) = run_BN254_E12T_MUL_circuit(m, __m);
+        m = _m;
+    };
 
     let f = final_exp_bn254_tower(m);
     return f.is_one();
