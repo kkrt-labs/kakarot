@@ -496,7 +496,9 @@ def _wrap_kakarot(fun: Optional[str] = None, caller_eoa: Optional[Account] = Non
                 payload["data"] = list(payload["data"])
                 payload["origin"] = int(payload["from"], 16)
                 del payload["from"]
-                result = await kakarot_contract.functions["eth_call"].call(**payload)
+                result = await kakarot_contract.functions["eth_call"].call(
+                    **payload, block_number="pending"
+                )
                 if result.success == 0:
                     raise EvmTransactionError(bytes(result.return_data))
                 result = result.return_data
