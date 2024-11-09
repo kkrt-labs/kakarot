@@ -1,3 +1,4 @@
+import asyncio
 import functools
 import json
 import logging
@@ -59,6 +60,52 @@ from tests.utils.helpers import pack_calldata, rlp_encode_signed_data
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+_nonces = {}
+
+
+async def get_nonce(account):
+    global _nonces
+    if account.address not in _nonces:
+        _nonces[account.address] = (
+            await (
+                _get_starknet_contract("account_contract", address=account.address)
+                .functions["get_nonce"]
+                .call(block_number="pending")
+            )
+        ).nonce
+
+    network_nonce = (
+        await (
+            _get_starknet_contract("account_contract", address=account.address)
+            .functions["get_nonce"]
+            .call(block_number="pending")
+        )
+    ).nonce
+    retries = 10
+    while network_nonce != _nonces[account.address] and retries > 0:
+        logger.info(
+            f"⏳ Waiting for network nonce {network_nonce} to be {_nonces[account.address]}"
+        )
+        await asyncio.sleep(0.1)
+        network_nonce = (
+            await (
+                _get_starknet_contract("account_contract", address=account.address)
+                .functions["get_nonce"]
+                .call(block_number="pending")
+            )
+        ).nonce
+        retries -= 1
+    if retries == 0:
+        logger.warning(
+            f"⏳ Network nonce {network_nonce} did not match expected nonce {_nonces[account.address]}"
+        )
+        # After 1 second, the nonce should have been updated by the network in any case
+        _nonces[account.address] = network_nonce
+
+    nonce = _nonces[account.address]
+    _nonces[account.address] += 1
+    return nonce
 
 
 class EvmTransactionError(Exception):
@@ -461,7 +508,7 @@ def _wrap_kakarot(fun: Optional[str] = None, caller_eoa: Optional[Account] = Non
             normalized = map_abi_data(BASE_RETURN_NORMALIZERS, types, decoded)
             return normalized[0] if len(normalized) == 1 else normalized
 
-        logger.info(f"⏳ Executing {fun} at address {self.address}")
+        logger.info(f"⏳ Executing {fun or 'fallback'} at address {self.address}")
         receipt, response, success, gas_used = await eth_send_transaction(
             to=self.address,
             value=value,
@@ -631,13 +678,7 @@ async def eth_send_transaction(
             evm_account.signer.public_key.to_checksum_address()
         )
     else:
-        nonce = (
-            await (
-                _get_starknet_contract("account_contract", address=evm_account.address)
-                .functions["get_nonce"]
-                .call()
-            )
-        ).nonce
+        nonce = await get_nonce(evm_account)
 
     payload = {
         "type": 0x1,

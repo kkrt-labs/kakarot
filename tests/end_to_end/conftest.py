@@ -58,7 +58,9 @@ async def deployer(worker_id) -> Account:
     Return a cached version of the deployer contract.
     """
 
-    return await RelayerPool.get(abs(hash(worker_id)))
+    account = await RelayerPool.get(abs(hash(worker_id)))
+    logger.info(f"ℹ️  Deployer for worker {worker_id}: 0x{account.address:064x}")
+    return account
 
 
 @pytest_asyncio.fixture(scope="session")
@@ -119,7 +121,9 @@ async def owner(new_eoa):
     """
     Return the main caller of all tests.
     """
-    return await new_eoa(0.1)
+    account = await new_eoa(0.1)
+    logger.info(f"ℹ️  Owner: {account.address}")
+    return account
 
 
 @pytest_asyncio.fixture(scope="module")
@@ -127,12 +131,16 @@ async def other(new_eoa):
     """
     Just another EOA.
     """
-    return await new_eoa(0.1)
+    account = await new_eoa(0.1)
+    logger.info(f"ℹ️  Other: {account.address}")
+    return account
 
 
 @pytest_asyncio.fixture(scope="session")
 async def eth(deployer) -> Contract:
-    return await get_eth_contract(provider=deployer)
+    contract = await get_eth_contract(provider=deployer)
+    logger.info(f"ℹ️  ETH contract: {contract.address}")
+    return contract
 
 
 @pytest.fixture(scope="session")
@@ -140,7 +148,9 @@ def cairo_counter(deployer) -> Contract:
     """
     Return a cached version of the cairo_counter contract.
     """
-    return get_contract("Counter", provider=deployer)
+    contract = get_contract("Counter", provider=deployer)
+    logger.info(f"ℹ️  Cairo counter: {contract.address}")
+    return contract
 
 
 @pytest.fixture(scope="session")
@@ -148,7 +158,9 @@ def kakarot(deployer) -> Contract:
     """
     Return a cached deployer for the whole session.
     """
-    return get_contract("kakarot", provider=deployer)
+    contract = get_contract("kakarot", provider=deployer)
+    logger.info(f"ℹ️  Kakarot: {contract.address}")
+    return contract
 
 
 @pytest.fixture
