@@ -57,6 +57,7 @@ class TestCoinbase:
                 data=b"",
                 value=amount_wei,
                 caller_eoa=owner.starknet_contract,
+                gas=40_000,
             )
             balance_coinbase_after = await eth_balance_of(coinbase.address)
             assert balance_coinbase_after == balance_coinbase_prev + amount_wei
