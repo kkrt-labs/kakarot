@@ -236,9 +236,6 @@ async def get_contract(
     except NoABIFunctionsFound:
         pass
     contract.events.parse_events = MethodType(_parse_events, contract.events)
-    contract.w3.eth.send_transaction = MethodType(
-        _wrap_kakarot(fun=None, caller_eoa=caller_eoa), contract
-    )
     return contract
 
 
@@ -519,9 +516,9 @@ def _wrap_kakarot(fun: Optional[str] = None, caller_eoa: Optional[Account] = Non
             gas_price=gas_price,
         )
         if success == 0:
-            logger.error(f"❌ {self.address}.{fun} failed")
+            logger.error(f"❌ {self.address}.{fun or 'fallback'} failed")
             raise EvmTransactionError(bytes(response))
-        logger.info(f"✅ {self.address}.{fun}")
+        logger.info(f"✅ {self.address}.{fun or 'fallback'}")
         return {
             "receipt": receipt,
             "response": response,
@@ -542,11 +539,10 @@ async def _contract_exists(address: int) -> bool:
 
 async def get_eoa(private_key=None, amount=0) -> Account:
     private_key = private_key or keys.PrivateKey(bytes.fromhex(EVM_PRIVATE_KEY[2:]))
-    starknet_address = await deploy_and_fund_evm_address(
-        private_key.public_key.to_checksum_address(), amount
-    )
+    evm_address = private_key.public_key.to_checksum_address()
+    starknet_address = await deploy_and_fund_evm_address(evm_address, amount)
 
-    return Account(
+    account = Account(
         address=starknet_address,
         client=RPC_CLIENT,
         chain=ChainId.starknet_chain_id,
@@ -555,6 +551,8 @@ async def get_eoa(private_key=None, amount=0) -> Account:
         # and the access to the private key
         key_pair=KeyPair(int(private_key), private_key.public_key),
     )
+    account.evm_address = evm_address
+    return account
 
 
 async def whitelist_pre_eip155_tx(name: str):

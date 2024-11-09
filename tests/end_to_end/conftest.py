@@ -10,7 +10,7 @@ from starknet_py.net.account.account import Account
 
 from kakarot_scripts.constants import RPC_CLIENT, NetworkType
 from kakarot_scripts.utils.kakarot import deploy as deploy_kakarot
-from kakarot_scripts.utils.kakarot import eth_balance_of
+from kakarot_scripts.utils.kakarot import eth_balance_of, eth_send_transaction
 from kakarot_scripts.utils.kakarot import get_contract as get_solidity_contract
 from kakarot_scripts.utils.kakarot import get_deployments, get_eoa
 from kakarot_scripts.utils.starknet import (
@@ -79,9 +79,6 @@ async def new_eoa(deployer, worker_id) -> Wallet:
             private_key=private_key,
             starknet_contract=await get_eoa(private_key, amount=amount),
         )
-        logger.info(
-            f"Created new EOA for worker {worker_id} with address {wallet.address}"
-        )
         deployed.append(wallet)
         return wallet
 
@@ -100,19 +97,21 @@ async def new_eoa(deployer, worker_id) -> Wallet:
         if balance < tx_cost:
             continue
 
-        # Send the funds to the coinbase contract. The owner will be able to withdraw them.
-        await coinbase.w3.eth.send_transaction(
-            caller_eoa=wallet.starknet_contract,
+        await eth_send_transaction(
+            coinbase.address,
+            data=b"",
+            gas=gas_limit,
             value=balance - tx_cost,
-            gas_limit=gas_limit,
             gas_price=gas_price,
+            caller_eoa=wallet.starknet_contract,
         )
 
     # Withdraw the funds to the deployer
+    coinbase_owner = await get_eoa()
+    assert coinbase_owner.evm_address == await coinbase.owner()
     await coinbase.functions["withdraw(uint256)"](
-        toStarknetAddress=deployer.address,
-        gas_limit=gas_limit,
-        gas_price=gas_price,
+        deployer.address,
+        caller_eoa=coinbase_owner,
     )
 
 
