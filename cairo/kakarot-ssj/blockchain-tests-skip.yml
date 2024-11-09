@@ -396,6 +396,7 @@ testname:
     - randomStatetest645_d0g0v0_Cancun
     - randomStatetest645_d0g0v1_Cancun
     - randomStatetest476_d0g0v0_Cancun
+    - randomStatetest650_d0g0v0_Cancun
   stRandom:
     - randomStatetest111_d0g0v0_Cancun
     - randomStatetest14_d0g0v0_Cancun
