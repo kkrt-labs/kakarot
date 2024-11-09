@@ -776,6 +776,7 @@ async def send_starknet_transaction(
         and event.keys[0] == starknet_keccak(b"transaction_executed")
     ]
     if receipt.execution_status.name == "REVERTED":
+        _nonces[evm_account.address] -= 1
         raise StarknetTransactionError(f"Starknet tx reverted: {receipt.revert_reason}")
     if len(transaction_events) != 1:
         raise ValueError("Cannot locate the single event giving the actual tx status")
