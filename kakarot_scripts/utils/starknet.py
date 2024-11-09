@@ -477,6 +477,7 @@ async def declare(contract_name):
     account = await get_starknet_account()
     if _multisig_account[account.address]:
         account = await RelayerPool.get(account.address)
+    nonce = await get_nonce(account)
 
     if artifact.sierra is not None:
         casm_compiled_contract = artifact.casm.read_text()
@@ -487,6 +488,7 @@ async def declare(contract_name):
             compiled_contract=sierra_compiled_contract,
             compiled_class_hash=class_hash,
             max_fee=_max_fee,
+            nonce=nonce,
         )
 
         resp = await account.client.declare(transaction=declare_v2_transaction)
@@ -495,7 +497,6 @@ async def declare(contract_name):
             compiled_contract=artifact.casm.read_text()
         )
 
-        nonce = await get_nonce(account)
         tx_hash = compute_transaction_hash(
             tx_hash_prefix=TransactionHashPrefix.DECLARE,
             version=1,
@@ -622,6 +623,9 @@ async def get_nonce(account):
         network_nonce = await account.get_nonce(block_number="pending")
         retries -= 1
     if retries == 0:
+        logger.warning(
+            f"⏳ Network nonce {network_nonce} did not match expected nonce {_nonces[account.address]}"
+        )
         # After 1 second, the nonce should have been updated by the network in any case
         _nonces[account.address] = network_nonce
 
@@ -793,6 +797,7 @@ async def call(contract: Union[str, int], *args, **kwargs):
 
 @functools.wraps(RPC_CLIENT.wait_for_tx)
 async def wait_for_transaction(tx_hash, account=None):
+    global _nonces
     try:
         await RPC_CLIENT.wait_for_tx(
             tx_hash,

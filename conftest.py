@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import os
+import random
 
 import pytest
 from dotenv import load_dotenv
@@ -34,7 +35,7 @@ def pytest_addoption(parser):
     parser.addoption(
         "--seed",
         action="store",
-        default=None,
+        default=random.randint(0, 2**64 - 1),
         type=int,
         help="The seed to set random with.",
     )
@@ -48,13 +49,26 @@ def event_loop():
 
 
 @pytest.fixture(autouse=True, scope="session")
-def seed(request):
-    if request.config.getoption("seed") is not None:
-        import random
+def seed(request, worker_id):
+    """
+    Set the seed for the random module.
 
-        logger.info(f"Setting seed to {request.config.getoption('seed')}")
+    If a seed is provided in the command line, we use it to have pseudo-randomness
+    across tests (i.e. deterministic tests).
 
-        random.seed(request.config.getoption("seed"))
+    If no seed is provided, we use a random seed.
+
+    The worker_id is used as a salt to avoid collisions between tests in different workers.
+    """
+    import random
+
+    salt = abs(hash(worker_id))
+    logger.info(f"Using salt {salt} for worker {worker_id}")
+
+    seed = request.config.getoption("seed") + salt
+
+    logger.info(f"Setting seed to {seed}")
+    random.seed(seed)
 
 
 pytest_plugins = ["tests.fixtures.starknet"]

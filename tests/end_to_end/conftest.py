@@ -14,10 +14,10 @@ from kakarot_scripts.utils.kakarot import eth_balance_of
 from kakarot_scripts.utils.kakarot import get_contract as get_solidity_contract
 from kakarot_scripts.utils.kakarot import get_deployments, get_eoa
 from kakarot_scripts.utils.starknet import (
+    RelayerPool,
     call,
     get_contract,
     get_eth_contract,
-    get_starknet_account,
 )
 from tests.utils.helpers import generate_random_private_key
 
@@ -53,7 +53,16 @@ def max_fee():
 
 
 @pytest_asyncio.fixture(scope="session")
-async def new_eoa(deployer) -> Wallet:
+async def deployer(worker_id) -> Account:
+    """
+    Return a cached version of the deployer contract.
+    """
+
+    return await RelayerPool.get(abs(hash(worker_id)))
+
+
+@pytest_asyncio.fixture(scope="session")
+async def new_eoa(deployer, worker_id) -> Wallet:
     """
     Return a factory to create a new EOA with enough ETH to pass ~100 tx by default.
     """
@@ -67,6 +76,9 @@ async def new_eoa(deployer) -> Wallet:
             address=private_key.public_key.to_checksum_address(),
             private_key=private_key,
             starknet_contract=await get_eoa(private_key, amount=amount),
+        )
+        logger.info(
+            f"Created new EOA for worker {worker_id} with address {wallet.address}"
         )
         deployed.append(wallet)
         return wallet
@@ -116,15 +128,6 @@ async def other(new_eoa):
     Just another EOA.
     """
     return await new_eoa(0.1)
-
-
-@pytest_asyncio.fixture(scope="session")
-async def deployer() -> Account:
-    """
-    Return a cached version of the deployer contract.
-    """
-
-    return await get_starknet_account()
 
 
 @pytest_asyncio.fixture(scope="session")
@@ -209,7 +212,7 @@ async def token_a(owner):
 
 
 @pytest_asyncio.fixture(scope="module")
-async def weth(owner):
+async def weth():
     return await deploy_kakarot("WETH", "WETH9")
 
 
@@ -219,7 +222,7 @@ async def factory(owner):
 
 
 @pytest_asyncio.fixture(scope="module")
-async def router(owner, factory, weth):
+async def router(factory, weth):
     return await deploy_kakarot(
         "UniswapV2Router", "UniswapV2Router02", factory.address, weth.address
     )
