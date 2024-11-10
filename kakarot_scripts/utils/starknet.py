@@ -686,9 +686,16 @@ async def execute_v1(account, calls):
             f"{NETWORK['argent_multisig_api']}/0x{account.address:064x}/request",
             json=data,
         ).json()
+        if response.get("status") == "transactionForMultisigBeingSubmitted":
+            await asyncio.sleep(5)
+            response = requests.post(
+                f"{NETWORK['argent_multisig_api']}/0x{account.address:064x}/request",
+                json=data,
+            ).json()
         content = response.get("content")
         if content is None:
             raise ValueError(f"❌ Multisig transaction rejected: {response}")
+
         transaction_id = content["id"]
         status = content["state"]
         while status not in {"TX_ACCEPTED_L2", "REVERTED", "REJECTED"}:
