@@ -49,7 +49,7 @@ class TestCairoPrecompiles:
         @given(calls_per_batch=st.integers(min_value=0, max_value=100))
         @settings(max_examples=5)
         async def test_should_increase_counter_in_batches(
-            self, cairo_counter, owner, calls_per_batch
+            self, cairo_counter, calls_per_batch
         ):
             prev_count = (await cairo_counter.functions["get"].call()).count
 

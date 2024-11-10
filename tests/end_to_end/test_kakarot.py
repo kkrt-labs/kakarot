@@ -345,7 +345,7 @@ class TestKakarot:
 
     class TestAssertViewCall:
         @pytest.mark.parametrize("entrypoint", ["eth_call", "eth_estimate_gas"])
-        async def test_should_raise_when_tx_view_entrypoint(self, kakarot, entrypoint):
+        async def test_should_raise_when_tx_view_entrypoint(self, entrypoint):
             evm_account = await get_eoa()
             calldata = bytes.fromhex("6001")
             tx_hash = await invoke(

@@ -568,7 +568,9 @@ class SyscallHandler:
             deploy_from_zero=deploy_from_zero,
         )
 
-        retdata = self.patches.get("deploy")(class_hash, constructor_calldata)
+        retdata = self.patches.get(get_selector_from_name("deploy"))(
+            class_hash, constructor_calldata
+        )
         retdata_segment = segments.add()
         segments.write_arg(retdata_segment, retdata)
         segments.write_arg(syscall_ptr + 6, [len(retdata), retdata_segment])

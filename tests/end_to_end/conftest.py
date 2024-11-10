@@ -148,7 +148,7 @@ def cairo_counter(deployer) -> Contract:
     Return a cached version of the cairo_counter contract.
     """
     contract = get_contract("Counter", provider=deployer)
-    logger.info(f"ℹ️  Cairo counter: {contract.address}")
+    logger.info(f"ℹ️  Cairo counter: 0x{contract.address:064x}")
     return contract
 
 
@@ -158,7 +158,7 @@ def kakarot(deployer) -> Contract:
     Return a cached deployer for the whole session.
     """
     contract = get_contract("kakarot", provider=deployer)
-    logger.info(f"ℹ️  Kakarot: {contract.address}")
+    logger.info(f"ℹ️  Kakarot: 0x{contract.address:064x}")
     return contract
 
 

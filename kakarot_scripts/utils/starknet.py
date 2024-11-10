@@ -707,8 +707,7 @@ async def execute_v1(account, calls):
             status = content["state"]
             logger.info(f"⏳ Multisig transaction status: {status}")
         if status != "TX_ACCEPTED_L2":
-            logger.error(f"❌ Transaction rejected:\n{content}")
-            raise ValueError(f"Transaction rejected: {status}")
+            logger.error(f"❌ Multisig transaction rejected:\n{status}")
 
         return {
             "transaction_hash": content["transactionHash"],
