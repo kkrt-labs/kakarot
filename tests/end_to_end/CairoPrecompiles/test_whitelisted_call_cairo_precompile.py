@@ -58,7 +58,7 @@ class TestCairoPrecompiles:
             assert evm_count == cairo_count == 1
 
         async def test_should_increase_cairo_counter(
-            self, cairo_counter, cairo_counter_caller, max_fee
+            self, cairo_counter, cairo_counter_caller
         ):
             prev_count = (await cairo_counter.functions["get"].call()).count
             await cairo_counter_caller.incrementCairoCounter()
@@ -67,7 +67,7 @@ class TestCairoPrecompiles:
 
         @pytest.mark.parametrize("count", [0, 1, 2**128 - 1, 2**128, 2**256 - 1])
         async def test_should_set_cairo_counter(
-            self, cairo_counter, cairo_counter_caller, owner, count
+            self, cairo_counter, cairo_counter_caller, count
         ):
             await cairo_counter_caller.setCairoCounter(count)
             new_count = (await cairo_counter.functions["get"].call()).count

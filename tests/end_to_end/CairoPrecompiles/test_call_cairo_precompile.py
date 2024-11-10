@@ -10,7 +10,7 @@ CALL_CAIRO_PRECOMPILE = 0x75004
 
 
 @pytest_asyncio.fixture(scope="module")
-async def cairo_counter(max_fee, deployer):
+async def cairo_counter(deployer):
     cairo_counter = get_contract("Counter", provider=deployer)
 
     yield cairo_counter

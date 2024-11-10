@@ -91,7 +91,7 @@ async def pragma_caller(owner):
     )
 
 
-@pytest_asyncio.fixture()
+@pytest_asyncio.fixture(autouse=True)
 async def cairo_pragma_oracle(mocked_values, pragma_caller):
     await invoke("MockPragmaOracle", "set_price", *mocked_values)
     await invoke(
@@ -160,7 +160,6 @@ class TestPragmaPrecompile:
         data_type,
         aggregation_mode,
         mocked_values,
-        max_fee,
     ):
         (cairo_res,) = await cairo_pragma_oracle.functions["get_data"].call(
             data_type.to_dict(),
@@ -229,13 +228,11 @@ class TestPragmaPrecompile:
     )
     async def test_should_get_mean_for_query(
         self,
-        cairo_pragma_oracle,
         cairo_pragma_summary_stats,
         pragma_caller,
         data_type,
         aggregation_mode,
         mocked_values,
-        max_fee,
     ):
         (cairo_res,) = await cairo_pragma_summary_stats.functions[
             "calculate_mean"
@@ -295,13 +292,11 @@ class TestPragmaPrecompile:
     )
     async def test_should_get_volatility_for_query(
         self,
-        cairo_pragma_oracle,
         cairo_pragma_summary_stats,
         pragma_caller,
         data_type,
         aggregation_mode,
         mocked_values,
-        max_fee,
     ):
         (cairo_res,) = await cairo_pragma_summary_stats.functions[
             "calculate_volatility"
@@ -362,13 +357,11 @@ class TestPragmaPrecompile:
     )
     async def test_should_get_twap_for_query(
         self,
-        cairo_pragma_oracle,
         cairo_pragma_summary_stats,
         pragma_caller,
         data_type,
         aggregation_mode,
         mocked_values,
-        max_fee,
     ):
         (cairo_res,) = await cairo_pragma_summary_stats.functions[
             "calculate_twap"

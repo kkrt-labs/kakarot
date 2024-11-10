@@ -64,7 +64,7 @@ async def deployer(worker_id) -> Account:
 
 
 @pytest_asyncio.fixture(scope="session")
-async def new_eoa(deployer, worker_id) -> Wallet:
+async def new_eoa(deployer) -> Wallet:
     """
     Return a factory to create a new EOA with enough ETH to pass ~100 tx by default.
     """

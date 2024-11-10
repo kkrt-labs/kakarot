@@ -41,9 +41,9 @@ class TestAccountContract:
         return random.randbytes(request.param)
 
     class TestInitialize:
-        @SyscallHandler.patch("IKakarot.register_account", lambda addr, data: [])
-        @SyscallHandler.patch("IKakarot.get_native_token", lambda addr, data: [0xDEAD])
-        @SyscallHandler.patch("IERC20.approve", lambda addr, data: [1])
+        @SyscallHandler.patch("IKakarot.register_account", lambda *_: [])
+        @SyscallHandler.patch("IKakarot.get_native_token", lambda *_: [0xDEAD])
+        @SyscallHandler.patch("IERC20.approve", lambda *_: [1])
         @SyscallHandler.patch("Ownable_owner", 0x1234)
         def test_should_set_storage_variables(self, cairo_run):
             cairo_run("test__initialize", evm_address=0xABDE1)
@@ -64,7 +64,7 @@ class TestAccountContract:
                 calldata=[0xABDE1],
             )
 
-        @SyscallHandler.patch("IKakarot.register_account", lambda addr, data: [])
+        @SyscallHandler.patch("IKakarot.register_account", lambda *_: [])
         @SyscallHandler.patch("Account_is_initialized", 1)
         def test_should_run_only_once(self, cairo_run):
             with cairo_error(message="Account already initialized"):
@@ -270,7 +270,7 @@ class TestAccountContract:
                 int(True)
             ]
             with SyscallHandler.patch(
-                function_selector, lambda addr, data: expected_return_data
+                function_selector, lambda *_: expected_return_data
             ):
                 return_data, success = cairo_run(
                     "test__execute_starknet_call",
@@ -383,11 +383,11 @@ class TestAccountContract:
                     chain_id=CHAIN_ID + 1,
                 )
 
-        @SyscallHandler.patch("IKakarot.get_native_token", lambda _, __: [0xDEAD])
-        @SyscallHandler.patch("IERC20.balanceOf", lambda _, __: int_to_uint256(10**128))
+        @SyscallHandler.patch("IKakarot.get_native_token", lambda *_: [0xDEAD])
+        @SyscallHandler.patch("IERC20.balanceOf", lambda *_: int_to_uint256(10**128))
         @SyscallHandler.patch(
             "IKakarot.eth_send_raw_unsigned_tx",
-            lambda _, __: [1, 0x68656C6C6F, 1, 1],  # hello
+            lambda *_: [1, 0x68656C6C6F, 1, 1],  # hello
         )
         def test_pass_authorized_pre_eip155_transaction(self, cairo_run):
             rlp_decoded = rlp.decode(PRE_EIP155_TX["ArachnidProxy"]["signed_tx"])
@@ -429,13 +429,13 @@ class TestAccountContract:
             assert output_len == 1
             assert output[0] == 0x68656C6C6F
 
-        @SyscallHandler.patch("IERC20.balanceOf", lambda _, __: int_to_uint256(10**128))
+        @SyscallHandler.patch("IERC20.balanceOf", lambda *_: int_to_uint256(10**128))
         @SyscallHandler.patch(
             "IKakarot.eth_send_raw_unsigned_tx",
-            lambda _, __: [1, 0x68656C6C6F, 1, 1],  # hello
+            lambda *_: [1, 0x68656C6C6F, 1, 1],  # hello
         )
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
-        def test_pass_all_transactions_types(self, cairo_run, seed, transaction):
+        def test_pass_all_transactions_types(self, cairo_run, transaction):
             """
             Note: the seeds 41 and 42 have been manually selected after observing that some private keys
             were making the Counter deploy transaction failing because their signature parameters length (s and v)
@@ -466,10 +466,10 @@ class TestAccountContract:
             assert output_len == 1
             assert output[0] == 0x68656C6C6F
 
-        @SyscallHandler.patch("IERC20.balanceOf", lambda _, __: int_to_uint256(10**128))
+        @SyscallHandler.patch("IERC20.balanceOf", lambda *_: int_to_uint256(10**128))
         @SyscallHandler.patch(
             "IKakarot.eth_send_raw_unsigned_tx",
-            lambda _, __: [1, 0x68656C6C6F, 1, 1],  # hello
+            lambda *_: [1, 0x68656C6C6F, 1, 1],  # hello
         )
         def test_should_pass_all_data_len(self, cairo_run, bytecode):
             transaction = {

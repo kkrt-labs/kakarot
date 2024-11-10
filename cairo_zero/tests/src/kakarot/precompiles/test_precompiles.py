@@ -83,9 +83,9 @@ class TestPrecompiles:
                 AUTHORIZED_CALLER_CODE,
                 1,
             )
-            @SyscallHandler.patch_deploy(lambda class_hash, data: [0])
+            @SyscallHandler.patch_deploy(lambda *_: [0])
             @SyscallHandler.patch("Kakarot_evm_to_starknet_address", CALLER_ADDRESS, 0)
-            @SyscallHandler.patch("ICairo.inc", lambda addr, data: [])
+            @SyscallHandler.patch("ICairo.inc", lambda *_: [])
             def test_should_deploy_account_when_sender_starknet_address_zero(
                 self,
                 cairo_run,
@@ -188,10 +188,10 @@ class TestPrecompiles:
                 ]
                 with SyscallHandler.patch(
                     "ICairo.inc",
-                    lambda addr, data: [],
+                    lambda *_: [],
                 ), SyscallHandler.patch(
                     "ICairo.get",
-                    lambda addr, data: cairo_return_data,
+                    lambda *_: cairo_return_data,
                 ):
                     return_data, reverted, gas_used = cairo_run(
                         "test__precompiles_run",

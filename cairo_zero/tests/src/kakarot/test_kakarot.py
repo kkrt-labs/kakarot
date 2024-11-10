@@ -375,7 +375,7 @@ class TestKakarot:
                 "Kakarot_evm_to_starknet_address", EVM_ADDRESS, 0x99999
             )
             @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
-            @SyscallHandler.patch("IAccount.upgrade", lambda addr, data: [])
+            @SyscallHandler.patch("IAccount.upgrade", lambda *_: [])
             def test_upgrade_account_should_replace_class(self, cairo_run):
                 cairo_run(
                     "test__upgrade_account",
@@ -422,8 +422,8 @@ class TestKakarot:
     class TestEthCall:
         @pytest.mark.slow
         @pytest.mark.SolmateERC20
-        @SyscallHandler.patch("IAccount.is_valid_jumpdest", lambda addr, data: [1])
-        @SyscallHandler.patch("IAccount.get_code_hash", lambda addr, data: [0x1, 0x1])
+        @SyscallHandler.patch("IAccount.is_valid_jumpdest", lambda *_: [1])
+        @SyscallHandler.patch("IAccount.get_code_hash", lambda *_: [0x1, 0x1])
         def test_erc20_transfer(self, get_contract):
             erc20 = get_contract("Solmate", "ERC20")
             amount = int(1e18)
@@ -444,8 +444,8 @@ class TestKakarot:
 
         @pytest.mark.slow
         @pytest.mark.SolmateERC721
-        @SyscallHandler.patch("IAccount.is_valid_jumpdest", lambda addr, data: [1])
-        @SyscallHandler.patch("IAccount.get_code_hash", lambda addr, data: [0x1, 0x1])
+        @SyscallHandler.patch("IAccount.is_valid_jumpdest", lambda *_: [1])
+        @SyscallHandler.patch("IAccount.get_code_hash", lambda *_: [0x1, 0x1])
         def test_erc721_transfer(self, get_contract):
             erc721 = get_contract("Solmate", "ERC721")
             token_id = 1337
@@ -534,9 +534,9 @@ class TestKakarot:
                 )
             assert not evm["reverted"]
 
-        @SyscallHandler.patch("IAccount.is_valid_jumpdest", lambda addr, data: [1])
-        @SyscallHandler.patch("IAccount.get_code_hash", lambda addr, data: [0x1, 0x1])
-        @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0x1, 0x1])
+        @SyscallHandler.patch("IAccount.is_valid_jumpdest", lambda *_: [1])
+        @SyscallHandler.patch("IAccount.get_code_hash", lambda *_: [0x1, 0x1])
+        @SyscallHandler.patch("IERC20.balanceOf", lambda *_: [0x1, 0x1])
         def test_create_tx_returndata_should_be_20_bytes_evm_address(self, cairo_run):
             """
             Bug reported by Protofire for the simulation of the create tx using eth_call.
@@ -596,7 +596,7 @@ class TestKakarot:
                     tx_data=tx_data,
                 )
 
-        @SyscallHandler.patch("IAccount.get_nonce", lambda addr, data: [1])
+        @SyscallHandler.patch("IAccount.get_nonce", lambda *_: [1])
         @SyscallHandler.patch("Kakarot_chain_id", CHAIN_ID)
         @pytest.mark.parametrize("tx", TRANSACTIONS)
         def test_should_raise_invalid_nonce(self, cairo_run, tx):
@@ -611,7 +611,7 @@ class TestKakarot:
                 )
 
         @SyscallHandler.patch("Kakarot_chain_id", CHAIN_ID)
-        @SyscallHandler.patch("IAccount.get_nonce", lambda _, __: [34])
+        @SyscallHandler.patch("IAccount.get_nonce", lambda *_: [34])
         @given(gas_limit=integers(min_value=2**64, max_value=2**248 - 1))
         def test_raise_gas_limit_too_high(self, cairo_run, gas_limit):
             tx = {
@@ -636,7 +636,7 @@ class TestKakarot:
                 )
 
         @SyscallHandler.patch("Kakarot_chain_id", CHAIN_ID)
-        @SyscallHandler.patch("IAccount.get_nonce", lambda _, __: [34])
+        @SyscallHandler.patch("IAccount.get_nonce", lambda *_: [34])
         @given(maxFeePerGas=integers(min_value=2**128, max_value=2**248 - 1))
         def test_raise_max_fee_per_gas_too_high(self, cairo_run, maxFeePerGas):
             tx = {
@@ -666,7 +666,7 @@ class TestKakarot:
             tx_data = list(rlp_encode_signed_data(tx))
 
             with (
-                SyscallHandler.patch("IAccount.get_nonce", lambda _, __: [tx["nonce"]]),
+                SyscallHandler.patch("IAccount.get_nonce", lambda *_: [tx["nonce"]]),
                 cairo_error(message="Transaction gas_limit > Block gas_limit"),
             ):
                 cairo_run(
@@ -683,7 +683,7 @@ class TestKakarot:
             tx_data = list(rlp_encode_signed_data(tx))
 
             with (
-                SyscallHandler.patch("IAccount.get_nonce", lambda _, __: [tx["nonce"]]),
+                SyscallHandler.patch("IAccount.get_nonce", lambda *_: [tx["nonce"]]),
                 cairo_error(message="Max fee per gas too low"),
             ):
                 cairo_run(
@@ -701,7 +701,7 @@ class TestKakarot:
             return (max_fee_per_gas, max_priority_fee_per_gas)
 
         @SyscallHandler.patch("Kakarot_block_gas_limit", TRANSACTION_GAS_LIMIT)
-        @SyscallHandler.patch("IAccount.get_nonce", lambda _, __: [34])
+        @SyscallHandler.patch("IAccount.get_nonce", lambda *_: [34])
         @SyscallHandler.patch("Kakarot_chain_id", CHAIN_ID)
         @given(max_priority_fee_too_high())
         def test_raise_max_priority_fee_too_high(
@@ -728,16 +728,16 @@ class TestKakarot:
                     tx_data=tx_data,
                 )
 
-        @SyscallHandler.patch("IERC20.balanceOf", lambda _, __: [0, 0])
+        @SyscallHandler.patch("IERC20.balanceOf", lambda *_: [0, 0])
         @SyscallHandler.patch("Kakarot_block_gas_limit", TRANSACTION_GAS_LIMIT)
-        @SyscallHandler.patch("IAccount.get_evm_address", lambda _, __: [0xABDE1])
+        @SyscallHandler.patch("IAccount.get_evm_address", lambda *_: [0xABDE1])
         @SyscallHandler.patch("Kakarot_chain_id", CHAIN_ID)
         @pytest.mark.parametrize("tx", TRANSACTIONS)
         def test_raise_not_enough_ETH_balance(self, cairo_run, tx):
             tx_data = list(rlp_encode_signed_data(tx))
 
             with (
-                SyscallHandler.patch("IAccount.get_nonce", lambda _, __: [tx["nonce"]]),
+                SyscallHandler.patch("IAccount.get_nonce", lambda *_: [tx["nonce"]]),
                 cairo_error(message="Not enough ETH to pay msg.value + max gas fees"),
             ):
                 cairo_run(
@@ -749,8 +749,8 @@ class TestKakarot:
     class TestLoopProfiling:
         @pytest.mark.slow
         @pytest.mark.NoCI
-        @SyscallHandler.patch("IAccount.is_valid_jumpdest", lambda addr, data: [1])
-        @SyscallHandler.patch("IAccount.get_code_hash", lambda addr, data: [0x1, 0x1])
+        @SyscallHandler.patch("IAccount.is_valid_jumpdest", lambda *_: [1])
+        @SyscallHandler.patch("IAccount.get_code_hash", lambda *_: [0x1, 0x1])
         @pytest.mark.parametrize("steps", [10, 50, 100, 200])
         def test_loop_profiling(self, get_contract, steps):
             plain_opcodes = get_contract("PlainOpcodes", "PlainOpcodes")

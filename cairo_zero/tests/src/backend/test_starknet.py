@@ -13,9 +13,9 @@ class TestStarknet:
     class TestSaveValidJumpdests:
         @SyscallHandler.patch(
             "IERC20.balanceOf",
-            lambda addr, data: [0, 0],
+            lambda *_: [0, 0],
         )
-        @SyscallHandler.patch("IAccount.write_jumpdests", lambda addr, data: [])
+        @SyscallHandler.patch("IAccount.write_jumpdests", lambda *_: [])
         def test_should_save_jumpdests_to_storage(self, cairo_run):
             jumpdests = {0x1: True, 0x10: False, 0x101: True}
             contract_address = 0x97283590
