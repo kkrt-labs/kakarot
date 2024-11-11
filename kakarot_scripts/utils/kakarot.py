@@ -67,27 +67,24 @@ _nonces = {}
 async def get_nonce(account):
     global _nonces
     if account.address not in _nonces:
-        _nonces[account.address] = (
-            await (
-                _get_starknet_contract("account_contract", address=account.address)
-                .functions["get_nonce"]
-                .call(block_number="pending")
+        if WEB3.is_connected():
+            _nonces[account.address] = WEB3.eth.get_transaction_count(
+                account.signer.public_key.to_checksum_address()
             )
-        ).nonce
+        else:
+            _nonces[account.address] = (
+                await (
+                    _get_starknet_contract("account_contract", address=account.address)
+                    .functions["get_nonce"]
+                    .call(block_number="pending")
+                )
+            ).nonce
 
-    network_nonce = (
-        await (
-            _get_starknet_contract("account_contract", address=account.address)
-            .functions["get_nonce"]
-            .call(block_number="pending")
+    if WEB3.is_connected():
+        network_nonce = WEB3.eth.get_transaction_count(
+            account.signer.public_key.to_checksum_address()
         )
-    ).nonce
-    retries = 10
-    while network_nonce != _nonces[account.address] and retries > 0:
-        logger.info(
-            f"⏳ Waiting for network nonce {network_nonce} to be {_nonces[account.address]}"
-        )
-        await asyncio.sleep(0.1)
+    else:
         network_nonce = (
             await (
                 _get_starknet_contract("account_contract", address=account.address)
@@ -95,6 +92,27 @@ async def get_nonce(account):
                 .call(block_number="pending")
             )
         ).nonce
+
+    retries = 10
+    while network_nonce != _nonces[account.address] and retries > 0:
+        logger.info(
+            f"⏳ Waiting for network nonce {network_nonce} to be {_nonces[account.address]}"
+        )
+        await asyncio.sleep(0.1)
+
+        if WEB3.is_connected():
+            network_nonce = WEB3.eth.get_transaction_count(
+                account.signer.public_key.to_checksum_address()
+            )
+        else:
+            network_nonce = (
+                await (
+                    _get_starknet_contract("account_contract", address=account.address)
+                    .functions["get_nonce"]
+                    .call(block_number="pending")
+                )
+            ).nonce
+
         retries -= 1
     if retries == 0:
         logger.warning(

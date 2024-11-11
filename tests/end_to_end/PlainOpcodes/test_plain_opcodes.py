@@ -442,9 +442,9 @@ class TestPlainOpcodes:
         @pytest.mark.parametrize(
             "input_length",
             [
-                20000,
+                20_000,
                 pytest.param(
-                    272000, marks=pytest.mark.xfail(reason="input length too big")
+                    272_000, marks=pytest.mark.xfail(reason="input length too big")
                 ),
             ],
         )
