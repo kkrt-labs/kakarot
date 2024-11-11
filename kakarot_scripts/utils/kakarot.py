@@ -785,7 +785,7 @@ async def send_starknet_transaction(
             # starknet_py.net.client_errors.ClientError: Client failed with code 29. Message: Transaction hash not found
             time.sleep(check_interval)
     else:
-        raise ValueError(f"❌ Transaction not found: {tx_hash}")
+        raise ValueError(f"❌ Transaction not found: 0x{tx_hash:064x}")
 
     transaction_events = [
         event

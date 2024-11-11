@@ -121,7 +121,7 @@ def send_l1_transaction(
     evm_account = caller_eoa or EvmAccount.from_key(EVM_PRIVATE_KEY)
     evm_tx = L1_RPC_PROVIDER.eth.account.sign_transaction(transaction, evm_account.key)
     tx_hash = L1_RPC_PROVIDER.eth.send_raw_transaction(evm_tx.raw_transaction)
-    logger.info(f"⏳ Waiting for transaction {tx_hash.hex()}")
+    logger.info(f"⏳ Waiting for transaction {tx_hash}")
     receipt = L1_RPC_PROVIDER.eth.wait_for_transaction_receipt(tx_hash, timeout=5 * 60)
     response = []
     if not receipt.status:

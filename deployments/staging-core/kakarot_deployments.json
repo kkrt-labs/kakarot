@@ -1,0 +1,50 @@
+{
+  "WETH9": {
+    "address": "0xd52042e28e6f726738A48497A0728Fc5977AF3F8",
+    "starknet_address": "0xe9868dd0908f1d08e0aac73b671f24a7dd9187a38b214dc66812a4630fc52b"
+  },
+  "Coinbase": {
+    "address": "0x61B3bF630b719D54cE0D5256b598d40da1680Eec",
+    "starknet_address": "0x14be2e9a4d8682aff133e39a713f2ad95ad4e08830cbc21138638a28d96875a"
+  },
+  "Starknet Token": {
+    "address": "0x87Ce4c6e0BF156031e74a07C5b725800f9dF56CA",
+    "starknet_address": "0x236a0f0203f26abd8b33086a4c5b2a4c256bc2cb42f9b2b0116d3efc732e27b"
+  },
+  "Starknet Voting Token": {
+    "address": "0x7a2deE402F31632592e3c9270D4F12E450877F86",
+    "starknet_address": "0x5f811868759a352ad8fa70de1e2330f8ce5154994651812d330cb558abf690"
+  },
+  "USDC": {
+    "address": "0xc9c677a629AAe7A149f5F0E7546394f2630e8E9e",
+    "starknet_address": "0x647f8288e798f12f18bd3b5248fc77596460b6ebcb035f26b903b6567a8d64"
+  },
+  "USDT": {
+    "address": "0x506De97018260b95ddF3D1b4C3d795a639b04d3F",
+    "starknet_address": "0x7ccff26a88476ebc02602605cafdbfd927205477f44a0e55ae53017a72d1d73"
+  },
+  "Wrapped BTC": {
+    "address": "0x20a6338AE7C41A5f70Fb8C660C8cc5B3F5f631f7",
+    "starknet_address": "0x3399b49e88c37c9d5ce0846ffe99f0d24852a59b02c9c958d1ef9d050531a2f"
+  },
+  "Wrapped liquid staked Ether 2.0": {
+    "address": "0xd88b092890db8c02E0c7a838841d88f3Cf4D8286",
+    "starknet_address": "0xc09188bad513771a223bc19e4dd1e06631622353425a61cb3210191c3267f7"
+  },
+  "Multicall3": {
+    "address": "0xcA11bde05977b3631167028862bE2a173976CA11",
+    "starknet_address": "0x1790e5d1c67fdfd8cbe8fdfc4d0299934238970f0b5c9ce1cc6708988c36816"
+  },
+  "ArachnidProxy": {
+    "address": "0x4e59b44847b379578588920cA78FbF26c0B4956C",
+    "starknet_address": "0x4bf0a6cf4450fba581b0d52d270f535be5c97dff4fe77187d881153d0da6a8a"
+  },
+  "CreateX": {
+    "address": "0xba5Ed099633D3B313e4D5F7bdc1305d3c28ba5Ed",
+    "starknet_address": "0x500affd7e59226cb5fc6d16d5da6da4a3c9c4bc04e137f33291c88a6fcd6638"
+  },
+  "L2KakarotMessaging": {
+    "address": "0x91DB3f3f7cA7607647885F2CF2ccEA28892aC049",
+    "starknet_address": "0x1b34166ef30a0b85721efafe75488055b0bfebea1a0855d99086850595adbf2"
+  }
+}
