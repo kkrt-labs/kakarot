@@ -66,7 +66,7 @@ logger.setLevel(logging.INFO)
 # Due to some fee estimation issues, we skip it in all the calls and set instead
 # this hardcoded value. This has no impact apart from enforcing the signing wallet
 # to have at least 0.1 ETH
-_max_fee = int(0.05e18)
+_max_fee = int(0.005e18) if NETWORK["type"] == NetworkType.PROD else int(0.05e18)
 
 # Global variables for lazy execution and multisig accounts
 _logs = defaultdict(list)
@@ -416,7 +416,7 @@ async def deploy_starknet_account(
     except Exception:
         pass
 
-    logger.info(f"ℹ️  Deploying account with salt {hex(salt)}")
+    logger.info(f"ℹ️  Deploying account at 0x{address:064x} with salt {hex(salt)}")
     try:
         res = await Account.deploy_account_v1(
             address=address,
@@ -864,7 +864,12 @@ class RelayerPool:
         public_key = KeyPair.from_private_key(int(private_key, 16)).public_key
         addresses = cls.compute_addresses(n)
         for address in addresses:
-            await fund_address(address, amount=kwargs.pop("amount", 1))
+            await fund_address(
+                address,
+                amount=kwargs.pop(
+                    "amount", 1 if NETWORK["type"] != NetworkType.PROD else 0.01
+                ),
+            )
 
         await execute_calls()
         _lazy_execute[account.address] = is_lazy
@@ -913,7 +918,10 @@ class RelayerPool:
     @classmethod
     @alru_cache
     async def default(cls, **kwargs):
-        return await cls.create(NETWORK.get("relayers", 20), **kwargs)
+        return await cls.create(
+            NETWORK.get("relayers", 20 if NETWORK["type"] != NetworkType.PROD else 1),
+            **kwargs,
+        )
 
     @classmethod
     @alru_cache

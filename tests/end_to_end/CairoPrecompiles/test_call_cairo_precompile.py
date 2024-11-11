@@ -2,6 +2,7 @@ import pytest
 import pytest_asyncio
 from eth_abi import encode
 
+from kakarot_scripts.constants import NETWORK
 from kakarot_scripts.utils.kakarot import deploy, eth_send_transaction
 from kakarot_scripts.utils.starknet import get_contract, invoke
 from tests.utils.errors import cairo_error
@@ -105,6 +106,9 @@ class TestCairoPrecompiles:
             ):
                 await cairo_counter_caller.incrementCairoCounterCallcode()
 
+    @pytest.mark.skipif(
+        NETWORK["name"] != "katana", reason="Not yet declared on sepolia"
+    )
     class TestReentrancyKakarot:
         async def test_should_fail_when_reentrancy_cairo_call(
             self, kakarot_reentrancy, eth_call_calldata

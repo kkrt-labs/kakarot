@@ -248,6 +248,9 @@ class TestKakarot:
             assert result.gas_used == 21_000
 
     class TestEthCallJumpCreationCodeDeployTx:
+        @pytest.mark.skipif(
+            NETWORK["name"] != "katana", reason="Not yet declared on sepolia"
+        )
         async def test_eth_call_jump_creation_code_deploy_tx_should_succeed(
             self, kakarot, new_eoa
         ):
