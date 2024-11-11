@@ -180,10 +180,6 @@ def encode_price(reserve_0: int, reserve_1: int) -> list:
     ]
 
 
-def private_key_from_hex(hex_key: str):
-    return keys.PrivateKey(bytes.fromhex(hex_key))
-
-
 def generate_random_private_key():
     return keys.PrivateKey(int.to_bytes(random.getrandbits(256), 32, "big"))
 

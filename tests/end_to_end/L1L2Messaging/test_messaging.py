@@ -76,9 +76,10 @@ def wait_for_l1_messaging(starknet_core):
 
 @pytest.fixture(scope="function")
 def wait_for_l2_messaging():
-    async def _factory(block_number):
+    async def _factory(block_number, l2_address):
         l1_handlers = []
         i = 0
+        interval = 4
         # L1 block time is 12s and Starknet block time is 30s
         # 2 minutes should be enough to trigger the L1 handler
         while i < 2 * 60:
@@ -95,11 +96,12 @@ def wait_for_l2_messaging():
                 if isinstance(transaction, L1HandlerTransaction)
                 and transaction.contract_address
                 == get_starknet_deployments()["kakarot"]
+                and transaction.calldata[2] == int(l2_address, 16)
             ]
+            i += interval
+            await asyncio.sleep(interval)
             if l1_handlers:
                 return l1_handlers
-            i += 1
-            await asyncio.sleep(1)
 
         raise Exception("L1 handlers not found in 2 minutes")
 
@@ -161,7 +163,7 @@ class TestL1ToL2Messages:
         message_app_l1.increaseL2AppCounter(
             message_app_l2.address, value=increment_value
         )
-        await wait_for_l2_messaging(current_l2_block)
+        await wait_for_l2_messaging(current_l2_block, message_app_l2.address)
         msg_counter_after = await message_app_l2.receivedMessagesCounter()
         assert msg_counter_after == msg_counter_before + increment_value
 
@@ -174,6 +176,6 @@ class TestL1ToL2Messages:
         message_app_l1.increaseL2AppCounterFromCounterPartOnly(
             message_app_l2.address, value=increment_value
         )
-        await wait_for_l2_messaging(current_l2_block)
+        await wait_for_l2_messaging(current_l2_block, message_app_l2.address)
         msg_counter_after = await message_app_l2.receivedMessagesCounter()
         assert msg_counter_after == msg_counter_before + increment_value
