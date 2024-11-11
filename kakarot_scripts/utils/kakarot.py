@@ -507,7 +507,7 @@ def _wrap_kakarot(fun: Optional[str] = None, caller_eoa: Optional[Account] = Non
             normalized = map_abi_data(BASE_RETURN_NORMALIZERS, types, decoded)
             return normalized[0] if len(normalized) == 1 else normalized
 
-        logger.info(f"⏳ Executing {fun or 'fallback'} at address {self.address}")
+        logger.info(f"⏳ Executing {self.address}.{fun or 'fallback'}")
         receipt, response, success, gas_used = await eth_send_transaction(
             to=self.address,
             value=value,

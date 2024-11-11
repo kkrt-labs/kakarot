@@ -181,7 +181,7 @@ def _wrap_web3(fun: str, caller_eoa_: Optional[LocalAccount] = None):
             normalized = map_abi_data(BASE_RETURN_NORMALIZERS, types, decoded)
             return normalized[0] if len(normalized) == 1 else normalized
 
-        logger.info(f"⏳ Executing {fun} at address {self.address}")
+        logger.info(f"⏳ Executing {self.address}.{fun}")
         receipt, response = send_l1_transaction(transaction, caller_eoa)
         if receipt["status"] == 0:
             logger.error(f"❌ {self.address}.{fun} failed")

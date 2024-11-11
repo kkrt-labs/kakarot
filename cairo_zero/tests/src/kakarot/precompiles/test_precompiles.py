@@ -83,7 +83,7 @@ class TestPrecompiles:
                 AUTHORIZED_CALLER_CODE,
                 1,
             )
-            @SyscallHandler.patch_deploy(lambda *_: [0])
+            @SyscallHandler.patch("deploy", lambda *_: [0])
             @SyscallHandler.patch("Kakarot_evm_to_starknet_address", CALLER_ADDRESS, 0)
             @SyscallHandler.patch("ICairo.inc", lambda *_: [])
             def test_should_deploy_account_when_sender_starknet_address_zero(

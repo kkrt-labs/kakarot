@@ -577,19 +577,6 @@ class SyscallHandler:
 
     @classmethod
     @contextmanager
-    def patch_deploy(cls, value: callable):
-        """
-        Patch the deploy syscall with the value.
-
-        :param value: The value to patch with, a callable that will be called with the class hash,
-            the contract address salt, the constructor calldata and the deploy from zero flag.
-        """
-        cls.patches["deploy"] = value
-        yield
-        del cls.patches["deploy"]
-
-    @classmethod
-    @contextmanager
     def patch(
         cls,
         target: Union[int, str],
