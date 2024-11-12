@@ -13,10 +13,15 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-@pytest_asyncio.fixture(scope="function")
+@pytest_asyncio.fixture(scope="package")
 async def starknet_token(owner):
     address = await deploy_starknet(
-        "StarknetToken", int(1e18), owner.starknet_contract.address
+        "StarknetToken",
+        "MyToken",
+        "MTK",
+        18,
+        int(2**256 - 1),
+        owner.starknet_contract.address,
     )
     return get_contract_starknet("StarknetToken", address=address)
 

@@ -105,7 +105,7 @@ namespace PrecompilesHelpers {
         let range_check_ptr = [ap - 2];
         let authorized = [ap - 1];
 
-        // Ensure that calls to CAIRO_CALL_PRECOMPILE or CAIRO_CALL_PRECOMPILE are not made through
+        // Ensure that calls to CAIRO_CALL_PRECOMPILE or CAIRO_MULTICALL_PRECOMPILE are not made through
         // a delegatecall / callcode.
         let is_delegatecall_protected_ = is_delegatecall_protected(precompile_address);
         if (is_delegatecall_protected_ != FALSE) {
