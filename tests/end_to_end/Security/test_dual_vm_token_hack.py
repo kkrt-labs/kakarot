@@ -80,7 +80,7 @@ class TestDualVmToken:
             assert allowance == 0
 
         async def test_malicious_transfer_address_should_fail_nodelegatecall(
-            self, dual_vm_token, hack_vm_token, owner
+            self, dual_vm_token, hack_vm_token
         ):
             result = await hack_vm_token.functions["tryTransferEvm()"]()
             call_succeeded = int.from_bytes(bytes(result["response"]), "big")
@@ -92,7 +92,7 @@ class TestDualVmToken:
             assert balance == 0
 
         async def test_malicious_transfer_starknet_should_fail_nodelegatecall(
-            self, dual_vm_token, hack_vm_token, owner
+            self, dual_vm_token, hack_vm_token
         ):
             result = await hack_vm_token.functions["tryTransferStarknet()"]()
             call_succeeded = int.from_bytes(bytes(result["response"]), "big")
@@ -104,7 +104,7 @@ class TestDualVmToken:
             assert balance == 0
 
         async def test_malicious_transfer_from_address_address_should_fail_nodelegatecall(
-            self, dual_vm_token, hack_vm_token, owner
+            self, dual_vm_token, hack_vm_token
         ):
             result = await hack_vm_token.functions["tryTransferFromEvmEvm()"]()
             call_succeeded = int.from_bytes(bytes(result["response"]), "big")
@@ -116,7 +116,7 @@ class TestDualVmToken:
             assert balance == 0
 
         async def test_malicious_transfer_from_starknet_address_should_fail_nodelegatecall(
-            self, dual_vm_token, hack_vm_token, owner
+            self, dual_vm_token, hack_vm_token
         ):
             result = await hack_vm_token.functions["tryTransferFromStarknetEvm()"]()
             call_succeeded = int.from_bytes(bytes(result["response"]), "big")
@@ -128,7 +128,7 @@ class TestDualVmToken:
             assert balance == 0
 
         async def test_malicious_transfer_from_address_starknet_should_fail_nodelegatecall(
-            self, dual_vm_token, hack_vm_token, owner
+            self, dual_vm_token, hack_vm_token
         ):
             result = await hack_vm_token.functions["tryTransferFromEvmStarknet()"]()
             call_succeeded = int.from_bytes(bytes(result["response"]), "big")
@@ -140,7 +140,7 @@ class TestDualVmToken:
             assert balance == 0
 
         async def test_malicious_transfer_from_starknet_starknet_should_fail_nodelegatecall(
-            self, dual_vm_token, hack_vm_token, owner
+            self, dual_vm_token, hack_vm_token
         ):
             result = await hack_vm_token.functions[
                 "tryTransferFromStarknetStarknet()"
