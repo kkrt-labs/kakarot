@@ -48,8 +48,6 @@ ZERO_ADDRESS = "0x" + 40 * "0"
 BLOCK_NUMBER = 0x42
 BLOCK_TIMESTAMP = int(time())
 
-FELT_252_PRIME = 0x800000000000011000000000000000000000000000000000000000000000001
-
 # Taken from eth_account.account.Account.sign_transaction docstring
 # https://eth-account.readthedocs.io/en/stable/eth_account.html?highlight=sign_transaction#eth_account.account.Account.sign_transaction
 TRANSACTIONS = [

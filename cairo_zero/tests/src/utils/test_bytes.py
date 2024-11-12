@@ -3,9 +3,9 @@ import os
 import pytest
 from hypothesis import given
 from hypothesis.strategies import integers
+from starkware.cairo.lang.cairo_constants import DEFAULT_PRIME
 
 from kakarot_scripts.utils.uint256 import int_to_uint256
-from tests.utils.constants import FELT_252_PRIME
 from tests.utils.errors import cairo_error
 from tests.utils.hints import patch_hint
 
@@ -28,7 +28,7 @@ class TestBytes:
             )
             assert expected == bytes(output)
 
-        @given(n=integers(min_value=2**248, max_value=FELT_252_PRIME - 1))
+        @given(n=integers(min_value=2**248, max_value=DEFAULT_PRIME - 1))
         def test_should_raise_when_value_sup_31_bytes(self, cairo_run, n):
             with cairo_error(message="felt_to_bytes_little: value >= 2**248"):
                 cairo_run("test__felt_to_bytes_little", n=n)
@@ -100,7 +100,7 @@ class TestBytes:
 
     class TestFeltToBytes20:
         @pytest.mark.parametrize(
-            "n", [0, 10, 1234, 0xFFFFFF, 2**128, FELT_252_PRIME - 1]
+            "n", [0, 10, 1234, 0xFFFFFF, 2**128, DEFAULT_PRIME - 1]
         )
         def test_should_return_bytes20(self, cairo_run, n):
             output = cairo_run("test__felt_to_bytes20", n=n)
@@ -108,7 +108,7 @@ class TestBytes:
 
     class TestUint256ToBytesLittle:
         @pytest.mark.parametrize(
-            "n", [0, 10, 1234, 0xFFFFFF, 2**128, FELT_252_PRIME - 1, 2**256 - 1]
+            "n", [0, 10, 1234, 0xFFFFFF, 2**128, DEFAULT_PRIME - 1, 2**256 - 1]
         )
         def test_should_return_bytes(self, cairo_run, n):
             output = cairo_run("test__uint256_to_bytes_little", n=int_to_uint256(n))
@@ -117,7 +117,7 @@ class TestBytes:
 
     class TestUint256ToBytes:
         @pytest.mark.parametrize(
-            "n", [0, 10, 1234, 0xFFFFFF, 2**128, FELT_252_PRIME - 1, 2**256 - 1]
+            "n", [0, 10, 1234, 0xFFFFFF, 2**128, DEFAULT_PRIME - 1, 2**256 - 1]
         )
         def test_should_return_bytes(self, cairo_run, n):
             output = cairo_run("test__uint256_to_bytes", n=int_to_uint256(n))
@@ -126,7 +126,7 @@ class TestBytes:
 
     class TestUint256ToBytes32:
         @pytest.mark.parametrize(
-            "n", [0, 10, 1234, 0xFFFFFF, 2**128, FELT_252_PRIME - 1, 2**256 - 1]
+            "n", [0, 10, 1234, 0xFFFFFF, 2**128, DEFAULT_PRIME - 1, 2**256 - 1]
         )
         def test_should_return_bytes(self, cairo_run, n):
             output = cairo_run("test__uint256_to_bytes32", n=int_to_uint256(n))

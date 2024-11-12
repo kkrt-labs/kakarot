@@ -5,9 +5,9 @@ from ethereum.shanghai.vm.gas import (
 )
 from hypothesis import given
 from hypothesis.strategies import integers
+from starkware.cairo.lang.cairo_constants import DEFAULT_PRIME
 
 from kakarot_scripts.utils.uint256 import int_to_uint256
-from tests.utils.constants import FELT_252_PRIME
 
 
 class TestGas:
@@ -36,10 +36,10 @@ class TestGas:
             assert diff == output
 
         @given(
-            offset_1=integers(min_value=0, max_value=FELT_252_PRIME - 1),
-            size_1=integers(min_value=0, max_value=FELT_252_PRIME - 1),
-            offset_2=integers(min_value=0, max_value=FELT_252_PRIME - 1),
-            size_2=integers(min_value=0, max_value=FELT_252_PRIME - 1),
+            offset_1=integers(min_value=0, max_value=DEFAULT_PRIME - 1),
+            size_1=integers(min_value=0, max_value=DEFAULT_PRIME - 1),
+            offset_2=integers(min_value=0, max_value=DEFAULT_PRIME - 1),
+            size_2=integers(min_value=0, max_value=DEFAULT_PRIME - 1),
         )
         def test_should_return_max_expansion_cost(
             self, cairo_run, offset_1, size_1, offset_2, size_2
