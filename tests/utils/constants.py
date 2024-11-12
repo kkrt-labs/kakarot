@@ -14,12 +14,6 @@ BIG_CHAIN_ID = int.from_bytes(b"SN_SEPOLIA", "big")
 # Class hash of the cairo1 helpers
 CAIRO1_HELPERS_CLASS_HASH = 0xDEADBEEFABDE1E11A5
 
-# Amount of funds to pre-fund the account with
-PRE_FUND_AMOUNT = int(1e17)  # 0.01 ETH
-
-# Account balance is the amount of funds that the account has after being deployed
-ACCOUNT_BALANCE = PRE_FUND_AMOUNT
-
 # STACK
 STACK_MAX_DEPTH = 1024
 

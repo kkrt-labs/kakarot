@@ -5,6 +5,7 @@ from eth_abi import decode
 from eth_utils import keccak
 from web3 import Web3
 
+from kakarot_scripts.constants import NETWORK
 from kakarot_scripts.utils.kakarot import (
     eth_balance_of,
     eth_get_code,
@@ -63,6 +64,9 @@ class TestPlainOpcodes:
 
             assert int.from_bytes(blockhash_invalid_number, byteorder="big") == 0
 
+        @pytest.mark.skipif(
+            NETWORK["name"] != "katana", reason="Not yet declared on sepolia"
+        )
         async def test_should_return_zero_for_last_10_blocks(
             self, plain_opcodes, block_number
         ):
@@ -438,9 +442,9 @@ class TestPlainOpcodes:
         @pytest.mark.parametrize(
             "input_length",
             [
-                20000,
+                20_000,
                 pytest.param(
-                    272000, marks=pytest.mark.xfail(reason="input length too big")
+                    272_000, marks=pytest.mark.xfail(reason="input length too big")
                 ),
             ],
         )

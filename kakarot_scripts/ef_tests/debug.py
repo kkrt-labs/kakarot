@@ -19,7 +19,7 @@ logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-load_dotenv()
+load_dotenv(override=True)
 
 TESTS_PATH = Path("tests/ef_tests/test_data/BlockchainTests/GeneralStateTests")
 TEST_NAME = os.getenv("TEST_NAME")

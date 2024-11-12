@@ -29,7 +29,7 @@ logger.setLevel(logging.INFO)
 
 # %%
 async def deploy_dualvm_tokens() -> None:
-    # %% Deploy DualVM Tokens
+    # %% Setup
 
     # The lazy execution must be done before we check the deployments succeeded, as the l2 contracts
     # need to be deployed first
@@ -59,12 +59,12 @@ async def deploy_dualvm_tokens() -> None:
         (await call_contract("ERC20", "symbol", address=kakarot_native_token)).symbol
     )
 
-    # Filter tokens based on deployment criteria
+    # %% Deploy DualVM Tokens
     for token in tokens:
 
         # Skip if entry is not a token
         if "l2_token_address" not in token:
-            logger.info("Skipping %s: missing l2_token_address", token["name"])
+            logger.info("ℹ️  Skipping %s: missing l2_token_address", token["name"])
             continue
 
         l2_token_address = int(token["l2_token_address"], 16)
@@ -74,7 +74,7 @@ async def deploy_dualvm_tokens() -> None:
             token["name"] == kakarot_native_token_name
             and token["symbol"] == kakarot_native_token_symbol
         ):
-            logger.info("Skipping %s: native token", token["name"])
+            logger.info("ℹ️  Skipping %s: native token", token["name"])
             continue
 
         # Check if DualVM token is a deployed contract on Starknet
@@ -89,13 +89,16 @@ async def deploy_dualvm_tokens() -> None:
                     evm_deployments[token["name"]]["address"],
                 )
                 assert await token_contract.kakarot() == kakarot_address
-                logger.info("Skipping %s: already deployed on Starknet", token["name"])
+                logger.info(
+                    "✅ Skipping %s: already deployed on Starknet", token["name"]
+                )
                 continue
             except Exception:
                 pass
 
         # DualVM token is not deployed, deploy one
         # Check if the L2 token exists, if not deploy one
+        new_l2_token = False
         try:
             await RPC_CLIENT.get_class_hash_at(l2_token_address)
         except Exception as e:
@@ -103,7 +106,6 @@ async def deploy_dualvm_tokens() -> None:
                 raise ValueError(
                     f"Starknet token for {token['name']} doesn't exist on L2"
                 ) from e
-
             logger.info(f"⏳ {token['name']} doesn't exist on Starknet, deploying...")
             owner = await get_starknet_account()
             l2_token_address = await deploy_starknet(
@@ -114,8 +116,9 @@ async def deploy_dualvm_tokens() -> None:
                 int(2**256 - 1),
                 owner.address,
             )
+            new_l2_token = True
 
-        if token["name"] not in evm_deployments:
+        if token["name"] not in evm_deployments or new_l2_token:
             contract = await deploy_kakarot(
                 "CairoPrecompiles", "DualVmToken", kakarot_address, l2_token_address
             )
@@ -134,12 +137,13 @@ async def deploy_dualvm_tokens() -> None:
             "CairoPrecompiles", "DualVmToken", evm_deployments[token["name"]]["address"]
         )
         assert await token_contract.starknetToken() == l2_token_address
-        assert await token_contract.name() == token["name"]
-        assert await token_contract.symbol() == token["symbol"]
+        assert (await token_contract.name()).lstrip("\x00") == token["name"]
+        assert (await token_contract.symbol()).lstrip("\x00") == token["symbol"]
         assert await token_contract.decimals() == token["decimals"]
 
+    # %% Save deployments
     dump_evm_deployments(evm_deployments)
-    logger.info("Finished processing all DualVM tokens")
+    logger.info("✅ Finished processing all DualVM tokens")
     register_lazy_account(account.address)
 
 

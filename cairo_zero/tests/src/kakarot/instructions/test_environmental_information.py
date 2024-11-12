@@ -40,17 +40,15 @@ class TestEnvironmentalInformation:
             cairo_run("test__exec_address__should_push_address_to_stack")
 
     class TestExtCodeSize:
-        @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
-        @SyscallHandler.patch("IAccount.get_nonce", lambda addr, data: [1])
+        @SyscallHandler.patch("IERC20.balanceOf", lambda *_: [0, 1])
+        @SyscallHandler.patch("IAccount.get_nonce", lambda *_: [1])
         @SyscallHandler.patch(
             "Kakarot_evm_to_starknet_address", EXISTING_ACCOUNT, 0x1234
         )
-        @SyscallHandler.patch(
-            "IAccount.get_code_hash", lambda sn_addr, data: [0x1, 0x1]
-        )
+        @SyscallHandler.patch("IAccount.get_code_hash", lambda *_: [0x1, 0x1])
         def test_extcodesize_should_push_code_size(self, cairo_run, bytecode, address):
             with SyscallHandler.patch(
-                "IAccount.bytecode", lambda addr, data: [len(bytecode), *bytecode]
+                "IAccount.bytecode", lambda *_: [len(bytecode), *bytecode]
             ):
                 output = cairo_run("test__exec_extcodesize", address=address)
 
@@ -66,20 +64,18 @@ class TestEnvironmentalInformation:
                 "offset_is_bytecodelen",
             ],
         )
-        @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
-        @SyscallHandler.patch("IAccount.get_nonce", lambda addr, data: [1])
+        @SyscallHandler.patch("IERC20.balanceOf", lambda *_: [0, 1])
+        @SyscallHandler.patch("IAccount.get_nonce", lambda *_: [1])
         @SyscallHandler.patch(
             "Kakarot_evm_to_starknet_address", EXISTING_ACCOUNT, 0x1234
         )
-        @SyscallHandler.patch(
-            "IAccount.get_code_hash", lambda sn_addr, data: [0x1, 0x1]
-        )
+        @SyscallHandler.patch("IAccount.get_code_hash", lambda *_: [0x1, 0x1])
         def test_extcodecopy_should_copy_code(
             self, cairo_run, size, offset, dest_offset, bytecode, address
         ):
 
             with SyscallHandler.patch(
-                "IAccount.bytecode", lambda addr, data: [len(bytecode), *bytecode]
+                "IAccount.bytecode", lambda *_: [len(bytecode), *bytecode]
             ):
                 memory = cairo_run(
                     "test__exec_extcodecopy",
@@ -109,21 +105,19 @@ class TestEnvironmentalInformation:
                 "size_is_0",
             ],
         )
-        @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
-        @SyscallHandler.patch("IAccount.get_nonce", lambda addr, data: [1])
+        @SyscallHandler.patch("IERC20.balanceOf", lambda *_: [0, 1])
+        @SyscallHandler.patch("IAccount.get_nonce", lambda *_: [1])
         @SyscallHandler.patch(
             "Kakarot_evm_to_starknet_address", EXISTING_ACCOUNT, 0x1234
         )
-        @SyscallHandler.patch(
-            "IAccount.get_code_hash", lambda sn_addr, data: [0x1, 0x1]
-        )
+        @SyscallHandler.patch("IAccount.get_code_hash", lambda *_: [0x1, 0x1])
         def test_extcodecopy_offset_high_zellic_issue_1258(
             self, cairo_run, size, bytecode, address
         ):
             offset_high = 1
 
             with SyscallHandler.patch(
-                "IAccount.bytecode", lambda addr, data: [len(bytecode), *bytecode]
+                "IAccount.bytecode", lambda *_: [len(bytecode), *bytecode]
             ):
                 memory = cairo_run(
                     "test__exec_extcodecopy_zellic_issue_1258",
@@ -228,13 +222,13 @@ class TestEnvironmentalInformation:
     class TestExtCodeHash:
         @SyscallHandler.patch(
             "IERC20.balanceOf",
-            lambda sn_addr, data: (
+            lambda sn_addr, _: (
                 [0, 1] if sn_addr == EXISTING_ACCOUNT_SN_ADDR else [0, 0]
             ),
         )
         @SyscallHandler.patch(
             "IAccount.get_nonce",
-            lambda sn_addr, data: [1] if sn_addr == EXISTING_ACCOUNT_SN_ADDR else [0],
+            lambda sn_addr, _: [1] if sn_addr == EXISTING_ACCOUNT_SN_ADDR else [0],
         )
         @SyscallHandler.patch(
             "Kakarot_evm_to_starknet_address",
@@ -247,11 +241,11 @@ class TestEnvironmentalInformation:
             with (
                 SyscallHandler.patch(
                     "IAccount.bytecode",
-                    lambda sn_addr, data: [len(bytecode), *bytecode],
+                    lambda *_: [len(bytecode), *bytecode],
                 ),
                 SyscallHandler.patch(
                     "IAccount.get_code_hash",
-                    lambda sn_addr, data: [*int_to_uint256(bytecode_hash)],
+                    lambda *_: [*int_to_uint256(bytecode_hash)],
                 ),
             ):
                 output = cairo_run("test__exec_extcodehash", address=address)

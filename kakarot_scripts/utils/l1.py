@@ -23,7 +23,7 @@ from kakarot_scripts.utils.kakarot import (
     get_solidity_artifacts,
 )
 
-logging.basicConfig()
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
@@ -121,8 +121,8 @@ def send_l1_transaction(
     evm_account = caller_eoa or EvmAccount.from_key(EVM_PRIVATE_KEY)
     evm_tx = L1_RPC_PROVIDER.eth.account.sign_transaction(transaction, evm_account.key)
     tx_hash = L1_RPC_PROVIDER.eth.send_raw_transaction(evm_tx.raw_transaction)
-    logger.info(f"ℹ⏳ Transaction sent: 0x{tx_hash.hex()}")
-    receipt = L1_RPC_PROVIDER.eth.wait_for_transaction_receipt(tx_hash)
+    logger.info(f"⏳ Waiting for transaction {tx_hash}")
+    receipt = L1_RPC_PROVIDER.eth.wait_for_transaction_receipt(tx_hash, timeout=5 * 60)
     response = []
     if not receipt.status:
         trace = L1_RPC_PROVIDER.manager.request_blocking(
@@ -181,7 +181,7 @@ def _wrap_web3(fun: str, caller_eoa_: Optional[LocalAccount] = None):
             normalized = map_abi_data(BASE_RETURN_NORMALIZERS, types, decoded)
             return normalized[0] if len(normalized) == 1 else normalized
 
-        logger.info(f"⏳ Executing {fun} at address {self.address}")
+        logger.info(f"⏳ Executing {self.address}.{fun}")
         receipt, response = send_l1_transaction(transaction, caller_eoa)
         if receipt["status"] == 0:
             logger.error(f"❌ {self.address}.{fun} failed")

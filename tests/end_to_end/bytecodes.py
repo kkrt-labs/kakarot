@@ -1860,11 +1860,7 @@ test_cases = [
             "success": 1,
         },
         "id": "Precompiles - EC_ADD - playground test case",
-        "marks": [
-            pytest.mark.EC_ADD,
-            pytest.mark.Precompiles,
-            pytest.mark.xfail(reason="Hint is not whitelisted"),
-        ],
+        "marks": [pytest.mark.EC_ADD, pytest.mark.Precompiles],
     },
     {
         "params": {
@@ -1906,11 +1902,7 @@ test_cases = [
             "success": 1,
         },
         "id": "Precompiles - EC_MUL - playground test case",
-        "marks": [
-            pytest.mark.EC_MUL,
-            pytest.mark.Precompiles,
-            pytest.mark.xfail(reason="Hint is not whitelisted"),
-        ],
+        "marks": [pytest.mark.EC_MUL, pytest.mark.Precompiles],
     },
     {
         "params": {

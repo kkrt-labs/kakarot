@@ -5,7 +5,12 @@ from eth_utils import keccak
 from eth_utils.address import to_checksum_address
 from web3.contract import Contract as Web3Contract
 
-from kakarot_scripts.utils.kakarot import deploy, eth_balance_of, fund_address
+from kakarot_scripts.utils.kakarot import (
+    deploy,
+    eth_balance_of,
+    eth_send_transaction,
+    fund_address,
+)
 from kakarot_scripts.utils.starknet import call_contract
 from tests.utils.errors import evm_error
 
@@ -47,8 +52,12 @@ class TestCoinbase:
             amount_wei = int(amount * 1e18)
             await fund_address(owner.address, 0.001)
             balance_coinbase_prev = await eth_balance_of(coinbase.address)
-            await coinbase.w3.eth.send_transaction(
-                caller_eoa=owner.starknet_contract, value=amount_wei
+            await eth_send_transaction(
+                coinbase.address,
+                data=b"",
+                value=amount_wei,
+                caller_eoa=owner.starknet_contract,
+                gas=40_000,
             )
             balance_coinbase_after = await eth_balance_of(coinbase.address)
             assert balance_coinbase_after == balance_coinbase_prev + amount_wei

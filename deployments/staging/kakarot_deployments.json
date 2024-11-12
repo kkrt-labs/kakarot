@@ -1,0 +1,58 @@
+{
+  "Bridge": {
+    "address": "0x663F3ad617193148711d28f5334eE4Ed07016602",
+    "starknet_address": "0x3c4fbbf15be984c1c17658f0b6ca0155c75ffc61551020d4a566165b2ce7a61"
+  },
+  "WETH": {
+    "address": "0x2E983A1Ba5e8b38AAAeC4B440B9dDcFBf72E15d1",
+    "starknet_address": "0x130a102efefe1bee562f6d014ba32499d578895781a17271458e228fbe0b346"
+  },
+  "WETH9": {
+    "address": "0xd52042e28e6f726738A48497A0728Fc5977AF3F8",
+    "starknet_address": "0x72ee3ae25c98b53e5f7879c7642112b82e804d4ac6c541a6e94f0670afd0d85"
+  },
+  "Coinbase": {
+    "address": "0x7a2deE402F31632592e3c9270D4F12E450877F86",
+    "starknet_address": "0x3b44d33827c5dbdec5a1b407de088f1941da9a576e24920de6c3b41f2047d7"
+  },
+  "Multicall3": {
+    "address": "0xcA11bde05977b3631167028862bE2a173976CA11",
+    "starknet_address": "0x4a8daeb5db2bfe2d9a37f74e6f4a2f7bfa7947bca35f4553c071d66cc242f82"
+  },
+  "ArachnidProxy": {
+    "address": "0x4e59b44847b379578588920cA78FbF26c0B4956C",
+    "starknet_address": "0x15701d69558e5cb4a56581aead3381cff3cc604063d9882eeff228b830d2bef"
+  },
+  "CreateX": {
+    "address": "0xba5Ed099633D3B313e4D5F7bdc1305d3c28ba5Ed",
+    "starknet_address": "0x3cf1d8802ffc46c152fbdb8b213468ca6aad2c51d2ab43fa7cc57884b3ff2f0"
+  },
+  "L2KakarotMessaging": {
+    "address": "0xc9c677a629AAe7A149f5F0E7546394f2630e8E9e",
+    "starknet_address": "0x4fc85a8f1dd13464031e996dec1aeb1734eac3141413577638e0529487137df"
+  },
+  "Starknet Token": {
+    "address": "0x8ffd5161d2a62020f5198FBfd28c470621187034",
+    "starknet_address": "0x399968119bf832072fcd40964ac876cccf8f0c3cc14168910feb1a52b399785"
+  },
+  "Starknet Voting Token": {
+    "address": "0x48b5435271917C8439d73f9456cB4074Bd1D07E6",
+    "starknet_address": "0x2a84cbf7e785f147ce409eea6a88af602793a1f0a416d4417a279a859fe1075"
+  },
+  "USDC": {
+    "address": "0x46B77dC345c2ad6991EfD10f654165108206219B",
+    "starknet_address": "0x16721decd06a035ff89d07f0af4a343d350eac928cc8925310dc0a103eff674"
+  },
+  "USDT": {
+    "address": "0x489d4482D00b09F444e01a38799C6C250F9BF55C",
+    "starknet_address": "0x2f0463914c51b40e9165a3eb271a9d67d67ebcab7cfd5a9594daf90ef7ce9c1"
+  },
+  "Wrapped BTC": {
+    "address": "0xAB49f91Df268bF260D100E431536520B6fB791de",
+    "starknet_address": "0x6c5ca7d5cbe3bb07b98a221b416dce194bfb84715a9161ee02140511366410e"
+  },
+  "Wrapped liquid staked Ether 2.0": {
+    "address": "0xBdaE60b4272856f87ABE843Aeb8E3fbC014419C5",
+    "starknet_address": "0x20cfffc3e25b98ba0dd5025667bca44f245687406226c36a0976e0eba1b514d"
+  }
+}

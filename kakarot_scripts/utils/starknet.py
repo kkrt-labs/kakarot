@@ -5,6 +5,7 @@ import logging
 import random
 import re
 import subprocess
+import time
 from collections import defaultdict, namedtuple
 from copy import deepcopy
 from datetime import datetime
@@ -42,6 +43,7 @@ from starknet_py.net.schemas.rpc import (
 )
 from starknet_py.net.signer.stark_curve_signer import KeyPair
 from starknet_py.net.udc_deployer.deployer import Deployer
+from starknet_py.transaction_errors import TransactionRejectedError
 from starkware.starknet.public.abi import get_selector_from_name
 
 from kakarot_scripts.constants import (
@@ -54,23 +56,23 @@ from kakarot_scripts.constants import (
     ETH_TOKEN_ADDRESS,
     NETWORK,
     RPC_CLIENT,
-    ChainId,
     NetworkType,
 )
 
-logging.basicConfig()
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 # Due to some fee estimation issues, we skip it in all the calls and set instead
 # this hardcoded value. This has no impact apart from enforcing the signing wallet
 # to have at least 0.1 ETH
-_max_fee = int(0.05e18)
+_max_fee = int(0.005e18) if NETWORK["type"] == NetworkType.PROD else int(0.05e18)
 
 # Global variables for lazy execution and multisig accounts
 _logs = defaultdict(list)
 _lazy_execute = defaultdict(bool)
 _multisig_account = defaultdict(bool)
+_nonces = {}
 
 # Dict to store selector to name mapping because argent api requires the name but calls have selector
 _selector_to_name = {get_selector_from_name("deployContract"): "deployContract"}
@@ -149,7 +151,8 @@ async def get_starknet_account(
             )
         if len(public_keys) > 1:
             register_multisig_account(address)
-            logger.info("ℹ️ Account is a multisig")
+            logger.info("ℹ️  Account is a multisig")
+
     else:
         logger.warning(
             f"⚠️ Unable to verify public key for account at address 0x{address:x}"
@@ -158,7 +161,7 @@ async def get_starknet_account(
     return Account(
         address=address,
         client=RPC_CLIENT,
-        chain=ChainId.starknet_chain_id,
+        chain=NETWORK["chain_id"].starknet_chain_id,
         key_pair=key_pair,
     )
 
@@ -168,7 +171,7 @@ async def get_eth_contract(provider=None) -> Contract:
     return Contract(
         ETH_TOKEN_ADDRESS,
         get_abi("ERC20"),
-        provider or next(NETWORK["relayers"]),
+        provider or await get_starknet_account(),
         cairo_version=0,
     )
 
@@ -201,20 +204,30 @@ async def fund_address(
         else:
             logger.info(f"{amount / 1e18} ETH minted to {hex(address)}")
     else:
-        account = funding_account or next(NETWORK["relayers"])
+        account = funding_account or await get_starknet_account()
         eth_contract = token_contract or await get_eth_contract(account)
         balance = await get_balance(account.address, eth_contract)
-        if balance < amount:
+        to_balance = await get_balance(address, eth_contract)
+        required_amount = amount - to_balance
+        if balance < required_amount:
             raise ValueError(
                 f"Cannot send {amount / 1e18} ETH from account 0x{account.address:064x} with current balance {balance / 1e18} ETH"
             )
-        prepared = eth_contract.functions["transfer"].prepare_invoke_v1(address, amount)
-        tx = await prepared.invoke(max_fee=_max_fee)
+        if required_amount <= 0:
+            return
 
-        status = await wait_for_transaction(tx.hash)
         logger.info(
-            f"{status} {amount / 1e18} ETH sent from {hex(account.address)} to {hex(address)}"
+            f"ℹ️  Funding account {hex(address)} with {required_amount / 1e18} ETH"
         )
+        await invoke(
+            "ERC20",
+            "transfer",
+            address,
+            required_amount,
+            account=account,
+            address=eth_contract.address,
+        )
+
         balance = (await eth_contract.functions["balanceOf"].call(address)).balance  # type: ignore
         logger.info(f"💰 Balance of {hex(address)}: {balance / 1e18}")
 
@@ -369,8 +382,10 @@ def compile_contract(contract):
     )
 
 
-async def deploy_starknet_account(class_hash=None, private_key=None, amount=1):
-    salt = random.randint(0, 2**251)
+async def deploy_starknet_account(
+    class_hash=None, private_key=None, amount=1, salt=None
+):
+    salt = salt or random.randint(0, 2**251)
     private_key = private_key or NETWORK["private_key"]
     if private_key is None:
         raise ValueError(
@@ -387,18 +402,43 @@ async def deploy_starknet_account(class_hash=None, private_key=None, amount=1):
         constructor_calldata=constructor_calldata,
         deployer_address=0,
     )
-    logger.info(f"ℹ️  Funding account {hex(address)} with {amount} ETH")
-    await fund_address(address, amount=amount)
-    logger.info("ℹ️  Deploying account")
-    res = await Account.deploy_account_v1(
-        address=address,
-        class_hash=class_hash,
-        salt=salt,
-        key_pair=key_pair,
-        client=RPC_CLIENT,
-        constructor_calldata=constructor_calldata,
-        max_fee=_max_fee,
-    )
+    current_balance = await get_balance(address)
+    required_amount = amount - current_balance
+    if required_amount > 0:
+        await fund_address(address, amount=required_amount)
+
+    try:
+        await RPC_CLIENT.get_class_hash_at(address)
+        logger.info(f"✅ Account at 0x{address:064x}")
+        return {
+            "address": address,
+        }
+    except Exception:
+        pass
+
+    logger.info(f"ℹ️  Deploying account at 0x{address:064x} with salt {hex(salt)}")
+    try:
+        res = await Account.deploy_account_v1(
+            address=address,
+            class_hash=class_hash,
+            salt=salt,
+            key_pair=key_pair,
+            client=RPC_CLIENT,
+            constructor_calldata=constructor_calldata,
+            max_fee=_max_fee,
+        )
+    except Exception as e:
+        logger.info(f"❌ Error deploying account: {e}, waiting 5s before retrying")
+        time.sleep(5)
+        res = await Account.deploy_account_v1(
+            address=address,
+            class_hash=class_hash,
+            salt=salt,
+            key_pair=key_pair,
+            client=RPC_CLIENT,
+            constructor_calldata=constructor_calldata,
+            max_fee=_max_fee,
+        )
     status = await wait_for_transaction(res.hash)
     logger.info(f"{status} Account deployed at: 0x{res.account.address:064x}")
 
@@ -434,7 +474,10 @@ async def declare(contract_name):
     except Exception:
         pass
 
-    account = next(NETWORK["relayers"])
+    account = await get_starknet_account()
+    if _multisig_account[account.address]:
+        account = await RelayerPool.get(account.address)
+    nonce = await get_nonce(account)
 
     if artifact.sierra is not None:
         casm_compiled_contract = artifact.casm.read_text()
@@ -445,6 +488,7 @@ async def declare(contract_name):
             compiled_contract=sierra_compiled_contract,
             compiled_class_hash=class_hash,
             max_fee=_max_fee,
+            nonce=nonce,
         )
 
         resp = await account.client.declare(transaction=declare_v2_transaction)
@@ -461,7 +505,7 @@ async def declare(contract_name):
             calldata=[deployed_class_hash],
             max_fee=_max_fee,
             chain_id=account.signer.chain_id.value,
-            additional_data=[await account.get_nonce()],
+            additional_data=[nonce],
         )
         signature = message_signature(
             msg_hash=tx_hash, priv_key=account.signer.private_key
@@ -471,7 +515,7 @@ async def declare(contract_name):
             sender_address=account.address,
             max_fee=_max_fee,
             signature=signature,
-            nonce=await account.get_nonce(),
+            nonce=nonce,
             version=1,
         )
         params = _create_broadcasted_txn(transaction=transaction)
@@ -486,7 +530,7 @@ async def declare(contract_name):
         )
         deployed_class_hash = resp.class_hash
 
-    status = await wait_for_transaction(resp.transaction_hash)
+    status = await wait_for_transaction(resp.transaction_hash, account)
 
     logger.info(f"{status} {contract_name} class hash: {hex(resp.class_hash)}")
     return deployed_class_hash
@@ -564,9 +608,40 @@ async def execute_calls():
     _logs = defaultdict(list)
 
 
+async def get_nonce(account):
+    global _nonces
+    if account.address not in _nonces:
+        _nonces[account.address] = await account.get_nonce(block_number="pending")
+
+    network_nonce = await account.get_nonce(block_number="pending")
+    retries = 10
+    while network_nonce != _nonces[account.address] and retries > 0:
+        logger.info(
+            f"⏳ Waiting for network nonce {network_nonce} to be {_nonces[account.address]}"
+        )
+        await asyncio.sleep(0.1)
+        network_nonce = await account.get_nonce(block_number="pending")
+        retries -= 1
+    if retries == 0:
+        logger.warning(
+            f"⏳ Network nonce {network_nonce} did not match expected nonce {_nonces[account.address]}"
+        )
+        # After 1 second, the nonce should have been updated by the network in any case
+        _nonces[account.address] = network_nonce
+
+    nonce = _nonces[account.address]
+    _nonces[account.address] += 1
+    return nonce
+
+
 @lazy_execute
 async def execute_v1(account, calls):
+    for call in calls:
+        # Convert calldata to int (in case some boolean values are passed)
+        call.calldata = [int(data) for data in call.calldata]
+
     calldata = _parse_calls(await account.cairo_version, calls)
+    nonce = await get_nonce(account)
     msg_hash = compute_transaction_hash(
         tx_hash_prefix=TransactionHashPrefix.INVOKE,
         version=1,
@@ -575,7 +650,7 @@ async def execute_v1(account, calls):
         calldata=calldata,
         max_fee=_max_fee,
         chain_id=NETWORK["chain_id"].starknet_chain_id,
-        additional_data=[await account.get_nonce()],
+        additional_data=[nonce],
     )
     signature = message_signature(
         msg_hash=msg_hash, priv_key=account.signer.private_key, seed=None
@@ -583,7 +658,7 @@ async def execute_v1(account, calls):
     transaction = InvokeV1(
         version=1,
         signature=signature,
-        nonce=await account.get_nonce(),
+        nonce=nonce,
         max_fee=_max_fee,
         sender_address=account.address,
         calldata=calldata,
@@ -610,8 +685,17 @@ async def execute_v1(account, calls):
         response = requests.post(
             f"{NETWORK['argent_multisig_api']}/0x{account.address:064x}/request",
             json=data,
-        )
-        content = response.json()["content"]
+        ).json()
+        if response.get("status") == "transactionForMultisigBeingSubmitted":
+            await asyncio.sleep(5)
+            response = requests.post(
+                f"{NETWORK['argent_multisig_api']}/0x{account.address:064x}/request",
+                json=data,
+            ).json()
+        content = response.get("content")
+        if content is None:
+            raise ValueError(f"❌ Multisig transaction rejected: {response}")
+
         transaction_id = content["id"]
         status = content["state"]
         while status not in {"TX_ACCEPTED_L2", "REVERTED", "REJECTED"}:
@@ -630,8 +714,7 @@ async def execute_v1(account, calls):
             status = content["state"]
             logger.info(f"⏳ Multisig transaction status: {status}")
         if status != "TX_ACCEPTED_L2":
-            logger.error(f"❌ Transaction rejected:\n{content}")
-            raise ValueError(f"Transaction rejected: {status}")
+            logger.error(f"❌ Multisig transaction rejected:\n{status}")
 
         return {
             "transaction_hash": content["transactionHash"],
@@ -649,7 +732,7 @@ async def execute_v1(account, calls):
         ),
     )
 
-    status = await wait_for_transaction(res.transaction_hash)
+    status = await wait_for_transaction(res.transaction_hash, account)
     logger.info(f"{status} 0x{res.transaction_hash:064x}")
     return res
 
@@ -719,7 +802,8 @@ async def call(contract: Union[str, int], *args, **kwargs):
 
 
 @functools.wraps(RPC_CLIENT.wait_for_tx)
-async def wait_for_transaction(tx_hash):
+async def wait_for_transaction(tx_hash, account=None):
+    global _nonces
     try:
         await RPC_CLIENT.wait_for_tx(
             tx_hash,
@@ -728,6 +812,9 @@ async def wait_for_transaction(tx_hash):
         )
         return "✅"
     except Exception as e:
+        if isinstance(e, TransactionRejectedError):
+            if account:
+                _nonces[account.address] -= 1
         logger.error(f"Error while waiting for transaction 0x{tx_hash:064x}: {e}")
         return "❌"
 
@@ -737,3 +824,143 @@ async def get_class_hash_at(address):
         return await RPC_CLIENT.get_class_hash_at(address)
     except Exception:
         return None
+
+
+class RelayerPool:
+    _cached_relayers = None
+
+    def __init__(self, accounts):
+        self.relayer_accounts = accounts
+        self.index = 0
+
+    @staticmethod
+    def compute_addresses(n):
+        private_key = NETWORK["private_key"]
+        public_key = KeyPair.from_private_key(int(private_key, 16)).public_key
+        constructor_calldata = [public_key]
+        class_hash = NETWORK.get(
+            "class_hash", get_declarations().get("OpenzeppelinAccount")
+        )
+        return [
+            compute_address(
+                salt=public_key + i,
+                class_hash=class_hash,
+                constructor_calldata=constructor_calldata,
+                deployer_address=0,
+            )
+            for i in range(n)
+        ]
+
+    @classmethod
+    @alru_cache
+    async def create(cls, n, **kwargs):
+        logger.info(f"ℹ️  Creating {n} relayer accounts")
+
+        account = await get_starknet_account()
+        is_lazy = _lazy_execute[account.address]
+        _lazy_execute[account.address] = True
+        # Extracted the fund_address part to be able to fund all the accounts at once
+        private_key = NETWORK["private_key"]
+        public_key = KeyPair.from_private_key(int(private_key, 16)).public_key
+        addresses = cls.compute_addresses(n)
+        for address in addresses:
+            await fund_address(
+                address,
+                amount=kwargs.pop(
+                    "amount", 1 if NETWORK["type"] != NetworkType.PROD else 0.01
+                ),
+            )
+
+        await execute_calls()
+        _lazy_execute[account.address] = is_lazy
+
+        addresses = [
+            (
+                await deploy_starknet_account(
+                    salt=i + public_key, amount=0, private_key=private_key
+                )
+            )["address"]
+            for i in range(n)
+        ]
+        logger.info(f"✅ Created {n} relayer accounts")
+
+        eth_contract = await get_eth_contract()
+        accounts = []
+        for address in addresses:
+            account = await get_starknet_account(address=address)
+            # Give infinite allowance to the main account so it's easier to move funds
+            allowance = (
+                await call(
+                    "ERC20",
+                    "allowance",
+                    account.address,
+                    int(NETWORK["account_address"], 16),
+                    address=eth_contract.address,
+                )
+            ).remaining
+            if allowance != 2**256 - 1:
+                await invoke(
+                    "ERC20",
+                    "approve",
+                    int(NETWORK["account_address"], 16),
+                    2**256 - 1,
+                    account=account,
+                    address=eth_contract.address,
+                )
+            accounts.append(account)
+        return cls(accounts)
+
+    def __next__(self) -> Account:
+        relayer = self.relayer_accounts[self.index]
+        self.index = (self.index + 1) % len(self.relayer_accounts)
+        return relayer
+
+    @classmethod
+    @alru_cache
+    async def default(cls, **kwargs):
+        return await cls.create(
+            NETWORK.get("relayers", 20 if NETWORK["type"] != NetworkType.PROD else 1),
+            **kwargs,
+        )
+
+    @classmethod
+    @alru_cache
+    async def get(cls, salt: int):
+        if cls._cached_relayers is None:
+            cls._cached_relayers = await cls.default()
+
+        return cls._cached_relayers.relayer_accounts[
+            salt % len(cls._cached_relayers.relayer_accounts)
+        ]
+
+    async def balances(self):
+        eth_contract = await get_eth_contract()
+        return [
+            (
+                f"0x{relayer.address:064x}",
+                f"{(await eth_contract.functions['balanceOf'].call(relayer.address)).balance / 1e18:.2f} ETH",
+            )
+            for relayer in self.relayer_accounts
+        ]
+
+    async def withdraw_all(self, to: int = int(NETWORK["account_address"], 16)):
+        account = await get_starknet_account()
+        is_lazy = _lazy_execute[account.address]
+        _lazy_execute[account.address] = True
+        eth_contract = await get_eth_contract()
+        for relayer in self.relayer_accounts:
+            balance = (
+                await eth_contract.functions["balanceOf"].call(relayer.address)
+            ).balance
+            if balance > 0:
+                await invoke(
+                    "ERC20",
+                    "transferFrom",
+                    relayer.address,
+                    to,
+                    balance,
+                    address=eth_contract.address,
+                    account=account,
+                )
+        await execute_calls()
+        _lazy_execute[account.address] = is_lazy

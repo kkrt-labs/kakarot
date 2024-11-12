@@ -25,7 +25,7 @@ from tests.utils.helpers import (
 
 params_execute = [pytest.param(case.pop("params"), **case) for case in test_cases]
 
-logging.basicConfig()
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
@@ -248,6 +248,9 @@ class TestKakarot:
             assert result.gas_used == 21_000
 
     class TestEthCallJumpCreationCodeDeployTx:
+        @pytest.mark.skipif(
+            NETWORK["name"] != "katana", reason="Not yet declared on sepolia"
+        )
         async def test_eth_call_jump_creation_code_deploy_tx_should_succeed(
             self, kakarot, new_eoa
         ):
@@ -345,7 +348,7 @@ class TestKakarot:
 
     class TestAssertViewCall:
         @pytest.mark.parametrize("entrypoint", ["eth_call", "eth_estimate_gas"])
-        async def test_should_raise_when_tx_view_entrypoint(self, kakarot, entrypoint):
+        async def test_should_raise_when_tx_view_entrypoint(self, entrypoint):
             evm_account = await get_eoa()
             calldata = bytes.fromhex("6001")
             tx_hash = await invoke(

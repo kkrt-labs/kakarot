@@ -23,13 +23,13 @@ class TestExecutionContext:
     )
     @SyscallHandler.patch(
         "IERC20.balanceOf",
-        lambda addr, data: [0, 0],
+        lambda *_: [0, 0],
     )
     def test_jump(self, cairo_run, bytecode, jumpdest, new_pc, expected_return_data):
 
         with SyscallHandler.patch(
             "IAccount.is_valid_jumpdest",
-            lambda addr, data: [1 if len(expected_return_data) == 0 else 0],
+            lambda *_: [1 if len(expected_return_data) == 0 else 0],
         ):
             evm = cairo_run("test__jump", bytecode=bytecode, jumpdest=jumpdest)
         assert evm["program_counter"] == new_pc
@@ -58,11 +58,11 @@ class TestIsValidJumpdest:
 
     @SyscallHandler.patch(
         "IERC20.balanceOf",
-        lambda addr, data: [0, 0],
+        lambda *_: [0, 0],
     )
     @SyscallHandler.patch(
         "IAccount.is_valid_jumpdest",
-        lambda addr, data: [1 if data == [0x10] else 0],
+        lambda _, data: [1 if data == [0x10] else 0],
     )
     @pytest.mark.parametrize(
         "cached_jumpdests, index, expected",

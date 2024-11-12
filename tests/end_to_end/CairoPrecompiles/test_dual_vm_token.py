@@ -90,17 +90,13 @@ class TestDualVmToken:
             )
             assert balance_owner_starknet == balance_owner_evm
 
-        async def test_should_revert_balance_of_invalid_address(
-            self, starknet_token, dual_vm_token
-        ):
+        async def test_should_revert_balance_of_invalid_address(self, dual_vm_token):
             evm_error = keccak(b"InvalidStarknetAddress()")[:4]
             with cairo_error(evm_error):
                 await dual_vm_token.functions["balanceOf(uint256)"](2**256 - 1)
 
     class TestActions:
-        async def test_should_transfer(
-            self, starknet_token, dual_vm_token, owner, other
-        ):
+        async def test_should_transfer(self, dual_vm_token, owner, other):
             amount = 1
             balance_owner_before = await dual_vm_token.functions["balanceOf(address)"](
                 owner.address
@@ -185,7 +181,7 @@ class TestDualVmToken:
                 )
 
         async def test_should_revert_transfer_starknet_address_invalid_address(
-            self, starknet_token, dual_vm_token
+            self, dual_vm_token
         ):
             evm_error = keccak(b"InvalidStarknetAddress()")[:4]
             with cairo_error(evm_error):
@@ -217,7 +213,7 @@ class TestDualVmToken:
             assert allowance_after == allowance_before + amount
 
         async def test_should_approve_starknet_address(
-            self, starknet_token, dual_vm_token, owner, other
+            self, dual_vm_token, owner, other
         ):
             allowance_before = await dual_vm_token.functions[
                 "allowance(address,uint256)"
@@ -242,7 +238,7 @@ class TestDualVmToken:
             assert allowance_after == amount
 
         async def test_should_revert_approve_starknet_address_invalid_address(
-            self, starknet_token, dual_vm_token
+            self, dual_vm_token
         ):
             evm_error = keccak(b"InvalidStarknetAddress()")[:4]
             with cairo_error(evm_error):
@@ -271,7 +267,7 @@ class TestDualVmToken:
             assert allowance_after == allowance_before + amount
 
         async def test_should_revert_allowance_starknet_address_owner_invalid_address(
-            self, starknet_token, dual_vm_token, other
+            self, dual_vm_token, other
         ):
             with cairo_error(
                 "EVM tx reverted, reverting SN tx because of previous calls to cairo precompiles"
@@ -281,7 +277,7 @@ class TestDualVmToken:
                 )
 
         async def test_should_revert_allowance_starknet_address_spender_invalid_address(
-            self, starknet_token, dual_vm_token, owner
+            self, dual_vm_token, owner
         ):
             with cairo_error(
                 "EVM tx reverted, reverting SN tx because of previous calls to cairo precompiles"
@@ -313,9 +309,7 @@ class TestDualVmToken:
             ](owner.address, other.starknet_contract.address)
             assert allowance_after == allowance_before + amount
 
-        async def test_should_transfer_from(
-            self, starknet_token, dual_vm_token, owner, other
-        ):
+        async def test_should_transfer_from(self, dual_vm_token, owner, other):
             amount = 1
             balance_owner_before = await dual_vm_token.functions["balanceOf(address)"](
                 owner.address
@@ -353,7 +347,7 @@ class TestDualVmToken:
             assert balance_other_before + amount == balance_other_after
 
         async def test_should_transfer_from_starknet_address_from(
-            self, starknet_token, dual_vm_token, owner, other
+            self, dual_vm_token, owner, other
         ):
             amount = 1
             balance_owner_before = await dual_vm_token.functions["balanceOf(address)"](
@@ -392,7 +386,7 @@ class TestDualVmToken:
             assert balance_other_before + amount == balance_other_after
 
         async def test_should_transfer_from_starknet_address_to(
-            self, starknet_token, dual_vm_token, owner, other
+            self, dual_vm_token, owner, other
         ):
             amount = 1
             balance_owner_before = await dual_vm_token.functions["balanceOf(address)"](
@@ -431,7 +425,7 @@ class TestDualVmToken:
             assert balance_other_before + amount == balance_other_after
 
         async def test_should_transfer_from_starknet_address_from_and_to(
-            self, starknet_token, dual_vm_token, owner, other
+            self, dual_vm_token, owner, other
         ):
             amount = 1
             balance_owner_before = await dual_vm_token.functions["balanceOf(address)"](
@@ -576,7 +570,7 @@ class TestDualVmToken:
                 )
 
         async def test_should_revert_transfer_from_starknet_address_from_and_to_invalid_address(
-            self, starknet_token, dual_vm_token, other
+            self, dual_vm_token, other
         ):
             evm_error = keccak(b"InvalidStarknetAddress()")[:4]
             with cairo_error(evm_error):
@@ -584,9 +578,7 @@ class TestDualVmToken:
                     2**256 - 1, 2**256 - 1, 1, caller_eoa=other.starknet_contract
                 )
 
-        async def test_should_revert_tx_cairo_precompiles(
-            self, starknet_token, dual_vm_token, owner, other
-        ):
+        async def test_should_revert_tx_cairo_precompiles(self, dual_vm_token, other):
             with cairo_error(
                 "EVM tx reverted, reverting SN tx because of previous calls to cairo precompiles"
             ):
@@ -596,7 +588,7 @@ class TestDualVmToken:
 
     class TestIntegrationUniswap:
         async def test_should_add_liquidity_and_swap(
-            starknet_token, dual_vm_token, token_a, router, owner, other
+            self, dual_vm_token, token_a, router, owner, other
         ):
             amount_a_desired = 1000 * await token_a.decimals()
             amount_dual_vm_token_desired = 500 * await dual_vm_token.decimals()

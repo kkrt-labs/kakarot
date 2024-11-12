@@ -12,7 +12,7 @@ from tests.utils.errors import cairo_error
 
 
 @pytest_asyncio.fixture(scope="module")
-async def cairo_counter(max_fee, deployer):
+async def cairo_counter(deployer):
     cairo_counter = get_contract("Counter", provider=deployer)
 
     yield cairo_counter
@@ -21,7 +21,7 @@ async def cairo_counter(max_fee, deployer):
 
 
 @pytest_asyncio.fixture(scope="module")
-async def multicall_cairo_counter_caller(owner, cairo_counter):
+async def multicall_cairo_counter_caller(cairo_counter):
     caller_contract = await deploy(
         "CairoPrecompiles",
         "MulticallCairoPrecompileTest",
@@ -49,7 +49,7 @@ class TestCairoPrecompiles:
         @given(calls_per_batch=st.integers(min_value=0, max_value=100))
         @settings(max_examples=5)
         async def test_should_increase_counter_in_batches(
-            self, cairo_counter, owner, calls_per_batch
+            self, cairo_counter, calls_per_batch
         ):
             prev_count = (await cairo_counter.functions["get"].call()).count
 
@@ -122,7 +122,7 @@ class TestCairoPrecompiles:
                 await multicall_cairo_counter_caller.incrementCairoCounterDelegatecall()
 
         async def test_should_fail_when_called_with_callcode(
-            self, multicall_cairo_counter_caller, cairo_counter
+            self, multicall_cairo_counter_caller
         ):
             with cairo_error(
                 "EVM tx reverted, reverting SN tx because of previous calls to cairo precompiles"

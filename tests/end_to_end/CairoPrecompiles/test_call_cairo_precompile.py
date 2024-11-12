@@ -2,6 +2,7 @@ import pytest
 import pytest_asyncio
 from eth_abi import encode
 
+from kakarot_scripts.constants import NETWORK
 from kakarot_scripts.utils.kakarot import deploy, eth_send_transaction
 from kakarot_scripts.utils.starknet import get_contract, invoke
 from tests.utils.errors import cairo_error
@@ -10,7 +11,7 @@ CALL_CAIRO_PRECOMPILE = 0x75004
 
 
 @pytest_asyncio.fixture(scope="module")
-async def cairo_counter(max_fee, deployer):
+async def cairo_counter(deployer):
     cairo_counter = get_contract("Counter", provider=deployer)
 
     yield cairo_counter
@@ -105,9 +106,12 @@ class TestCairoPrecompiles:
             ):
                 await cairo_counter_caller.incrementCairoCounterCallcode()
 
+    @pytest.mark.skipif(
+        NETWORK["name"] != "katana", reason="Not yet declared on sepolia"
+    )
     class TestReentrancyKakarot:
         async def test_should_fail_when_reentrancy_cairo_call(
-            self, kakarot, kakarot_reentrancy, new_eoa, eth_call_calldata
+            self, kakarot_reentrancy, eth_call_calldata
         ):
             with cairo_error("ReentrancyGuard: reentrant call"):
                 await kakarot_reentrancy.staticcallKakarot(
@@ -115,7 +119,7 @@ class TestCairoPrecompiles:
                 )
 
         async def test_should_fail_when_reentrancy_cairo_call_whitelisted(
-            self, kakarot, kakarot_reentrancy, new_eoa, eth_call_calldata
+            self, kakarot_reentrancy, eth_call_calldata
         ):
             # Setup for whitelisted precompile
             await invoke(

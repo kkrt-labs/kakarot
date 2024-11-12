@@ -1,6 +1,8 @@
+import asyncio
 import functools
 import json
 import logging
+import math
 import re
 import time
 from collections import defaultdict
@@ -43,7 +45,7 @@ from kakarot_scripts.constants import (
     ChainId,
 )
 from kakarot_scripts.data.pre_eip155_txs import PRE_EIP155_TX
-from kakarot_scripts.utils.starknet import _max_fee
+from kakarot_scripts.utils.starknet import RelayerPool, _max_fee
 from kakarot_scripts.utils.starknet import call
 from kakarot_scripts.utils.starknet import call as _call_starknet
 from kakarot_scripts.utils.starknet import fund_address as _fund_starknet_address
@@ -55,9 +57,73 @@ from kakarot_scripts.utils.uint256 import int_to_uint256
 from tests.utils.constants import TRANSACTION_GAS_LIMIT
 from tests.utils.helpers import pack_calldata, rlp_encode_signed_data
 
-logging.basicConfig()
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+_nonces = {}
+
+
+async def get_nonce(account):
+    global _nonces
+    if account.address not in _nonces:
+        if WEB3.is_connected():
+            _nonces[account.address] = WEB3.eth.get_transaction_count(
+                account.signer.public_key.to_checksum_address()
+            )
+        else:
+            _nonces[account.address] = (
+                await (
+                    _get_starknet_contract("account_contract", address=account.address)
+                    .functions["get_nonce"]
+                    .call(block_number="pending")
+                )
+            ).nonce
+
+    if WEB3.is_connected():
+        network_nonce = WEB3.eth.get_transaction_count(
+            account.signer.public_key.to_checksum_address()
+        )
+    else:
+        network_nonce = (
+            await (
+                _get_starknet_contract("account_contract", address=account.address)
+                .functions["get_nonce"]
+                .call(block_number="pending")
+            )
+        ).nonce
+
+    retries = 10
+    while network_nonce != _nonces[account.address] and retries > 0:
+        logger.info(
+            f"⏳ Waiting for network nonce {network_nonce} to be {_nonces[account.address]}"
+        )
+        await asyncio.sleep(0.1)
+
+        if WEB3.is_connected():
+            network_nonce = WEB3.eth.get_transaction_count(
+                account.signer.public_key.to_checksum_address()
+            )
+        else:
+            network_nonce = (
+                await (
+                    _get_starknet_contract("account_contract", address=account.address)
+                    .functions["get_nonce"]
+                    .call(block_number="pending")
+                )
+            ).nonce
+
+        retries -= 1
+    if retries == 0:
+        logger.warning(
+            f"⏳ Network nonce {network_nonce} did not match expected nonce {_nonces[account.address]}"
+        )
+        # After 1 second, the nonce should have been updated by the network in any case
+        _nonces[account.address] = network_nonce
+
+    nonce = _nonces[account.address]
+    _nonces[account.address] += 1
+    return nonce
 
 
 class EvmTransactionError(Exception):
@@ -188,9 +254,6 @@ async def get_contract(
     except NoABIFunctionsFound:
         pass
     contract.events.parse_events = MethodType(_parse_events, contract.events)
-    contract.w3.eth.send_transaction = MethodType(
-        _wrap_kakarot(fun=None, caller_eoa=caller_eoa), contract
-    )
     return contract
 
 
@@ -451,7 +514,9 @@ def _wrap_kakarot(fun: Optional[str] = None, caller_eoa: Optional[Account] = Non
                 payload["data"] = list(payload["data"])
                 payload["origin"] = int(payload["from"], 16)
                 del payload["from"]
-                result = await kakarot_contract.functions["eth_call"].call(**payload)
+                result = await kakarot_contract.functions["eth_call"].call(
+                    **payload, block_number="pending"
+                )
                 if result.success == 0:
                     raise EvmTransactionError(bytes(result.return_data))
                 result = result.return_data
@@ -460,7 +525,7 @@ def _wrap_kakarot(fun: Optional[str] = None, caller_eoa: Optional[Account] = Non
             normalized = map_abi_data(BASE_RETURN_NORMALIZERS, types, decoded)
             return normalized[0] if len(normalized) == 1 else normalized
 
-        logger.info(f"⏳ Executing {fun} at address {self.address}")
+        logger.info(f"⏳ Executing {self.address}.{fun or 'fallback'}")
         receipt, response, success, gas_used = await eth_send_transaction(
             to=self.address,
             value=value,
@@ -471,9 +536,9 @@ def _wrap_kakarot(fun: Optional[str] = None, caller_eoa: Optional[Account] = Non
             gas_price=gas_price,
         )
         if success == 0:
-            logger.error(f"❌ {self.address}.{fun} failed")
+            logger.error(f"❌ {self.address}.{fun or 'fallback'} failed")
             raise EvmTransactionError(bytes(response))
-        logger.info(f"✅ {self.address}.{fun}")
+        logger.info(f"✅ {self.address}.{fun or 'fallback'}")
         return {
             "receipt": receipt,
             "response": response,
@@ -494,11 +559,10 @@ async def _contract_exists(address: int) -> bool:
 
 async def get_eoa(private_key=None, amount=0) -> Account:
     private_key = private_key or keys.PrivateKey(bytes.fromhex(EVM_PRIVATE_KEY[2:]))
-    starknet_address = await deploy_and_fund_evm_address(
-        private_key.public_key.to_checksum_address(), amount
-    )
+    evm_address = private_key.public_key.to_checksum_address()
+    starknet_address = await deploy_and_fund_evm_address(evm_address, amount)
 
-    return Account(
+    account = Account(
         address=starknet_address,
         client=RPC_CLIENT,
         chain=ChainId.starknet_chain_id,
@@ -507,6 +571,8 @@ async def get_eoa(private_key=None, amount=0) -> Account:
         # and the access to the private key
         key_pair=KeyPair(int(private_key), private_key.public_key),
     )
+    account.evm_address = evm_address
+    return account
 
 
 async def whitelist_pre_eip155_tx(name: str):
@@ -609,6 +675,11 @@ async def eth_balance_of(address: Union[int, str]):
     return await get_balance(starknet_address)
 
 
+@alru_cache
+async def eth_chain_id():
+    return (await call("kakarot", "eth_chain_id")).chain_id
+
+
 async def eth_send_transaction(
     to: Union[int, str],
     data: Union[str, bytes],
@@ -625,17 +696,11 @@ async def eth_send_transaction(
             evm_account.signer.public_key.to_checksum_address()
         )
     else:
-        nonce = (
-            await (
-                _get_starknet_contract("account_contract", address=evm_account.address)
-                .functions["get_nonce"]
-                .call()
-            )
-        ).nonce
+        nonce = await get_nonce(evm_account)
 
     payload = {
         "type": 0x1,
-        "chainId": NETWORK["chain_id"],
+        "chainId": await eth_chain_id(),
         "nonce": nonce,
         "gas": gas,
         "gasPrice": gas_price,
@@ -678,7 +743,7 @@ async def send_starknet_transaction(
     packed_encoded_unsigned_tx: List[int],
     max_fee: Optional[int] = None,
 ):
-    relayer = next(NETWORK["relayers"])
+    relayer = await RelayerPool.get(evm_account.address)
     current_timestamp = (await RPC_CLIENT.get_block("latest")).timestamp
     outside_execution = {
         "caller": int.from_bytes(b"ANY_CALLER", "big"),
@@ -709,13 +774,19 @@ async def send_starknet_transaction(
         account=relayer,
     )
 
-    try:
-        receipt = await RPC_CLIENT.get_transaction_receipt(tx_hash)
-    except Exception:
-        # Sometime the RPC_CLIENT is too fast and the first pool raises with
-        # starknet_py.net.client_errors.ClientError: Client failed with code 29. Message: Transaction hash not found
-        time.sleep(2)
-        receipt = await RPC_CLIENT.get_transaction_receipt(tx_hash)
+    check_interval = math.ceil(NETWORK["check_interval"])
+    attempts = NETWORK["max_wait"] // check_interval
+    for _ in range(attempts):
+        try:
+            receipt = await RPC_CLIENT.get_transaction_receipt(tx_hash)
+            break
+        except Exception:
+            # Sometime the RPC_CLIENT is too fast and the first pool raises with
+            # starknet_py.net.client_errors.ClientError: Client failed with code 29. Message: Transaction hash not found
+            time.sleep(check_interval)
+    else:
+        raise ValueError(f"❌ Transaction not found: 0x{tx_hash:064x}")
+
     transaction_events = [
         event
         for event in receipt.events
@@ -723,6 +794,7 @@ async def send_starknet_transaction(
         and event.keys[0] == starknet_keccak(b"transaction_executed")
     ]
     if receipt.execution_status.name == "REVERTED":
+        _nonces[evm_account.address] -= 1
         raise StarknetTransactionError(f"Starknet tx reverted: {receipt.revert_reason}")
     if len(transaction_events) != 1:
         raise ValueError("Cannot locate the single event giving the actual tx status")
@@ -765,7 +837,7 @@ async def deploy_and_fund_evm_address(evm_address: str, amount: float):
             "kakarot",
             "deploy_externally_owned_account",
             int(evm_address, 16),
-            account=next(NETWORK["relayers"]),
+            account=await RelayerPool.get(int(evm_address, 16)),
         )
     return starknet_address
 

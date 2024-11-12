@@ -8,20 +8,20 @@ from eth_keys.datatypes import PrivateKey
 from starknet_py.contract import Contract
 from starknet_py.net.account.account import Account
 
-from kakarot_scripts.constants import NETWORK, RPC_CLIENT, NetworkType
+from kakarot_scripts.constants import RPC_CLIENT, NetworkType
 from kakarot_scripts.utils.kakarot import deploy as deploy_kakarot
-from kakarot_scripts.utils.kakarot import eth_balance_of
+from kakarot_scripts.utils.kakarot import eth_balance_of, eth_send_transaction
 from kakarot_scripts.utils.kakarot import get_contract as get_solidity_contract
 from kakarot_scripts.utils.kakarot import get_deployments, get_eoa
 from kakarot_scripts.utils.starknet import (
+    RelayerPool,
     call,
     get_contract,
     get_eth_contract,
-    get_starknet_account,
 )
 from tests.utils.helpers import generate_random_private_key
 
-logging.basicConfig()
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
@@ -50,6 +50,17 @@ def max_fee():
     it is not used per se in the test.
     """
     return int(5e17)
+
+
+@pytest_asyncio.fixture(scope="session")
+async def deployer(worker_id) -> Account:
+    """
+    Return a cached version of the deployer contract.
+    """
+
+    account = await RelayerPool.get(abs(hash(worker_id)))
+    logger.info(f"ℹ️  Deployer for worker {worker_id}: 0x{account.address:064x}")
+    return account
 
 
 @pytest_asyncio.fixture(scope="session")
@@ -86,19 +97,21 @@ async def new_eoa(deployer) -> Wallet:
         if balance < tx_cost:
             continue
 
-        # Send the funds to the coinbase contract. The owner will be able to withdraw them.
-        await coinbase.w3.eth.send_transaction(
-            caller_eoa=wallet.starknet_contract,
+        await eth_send_transaction(
+            coinbase.address,
+            data=b"",
+            gas=gas_limit,
             value=balance - tx_cost,
-            gas_limit=gas_limit,
             gas_price=gas_price,
+            caller_eoa=wallet.starknet_contract,
         )
 
     # Withdraw the funds to the deployer
+    coinbase_owner = await get_eoa()
+    assert coinbase_owner.evm_address == await coinbase.owner()
     await coinbase.functions["withdraw(uint256)"](
-        toStarknetAddress=deployer.address,
-        gas_limit=gas_limit,
-        gas_price=gas_price,
+        deployer.address,
+        caller_eoa=coinbase_owner,
     )
 
 
@@ -107,7 +120,9 @@ async def owner(new_eoa):
     """
     Return the main caller of all tests.
     """
-    return await new_eoa(0.1)
+    account = await new_eoa(0.1)
+    logger.info(f"ℹ️  Owner: {account.address}")
+    return account
 
 
 @pytest_asyncio.fixture(scope="module")
@@ -115,21 +130,16 @@ async def other(new_eoa):
     """
     Just another EOA.
     """
-    return await new_eoa(0.1)
-
-
-@pytest_asyncio.fixture(scope="session")
-async def deployer() -> Account:
-    """
-    Return a cached version of the deployer contract.
-    """
-
-    return await get_starknet_account()
+    account = await new_eoa(0.1)
+    logger.info(f"ℹ️  Other: {account.address}")
+    return account
 
 
 @pytest_asyncio.fixture(scope="session")
 async def eth(deployer) -> Contract:
-    return await get_eth_contract(provider=deployer)
+    contract = await get_eth_contract(provider=deployer)
+    logger.info(f"ℹ️  ETH contract: {contract.address}")
+    return contract
 
 
 @pytest.fixture(scope="session")
@@ -137,7 +147,9 @@ def cairo_counter(deployer) -> Contract:
     """
     Return a cached version of the cairo_counter contract.
     """
-    return get_contract("Counter", provider=deployer)
+    contract = get_contract("Counter", provider=deployer)
+    logger.info(f"ℹ️  Cairo counter: 0x{contract.address:064x}")
+    return contract
 
 
 @pytest.fixture(scope="session")
@@ -145,7 +157,9 @@ def kakarot(deployer) -> Contract:
     """
     Return a cached deployer for the whole session.
     """
-    return get_contract("kakarot", provider=deployer)
+    contract = get_contract("kakarot", provider=deployer)
+    logger.info(f"ℹ️  Kakarot: 0x{contract.address:064x}")
+    return contract
 
 
 @pytest.fixture
@@ -193,19 +207,6 @@ def block_hash():
     return _factory
 
 
-@pytest.fixture(autouse=True, scope="session")
-def relayers(worker_id):
-    """
-    Override NETWORK["relayers"] to use the worker_id as the index and avoid nonce issues.
-    """
-    try:
-        logger.info(f"Setting relayer index to {int(worker_id[2:])}")
-        NETWORK["relayers"].index = int(worker_id[2:])
-    except ValueError:
-        logger.info(f"Error while setting relayer index to {worker_id}")
-    return
-
-
 # Uniswap fixtures
 
 TOTAL_SUPPLY = 10000 * 10**18
@@ -222,7 +223,7 @@ async def token_a(owner):
 
 
 @pytest_asyncio.fixture(scope="module")
-async def weth(owner):
+async def weth():
     return await deploy_kakarot("WETH", "WETH9")
 
 
@@ -232,7 +233,7 @@ async def factory(owner):
 
 
 @pytest_asyncio.fixture(scope="module")
-async def router(owner, factory, weth):
+async def router(factory, weth):
     return await deploy_kakarot(
         "UniswapV2Router", "UniswapV2Router02", factory.address, weth.address
     )

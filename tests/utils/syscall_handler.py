@@ -20,7 +20,7 @@ from kakarot_scripts.utils.uint256 import int_to_uint256, uint256_to_int
 from tests.utils.constants import CAIRO1_HELPERS_CLASS_HASH, CHAIN_ID
 
 
-def cairo_keccak(class_hash, calldata):
+def cairo_keccak(_, calldata):
     return int_to_uint256(
         int.from_bytes(
             keccak(
@@ -34,7 +34,7 @@ def cairo_keccak(class_hash, calldata):
     )
 
 
-def cairo_recover_eth_address(class_hash, calldata):
+def cairo_recover_eth_address(_, calldata):
     """
     Convert the input calldata from Cairo's `recover_eth_address` into a signature and a message hash,
     and then recover the Ethereum address from the signature.
@@ -59,7 +59,7 @@ def cairo_recover_eth_address(class_hash, calldata):
     ]  # return [is_some: 1, address: int]
 
 
-def cairo_verify_signature_secp256r1(class_hash, calldata):
+def cairo_verify_signature_secp256r1(_, calldata):
     """
     Convert the input calldata from Cairo's `verify_signature_secp256r1` into a message hash,
     signature and public key, and verify the signature on the secp256r1 curve.
@@ -81,7 +81,7 @@ def cairo_verify_signature_secp256r1(class_hash, calldata):
     return [is_valid]
 
 
-def cairo_compute_sha256_u32_array(class_hash, calldata):
+def cairo_compute_sha256_u32_array(_, calldata):
     """
     Compute the sha256 of a u32 array and return its bytes4 array representation.
     """
@@ -193,7 +193,7 @@ class SyscallHandler:
         get_selector_from_name(
             "verify_signature_secp256r1"
         ): cairo_verify_signature_secp256r1,
-        get_selector_from_name("get_cairo1_helpers_class_hash"): lambda addr, data: [
+        get_selector_from_name("get_cairo1_helpers_class_hash"): lambda *_: [
             CAIRO1_HELPERS_CLASS_HASH
         ],
         get_selector_from_name(
@@ -206,7 +206,7 @@ class SyscallHandler:
             lambda addr, data: self.execute_starknet_call(addr, data)
         )
 
-    def execute_starknet_call(self, account_address, calldata):
+    def execute_starknet_call(self, _, calldata):
         contract_address = calldata[0]
         function_selector = calldata[1]
         calldata = calldata[2:]
@@ -568,23 +568,12 @@ class SyscallHandler:
             deploy_from_zero=deploy_from_zero,
         )
 
-        retdata = self.patches.get("deploy")(class_hash, constructor_calldata)
+        retdata = self.patches.get(get_selector_from_name("deploy"))(
+            class_hash, constructor_calldata
+        )
         retdata_segment = segments.add()
         segments.write_arg(retdata_segment, retdata)
         segments.write_arg(syscall_ptr + 6, [len(retdata), retdata_segment])
-
-    @classmethod
-    @contextmanager
-    def patch_deploy(cls, value: callable):
-        """
-        Patch the deploy syscall with the value.
-
-        :param value: The value to patch with, a callable that will be called with the class hash,
-            the contract address salt, the constructor calldata and the deploy from zero flag.
-        """
-        cls.patches["deploy"] = value
-        yield
-        del cls.patches["deploy"]
 
     @classmethod
     @contextmanager
@@ -643,27 +632,27 @@ class SyscallHandler:
         """
         patched_before = set(cls.patches.keys())
 
-        def _balance_of(erc20_address, calldata):
+        def _balance_of(_, calldata):
             return int_to_uint256(state.get(calldata[0], {}).get("balance", 0))
 
         balance_selector = get_selector_from_name("balanceOf")
         cls.patches[balance_selector] = _balance_of
 
-        def _bytecode(contract_address, calldata):
+        def _bytecode(contract_address, _):
             code = state.get(contract_address, {}).get("code", [])
             return [len(code), *code]
 
         bytecode_selector = get_selector_from_name("bytecode")
         cls.patches[bytecode_selector] = _bytecode
 
-        def _bytecode_len(contract_address, calldata):
+        def _bytecode_len(contract_address, _):
             code = state.get(contract_address, {}).get("code", [])
             return [len(code)]
 
         bytecode_len_selector = get_selector_from_name("bytecode_len")
         cls.patches[bytecode_len_selector] = _bytecode_len
 
-        def _get_nonce(contract_address, calldata):
+        def _get_nonce(contract_address, _):
             return [state.get(contract_address, {}).get("nonce", 0)]
 
         nonce_selector = get_selector_from_name("get_nonce")

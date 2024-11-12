@@ -57,7 +57,7 @@ class TestAccount:
 
     class TestOriginalStorage:
         @pytest.mark.parametrize("key, value", [(0, 0), (2**256 - 1, 2**256 - 1)])
-        @SyscallHandler.patch("IAccount.storage", lambda addr, data: [0x1337, 0])
+        @SyscallHandler.patch("IAccount.storage", lambda *_: [0x1337, 0])
         @SyscallHandler.patch("Kakarot_evm_to_starknet_address", 0xABDE1, 0x1234)
         def test_should_return_original_storage_when_state_modified(
             self, cairo_run, key, value
@@ -97,9 +97,7 @@ class TestAccount:
                 (1, [1], True),
             ),
         )
-        @SyscallHandler.patch(
-            "IAccount.get_code_hash", lambda sn_addr, data: [0x1, 0x1]
-        )
+        @SyscallHandler.patch("IAccount.get_code_hash", lambda *_: [0x1, 0x1])
         def test_should_return_true_when_nonce(
             self, cairo_run, nonce, code, expected_result
         ):

@@ -1,0 +1,9 @@
+{
+  "EVM": "0x3681f3cfdc97e89714dcc272074d7513e78aec979252e0e59eb85857de89b22",
+  "Counter": "0x41872aef44417ee222b17cf58aef434e10bb29604d3f789e01cd292ed8cd3f3",
+  "MockPragmaOracle": "0x487893f3414f9b3a90c3ef8221fabe73ea190b206ee1c969cb1fc5da40ff04a",
+  "MockPragmaSummaryStats": "0x6b824a7106aa7428e880e58db35ffba50e90fc3baabaa6418daed099774c2dd",
+  "UniversalLibraryCaller": "0x4c6cc89ccbd932b1cf72e1e8ae45950cf84fc15ad134eda9daea9d8748a3b1b",
+  "BenchmarkCairoCalls": "0x2eb949afed5b91b2a3a154edfa773f3a8e4b7002f71c909bf585607c6dfbdce",
+  "kakarot": "0x2728e29541ceb8f741427e8efc88e8c7f73d2a9289e658800a146eec97c8bcc"
+}

@@ -62,13 +62,6 @@ class TestUniswapV2Factory:
             assert await pair.token0() == token_0
             assert await pair.token1() == token_1
 
-        @pytest.mark.xfail(reason="Gas metering is inaccurate in kakarot")
-        async def test_should_use_correct_gas(self, factory, owner):
-            await factory.createPair(
-                *TEST_ADDRESSES, caller_eoa=owner.starknet_contract, max_fee=0
-            )
-            assert factory.tx.result.gas_used == 2_512_920
-
     class TestSetFeeTo:
         async def test_should_revert_when_caller_is_not_owner(self, factory, other):
             with evm_error("UniswapV2: FORBIDDEN"):
