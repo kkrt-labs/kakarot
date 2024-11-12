@@ -121,7 +121,7 @@ class TestPrecompiles:
             @SyscallHandler.patch(
                 "Kakarot_evm_to_starknet_address", CALLER_ADDRESS, 0x1234
             )
-            @SyscallHandler.patch_deploy(lambda *_: [0])
+            @SyscallHandler.mock_deploy(lambda *_: [0])
             @pytest.mark.parametrize(
                 "address, caller_address, input_data, expected_return_data, expected_reverted",
                 [
