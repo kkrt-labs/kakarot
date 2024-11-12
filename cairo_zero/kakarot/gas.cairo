@@ -4,7 +4,7 @@ from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.uint256 import Uint256, uint256_lt
 
 from kakarot.model import model
-from utils.uint256 import uint256_eq
+from utils.uint256 import uint256_eq, uint256_add
 from utils.utils import Helpers
 from utils.maths import unsigned_div_rem
 
@@ -142,19 +142,41 @@ namespace Gas {
     ) -> model.MemoryExpansion {
         alloc_locals;
 
-        let (is_zero_1) = uint256_eq([size_1], Uint256(0, 0));
-        let (is_zero_2) = uint256_eq([size_2], Uint256(0, 0));
-        tempvar both_zero = is_zero_1 * is_zero_2;
+        let (is_zero_size_1) = uint256_eq([size_1], Uint256(0, 0));
+        let (is_zero_size_2) = uint256_eq([size_2], Uint256(0, 0));
+        tempvar both_zero = is_zero_size_1 * is_zero_size_2;
         jmp no_expansion if both_zero != 0;
 
-        tempvar is_not_saturated = Helpers.is_zero(offset_1.high) * Helpers.is_zero(size_1.high) *
-            Helpers.is_zero(offset_2.high) * Helpers.is_zero(size_2.high);
-        tempvar is_saturated = 1 - is_not_saturated;
-        tempvar range_check_ptr = range_check_ptr;
-        jmp expansion_cost_saturated if is_saturated != 0;
+        if (is_zero_size_1 == FALSE) {
+            let (max_offset_1_res, carry_1) = uint256_add([offset_1], [size_1]);
+            tempvar is_chunk_1_saturated = carry_1 + is_not_zero(max_offset_1_res.high);
+            tempvar max_offset_1 = max_offset_1_res.low;
+            tempvar range_check_ptr = range_check_ptr;
 
-        let max_offset_1 = (1 - is_zero_1) * (offset_1.low + size_1.low);
-        let max_offset_2 = (1 - is_zero_2) * (offset_2.low + size_2.low);
+            // Early jump if the chunk is saturated
+            jmp expansion_cost_saturated if is_chunk_1_saturated != 0;
+        } else {
+            tempvar max_offset_1 = 0;
+            tempvar range_check_ptr = range_check_ptr;
+        }
+        let max_offset_1 = [ap - 2];
+        let range_check_ptr = [ap - 1];
+
+        if (is_zero_size_2 == FALSE) {
+            let (max_offset_2_res, carry_2) = uint256_add([offset_2], [size_2]);
+            tempvar is_chunk_2_saturated = carry_2 + is_not_zero(max_offset_2_res.high);
+            tempvar max_offset_2 = max_offset_2_res.low;
+            tempvar range_check_ptr = range_check_ptr;
+
+            // Early jump if the chunk is saturated
+            jmp expansion_cost_saturated if is_chunk_2_saturated != 0;
+        } else {
+            tempvar max_offset_2 = 0;
+            tempvar range_check_ptr = range_check_ptr;
+        }
+        let max_offset_2 = [ap - 2];
+        let range_check_ptr = [ap - 1];
+
         let max_expansion_is_2 = is_le_felt(max_offset_1, max_offset_2);
         let max_offset = max_offset_1 * (1 - max_expansion_is_2) + max_offset_2 *
             max_expansion_is_2;

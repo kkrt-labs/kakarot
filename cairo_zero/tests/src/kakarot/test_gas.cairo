@@ -36,14 +36,14 @@ func test__max_memory_expansion_cost{range_check_ptr}() -> felt {
     local size_2: Uint256;
     %{
         ids.words_len = program_input["words_len"];
-        ids.offset_1.low = program_input["offset_1"];
-        ids.offset_1.high = 0;
-        ids.size_1.low = program_input["size_1"];
-        ids.size_1.high = 0;
-        ids.offset_2.low = program_input["offset_2"];
-        ids.offset_2.high = 0;
-        ids.size_2.low = program_input["size_2"];
-        ids.size_2.high = 0;
+        ids.offset_1.low = program_input["offset_1"][0]
+        ids.offset_1.high = program_input["offset_1"][1]
+        ids.size_1.low = program_input["size_1"][0]
+        ids.size_1.high = program_input["size_1"][1]
+        ids.offset_2.low = program_input["offset_2"][0]
+        ids.offset_2.high = program_input["offset_2"][1]
+        ids.size_2.low = program_input["size_2"][0]
+        ids.size_2.high = program_input["size_2"][1]
     %}
     let memory_expansion = Gas.max_memory_expansion_cost(
         words_len, &offset_1, &size_1, &offset_2, &size_2
@@ -74,9 +74,9 @@ func test__compute_message_call_gas{range_check_ptr}() -> felt {
     tempvar gas_param: Uint256;
     tempvar gas_left: felt;
     %{
-        ids.gas_param.low = program_input["gas_param"];
-        ids.gas_param.high = 0;
-        ids.gas_left = program_input["gas_left"];
+        ids.gas_param.low = program_input["gas_param"][0]
+        ids.gas_param.high = program_input["gas_param"][1]
+        ids.gas_left = program_input["gas_left"]
     %}
     let gas = Gas.compute_message_call_gas(gas_param, gas_left);
 

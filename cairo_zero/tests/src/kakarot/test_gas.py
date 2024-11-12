@@ -6,6 +6,9 @@ from ethereum.shanghai.vm.gas import (
 from hypothesis import given
 from hypothesis.strategies import integers
 
+from kakarot_scripts.utils.uint256 import int_to_uint256
+from tests.utils.constants import FELT_252_PRIME
+
 
 class TestGas:
     class TestCost:
@@ -33,32 +36,37 @@ class TestGas:
             assert diff == output
 
         @given(
-            offset_1=integers(min_value=0, max_value=0xFFFFF),
-            size_1=integers(min_value=0, max_value=0xFFFFF),
-            offset_2=integers(min_value=0, max_value=0xFFFFF),
-            size_2=integers(min_value=0, max_value=0xFFFFF),
+            offset_1=integers(min_value=0, max_value=FELT_252_PRIME - 1),
+            size_1=integers(min_value=0, max_value=FELT_252_PRIME - 1),
+            offset_2=integers(min_value=0, max_value=FELT_252_PRIME - 1),
+            size_2=integers(min_value=0, max_value=FELT_252_PRIME - 1),
         )
         def test_should_return_max_expansion_cost(
             self, cairo_run, offset_1, size_1, offset_2, size_2
         ):
+            MEMORY_COST_U32 = 0x200018000000
             output = cairo_run(
                 "test__max_memory_expansion_cost",
                 words_len=0,
-                offset_1=offset_1,
-                size_1=size_1,
-                offset_2=offset_2,
-                size_2=size_2,
+                offset_1=int_to_uint256(offset_1),
+                size_1=int_to_uint256(size_1),
+                offset_2=int_to_uint256(offset_2),
+                size_2=int_to_uint256(size_2),
             )
-            assert (
-                output
-                == calculate_gas_extend_memory(
-                    b"",
-                    [
-                        (offset_1, size_1),
-                        (offset_2, size_2),
-                    ],
-                ).cost
+            expansion = calculate_gas_extend_memory(
+                b"",
+                [
+                    (offset_1, size_1),
+                    (offset_2, size_2),
+                ],
             )
+
+            # If the memory expansion is greater than 2**27 words of 32 bytes
+            # We saturate it to the hardcoded value corresponding the the gas cost of a 2**32 memory size
+            expected_saturated = (
+                MEMORY_COST_U32 if expansion.expand_by > 2**32 else expansion.cost
+            )
+            assert output == expected_saturated
 
         @given(
             offset=integers(min_value=0, max_value=2**256 - 1),
@@ -94,6 +102,8 @@ class TestGas:
             self, cairo_run, gas_param, gas_left, expected
         ):
             output = cairo_run(
-                "test__compute_message_call_gas", gas_param=gas_param, gas_left=gas_left
+                "test__compute_message_call_gas",
+                gas_param=int_to_uint256(gas_param),
+                gas_left=gas_left,
             )
             assert output == expected
