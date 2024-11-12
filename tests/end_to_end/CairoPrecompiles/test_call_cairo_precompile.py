@@ -5,7 +5,7 @@ from eth_abi import encode
 from kakarot_scripts.constants import NETWORK
 from kakarot_scripts.utils.kakarot import deploy, eth_send_transaction
 from kakarot_scripts.utils.starknet import get_contract, invoke
-from tests.utils.errors import cairo_error
+from tests.utils.errors import cairo_error, evm_error
 
 CALL_CAIRO_PRECOMPILE = 0x75004
 
@@ -101,9 +101,7 @@ class TestCairoPrecompiles:
         async def test_should_fail_when_called_with_callcode(
             self, cairo_counter_caller
         ):
-            with cairo_error(
-                "EVM tx reverted, reverting SN tx because of previous calls to cairo precompiles"
-            ):
+            with evm_error("CairoLib: call_contract failed with"):
                 await cairo_counter_caller.incrementCairoCounterCallcode()
 
     @pytest.mark.skipif(
