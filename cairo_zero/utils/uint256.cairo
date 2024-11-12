@@ -366,7 +366,6 @@ func uint256_fast_exp{range_check_ptr}(value: Uint256, exponent: Uint256) -> Uin
         return res;
     }
 
-    let pow = uint256_fast_exp(value, half_exponent);
     let (res, _) = uint256_mul(pow, pow);
     return res;
 }
