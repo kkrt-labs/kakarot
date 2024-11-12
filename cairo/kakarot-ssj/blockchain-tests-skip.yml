@@ -287,6 +287,8 @@ testname:
     - CallEcrecover_Overflow_d4g0v0_Cancun
     - CallEcrecover_Overflow_d5g0v0_Cancun
     - CallRipemd160_5_d0g0v0_Cancun
+    - modexpRandomInput_d0g0v0_Cancun
+    - modexpRandomInput_d0g1v0_Cancun
   stPreCompiledContracts:
     - idPrecomps_d2g0v0_Cancun
     - idPrecomps_d7g0v0_Cancun
@@ -333,46 +335,6 @@ testname:
     - precompsEIP2929Cancun_d81g0v0_Cancun
     - precompsEIP2929Cancun_d92g0v0_Cancun
     - precompsEIP2929Cancun_d99g0v0_Cancun
-    - modexp_d11g0v0_Cancun
-    - modexp_d11g1v0_Cancun
-    - modexp_d11g2v0_Cancun
-    - modexp_d11g3v0_Cancun
-    - modexp_d14g0v0_Cancun
-    - modexp_d14g1v0_Cancun
-    - modexp_d14g2v0_Cancun
-    - modexp_d14g3v0_Cancun
-    - modexp_d16g0v0_Cancun
-    - modexp_d16g1v0_Cancun
-    - modexp_d16g2v0_Cancun
-    - modexp_d16g3v0_Cancun
-    - modexp_d17g0v0_Cancun
-    - modexp_d17g1v0_Cancun
-    - modexp_d17g2v0_Cancun
-    - modexp_d17g3v0_Cancun
-    - modexp_d25g0v0_Cancun
-    - modexp_d25g1v0_Cancun
-    - modexp_d25g2v0_Cancun
-    - modexp_d25g3v0_Cancun
-    - modexp_d26g0v0_Cancun
-    - modexp_d26g1v0_Cancun
-    - modexp_d26g2v0_Cancun
-    - modexp_d26g3v0_Cancun
-    - modexp_d27g0v0_Cancun
-    - modexp_d27g1v0_Cancun
-    - modexp_d27g2v0_Cancun
-    - modexp_d27g3v0_Cancun
-    - modexp_d29g0v0_Cancun
-    - modexp_d29g1v0_Cancun
-    - modexp_d29g2v0_Cancun
-    - modexp_d29g3v0_Cancun
-    - modexp_d30g0v0_Cancun
-    - modexp_d30g1v0_Cancun
-    - modexp_d30g2v0_Cancun
-    - modexp_d30g3v0_Cancun
-    - modexp_d33g0v0_Cancun
-    - modexp_d33g1v0_Cancun
-    - modexp_d33g2v0_Cancun
-    - modexp_d33g3v0_Cancun
     - precompsEIP2929Cancun_d10g0v0_Cancun
     - precompsEIP2929Cancun_d115g0v0_Cancun
     - precompsEIP2929Cancun_d133g0v0_Cancun
@@ -385,6 +347,18 @@ testname:
     - precompsEIP2929Cancun_d313g0v0_Cancun
     - precompsEIP2929Cancun_d79g0v0_Cancun
     - precompsEIP2929Cancun_d97g0v0_Cancun
+    - modexp_d27g0v0_Cancun
+    - modexp_d27g1v0_Cancun
+    - modexp_d27g2v0_Cancun
+    - modexp_d27g3v0_Cancun
+    - modexp_d29g0v0_Cancun
+    - modexp_d29g1v0_Cancun
+    - modexp_d29g2v0_Cancun
+    - modexp_d29g3v0_Cancun
+    - modexp_d30g0v0_Cancun
+    - modexp_d30g1v0_Cancun
+    - modexp_d30g2v0_Cancun
+    - modexp_d30g3v0_Cancun
   stQuadraticComplexityTest:
     - Call20KbytesContract50_1_d0g0v0_Cancun
     - Call20KbytesContract50_2_d0g0v0_Cancun
@@ -422,6 +396,7 @@ testname:
     - randomStatetest645_d0g0v0_Cancun
     - randomStatetest645_d0g0v1_Cancun
     - randomStatetest476_d0g0v0_Cancun
+    - randomStatetest650_d0g0v0_Cancun
   stRandom:
     - randomStatetest111_d0g0v0_Cancun
     - randomStatetest14_d0g0v0_Cancun
@@ -476,6 +451,10 @@ testname:
     - revertRetDataSize_d7g0v0_Cancun
     - revertRetDataSize_d8g0v0_Cancun
     - revertRetDataSize_d9g0v0_Cancun
+    # Next three tests are skipped because the input size is > 48 bits
+    - modexp_modsize0_returndatasize_d2g0v0_Cancun
+    - modexp_modsize0_returndatasize_d3g0v0_Cancun
+    - modexp_modsize0_returndatasize_d4g0v0_Cancun
   stRevertTest:
     - LoopCallsDepthThenRevert2_d0g0v0_Cancun
     - LoopCallsDepthThenRevert3_d0g0v0_Cancun
