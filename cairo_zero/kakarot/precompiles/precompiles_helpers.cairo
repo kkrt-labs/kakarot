@@ -87,9 +87,18 @@ namespace PrecompilesHelpers {
         alloc_locals;
         let precompile_requires_whitelist = requires_whitelist(precompile_address);
 
+        tempvar is_not_delegatecall: felt = Helpers.is_zero(message_address - precompile_address);
+
         // Ensure that calls to precompiles that require a whitelist are properly authorized.
         if (precompile_requires_whitelist == TRUE) {
-            let is_whitelisted = is_caller_whitelisted(caller_address);
+            // If the call is not a DELEGATECALL / CALLCODE, the actual caller is the caller_address
+            // Otherwise, the actual caller is the message_address.
+            if (is_not_delegatecall != FALSE) {
+                tempvar actual_caller_address = caller_address;
+            } else {
+                tempvar actual_caller_address = message_address;
+            }
+            let is_whitelisted = is_caller_whitelisted(actual_caller_address);
             tempvar syscall_ptr = syscall_ptr;
             tempvar pedersen_ptr = pedersen_ptr;
             tempvar range_check_ptr = range_check_ptr;
@@ -109,7 +118,6 @@ namespace PrecompilesHelpers {
         // a delegatecall / callcode.
         let is_delegatecall_protected_ = is_delegatecall_protected(precompile_address);
         if (is_delegatecall_protected_ != FALSE) {
-            let is_not_delegatecall = Helpers.is_zero(message_address - precompile_address);
             tempvar authorized = authorized * is_not_delegatecall;
         } else {
             tempvar authorized = authorized;

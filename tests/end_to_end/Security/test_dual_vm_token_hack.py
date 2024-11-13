@@ -26,11 +26,18 @@ async def starknet_token(owner):
     return get_contract_starknet("StarknetToken", address=address)
 
 
-@pytest_asyncio.fixture(scope="function")
-async def dual_vm_token(kakarot, starknet_token, owner):
+@pytest_asyncio.fixture(
+    scope="package",
+    params=[
+        ("CairoPrecompiles", "DualVmToken"),
+        ("Security", "DualVmTokenWithoutModifier"),
+    ],
+    ids=["Modifier", "NoModifier"],
+)
+async def dual_vm_token(request, kakarot, starknet_token, owner):
     dual_vm_token = await deploy_kakarot(
-        "CairoPrecompiles",
-        "DualVmToken",
+        request.param[0],
+        request.param[1],
         kakarot.address,
         starknet_token.address,
         caller_eoa=owner.starknet_contract,
@@ -45,7 +52,7 @@ async def dual_vm_token(kakarot, starknet_token, owner):
     return dual_vm_token
 
 
-@pytest_asyncio.fixture(scope="function")
+@pytest_asyncio.fixture(scope="package")
 async def hack_vm_token(dual_vm_token, owner):
     hack_vm_token = await deploy_kakarot(
         "CairoPrecompiles",
@@ -60,7 +67,7 @@ async def hack_vm_token(dual_vm_token, owner):
 @pytest.mark.CairoPrecompiles
 class TestDualVmToken:
     class TestActions:
-        async def test_malicious_approve_address_should_fail_nodelegatecaltest_malicious_approve_address_should_fail_nodelegatecall(
+        async def test_malicious_approve_address_should_fail_nodelegatecall(
             self, dual_vm_token, hack_vm_token, owner
         ):
             result = await hack_vm_token.functions["tryApproveEvm()"](gas_limit=1000000)
