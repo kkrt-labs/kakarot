@@ -7,7 +7,7 @@ from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.dict_access import DictAccess
 from starkware.cairo.common.uint256 import Uint256
-from starkware.cairo.common.math_cmp import is_nn
+from starkware.cairo.common.math_cmp import is_nn, is_le
 from starkware.cairo.common.memset import memset
 from starkware.starknet.common.syscalls import (
     emit_event,
@@ -23,6 +23,7 @@ from kakarot.precompiles.precompiles_helpers import PrecompilesHelpers
 from kakarot.constants import Constants
 from kakarot.interfaces.interfaces import IERC20, IAccount
 from kakarot.model import model
+from utils.utils import Helpers
 from kakarot.state import State
 from kakarot.storages import (
     Kakarot_native_token_address,
@@ -110,7 +111,7 @@ namespace Starknet {
         let (block_number) = get_block_number();
         let (block_timestamp) = get_block_timestamp();
         let (coinbase) = Kakarot_coinbase.read();
-        let (base_fee) = Kakarot_base_fee.read();
+        let (base_fee) = get_base_fee();
         let (block_gas_limit) = Kakarot_block_gas_limit.read();
         let (prev_randao) = Kakarot_prev_randao.read();
 
@@ -127,6 +128,37 @@ namespace Starknet {
             coinbase=coinbase,
             base_fee=base_fee,
         );
+    }
+
+    // @notice Get the block base fee.
+    // @dev Implemented here, used in `library.cairo` to avoid a circular dependency issue.
+    // @dev If the block_number of the existing "next_block" entry is greater or equal to the current block_number,
+    //      then we return the base fee of index 'next_block' and update the one of 'current_block' to be the same.
+    //      Otherwise, we return the base fee of index 'current_block'.
+    // @return base_fee The current block base fee.
+    func get_base_fee{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+        base_fee: felt
+    ) {
+        alloc_locals;
+        let (res_next_block) = Kakarot_base_fee.read('next_block');
+        let next_base_fee = res_next_block[0];
+        let next_start_block_number = res_next_block[1];
+        let (block_number) = get_block_number();
+        let is_next_fee_ready = is_le(next_start_block_number, block_number);
+
+        let (res_current_block) = Kakarot_base_fee.read('current_block');
+        let current_base_fee = res_current_block[0];
+        let current_start_block_number = res_current_block[1];
+        let is_already_updated = Helpers.is_zero(
+            current_start_block_number - next_start_block_number
+        );
+
+        if (is_already_updated == FALSE and is_next_fee_ready != FALSE) {
+            Kakarot_base_fee.write('current_block', (next_base_fee, next_start_block_number));
+            return (next_base_fee,);
+        }
+
+        return (current_base_fee,);
     }
 }
 

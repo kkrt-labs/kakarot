@@ -6,8 +6,8 @@ from openzeppelin.access.ownable.library import Ownable
 from openzeppelin.security.reentrancyguard.library import ReentrancyGuard
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.starknet.common.syscalls import get_caller_address, get_tx_info
-from starkware.cairo.common.math_cmp import is_not_zero
+from starkware.starknet.common.syscalls import get_caller_address, get_tx_info, get_block_number
+from starkware.cairo.common.math_cmp import is_not_zero, is_le
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.math import split_felt
@@ -160,21 +160,38 @@ namespace Kakarot {
     }
 
     // @notice Set the block base fee.
+    // @dev There can only be one base fee for a given block. Thus, we use an index to manage two different base fees:
+    // - The base fee to use for the current block (index: 'current_block')
+    // - The base fee to use for the next block (index: 'next_block')
     // @param base_fee The new base fee.
     func set_base_fee{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         base_fee: felt
     ) {
-        Kakarot_base_fee.write(base_fee);
+        alloc_locals;
+        let (block_number) = get_block_number();
+        let (res_next_block) = Kakarot_base_fee.read('next_block');
+        let next_base_fee = res_next_block[0];
+        let starting_block = res_next_block[1];
+        Kakarot_base_fee.write('next_block', (base_fee, block_number + 1));
+
+        let is_next_fee_ready = is_le(starting_block, block_number);
+        if (is_next_fee_ready == FALSE) {
+            return ();
+        }
+
+        Kakarot_base_fee.write('current_block', (base_fee, starting_block));
         return ();
     }
 
     // @notice Get the block base fee.
+    // @dev If the block_number of the existing "next_block" entry is greater or equal to the current block_number,
+    //      then we return the base fee of index 'next_block' and update the one of 'current_block' to be the same.
+    //      Otherwise, we return the base fee of index 'current_block'.
     // @return base_fee The current block base fee.
     func get_base_fee{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
         base_fee: felt
     ) {
-        let (base_fee) = Kakarot_base_fee.read();
-        return (base_fee,);
+        return Starknet.get_base_fee();
     }
 
     // @notice Set the coinbase address.

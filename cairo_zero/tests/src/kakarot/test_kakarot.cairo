@@ -162,6 +162,11 @@ func test__set_base_fee{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_ch
     return ();
 }
 
+func test__get_base_fee{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> felt {
+    let (base_fee) = Kakarot.get_base_fee();
+    return base_fee;
+}
+
 func test__set_prev_randao{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
     tempvar prev_randao;
 
