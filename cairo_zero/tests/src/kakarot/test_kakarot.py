@@ -833,6 +833,19 @@ class TestKakarot:
                 )
 
         @SyscallHandler.patch("Kakarot_block_gas_limit", TRANSACTION_GAS_LIMIT)
+        @SyscallHandler.patch(
+            get_storage_var_address(
+                "Kakarot_base_fee", int.from_bytes(b"next_block", "big")
+            ),
+            value=TRANSACTION_GAS_LIMIT * 10**10,
+        )
+        @SyscallHandler.patch(
+            get_storage_var_address(
+                "Kakarot_base_fee", int.from_bytes(b"next_block", "big")
+            )
+            + 1,
+            value=0x100,
+        )
         @SyscallHandler.patch("Kakarot_base_fee", TRANSACTION_GAS_LIMIT * 10**10)
         @SyscallHandler.patch("Kakarot_chain_id", CHAIN_ID)
         @pytest.mark.parametrize("tx", TRANSACTIONS)
