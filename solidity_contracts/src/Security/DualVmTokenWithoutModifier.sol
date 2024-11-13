@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.27;
 
-import {WhitelistedCallCairoLib} from "./WhitelistedCallCairoLib.sol";
+import {WhitelistedCallCairoLib} from "../CairoPrecompiles/WhitelistedCallCairoLib.sol";
 import {CairoLib} from "kakarot-lib/CairoLib.sol";
-import {NoDelegateCall} from "../Security/NoDelegateCall.sol";
 
 /// @notice EVM adapter into a Cairo ERC20 token
 /// @dev This implementation is highly experimental
@@ -15,7 +14,7 @@ import {NoDelegateCall} from "../Security/NoDelegateCall.sol";
 /// authorized DualVmToken wrapper.
 /// @author Kakarot
 /// @author Modified from Solmate (https://github.com/transmissions11/solmate/blob/main/src/tokens/ERC20.sol)
-contract DualVmToken is NoDelegateCall {
+contract DualVmTokenWithoutModifier {
     using WhitelistedCallCairoLib for uint256;
     /*//////////////////////////////////////////////////////////////
                         CAIRO SPECIFIC VARIABLES
@@ -199,7 +198,7 @@ contract DualVmToken is NoDelegateCall {
                                 CONSTRUCTOR
      //////////////////////////////////////////////////////////////*/
 
-    constructor(uint256 _kakarot, uint256 _starknetToken) NoDelegateCall() {
+    constructor(uint256 _kakarot, uint256 _starknetToken) {
         kakarot = _kakarot;
         starknetToken = _starknetToken;
     }
@@ -209,7 +208,7 @@ contract DualVmToken is NoDelegateCall {
     //////////////////////////////////////////////////////////////*/
 
     /// @dev Approve an evm account spender for a specific amount
-    function approve(address spender, uint256 amount) external noDelegateCall returns (bool) {
+    function approve(address spender, uint256 amount) external returns (bool) {
         uint256[] memory spenderAddressCalldata = new uint256[](1);
         spenderAddressCalldata[0] = uint256(uint160(spender));
         uint256 spenderStarknetAddress =
@@ -225,7 +224,7 @@ contract DualVmToken is NoDelegateCall {
     /// @param spender The starknet address to approve
     /// @param amount The amount of tokens to approve
     /// @return True if the approval was successful
-    function approve(uint256 spender, uint256 amount) external noDelegateCall returns (bool) {
+    function approve(uint256 spender, uint256 amount) external returns (bool) {
         _approve(spender, amount);
         emit Approval(msg.sender, spender, amount);
         return true;
@@ -250,7 +249,7 @@ contract DualVmToken is NoDelegateCall {
     /// @param to The evm address to transfer the tokens to
     /// @param amount The amount of tokens to transfer
     /// @return True if the transfer was successful
-    function transfer(address to, uint256 amount) external noDelegateCall returns (bool) {
+    function transfer(address to, uint256 amount) external returns (bool) {
         uint256[] memory toAddressCalldata = new uint256[](1);
         toAddressCalldata[0] = uint256(uint160(to));
         uint256 toStarknetAddress =
@@ -265,7 +264,7 @@ contract DualVmToken is NoDelegateCall {
     /// @param to The starknet address to transfer the tokens to
     /// @param amount The amount of tokens to transfer
     /// @return True if the transfer was successful
-    function transfer(uint256 to, uint256 amount) external noDelegateCall returns (bool) {
+    function transfer(uint256 to, uint256 amount) external returns (bool) {
         _transfer(to, amount);
         emit Transfer(msg.sender, to, amount);
         return true;
@@ -292,7 +291,7 @@ contract DualVmToken is NoDelegateCall {
     /// @param to The evm address to transfer the tokens to
     /// @param amount The amount of tokens to transfer
     /// @return True if the transfer was successful
-    function transferFrom(address from, address to, uint256 amount) external noDelegateCall returns (bool) {
+    function transferFrom(address from, address to, uint256 amount) external returns (bool) {
         uint256[] memory toAddressCalldata = new uint256[](1);
         toAddressCalldata[0] = uint256(uint160(to));
         uint256 toStarknetAddress =
@@ -314,7 +313,7 @@ contract DualVmToken is NoDelegateCall {
     /// @param to The evm address to transfer the tokens to
     /// @param amount The amount of tokens to transfer
     /// @return True if the transfer was successful
-    function transferFrom(uint256 from, address to, uint256 amount) external noDelegateCall returns (bool) {
+    function transferFrom(uint256 from, address to, uint256 amount) external returns (bool) {
         uint256[] memory toAddressCalldata = new uint256[](1);
         toAddressCalldata[0] = uint256(uint160(to));
         uint256 toStarknetAddress =
@@ -331,7 +330,7 @@ contract DualVmToken is NoDelegateCall {
     /// @param to The starknet address to transfer the tokens to
     /// @param amount The amount of tokens to transfer
     /// @return True if the transfer was successful
-    function transferFrom(address from, uint256 to, uint256 amount) external noDelegateCall returns (bool) {
+    function transferFrom(address from, uint256 to, uint256 amount) external returns (bool) {
         uint256[] memory fromAddressCalldata = new uint256[](1);
         fromAddressCalldata[0] = uint256(uint160(from));
         uint256 fromStarknetAddress =
@@ -348,7 +347,7 @@ contract DualVmToken is NoDelegateCall {
     /// @param to The starknet address to transfer the tokens to
     /// @param amount The amount of tokens to transfer
     /// @return True if the transfer was successful
-    function transferFrom(uint256 from, uint256 to, uint256 amount) external noDelegateCall returns (bool) {
+    function transferFrom(uint256 from, uint256 to, uint256 amount) external returns (bool) {
         _transferFrom(from, to, amount);
         emit Transfer(from, to, amount);
         return true;
