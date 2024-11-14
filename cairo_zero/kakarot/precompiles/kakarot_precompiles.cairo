@@ -30,35 +30,36 @@ const NUMBER_OF_CALLS_BYTES = 32;
 const CAIRO_PRECOMPILE_GAS = 10000;
 const CAIRO_MESSAGE_GAS = 5000;
 
-//! Contains the precompiles that are specific to Kakarot.
-//!
-//! Kakarot extends the features of the EVM by allowing communication between Cairo and EVM contracts,
-//! and the sending of transactions to L1.
-//!
-//! There are various considerations that one must take into account when using these precompiles.
-//! We currently have 4 different "precompiles".
-//! - 0x75001: Whitelisted Cairo Precompile. Allows any whitelisted caller to execute a Cairo call.
-//! The whitelisting is based on the address of the caller.  75001 can be called using DELEGATECALL
-//! / CALLCODE. Any contract calling 75001 must be whitelisted, as malicious contract would be able
-//! to execute arbitraty actions on behalf of the caller.
-//! The biggest use case for this precompile is the mechanism of `DualVmToken`, which allows a
-//! Solidity contract to wrap a Starknet ERC20 token and interact with it as if it were an ERC20
-//! token on Ethereum. A contract should never be whitelisted for usage without extensive review and
-//! auditing.
-//!
-//! - 0x75002: Whitelisted Cairo Message Precompile. Allows the whitelisted caller to send messages to
-//! L1. This can only be used by the L2KakarotMessaging contract. The message sent to L1 must be
-//! formatted in a specific way, and ensuring only a trusted contract can send messages to L1
-//! ensures that this format is respected.
-//!
-//! - 0x75003: Multicall Precompile. Allows the caller to execute `n` Cairo calls in a single
-//! precompile call.  This precompile cannot be called with DELEGATECALL / CALLCODE. As such, it can
-//! be used permissionlessly by any contract.
-//!
-//! - 0x75004: Cairo Call Precompile. Allows the caller to execute a single Cairo call.  This
-//! precompile cannot be called with DELEGATECALL / CALLCODE. As such, it can be used
-//! permissionlessly by any contract.
-//!
+// ! Contains the precompiles that are specific to Kakarot.
+// !
+// ! Kakarot extends the features of the EVM by allowing communication between Cairo and EVM contracts,
+// ! and the sending of transactions to L1.
+// !
+// ! There are various considerations that one must take into account when using these precompiles.
+// ! We currently have 4 different "precompiles".
+// ! - 0x75001: Whitelisted Cairo Precompile. Allows any whitelisted caller to execute a Cairo call.
+// ! The whitelisting is based on the address of the caller.  75001 can be called using DELEGATECALL
+// ! / CALLCODE. Any contract calling 75001 must be whitelisted, as malicious contract would be able
+// ! to execute arbitrary actions on behalf of the caller due to the use of DELEGATECALL / CALLCODE.
+// ! The biggest use case for this precompile is the mechanism of `DualVmToken`, which allows a
+// ! Solidity contract to wrap a Starknet ERC20 token and interact with it as if it were an ERC20
+// ! token on Ethereum.
+// ! A contract should never be whitelisted for usage without extensive review and
+// ! auditing.
+// !
+// ! - 0x75002: Whitelisted Cairo Message Precompile. Allows the whitelisted caller to send messages to
+// ! L1. This can only be used by the L2KakarotMessaging contract. The message sent to L1 must be
+// ! formatted in a specific way, and ensuring only a trusted contract can send messages to L1
+// ! ensures that this format is respected.
+// !
+// ! - 0x75003: Multicall Precompile. Allows the caller to execute `n` Cairo calls in a single
+// ! precompile call. This precompile cannot be called with DELEGATECALL / CALLCODE. As such, it can
+// ! be used permissionlessly by any contract.
+// !
+// ! - 0x75004: Cairo Call Precompile. Allows the caller to execute a single Cairo call.  This
+// ! precompile cannot be called with DELEGATECALL / CALLCODE. As such, it can be used
+// ! permissionlessly by any contract.
+// !
 namespace KakarotPrecompiles {
     // @notice Executes a cairo contract/class.
     // @dev If called with 0x75001, the caller _must_ be whitelisted beforehand, as this could be
