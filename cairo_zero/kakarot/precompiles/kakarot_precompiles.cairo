@@ -30,7 +30,7 @@ const NUMBER_OF_CALLS_BYTES = 32;
 const CAIRO_PRECOMPILE_GAS = 10000;
 const CAIRO_MESSAGE_GAS = 5000;
 
-// ! Contains the precompiles that are specific to Kakarot.
+// ! Contains precompiles that are specific to Kakarot.
 // !
 // ! Kakarot extends the features of the EVM by allowing communication between Cairo and EVM contracts,
 // ! and the sending of transactions to L1.
@@ -38,7 +38,7 @@ const CAIRO_MESSAGE_GAS = 5000;
 // ! There are various considerations that one must take into account when using these precompiles.
 // ! We currently have 4 different "precompiles".
 // ! - 0x75001: Whitelisted Cairo Precompile. Allows any whitelisted caller to execute a Cairo call.
-// ! The whitelisting is based on the address of the caller.  75001 can be called using DELEGATECALL
+// ! The whitelisting is based on the address of the caller. 75001 can be called using DELEGATECALL
 // ! / CALLCODE. Any contract calling 75001 must be whitelisted, as malicious contract would be able
 // ! to execute arbitrary actions on behalf of the caller due to the use of DELEGATECALL / CALLCODE.
 // ! The biggest use case for this precompile is the mechanism of `DualVmToken`, which allows a
