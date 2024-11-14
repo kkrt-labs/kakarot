@@ -142,11 +142,133 @@ class TestKakarot:
                 cairo_run("test__set_base_fee", base_fee=0xABC)
 
         @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
-        def test_should_set_base_fee(self, cairo_run):
-            base_fee = 0x100
+        @patch.object(SyscallHandler, "block_number", 0x100)
+        def test_set_base_fee_should_set_next_block_fee(self, cairo_run):
+            base_fee = 1
             cairo_run("test__set_base_fee", base_fee=base_fee)
             SyscallHandler.mock_storage.assert_any_call(
-                address=get_storage_var_address("Kakarot_base_fee"), value=base_fee
+                address=get_storage_var_address(
+                    "Kakarot_base_fee", int.from_bytes(b"next_block", "big")
+                ),
+                value=base_fee,
+            )
+            SyscallHandler.mock_storage.assert_any_call(
+                address=get_storage_var_address(
+                    "Kakarot_base_fee", int.from_bytes(b"next_block", "big")
+                )
+                + 1,
+                value=0x101,
+            )
+
+        @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
+        @SyscallHandler.patch(
+            get_storage_var_address(
+                "Kakarot_base_fee", int.from_bytes(b"next_block", "big")
+            ),
+            value=[1, 0x101],
+        )
+        @patch.object(SyscallHandler, "block_number", 0x102)
+        def test_set_base_fee_should_overwrite_current_block_fee_if_next_block_is_applicable(
+            self, cairo_run
+        ):
+            # Because block_number == 102, the mocked 'next_block', available
+            # since block 101, should be moved to 'current_block'.
+            cairo_run("test__set_base_fee", base_fee=2)
+            SyscallHandler.mock_storage.assert_any_call(
+                address=get_storage_var_address(
+                    "Kakarot_base_fee", int.from_bytes(b"current_block", "big")
+                ),
+                value=1,
+            )
+            SyscallHandler.mock_storage.assert_any_call(
+                address=get_storage_var_address(
+                    "Kakarot_base_fee", int.from_bytes(b"current_block", "big")
+                )
+                + 1,
+                value=0x101,
+            )
+            SyscallHandler.mock_storage.assert_any_call(
+                address=get_storage_var_address(
+                    "Kakarot_base_fee", int.from_bytes(b"next_block", "big")
+                ),
+                value=2,
+            )
+            SyscallHandler.mock_storage.assert_any_call(
+                address=get_storage_var_address(
+                    "Kakarot_base_fee", int.from_bytes(b"next_block", "big")
+                )
+                + 1,
+                value=0x103,
+            )
+
+        @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
+        @SyscallHandler.patch(
+            get_storage_var_address(
+                "Kakarot_base_fee", int.from_bytes(b"current_block", "big")
+            ),
+            value=[1, 0x100],
+        )
+        @SyscallHandler.patch(
+            get_storage_var_address(
+                "Kakarot_base_fee", int.from_bytes(b"next_block", "big")
+            ),
+            value=[2, 0x101],
+        )
+        @patch.object(SyscallHandler, "block_number", 0x100)
+        def test_get_base_fee_should_return_current_block_fee_if_next_block_is_not_applicable(
+            self, cairo_run
+        ):
+            base_fee = cairo_run("test__get_base_fee")
+            assert base_fee == 1
+
+        @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
+        @SyscallHandler.patch(
+            get_storage_var_address(
+                "Kakarot_base_fee", int.from_bytes(b"current_block", "big")
+            ),
+            value=[1, 0x100],
+        )
+        @SyscallHandler.patch(
+            get_storage_var_address(
+                "Kakarot_base_fee", int.from_bytes(b"next_block", "big")
+            ),
+            value=[2, 0x101],
+        )
+        @patch.object(SyscallHandler, "block_number", 0x101)
+        def test_get_base_fee_should_return_next_block_fee_if_applicable_and_update_current_block(
+            self, cairo_run
+        ):
+            base_fee = cairo_run("test__get_base_fee")
+            assert base_fee == 2
+
+            # Should update current block base fee
+            SyscallHandler.mock_storage.assert_any_call(
+                address=get_storage_var_address(
+                    "Kakarot_base_fee", int.from_bytes(b"current_block", "big")
+                ),
+                value=base_fee,
+            )
+            SyscallHandler.mock_storage.assert_any_call(
+                address=get_storage_var_address(
+                    "Kakarot_base_fee", int.from_bytes(b"current_block", "big")
+                )
+                + 1,
+                value=0x101,
+            )
+
+            # Should nullify the value from next_block
+            SyscallHandler.mock_storage.assert_any_call(
+                address=get_storage_var_address(
+                    "Kakarot_base_fee", int.from_bytes(b"next_block", "big")
+                ),
+                value=0,
+            )
+            SyscallHandler.mock_storage.assert_any_call(
+                address=get_storage_var_address(
+                    "Kakarot_base_fee", int.from_bytes(b"next_block", "big")
+                )
+                + 1,
+                value=0,
             )
 
     class TestCoinbase:
@@ -676,6 +798,19 @@ class TestKakarot:
                 )
 
         @SyscallHandler.patch("Kakarot_block_gas_limit", TRANSACTION_GAS_LIMIT)
+        @SyscallHandler.patch(
+            get_storage_var_address(
+                "Kakarot_base_fee", int.from_bytes(b"next_block", "big")
+            ),
+            value=TRANSACTION_GAS_LIMIT * 10**10,
+        )
+        @SyscallHandler.patch(
+            get_storage_var_address(
+                "Kakarot_base_fee", int.from_bytes(b"next_block", "big")
+            )
+            + 1,
+            value=0x100,
+        )
         @SyscallHandler.patch("Kakarot_base_fee", TRANSACTION_GAS_LIMIT * 10**10)
         @SyscallHandler.patch("Kakarot_chain_id", CHAIN_ID)
         @pytest.mark.parametrize("tx", TRANSACTIONS)

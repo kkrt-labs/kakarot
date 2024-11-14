@@ -3,7 +3,7 @@ from collections import OrderedDict
 from contextlib import contextmanager
 from dataclasses import dataclass
 from hashlib import sha256
-from typing import Optional, Union
+from typing import Iterable, Optional, Union
 from unittest import mock
 
 import ecdsa
@@ -609,7 +609,13 @@ class SyscallHandler:
                 selector_if_storage = get_storage_var_address(target, *args)
             else:
                 selector_if_storage = target
-            cls.patches[selector_if_storage] = value
+
+            if isinstance(value, Iterable):
+                for i, v in enumerate(value):
+                    cls.patches[selector_if_storage + i] = v
+            else:
+                cls.patches[selector_if_storage] = value
+
         except AssertionError:
             pass
 

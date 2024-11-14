@@ -28,8 +28,12 @@ func Kakarot_evm_to_starknet_address(evm_address: felt) -> (starknet_address: fe
 func Kakarot_coinbase() -> (res: felt) {
 }
 
+// @notice The base fee set for kakarot
+// @dev There can only be one base fee for a given block. Thus, we use an index to manage two different base fees:
+// - The base fee to use for the current block (index: 'current_block')
+// - The base fee to applicable starting next block (index: 'next_block')
 @storage_var
-func Kakarot_base_fee() -> (res: felt) {
+func Kakarot_base_fee(index: felt) -> ((base_fee: felt, block_number: felt),) {
 }
 
 @storage_var
