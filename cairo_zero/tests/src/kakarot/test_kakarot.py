@@ -165,14 +165,7 @@ class TestKakarot:
             get_storage_var_address(
                 "Kakarot_base_fee", int.from_bytes(b"next_block", "big")
             ),
-            value=1,
-        )
-        @SyscallHandler.patch(
-            get_storage_var_address(
-                "Kakarot_base_fee", int.from_bytes(b"next_block", "big")
-            )
-            + 1,
-            value=0x101,
+            value=[1, 0x101],
         )
         @patch.object(SyscallHandler, "block_number", 0x102)
         def test_set_base_fee_should_overwrite_current_block_fee_if_next_block_is_applicable(
@@ -213,27 +206,13 @@ class TestKakarot:
             get_storage_var_address(
                 "Kakarot_base_fee", int.from_bytes(b"current_block", "big")
             ),
-            value=1,
-        )
-        @SyscallHandler.patch(
-            get_storage_var_address(
-                "Kakarot_base_fee", int.from_bytes(b"current_block", "big")
-            )
-            + 1,
-            value=0x100,
+            value=[1, 0x100],
         )
         @SyscallHandler.patch(
             get_storage_var_address(
                 "Kakarot_base_fee", int.from_bytes(b"next_block", "big")
             ),
-            value=2,
-        )
-        @SyscallHandler.patch(
-            get_storage_var_address(
-                "Kakarot_base_fee", int.from_bytes(b"next_block", "big")
-            )
-            + 1,
-            value=0x101,
+            value=[2, 0x101],
         )
         @patch.object(SyscallHandler, "block_number", 0x100)
         def test_get_base_fee_should_return_current_block_fee_if_next_block_is_not_applicable(
@@ -247,27 +226,13 @@ class TestKakarot:
             get_storage_var_address(
                 "Kakarot_base_fee", int.from_bytes(b"current_block", "big")
             ),
-            value=1,
-        )
-        @SyscallHandler.patch(
-            get_storage_var_address(
-                "Kakarot_base_fee", int.from_bytes(b"current_block", "big")
-            )
-            + 1,
-            value=0x100,
+            value=[1, 0x100],
         )
         @SyscallHandler.patch(
             get_storage_var_address(
                 "Kakarot_base_fee", int.from_bytes(b"next_block", "big")
             ),
-            value=2,
-        )
-        @SyscallHandler.patch(
-            get_storage_var_address(
-                "Kakarot_base_fee", int.from_bytes(b"next_block", "big")
-            )
-            + 1,
-            value=0x101,
+            value=[2, 0x101],
         )
         @patch.object(SyscallHandler, "block_number", 0x101)
         def test_get_base_fee_should_return_next_block_fee_if_applicable_and_update_current_block(

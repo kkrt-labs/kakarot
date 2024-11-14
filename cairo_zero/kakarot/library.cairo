@@ -179,7 +179,7 @@ namespace Kakarot {
             return ();
         }
 
-        Kakarot_base_fee.write('current_block', (base_fee, starting_block));
+        Kakarot_base_fee.write('current_block', (next_base_fee, starting_block));
         return ();
     }
 
