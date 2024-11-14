@@ -40,8 +40,9 @@ There are 4 precompiles currently deployed on Kakarot:
 
 This precompile allows any whitelisted caller to execute a Cairo contract. The
 whitelisting is based on the address of the caller. This precompile can be
-called using `DELEGATECALL` / `CALLCODE`. As such, it should only be used for
-Cairo contracts that have been thoroughly audited and are known to be secure.
+called using `DELEGATECALL` / `CALLCODE`. However, it cannot be called in a
+nested DELEGATECALL scenario. As such, it should only be used by contracts that
+have been thoroughly audited and are known to be secure.
 
 Let's define three different flows to interact with the precompile, and the
 expected behavior for each.
