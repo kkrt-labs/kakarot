@@ -30,10 +30,41 @@ const NUMBER_OF_CALLS_BYTES = 32;
 const CAIRO_PRECOMPILE_GAS = 10000;
 const CAIRO_MESSAGE_GAS = 5000;
 
+//! Contains the precompiles that are specific to Kakarot.
+//!
+//! Kakarot extends the features of the EVM by allowing communication between Cairo and EVM contracts,
+//! and the sending of transactions to L1.
+//!
+//! There are various considerations that one must take into account when using these precompiles.
+//! We currently have 4 different "precompiles".
+//! - 0x75001: Whitelisted Cairo Precompile. Allows any whitelisted caller to execute a Cairo call.
+//! The whitelisting is based on the address of the caller.  75001 can be called using DELEGATECALL
+//! / CALLCODE. Any contract calling 75001 must be whitelisted, as malicious contract would be able
+//! to execute arbitraty actions on behalf of the caller.
+//! The biggest use case for this precompile is the mechanism of `DualVmToken`, which allows a
+//! Solidity contract to wrap a Starknet ERC20 token and interact with it as if it were an ERC20
+//! token on Ethereum. A contract should never be whitelisted for usage without extensive review and
+//! auditing.
+//!
+//! - 0x75002: Whitelisted Cairo Message Precompile. Allows the whitelisted caller to send messages to
+//! L1. This can only be used by the L2KakarotMessaging contract. The message sent to L1 must be
+//! formatted in a specific way, and ensuring only a trusted contract can send messages to L1
+//! ensures that this format is respected.
+//!
+//! - 0x75003: Multicall Precompile. Allows the caller to execute `n` Cairo calls in a single
+//! precompile call.  This precompile cannot be called with DELEGATECALL / CALLCODE. As such, it can
+//! be used permissionlessly by any contract.
+//!
+//! - 0x75004: Cairo Call Precompile. Allows the caller to execute a single Cairo call.  This
+//! precompile cannot be called with DELEGATECALL / CALLCODE. As such, it can be used
+//! permissionlessly by any contract.
+//!
 namespace KakarotPrecompiles {
     // @notice Executes a cairo contract/class.
-    // @dev If called with 0x75001, the caller _must_ be whitelisted, as this could be called by CALLCODE / DELEGATECALL.
-    // @dev If called with 0x75004, the caller can be anyone, as DELEGATECALL / CALLCODE are not allowed.
+    // @dev If called with 0x75001, the caller _must_ be whitelisted beforehand, as this could be
+    // called by CALLCODE / DELEGATECALL.
+    // @dev If called with 0x75004, the caller can be anyone, as DELEGATECALL / CALLCODE are not
+    // allowed, which _must_ be enforced upstream.
     // @dev The input is formatted as:
     // @dev [starknet_address: bytes32][starknet_selector:bytes32][data_offset: bytes32][data_len: bytes32][data: bytes[]]
     // @param input_len The length of the input in bytes.
@@ -75,7 +106,7 @@ namespace KakarotPrecompiles {
     }
 
     // @notice Executes a batch of calls to cairo contracts.
-    // @dev Cannot be called with CALLCODE / DELEGATECALL - _must_ be checked upstream.
+    // @dev Cannot be called with CALLCODE / DELEGATECALL - _must_ be enforced upstream.
     // @dev The input is formatted as:
     // @dev [number_of_calls: bytes32]
     // @dev [to_1: bytes32][selector_1:bytes32][calldata_offset_1: bytes32][calldata_len_1: bytes32][calldata_1: bytes[]]...[to_n:bytes32]...
@@ -123,7 +154,8 @@ namespace KakarotPrecompiles {
     }
 
     // @notice Sends a message to L1.
-    // @dev Requires a whitelisted caller, as only the L2KakarotMessaging contract is allowed to send messages to L1.
+    // @dev Only the L2KakarotMessaging contract is allowed to send messages to L1.  The caller must
+    // be whitelisted, and this whitelist _mut_ be enforced upstream.
     // @param input_len The length of the input in bytes.
     // @param input The input data.
     // @param caller_address unused
