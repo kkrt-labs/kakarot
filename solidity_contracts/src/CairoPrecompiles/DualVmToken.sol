@@ -200,7 +200,7 @@ contract DualVmToken is NoDelegateCall {
                                 CONSTRUCTOR
      //////////////////////////////////////////////////////////////*/
 
-    constructor(uint256 _kakarot, uint256 _starknetToken) NoDelegateCall() {
+    constructor(uint256 _kakarot, uint256 _starknetToken) {
         kakarot = _kakarot;
         starknetToken = _starknetToken;
     }
