@@ -46,24 +46,30 @@ Cairo contracts that have been thoroughly audited and are known to be secure.
 Let's define three different flows to interact with the precompile, and the
 expected behavior for each.
 
-1. **Successful Flow**
-A participant Alice wants to interact with the `DualVMToken` contract.
-The `DualVMToken` contract has been whitelisted by the Kakarot team, meaning that it is authorized to call
-the `0x75001` precompile.
-Alice calls the `DualVMToken` contract to transfer Starknet Tokens, which will internally call the `0x75001` with a DELEGATECALL.
-Because DualVMToken is whitelisted, the call will pass validation and the Cairo contract will be executed.
-Alice's tokens are transferred to the recipient.
+1. **Successful Flow** A participant Alice wants to interact with the
+   `DualVMToken` contract. The `DualVMToken` contract has been whitelisted by
+   the Kakarot team, meaning that it is authorized to call the `0x75001`
+   precompile. Alice calls the `DualVMToken` contract to transfer Starknet
+   Tokens, which will internally call the `0x75001` with a DELEGATECALL. Because
+   DualVMToken is whitelisted, the call will pass validation and the Cairo
+   contract will be executed. Alice's tokens are transferred to the recipient.
 
-2. **Failed Flow 1**
-A participant Alice wants to interact with a random `Contract_X` contract.
-Alice calls `Contract_X`, which then calls the `DualVMToken` contract with a DELEGATECALL.
-The `DualVMToken` contract is whitelisted to call the `0x75001` precompile. However, it is forbidden to delegatecall into a contract that is whitelisted to call the `0x75001` precompile. To check this, we verify whether the `evm.message.address.evm` of the call is whitelisted. Here, because of the delegatecall behavior, this resolves to `Contract_X`, which is not whitelisted. The call will thus fail.
+2. **Failed Flow 1** A participant Alice wants to interact with a random
+   `Contract_X` contract. Alice calls `Contract_X`, which then calls the
+   `DualVMToken` contract with a DELEGATECALL. The `DualVMToken` contract is
+   whitelisted to call the `0x75001` precompile. However, it is forbidden to
+   delegatecall into a contract that is whitelisted to call the `0x75001`
+   precompile. To check this, we verify whether the `evm.message.address.evm` of
+   the call is whitelisted. Here, because of the delegatecall behavior, this
+   resolves to `Contract_X`, which is not whitelisted. The call will thus fail.
 
-3. **Failed Flow 2**
-A participant Alice wants to interact with the `NonWhitelistedContract` contract, which is not whitelisted to call the `0x75001` precompile.
-Alice calls `NonWhitelistedContract`, which then calls the `0x75001` precompile with a DELEGATECALL.
-Because `NonWhitelistedContract` is not whitelisted, the call will fail validation and the transaction will be reverted.
-Alice's call to `NonWhitelistedContract` will therefore fail.
+3. **Failed Flow 2** A participant Alice wants to interact with the
+   `NonWhitelistedContract` contract, which is not whitelisted to call the
+   `0x75001` precompile. Alice calls `NonWhitelistedContract`, which then calls
+   the `0x75001` precompile with a DELEGATECALL. Because
+   `NonWhitelistedContract` is not whitelisted, the call will fail validation
+   and the transaction will be reverted. Alice's call to
+   `NonWhitelistedContract` will therefore fail.
 
 ```mermaid
 sequenceDiagram
@@ -112,8 +118,9 @@ sequenceDiagram
 ### 0x75002: Whitelisted Cairo Message Precompile
 
 This precompile allows any whitelisted caller to execute a Cairo contract. The
-whitelisting is based on the address of the caller. The purpose of the whitelist is to ensure
-that messages sent to L1 are following a specific format (`to`, `sender`, `data`).
+whitelisting is based on the address of the caller. The purpose of the whitelist
+is to ensure that messages sent to L1 are following a specific format (`to`,
+`sender`, `data`).
 
 ```mermaid
 sequenceDiagram
@@ -144,11 +151,11 @@ sequenceDiagram
 
 ### 0x75003: Multicall Precompile
 
-Allows the caller to execute `n` Cairo calls in a single
-precompile call. This precompile cannot be called with DELEGATECALL / CALLCODE. As such, it can
-be used permissionlessly by any contract.
+Allows the caller to execute `n` Cairo calls in a single precompile call. This
+precompile cannot be called with DELEGATECALL / CALLCODE. As such, it can be
+used permissionlessly by any contract.
 
-```
+```mermaid
 sequenceDiagram
     participant Alice
     participant Contract_X
