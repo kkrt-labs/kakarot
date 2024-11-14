@@ -161,23 +161,24 @@ sequenceDiagram
     participant Alice
     participant Contract_X
     participant Precompile_75003
-    participant Cairo_Calls
+    participant CairoContract
 
     rect rgb(200, 255, 200)
-        Note over Alice,Cairo_Calls: Successful Flow - Direct Call
+        Note over Alice,CairoContract: Successful Flow - Direct Call
         Alice->>Precompile_75003: Direct Call with cairo_calls[]
         Note over Precompile_75003: Check: Not delegatecall ✓
 
         loop For each call in cairo_calls
-            Precompile_75003->>Cairo_Calls: Execute Cairo Call
-
+            Precompile_75003->>Alice: execute_starknet_call
+            Note right of Precompile_75003: Calls back to Alice's<br/>Starknet contract
+            Alice->>CairoContract: Execute on Starknet
         end
 
         Precompile_75003-->>Alice: Success ✓
     end
 
     rect rgb(255, 200, 200)
-        Note over Alice,Cairo_Calls: Failed Flow - Delegatecall Attempt
+        Note over Alice,CairoContract: Failed Flow - Delegatecall Attempt
         Alice->>Contract_X: Call
         Contract_X->>Precompile_75003: delegatecall
         Note over Precompile_75003: Check: Is delegatecall ✗<br/>Operation not permitted
