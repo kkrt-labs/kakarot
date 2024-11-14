@@ -3,9 +3,7 @@ name: cairo-zero-NIGHTLY-FUZZING
 on:
   schedule:
     - cron: 20 0 * * *
-
-env:
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  workflow_dispatch: {}
 
 permissions: read-all
 
@@ -28,9 +26,10 @@ jobs:
         with:
           version: nightly
       - name: Run tests
-        env:
-          HYPOTHESIS_PROFILE: nightly
-        run: make test-unit-cairo-zero
+        run: |
+          make setup-ci
+          echo "HYPOTHESIS_PROFILE=nightly" >> .env  # Override the .env file
+          make test-unit-cairo-zero
       - name: Upload coverage report to codecov
         uses: codecov/codecov-action@v3
         with:

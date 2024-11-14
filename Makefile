@@ -49,7 +49,7 @@ fetch-ef-tests:
 	uv run ef_tests
 
 test-cairo-zero: deploy
-	uv run pytest cairo_zero/tests/src  -m "not NoCI" --log-cli-level=INFO -n logical --seed 42
+	uv run pytest cairo_zero/tests/src -m "not NoCI" -n logical --seed 42 --log-cli-level=INFO
 	uv run pytest tests/end_to_end --seed 42
 
 test-unit-cairo-zero: build-sol
