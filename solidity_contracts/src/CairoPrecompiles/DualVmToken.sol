@@ -9,10 +9,11 @@ import {NoDelegateCall} from "../Security/NoDelegateCall.sol";
 /// @dev This implementation is highly experimental
 ///      It relies on CairoLib to perform Cairo precompile calls
 ///      Events are emitted in this contract but also in the Starknet token contract
-/// @dev External functions are  to prevent a user making an EVM call to a malicious contract,
+/// @dev External functions are `NoDelegateCall` to prevent a user making an EVM call to a malicious contract,
 /// with any calldata, that would be able to directly control on their behalf any quantity of any one of the ERC20
 /// tokens held by the victim's account contract, with the sole condition that the ERC20 has an
 /// authorized DualVmToken wrapper.
+/// This is blocked at the protocol level, but made explicit at the contract level
 /// @author Kakarot
 /// @author Modified from Solmate (https://github.com/transmissions11/solmate/blob/main/src/tokens/ERC20.sol)
 contract DualVmToken is NoDelegateCall {
