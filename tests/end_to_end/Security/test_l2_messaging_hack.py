@@ -30,5 +30,6 @@ class TestL2MessagingHack:
         result = await messaging_hack_contract.functions[
             "trySendMessageToL1(address,bytes)"
         ](malicious_target, malicious_data)
-        call_succeeded = int.from_bytes(bytes(result["response"]), "big")
-        assert call_succeeded == 0
+        assert result["success"] == 1
+        underlying_call_succeeded = int.from_bytes(bytes(result["response"]), "big")
+        assert underlying_call_succeeded == 0

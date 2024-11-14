@@ -71,8 +71,9 @@ class TestDualVmToken:
             self, dual_vm_token, hack_vm_token, owner
         ):
             result = await hack_vm_token.functions["tryApproveEvm()"](gas_limit=1000000)
-            call_succeeded = int.from_bytes(bytes(result["response"]), "big")
-            assert call_succeeded == 0
+            assert result["success"] == 1
+            underlying_call_succeeded = int.from_bytes(bytes(result["response"]), "big")
+            assert underlying_call_succeeded == 0
 
             allowance = await dual_vm_token.functions["allowance(address,address)"](
                 owner.address, hack_vm_token.address
@@ -83,8 +84,9 @@ class TestDualVmToken:
             self, dual_vm_token, hack_vm_token, owner
         ):
             result = await hack_vm_token.functions["tryApproveStarknet()"]()
-            call_succeeded = int.from_bytes(bytes(result["response"]), "big")
-            assert call_succeeded == 0
+            assert result["success"] == 1
+            underlying_call_succeeded = int.from_bytes(bytes(result["response"]), "big")
+            assert underlying_call_succeeded == 0
 
             allowance = await dual_vm_token.functions["allowance(address,uint256)"](
                 owner.address, int(hack_vm_token.address, 16)
@@ -95,8 +97,9 @@ class TestDualVmToken:
             self, dual_vm_token, hack_vm_token
         ):
             result = await hack_vm_token.functions["tryTransferEvm()"]()
-            call_succeeded = int.from_bytes(bytes(result["response"]), "big")
-            assert call_succeeded == 0
+            assert result["success"] == 1
+            underlying_call_succeeded = int.from_bytes(bytes(result["response"]), "big")
+            assert underlying_call_succeeded == 0
 
             balance = await dual_vm_token.functions["balanceOf(address)"](
                 hack_vm_token.address
@@ -107,8 +110,9 @@ class TestDualVmToken:
             self, dual_vm_token, hack_vm_token
         ):
             result = await hack_vm_token.functions["tryTransferStarknet()"]()
-            call_succeeded = int.from_bytes(bytes(result["response"]), "big")
-            assert call_succeeded == 0
+            assert result["success"] == 1
+            underlying_call_succeeded = int.from_bytes(bytes(result["response"]), "big")
+            assert underlying_call_succeeded == 0
 
             balance = await dual_vm_token.functions["balanceOf(uint256)"](
                 int(hack_vm_token.address, 16)
@@ -119,8 +123,9 @@ class TestDualVmToken:
             self, dual_vm_token, hack_vm_token
         ):
             result = await hack_vm_token.functions["tryTransferFromEvmEvm()"]()
-            call_succeeded = int.from_bytes(bytes(result["response"]), "big")
-            assert call_succeeded == 0
+            assert result["success"] == 1
+            underlying_call_succeeded = int.from_bytes(bytes(result["response"]), "big")
+            assert underlying_call_succeeded == 0
 
             balance = await dual_vm_token.functions["balanceOf(address)"](
                 hack_vm_token.address
@@ -131,8 +136,9 @@ class TestDualVmToken:
             self, dual_vm_token, hack_vm_token
         ):
             result = await hack_vm_token.functions["tryTransferFromStarknetEvm()"]()
-            call_succeeded = int.from_bytes(bytes(result["response"]), "big")
-            assert call_succeeded == 0
+            assert result["success"] == 1
+            underlying_call_succeeded = int.from_bytes(bytes(result["response"]), "big")
+            assert underlying_call_succeeded == 0
 
             balance = await dual_vm_token.functions["balanceOf(address)"](
                 hack_vm_token.address
@@ -143,8 +149,9 @@ class TestDualVmToken:
             self, dual_vm_token, hack_vm_token
         ):
             result = await hack_vm_token.functions["tryTransferFromEvmStarknet()"]()
-            call_succeeded = int.from_bytes(bytes(result["response"]), "big")
-            assert call_succeeded == 0
+            assert result["success"] == 1
+            underlying_call_succeeded = int.from_bytes(bytes(result["response"]), "big")
+            assert underlying_call_succeeded == 0
 
             balance = await dual_vm_token.functions["balanceOf(uint256)"](
                 int(hack_vm_token.address, 16)
@@ -157,8 +164,9 @@ class TestDualVmToken:
             result = await hack_vm_token.functions[
                 "tryTransferFromStarknetStarknet()"
             ]()
-            call_succeeded = int.from_bytes(bytes(result["response"]), "big")
-            assert call_succeeded == 0
+            assert result["success"] == 1
+            underlying_call_succeeded = int.from_bytes(bytes(result["response"]), "big")
+            assert underlying_call_succeeded == 0
 
             balance = await dual_vm_token.functions["balanceOf(uint256)"](
                 int(hack_vm_token.address, 16)
