@@ -2,7 +2,7 @@
 pragma solidity 0.8.27;
 
 import {CairoLib} from "kakarot-lib/CairoLib.sol";
-import {NoDelegateCall} from "../Security/NoDelegateCall.sol";
+import {NoDelegateCall} from "../NoDelegateCall/NoDelegateCall.sol";
 
 contract L2KakarotMessaging is NoDelegateCall {
     /// @notice Sends a message to a contract on L1.

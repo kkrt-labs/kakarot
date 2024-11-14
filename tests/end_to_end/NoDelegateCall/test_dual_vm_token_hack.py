@@ -30,7 +30,7 @@ async def starknet_token(owner):
     scope="package",
     params=[
         ("CairoPrecompiles", "DualVmToken"),
-        ("Security", "DualVmTokenWithoutModifier"),
+        ("NoDelegateCallTesting", "DualVmTokenWithoutModifier"),
     ],
     ids=["Modifier", "NoModifier"],
 )

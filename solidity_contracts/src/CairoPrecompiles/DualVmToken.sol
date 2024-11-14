@@ -3,7 +3,7 @@ pragma solidity 0.8.27;
 
 import {WhitelistedCallCairoLib} from "./WhitelistedCallCairoLib.sol";
 import {CairoLib} from "kakarot-lib/CairoLib.sol";
-import {NoDelegateCall} from "../Security/NoDelegateCall.sol";
+import {NoDelegateCall} from "../NoDelegateCall/NoDelegateCall.sol";
 
 /// @notice EVM adapter into a Cairo ERC20 token
 /// @dev This implementation is highly experimental

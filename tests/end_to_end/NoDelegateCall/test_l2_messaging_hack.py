@@ -9,7 +9,7 @@ from kakarot_scripts.utils.kakarot import get_deployments as get_evm_deployments
 @pytest_asyncio.fixture(scope="function")
 async def messaging_hack_contract(owner):
     return await deploy(
-        "Security",
+        "NoDelegateCallTesting",
         "L2MessagingHack",
         _target=to_checksum_address(
             get_evm_deployments()["L2KakarotMessaging"]["address"]
