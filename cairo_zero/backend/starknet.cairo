@@ -146,19 +146,15 @@ namespace Starknet {
         let (block_number) = get_block_number();
         let is_next_fee_ready = is_le(next_start_block_number, block_number);
 
-        let (res_current_block) = Kakarot_base_fee.read('current_block');
-        let current_base_fee = res_current_block[0];
-        let current_start_block_number = res_current_block[1];
-        let is_already_updated = Helpers.is_zero(
-            current_start_block_number - next_start_block_number
-        );
-
-        if (is_already_updated == FALSE and is_next_fee_ready != FALSE) {
-            Kakarot_base_fee.write('current_block', (next_base_fee, next_start_block_number));
+        if (next_start_block_number != 0 and is_next_fee_ready != FALSE) {
+            // update current_block storage and return next_block value
+            Kakarot_base_fee.write('current_block', (next_base_fee, block_number));
+            Kakarot_base_fee.write('next_block', (0, 0));
             return (next_base_fee,);
         }
 
-        return (current_base_fee,);
+        let (res_current_block) = Kakarot_base_fee.read('current_block');
+        return (res_current_block[0],);
     }
 }
 

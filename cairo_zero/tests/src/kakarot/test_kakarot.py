@@ -276,21 +276,6 @@ class TestKakarot:
             base_fee = cairo_run("test__get_base_fee")
             assert base_fee == 2
 
-            # Should read the value from next_block
-            SyscallHandler.mock_storage.assert_any_call(
-                address=get_storage_var_address(
-                    "Kakarot_base_fee", int.from_bytes(b"next_block", "big")
-                ),
-                value=base_fee,
-            )
-            SyscallHandler.mock_storage.assert_any_call(
-                address=get_storage_var_address(
-                    "Kakarot_base_fee", int.from_bytes(b"next_block", "big")
-                )
-                + 1,
-                value=0x101,
-            )
-
             # Should update current block base fee
             SyscallHandler.mock_storage.assert_any_call(
                 address=get_storage_var_address(
@@ -304,6 +289,21 @@ class TestKakarot:
                 )
                 + 1,
                 value=0x101,
+            )
+
+            # Should nullify the value from next_block
+            SyscallHandler.mock_storage.assert_any_call(
+                address=get_storage_var_address(
+                    "Kakarot_base_fee", int.from_bytes(b"next_block", "big")
+                ),
+                value=0,
+            )
+            SyscallHandler.mock_storage.assert_any_call(
+                address=get_storage_var_address(
+                    "Kakarot_base_fee", int.from_bytes(b"next_block", "big")
+                )
+                + 1,
+                value=0,
             )
 
     class TestCoinbase:
