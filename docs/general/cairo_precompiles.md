@@ -1,6 +1,6 @@
 # Cairo Precompiles
 
-Kakarot zkEVM being a Starknet appchain, it is technically possible to run Cairo
+Kakarot zkEVM being deployed on a Starknet chain, it is technically possible to run Cairo
 Contracts on Kakarot. The purpose of this document is to explain the design
 behind the Cairo precompiles, which are the Cairo contracts that are deployed on
 Kakarot to provide additional functionality to the users.
@@ -229,7 +229,7 @@ library CairoLib {
     /// @dev The Cairo precompile contract's address.
     address constant CAIRO_PRECOMPILE_ADDRESS = 0x0000000000000000000000000000000000075001;
 
-    /// @notice Performs a low-level call to a Cairo contract deployed on the Starknet appchain.
+    /// @notice Performs a low-level call to a Cairo contract deployed on the Starknet chain.
     /// @dev Used with intent to modify the state of the Cairo contract.
     /// @param contractAddress The address of the Cairo contract.
     /// @param functionSelector The function selector of the Cairo contract function to be called.
@@ -241,7 +241,7 @@ library CairoLib {
         uint256[] memory data
     ) internal returns (bytes memory returnData);
 
-    /// @notice Performs a low-level call to a Cairo contract deployed on the Starknet appchain.
+    /// @notice Performs a low-level call to a Cairo contract deployed on the Starknet chain.
     /// @dev Used with intent to read the state of the Cairo contract.
     /// @param contractAddress The address of the Cairo contract.
     /// @param functionSelector The function selector of the Cairo contract function to be called.
@@ -254,7 +254,7 @@ library CairoLib {
     ) internal view returns (bytes memory returnData);
 
 
-    /// @dev Performs a low-level call to a Cairo class declared on the Starknet appchain.
+    /// @dev Performs a low-level call to a Cairo class declared on the Starknet chain.
     /// @param classHash The class hash of the Cairo class.
     /// @param functionSelector The function selector of the Cairo class function to be called.
     /// @param data The input data for the Cairo class function.
@@ -273,7 +273,7 @@ library CairoLib {
 
 It contains three functions, `callContract`, `staticcallContract` and
 `libraryCall` that allow the user to call a Cairo contract or class deployed on
-the Starknet appchain. The method takes three arguments:
+the Starknet chain. The method takes three arguments:
 
 - `contractAddress` or `classHash`: The address of the Cairo contract to call /
   class hash to call
