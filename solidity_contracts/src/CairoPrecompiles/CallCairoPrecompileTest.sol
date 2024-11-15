@@ -115,7 +115,7 @@ library Internals {
             mstore(0x40, add(result, add(0x20, size)))
         }
 
-        require(success, string(abi.encodePacked("CairoLib: call_contract failed with: ", result)));
+        require(success, string(abi.encodePacked("CairoLib: cairo call failed with: ", result)));
 
         return result;
     }

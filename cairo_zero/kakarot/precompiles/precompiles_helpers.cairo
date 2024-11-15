@@ -75,25 +75,30 @@ namespace PrecompilesHelpers {
 
     // @notice Returns whether the call to the precompile is authorized.
     // @dev A call is authorized if:
-    // a. The precompile requires a whitelist AND the CODE_ADDRESS of the caller is whitelisted
+    // a. The precompile requires a whitelist AND the ADDRESS of the caller is whitelisted
     // b. The precompile is CAIRO_MULTICALL_PRECOMPILE and the precompile address is the same as the message address (NOT a DELEGATECALL / CALLCODE).
     // @param precompile_address The address of the precompile.
-    // @param caller_code_address The code_address of the precompile caller.
     // @param caller_address The address of the caller.
     // @param message_address The address being executed in the current message.
     // @return Whether the call is authorized.
     func is_call_authorized{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        precompile_address: felt,
-        caller_code_address: felt,
-        caller_address: felt,
-        message_address: felt,
+        precompile_address: felt, caller_address: felt, message_address: felt
     ) -> felt {
         alloc_locals;
         let precompile_requires_whitelist = requires_whitelist(precompile_address);
 
+        tempvar is_not_delegatecall: felt = Helpers.is_zero(message_address - precompile_address);
+
         // Ensure that calls to precompiles that require a whitelist are properly authorized.
         if (precompile_requires_whitelist == TRUE) {
-            let is_whitelisted = is_caller_whitelisted(caller_code_address);
+            // If the call is not a DELEGATECALL / CALLCODE, the actual caller is the caller_address
+            // Otherwise, the actual caller is the message_address.
+            if (is_not_delegatecall != FALSE) {
+                tempvar actual_caller_address = caller_address;
+            } else {
+                tempvar actual_caller_address = message_address;
+            }
+            let is_whitelisted = is_caller_whitelisted(actual_caller_address);
             tempvar syscall_ptr = syscall_ptr;
             tempvar pedersen_ptr = pedersen_ptr;
             tempvar range_check_ptr = range_check_ptr;
@@ -109,11 +114,10 @@ namespace PrecompilesHelpers {
         let range_check_ptr = [ap - 2];
         let authorized = [ap - 1];
 
-        // Ensure that calls to CAIRO_CALL_PRECOMPILE or CAIRO_CALL_PRECOMPILE are not made through
+        // Ensure that calls to CAIRO_CALL_PRECOMPILE or CAIRO_MULTICALL_PRECOMPILE are not made through
         // a delegatecall / callcode.
         let is_delegatecall_protected_ = is_delegatecall_protected(precompile_address);
         if (is_delegatecall_protected_ != FALSE) {
-            let is_not_delegatecall = Helpers.is_zero(message_address - precompile_address);
             tempvar authorized = authorized * is_not_delegatecall;
         } else {
             tempvar authorized = authorized;

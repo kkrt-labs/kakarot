@@ -712,8 +712,7 @@ async def eth_send_transaction(
     typed_transaction = TypedTransaction.from_dict(payload)
 
     evm_tx = EvmAccount.sign_transaction(
-        typed_transaction.as_dict(),
-        hex(evm_account.signer.private_key),
+        typed_transaction.as_dict(), f"{evm_account.signer.private_key:064x}"
     )
 
     if WEB3.is_connected():

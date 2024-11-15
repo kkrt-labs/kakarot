@@ -25,7 +25,6 @@ func test__precompiles_run{
     // Given
     local address;
     local input_len;
-    local caller_code_address;
     local caller_address;
     local message_address;
     let (local input) = alloc();
@@ -33,7 +32,6 @@ func test__precompiles_run{
         ids.address = program_input["address"]
         ids.input_len = len(program_input["input"])
         segments.write_arg(ids.input, program_input["input"])
-        ids.caller_code_address = program_input.get("caller_code_address", 0)
         ids.caller_address = program_input.get("caller_address", 0)
         ids.message_address = program_input.get("message_address", 0)
     %}
@@ -43,7 +41,6 @@ func test__precompiles_run{
         precompile_address=address,
         input_len=input_len,
         input=input,
-        caller_code_address=caller_code_address,
         caller_address=caller_address,
         message_address=message_address,
     );

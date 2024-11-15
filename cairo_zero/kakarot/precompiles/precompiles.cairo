@@ -32,7 +32,6 @@ namespace Precompiles {
     // @param precompile_address The precompile evm_address.
     // @param input_len The length of the input array.
     // @param input The input array.
-    // @param caller_code_address The address of the code of the contract that calls the precompile.
     // @param caller_address The address of the caller of the precompile. Delegatecall rules apply.
     // @param message_address The address being executed in the current message.
     // @return output_len The output length.
@@ -48,7 +47,6 @@ namespace Precompiles {
         precompile_address: felt,
         input_len: felt,
         input: felt*,
-        caller_code_address: felt,
         caller_address: felt,
         message_address: felt,
     ) -> (output_len: felt, output: felt*, gas_used: felt, reverted: felt) {
@@ -135,7 +133,7 @@ namespace Precompiles {
 
         kakarot_precompile:
         let is_call_authorized_ = PrecompilesHelpers.is_call_authorized(
-            precompile_address, caller_code_address, caller_address, message_address
+            precompile_address, caller_address, message_address
         );
         tempvar is_not_authorized = 1 - is_call_authorized_;
         tempvar syscall_ptr = syscall_ptr;
