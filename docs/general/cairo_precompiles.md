@@ -1,9 +1,9 @@
 # Cairo Precompiles
 
-Kakarot zkEVM being deployed on a Starknet chain, it is technically possible to run Cairo
-Contracts on Kakarot. The purpose of this document is to explain the design
-behind the Cairo precompiles, which are the Cairo contracts that are deployed on
-Kakarot to provide additional functionality to the users.
+Kakarot zkEVM being deployed on a Starknet chain, it is technically possible to
+run Cairo Contracts on Kakarot. The purpose of this document is to explain the
+design behind the Cairo precompiles, which are the Cairo contracts that are
+deployed on Kakarot to provide additional functionality to the users.
 
 ## Requirements
 
