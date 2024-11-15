@@ -1,9 +1,9 @@
 # Cairo Precompiles
 
-Kakarot zkEVM being a Starknet appchain, it is technically possible to run Cairo
-Contracts on Kakarot. The purpose of this document is to explain the design
-behind the Cairo precompiles, which are the Cairo contracts that are deployed on
-Kakarot to provide additional functionality to the users.
+Kakarot zkEVM being deployed on a Starknet chain, it is technically possible to
+run Cairo Contracts on Kakarot. The purpose of this document is to explain the
+design behind the Cairo precompiles, which are the Cairo contracts that are
+deployed on Kakarot to provide additional functionality to the users.
 
 ## Requirements
 
@@ -26,6 +26,170 @@ precompile will never cause the transaction to revert, meaning that:
 - The Cairo contract called should never _panic_
 
 From these principles, we can derive the following design.
+
+## Precompiles
+
+There are 4 precompiles currently deployed on Kakarot:
+
+- 0x75001: Whitelisted Cairo Precompile
+- 0x75002: Whitelisted Cairo Message Precompile
+- 0x75003: Multicall Precompile
+- 0x75004: Cairo Call Precompile
+
+### 0x75001: Whitelisted Cairo Precompile
+
+This precompile allows any whitelisted caller to execute a Cairo contract. The
+whitelisting is based on the address of the caller. This precompile can be
+called using `DELEGATECALL` / `CALLCODE`. However, it cannot be called in a
+nested DELEGATECALL scenario. As such, it should only be used by contracts that
+have been thoroughly audited and are known to be secure.
+
+Let's define three different flows to interact with the precompile, and the
+expected behavior for each.
+
+1. **Successful Flow** A participant Alice wants to interact with the
+   `DualVMToken` contract. The `DualVMToken` contract has been whitelisted by
+   the Kakarot team, meaning that it is authorized to call the `0x75001`
+   precompile. Alice calls the `DualVMToken` contract to transfer Starknet
+   Tokens, which will internally call the `0x75001` with a DELEGATECALL. Because
+   DualVMToken is whitelisted, the call will pass validation and the Cairo
+   contract will be executed. Alice's tokens are transferred to the recipient.
+
+2. **Failed Flow 1** A participant Alice wants to interact with a random
+   `Contract_X` contract. Alice calls `Contract_X`, which then calls the
+   `DualVMToken` contract with a DELEGATECALL. The `DualVMToken` contract is
+   whitelisted to call the `0x75001` precompile. However, it is forbidden to
+   delegatecall into a contract that is whitelisted to call the `0x75001`
+   precompile. To check this, we verify whether the `evm.message.address.evm` of
+   the call is whitelisted. Here, because of the delegatecall behavior, this
+   resolves to `Contract_X`, which is not whitelisted. The call will thus fail.
+
+3. **Failed Flow 2** A participant Alice wants to interact with the
+   `NonWhitelistedContract` contract, which is not whitelisted to call the
+   `0x75001` precompile. Alice calls `NonWhitelistedContract`, which then calls
+   the `0x75001` precompile with a DELEGATECALL. Because
+   `NonWhitelistedContract` is not whitelisted, the call will fail validation
+   and the transaction will be reverted. Alice's call to
+   `NonWhitelistedContract` will therefore fail.
+
+```mermaid
+sequenceDiagram
+    participant Alice
+    participant Contract_X
+    participant DualVMToken
+    participant NonWhitelistedContract
+    participant Precompile_75001
+
+    rect rgb(200, 255, 200)
+        Note over Alice,Precompile_75001: Successful Flow
+        Alice->>DualVMToken: Call
+        Note right of Alice: msg.sender = Alice<br/>msg.address.evm = DualVMToken
+        DualVMToken->>Precompile_75001: delegatecall
+        Note right of DualVMToken: msg.sender = Alice<br/>msg.address.evm = DualVMToken
+        Note over Precompile_75001: Check if DualVMToken<br/>is whitelisted ✓
+        Precompile_75001-->>DualVMToken: Success ✓
+        DualVMToken-->>Alice: Success ✓
+    end
+
+    rect rgb(255, 200, 200)
+        Note over Alice,Precompile_75001: Failed Flow 1 - Nested Delegatecall
+        Alice->>Contract_X: Call
+        Note right of Alice: msg.sender = Alice<br/>msg.address.evm = Contract_X
+        Contract_X->>DualVMToken: delegatecall
+        Note right of Contract_X: msg.sender = Alice<br/>msg.address.evm = Contract_X
+        DualVMToken->>Precompile_75001: delegatecall
+        Note over Precompile_75001: Fails: Precompile called<br/>during delegatecall ✗
+        Precompile_75001-->>DualVMToken: Fail ✗
+        DualVMToken-->>Contract_X: Fail ✗
+        Contract_X-->>Alice: Fail ✗
+    end
+
+    rect rgb(255, 200, 200)
+        Note over Alice,Precompile_75001: Failed Flow 2 - Non-whitelisted Contract
+        Alice->>NonWhitelistedContract: Call
+        Note right of Alice: msg.sender = Alice<br/>msg.address.evm = NonWhitelistedContract
+        NonWhitelistedContract->>Precompile_75001: delegatecall
+        Note right of NonWhitelistedContract: msg.sender = Alice<br/>msg.address.evm = NonWhitelistedContract
+        Note over Precompile_75001: Check if NonWhitelistedContract<br/>is whitelisted ✗
+        Precompile_75001-->>NonWhitelistedContract: Fail ✗
+        NonWhitelistedContract-->>Alice: Fail ✗
+    end
+```
+
+### 0x75002: Whitelisted Cairo Message Precompile
+
+This precompile allows any whitelisted caller to execute a Cairo contract. The
+whitelisting is based on the address of the caller. The purpose of the whitelist
+is to ensure that messages sent to L1 are following a specific format (`to`,
+`sender`, `data`).
+
+```mermaid
+sequenceDiagram
+    participant Alice
+    participant L2KakarotMessaging
+    participant NonWhitelistedContract
+    participant Precompile_75002
+
+    rect rgb(200, 255, 200)
+        Note over Alice,Precompile_75002: Successful Flow - Whitelisted Contract
+        Alice->>L2KakarotMessaging: Call
+        L2KakarotMessaging->>Precompile_75002: Execute Cairo Message
+        Note over Precompile_75002: Check if L2KakarotMessaging<br/>is whitelisted ✓
+        Note over Precompile_75002: Process message with:<br/>- to<br/>- sender<br/>- data
+        Precompile_75002-->>L2KakarotMessaging: Success ✓
+        L2KakarotMessaging-->>Alice: Success ✓
+    end
+
+    rect rgb(255, 200, 200)
+        Note over Alice,Precompile_75002: Failed Flow - Non-whitelisted Contract
+        Alice->>NonWhitelistedContract: Call
+        NonWhitelistedContract->>Precompile_75002: Execute Cairo Message
+        Note over Precompile_75002: Check if NonWhitelistedContract<br/>is whitelisted ✗
+        Precompile_75002-->>NonWhitelistedContract: Fail ✗
+        NonWhitelistedContract-->>Alice: Fail ✗
+    end
+```
+
+### 0x75003: Multicall Precompile
+
+Allows the caller to execute `n` Cairo calls in a single precompile call. This
+precompile cannot be called with DELEGATECALL / CALLCODE. As such, it can be
+used permissionlessly by any contract.
+
+```mermaid
+sequenceDiagram
+    participant Alice
+    participant Contract_X
+    participant Precompile_75003
+    participant CairoContract
+
+    rect rgb(200, 255, 200)
+        Note over Alice,CairoContract: Successful Flow - Direct Call
+        Alice->>Precompile_75003: Direct Call with cairo_calls[]
+        Note over Precompile_75003: Check: Not delegatecall ✓
+
+        loop For each call in cairo_calls
+            Precompile_75003->>Alice: execute_starknet_call
+            Note right of Precompile_75003: Calls back to Alice's<br/>Starknet contract
+            Alice->>CairoContract: Execute on Starknet
+        end
+
+        Precompile_75003-->>Alice: Success ✓
+    end
+
+    rect rgb(255, 200, 200)
+        Note over Alice,CairoContract: Failed Flow - Delegatecall Attempt
+        Alice->>Contract_X: Call
+        Contract_X->>Precompile_75003: delegatecall
+        Note over Precompile_75003: Check: Is delegatecall ✗<br/>Operation not permitted
+        Precompile_75003-->>Contract_X: Fail ✗
+        Contract_X-->>Alice: Fail ✗
+    end
+```
+
+### 0x75004: Cairo Call Precompile
+
+Same as `0x75003`, but for a single Cairo call.
 
 ## Design
 
@@ -65,7 +229,7 @@ library CairoLib {
     /// @dev The Cairo precompile contract's address.
     address constant CAIRO_PRECOMPILE_ADDRESS = 0x0000000000000000000000000000000000075001;
 
-    /// @notice Performs a low-level call to a Cairo contract deployed on the Starknet appchain.
+    /// @notice Performs a low-level call to a Cairo contract deployed on the Starknet chain.
     /// @dev Used with intent to modify the state of the Cairo contract.
     /// @param contractAddress The address of the Cairo contract.
     /// @param functionSelector The function selector of the Cairo contract function to be called.
@@ -77,7 +241,7 @@ library CairoLib {
         uint256[] memory data
     ) internal returns (bytes memory returnData);
 
-    /// @notice Performs a low-level call to a Cairo contract deployed on the Starknet appchain.
+    /// @notice Performs a low-level call to a Cairo contract deployed on the Starknet chain.
     /// @dev Used with intent to read the state of the Cairo contract.
     /// @param contractAddress The address of the Cairo contract.
     /// @param functionSelector The function selector of the Cairo contract function to be called.
@@ -90,7 +254,7 @@ library CairoLib {
     ) internal view returns (bytes memory returnData);
 
 
-    /// @dev Performs a low-level call to a Cairo class declared on the Starknet appchain.
+    /// @dev Performs a low-level call to a Cairo class declared on the Starknet chain.
     /// @param classHash The class hash of the Cairo class.
     /// @param functionSelector The function selector of the Cairo class function to be called.
     /// @param data The input data for the Cairo class function.
@@ -109,7 +273,7 @@ library CairoLib {
 
 It contains three functions, `callContract`, `staticcallContract` and
 `libraryCall` that allow the user to call a Cairo contract or class deployed on
-the Starknet appchain. The method takes three arguments:
+the Starknet chain. The method takes three arguments:
 
 - `contractAddress` or `classHash`: The address of the Cairo contract to call /
   class hash to call
