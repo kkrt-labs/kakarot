@@ -49,8 +49,8 @@ const CAIRO_MESSAGE_GAS = 5000;
 // !
 // ! - 0x75002: Whitelisted Cairo Message Precompile. Allows the whitelisted caller to send messages to
 // ! L1. This can only be used by the L2KakarotMessaging contract. The message sent to L1 must be
-// ! formatted in a specific way, and ensuring only a trusted contract can send messages to L1
-// ! ensures that this format is respected.
+// ! formatted in a specific way, and only allowing L2KakarotMessaging to send messages to L1
+// ! ensures this format is respected.
 // !
 // ! - 0x75003: Multicall Precompile. Allows the caller to execute `n` Cairo calls in a single
 // ! precompile call. This precompile cannot be called with DELEGATECALL / CALLCODE. As such, it can
