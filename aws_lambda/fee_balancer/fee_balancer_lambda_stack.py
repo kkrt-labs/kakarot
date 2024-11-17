@@ -86,20 +86,6 @@ class FeeBalancerLambdaStack(Stack):
             )
         )
 
-        # param_arns = [
-        #     os.environ.get("RELAYERS_PREV_TOTAL_BALANCE_PARAM_ARN"),
-        #     os.environ.get("ACCOUNT_PREV_BALANCE_PARAM_ARN"),
-        #     os.environ.get("EARNING_PERCENTAGE_PARAM_ARN"),
-        # ]
-        # param_arns = [arn for arn in param_arns if arn is not None]
-
-        # self.prediction_lambda.add_to_role_policy(
-        #     iam.PolicyStatement(
-        #         actions=["ssm:GetParameter", "ssm:PutParameter"],
-        #         resources=param_arns,
-        #     )
-        # )
-
         events.Rule(
             self,
             "ScheduleRule",

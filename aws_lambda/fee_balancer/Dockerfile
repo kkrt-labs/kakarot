@@ -2,6 +2,8 @@
 # trunk-ignore-all(checkov/CKV_DOCKER_3)
 # trunk-ignore-all(hadolint/DL3013)
 # trunk-ignore-all(hadolint/DL3033)
+# trunk-ignore-all(trivy/DS002)
+# trunk-ignore-all(trivy/DS026)
 FROM amazon/aws-lambda-python:3.10
 
 RUN yum update -y && \

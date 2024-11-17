@@ -136,7 +136,3 @@ async def withdraw_fee(starknet_address, nonce, eth_address, eth_private_key):
     # Wait for transaction receipt
     tx_receipt = web3.eth.wait_for_transaction_receipt(send_tx)
     logger.info(tx_receipt)
-
-
-if __name__ == "__main__":
-    asyncio.run(check_and_fund_relayers())
