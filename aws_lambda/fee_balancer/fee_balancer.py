@@ -1,3 +1,4 @@
+# trunk-ignore-all(ruff/ARG001)
 import asyncio
 import json
 import logging
