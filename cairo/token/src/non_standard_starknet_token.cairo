@@ -41,7 +41,14 @@ mod NonStandardStarknetToken {
     }
 
     #[constructor]
-    fn constructor(ref self: ContractState, name: felt252, symbol: felt252, decimals: u8, initial_supply: u256, recipient: ContractAddress) {
+    fn constructor(
+        ref self: ContractState,
+        name: felt252,
+        symbol: felt252,
+        decimals: u8,
+        initial_supply: u256,
+        recipient: ContractAddress
+    ) {
         self._set_decimals(decimals);
 
         // ERC20 initialization
@@ -72,51 +79,47 @@ mod NonStandardStarknetToken {
 
     #[abi(embed_v0)]
     impl ERC20 of IERC20<ContractState> {
-            /// Returns the value of tokens in existence.
-            fn total_supply(self: @ContractState) -> u256 {
-                self.erc20.ERC20_total_supply.read()
-            }
+        /// Returns the value of tokens in existence.
+        fn total_supply(self: @ContractState) -> u256 {
+            self.erc20.ERC20_total_supply.read()
+        }
 
-            /// Returns the amount of tokens owned by `account`.
-            fn balance_of(self: @ContractState, account: ContractAddress) -> u256 {
-                self.erc20.ERC20_balances.read(account)
-            }
+        /// Returns the amount of tokens owned by `account`.
+        fn balance_of(self: @ContractState, account: ContractAddress) -> u256 {
+            self.erc20.ERC20_balances.read(account)
+        }
 
-            /// Returns the remaining number of tokens that `spender` is
-            /// allowed to spend on behalf of `owner` through `transfer_from`.
-            /// This is zero by default.
-            /// This value changes when `approve` or `transfer_from` are called.
-            fn allowance(
-                self: @ContractState, owner: ContractAddress, spender: ContractAddress
-            ) -> u256 {
-                self.erc20.ERC20_allowances.read((owner, spender))
-            }
-
-
-            /// Modified to always return false
-            fn transfer(
-                ref self: ContractState, recipient: ContractAddress, amount: u256
-            ) -> bool {
-                false
-            }
+        /// Returns the remaining number of tokens that `spender` is
+        /// allowed to spend on behalf of `owner` through `transfer_from`.
+        /// This is zero by default.
+        /// This value changes when `approve` or `transfer_from` are called.
+        fn allowance(
+            self: @ContractState, owner: ContractAddress, spender: ContractAddress
+        ) -> u256 {
+            self.erc20.ERC20_allowances.read((owner, spender))
+        }
 
 
-            /// Modified to always return false
-            fn transfer_from(
-                ref self: ContractState,
-                sender: ContractAddress,
-                recipient: ContractAddress,
-                amount: u256
-            ) -> bool {
-                false
-            }
+        /// Modified to always return false
+        fn transfer(ref self: ContractState, recipient: ContractAddress, amount: u256) -> bool {
+            false
+        }
 
-            /// Modified to always return false
-            fn approve(
-                ref self: ContractState, spender: ContractAddress, amount: u256
-            ) -> bool {
-                false
-            }
+
+        /// Modified to always return false
+        fn transfer_from(
+            ref self: ContractState,
+            sender: ContractAddress,
+            recipient: ContractAddress,
+            amount: u256
+        ) -> bool {
+            false
+        }
+
+        /// Modified to always return false
+        fn approve(ref self: ContractState, spender: ContractAddress, amount: u256) -> bool {
+            false
+        }
     }
 
     #[generate_trait]

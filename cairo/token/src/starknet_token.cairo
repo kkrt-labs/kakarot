@@ -27,7 +27,14 @@ mod StarknetToken {
     }
 
     #[constructor]
-    fn constructor(ref self: ContractState, name: ByteArray, symbol: ByteArray, decimals: u8, initial_supply: u256, recipient: ContractAddress) {
+    fn constructor(
+        ref self: ContractState,
+        name: ByteArray,
+        symbol: ByteArray,
+        decimals: u8,
+        initial_supply: u256,
+        recipient: ContractAddress
+    ) {
         self._set_decimals(decimals);
 
         // ERC20 initialization
@@ -61,5 +68,4 @@ mod StarknetToken {
             self.decimals.write(decimals);
         }
     }
-
 }
