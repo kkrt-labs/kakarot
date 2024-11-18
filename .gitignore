@@ -54,3 +54,18 @@ cairo/kakarot-ssj/cache/
 cairo/kakarot-ssj/scripts/libcairo_native_runtime.a
 __pycache__
 *.snfoundry
+
+# aws_lambda
+aws_lambda/fee_balancer/data
+aws_lambda/fee_balancer/build
+aws_lambda/fee_balancer/deployments
+aws_lambda/fee_balancer/constants.py
+aws_lambda/fee_balancer/starknet.py
+
+aws_lambda/relayers_observer/data
+aws_lambda/relayers_observer/build
+aws_lambda/relayers_observer/deployments
+aws_lambda/relayers_observer/constants.py
+aws_lambda/relayers_observer/starknet.py
+
+cdk.out
