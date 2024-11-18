@@ -59,6 +59,10 @@ contract DualVmToken is NoDelegateCall {
 
     /// @dev Emitted when an invalid starknet address is used
     error InvalidStarknetAddress();
+    /// @dev Emitted when the return value of a starknet transfer is `false`.
+    error TransferFailed();
+    /// @dev Emitted when the return value of a starknet approval is `false`.
+    error ApprovalFailed();
 
     /*//////////////////////////////////////////////////////////////
                             METADATA ACCESS
@@ -245,7 +249,9 @@ contract DualVmToken is NoDelegateCall {
         approveCallData[2] = uint256(amountHigh);
 
         bool success = abi.decode(starknetToken.delegatecallCairo("approve", approveCallData), (bool));
-        require(success, "Approval failed");
+        if (!success) {
+            revert ApprovalFailed();
+        }
     }
 
     /// @dev Transfer tokens to an evm account
@@ -287,7 +293,9 @@ contract DualVmToken is NoDelegateCall {
         transferCallData[2] = uint256(amountHigh);
 
         bool success = abi.decode(starknetToken.delegatecallCairo("transfer", transferCallData), (bool));
-        require(success, "Transfer failed");
+        if (!success) {
+            revert TransferFailed();
+        }
     }
 
     /// @dev Transfer tokens from one evm address to another
