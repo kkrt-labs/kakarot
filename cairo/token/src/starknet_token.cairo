@@ -61,4 +61,5 @@ mod StarknetToken {
             self.decimals.write(decimals);
         }
     }
+
 }

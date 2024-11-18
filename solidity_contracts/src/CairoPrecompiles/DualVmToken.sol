@@ -244,7 +244,8 @@ contract DualVmToken is NoDelegateCall {
         approveCallData[1] = uint256(amountLow);
         approveCallData[2] = uint256(amountHigh);
 
-        starknetToken.delegatecallCairo("approve", approveCallData);
+        bool success = abi.decode(starknetToken.delegatecallCairo("approve", approveCallData), (bool));
+        require(success, "Approval failed");
     }
 
     /// @dev Transfer tokens to an evm account
@@ -285,7 +286,8 @@ contract DualVmToken is NoDelegateCall {
         transferCallData[1] = uint256(amountLow);
         transferCallData[2] = uint256(amountHigh);
 
-        starknetToken.delegatecallCairo("transfer", transferCallData);
+        bool success = abi.decode(starknetToken.delegatecallCairo("transfer", transferCallData), (bool));
+        require(success, "Transfer failed");
     }
 
     /// @dev Transfer tokens from one evm address to another
@@ -369,6 +371,7 @@ contract DualVmToken is NoDelegateCall {
         transferFromCallData[2] = uint256(amountLow);
         transferFromCallData[3] = uint256(amountHigh);
 
-        starknetToken.delegatecallCairo("transfer_from", transferFromCallData);
+        bool success = abi.decode(starknetToken.delegatecallCairo("transfer_from", transferFromCallData), (bool));
+        require(success, "Transfer failed");
     }
 }
