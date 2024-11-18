@@ -25,7 +25,7 @@ def get_private_key():
         private_key = response["SecretString"]
         secret_id = response["ARN"]
     except client.exceptions.ResourceNotFoundException:
-        private_key = hex(secrets.randbits(256))
+        private_key = hex(secrets.randbits(252))
         secret_id = client.create_secret(Name=SECRET_NAME, SecretString=private_key)[
             "ARN"
         ]
