@@ -252,4 +252,9 @@ namespace ICairo1Helpers {
         input_len: felt, input: felt*, last_input_word: felt, last_input_num_bytes: felt
     ) -> (sha256_u32_array_len: felt, sha256_u32_array: felt*) {
     }
+
+    func new_call_contract_syscall(
+        to: felt, selector: felt, calldata_len: felt, calldata: felt*
+    ) -> (success: felt, retdata_len: felt, retdata: felt*) {
+    }
 }
