@@ -40,21 +40,24 @@ class TestGas:
             size_1=integers(min_value=0, max_value=DEFAULT_PRIME - 1),
             offset_2=integers(min_value=0, max_value=DEFAULT_PRIME - 1),
             size_2=integers(min_value=0, max_value=DEFAULT_PRIME - 1),
+            words_len=integers(
+                min_value=0, max_value=0x3C0000
+            ),  # upper bound reaching 30M gas limit on expansion
         )
         def test_should_return_max_expansion_cost(
-            self, cairo_run, offset_1, size_1, offset_2, size_2
+            self, cairo_run, offset_1, size_1, offset_2, size_2, words_len
         ):
             memory_cost_u32 = calculate_memory_gas_cost(2**32 - 1)
             output = cairo_run(
                 "test__max_memory_expansion_cost",
-                words_len=0,
+                words_len=words_len,
                 offset_1=int_to_uint256(offset_1),
                 size_1=int_to_uint256(size_1),
                 offset_2=int_to_uint256(offset_2),
                 size_2=int_to_uint256(size_2),
             )
             expansion = calculate_gas_extend_memory(
-                b"",
+                b"\x00" * 32 * words_len,
                 [
                     (offset_1, size_1),
                     (offset_2, size_2),
@@ -64,7 +67,9 @@ class TestGas:
             # If the memory expansion is greater than 2**27 words of 32 bytes
             # We saturate it to the hardcoded value corresponding the the gas cost of a 2**32 memory size
             expected_saturated = (
-                memory_cost_u32 if expansion.expand_by >= 2**32 else expansion.cost
+                memory_cost_u32
+                if (words_len * 32 + expansion.expand_by) >= 2**32
+                else expansion.cost
             )
             assert output == expected_saturated
 

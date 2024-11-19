@@ -84,7 +84,7 @@ namespace Gas {
     ) -> model.MemoryExpansion {
         alloc_locals;
         let is_memory_length_not_zero = is_not_zero(words_len);
-        let current_memory_length = (words_len * 32 - 1) * is_memory_length_not_zero;
+        let current_memory_length = (words_len * 32) * is_memory_length_not_zero;
         let memory_expansion = is_le_felt(current_memory_length, max_offset);
         if (memory_expansion == FALSE) {
             let expansion = model.MemoryExpansion(cost=0, new_words_len=words_len);
