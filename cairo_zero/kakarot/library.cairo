@@ -27,7 +27,6 @@ from kakarot.storages import (
     Kakarot_chain_id,
     Kakarot_evm_to_starknet_address,
     Kakarot_authorized_cairo_precompiles_callers,
-    Kakarot_l1_messaging_contract_address,
 )
 from kakarot.events import evm_contract_deployed
 from kakarot.interpreter import Interpreter
@@ -402,44 +401,6 @@ namespace Kakarot {
         }
 
         return (evm_address=evm_address);
-    }
-
-    func set_l1_messaging_contract_address{
-        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
-    }(l1_messaging_contract_address: felt) {
-        Kakarot_l1_messaging_contract_address.write(l1_messaging_contract_address);
-        return ();
-    }
-
-    func get_l1_messaging_contract_address{
-        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
-    }() -> felt {
-        let (l1_messaging_contract_address) = Kakarot_l1_messaging_contract_address.read();
-        return l1_messaging_contract_address;
-    }
-
-    // @notice Handle an L1 message
-    //         Gas is paid on L1 through the starknet messaging system hence this should not
-    //         revert due to OOG.
-    //         The gas limit is set to Constants.INFINITE_GAS.
-    //         The gas price is set to 0 so no gas is paid and no refund is given.
-    func handle_l1_message{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(l1_sender: felt, to_address: felt, value: felt, data_len: felt, data: felt*) -> (
-        model.EVM*, model.State*, felt, felt
-    ) {
-        // TODO: ensure fair gas limits and prices
-        let (val_high, val_low) = split_felt(value);
-        tempvar value_u256 = new Uint256(low=val_low, high=val_high);
-        let to = model.Option(is_some=1, value=to_address);
-        let (access_list) = alloc();
-
-        return eth_call(
-            0, l1_sender, to, Constants.INFINITE_GAS, 0, value_u256, data_len, data, 0, access_list
-        );
     }
 
     // @notice Initialize the chain ID

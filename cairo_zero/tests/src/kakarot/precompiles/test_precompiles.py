@@ -1,9 +1,7 @@
 import pytest
-from eth_abi import encode
 from starkware.starknet.public.abi import get_selector_from_name
 
 from tests.utils.constants import (
-    CAIRO_MESSAGE_GAS,
     CAIRO_PRECOMPILE_GAS,
     FIRST_KAKAROT_PRECOMPILE_ADDRESS,
     FIRST_ROLLUP_PRECOMPILE_ADDRESS,
@@ -207,79 +205,6 @@ class TestPrecompiles:
                     else 0
                 )
                 return
-
-        class TestKakarotMessaging:
-            @SyscallHandler.patch(
-                "Kakarot_authorized_cairo_precompiles_callers",
-                AUTHORIZED_CALLER_ADDRESS,
-                1,
-            )
-            @SyscallHandler.patch(
-                "Kakarot_l1_messaging_contract_address",
-                0xC0DE,
-            )
-            @pytest.mark.parametrize(
-                "address, caller_address, input_data, to_address, expected_reverted_return_data, expected_reverted",
-                [
-                    (
-                        0x75002,
-                        AUTHORIZED_CALLER_ADDRESS,
-                        encode(
-                            ["uint160", "bytes"], [0xC0DE, encode(["uint128"], [0x2A])]
-                        ),
-                        0xC0DE,
-                        b"",
-                        False,
-                    ),
-                    (
-                        0x75002,
-                        AUTHORIZED_CALLER_ADDRESS,
-                        encode(["uint160", "bytes"], [0xC0DE, 0x2A.to_bytes(1, "big")]),
-                        0xC0DE,
-                        b"",
-                        False,
-                    ),
-                    (
-                        0x75002,
-                        UNAUTHORIZED_CALLER_ADDRESS,
-                        bytes.fromhex("0abcdef0"),
-                        0xC0DE,
-                        b"Kakarot: unauthorizedPrecompile",
-                        True,
-                    ),
-                ],
-                ids=[
-                    "ok_32_bytes_data",
-                    "ok_1_bytes_data",
-                    "ko_unauthorized_caller",
-                ],
-            )
-            def test__cairo_message(
-                self,
-                caller_address,
-                cairo_run,
-                address,
-                input_data,
-                to_address,
-                expected_reverted_return_data,
-                expected_reverted,
-            ):
-                address = 0x75002
-                return_data, reverted, gas_used = cairo_run(
-                    "test__precompiles_run",
-                    address=address,
-                    input=input_data,
-                    caller_address=caller_address,
-                    message_address=address,
-                )
-                if expected_reverted:
-                    assert reverted
-                    assert bytes(return_data) == expected_reverted_return_data
-                    return
-                SyscallHandler.mock_send_message_to_l1.assert_any_call(
-                    to_address=to_address, payload=list(input_data)
-                )
-                assert gas_used == CAIRO_MESSAGE_GAS
 
     class TestIsPrecompile:
         @pytest.mark.parametrize(

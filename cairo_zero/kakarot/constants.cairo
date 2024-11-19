@@ -30,16 +30,12 @@ namespace Constants {
 
     // Kakarot precompiles
     const CAIRO_WHITELISTED_CALL_PRECOMPILE = 0x75001;
-    const CAIRO_MESSAGING_PRECOMPILE = 0x75002;
     const CAIRO_MULTICALL_PRECOMPILE = 0x75003;
     const CAIRO_CALL_PRECOMPILE = 0x75004;
 
     // FIELD PRIME
     const FELT252_PRIME_HIGH = 0x8000000000000110000000000000000;
     const FELT252_PRIME_LOW = 0x1;
-
-    // Infinite gas handle_l1_message
-    const INFINITE_GAS = 2 ** 64 - 1;
 }
 
 // See model.Opcode:

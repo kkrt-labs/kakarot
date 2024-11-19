@@ -32,7 +32,6 @@ From these principles, we can derive the following design.
 There are 4 precompiles currently deployed on Kakarot:
 
 - 0x75001: Whitelisted Cairo Precompile
-- 0x75002: Whitelisted Cairo Message Precompile
 - 0x75003: Multicall Precompile
 - 0x75004: Cairo Call Precompile
 
@@ -112,40 +111,6 @@ sequenceDiagram
         Note right of NonWhitelistedContract: msg.sender = Alice<br/>msg.address.evm = NonWhitelistedContract
         Note over Precompile_75001: Check if NonWhitelistedContract<br/>is whitelisted ✗
         Precompile_75001-->>NonWhitelistedContract: Fail ✗
-        NonWhitelistedContract-->>Alice: Fail ✗
-    end
-```
-
-### 0x75002: Whitelisted Cairo Message Precompile
-
-This precompile allows any whitelisted caller to execute a Cairo contract. The
-whitelisting is based on the address of the caller. The purpose of the whitelist
-is to ensure that messages sent to L1 are following a specific format (`to`,
-`sender`, `data`).
-
-```mermaid
-sequenceDiagram
-    participant Alice
-    participant L2KakarotMessaging
-    participant NonWhitelistedContract
-    participant Precompile_75002
-
-    rect rgb(200, 255, 200)
-        Note over Alice,Precompile_75002: Successful Flow - Whitelisted Contract
-        Alice->>L2KakarotMessaging: Call
-        L2KakarotMessaging->>Precompile_75002: Execute Cairo Message
-        Note over Precompile_75002: Check if L2KakarotMessaging<br/>is whitelisted ✓
-        Note over Precompile_75002: Process message with:<br/>- to<br/>- sender<br/>- data
-        Precompile_75002-->>L2KakarotMessaging: Success ✓
-        L2KakarotMessaging-->>Alice: Success ✓
-    end
-
-    rect rgb(255, 200, 200)
-        Note over Alice,Precompile_75002: Failed Flow - Non-whitelisted Contract
-        Alice->>NonWhitelistedContract: Call
-        NonWhitelistedContract->>Precompile_75002: Execute Cairo Message
-        Note over Precompile_75002: Check if NonWhitelistedContract<br/>is whitelisted ✗
-        Precompile_75002-->>NonWhitelistedContract: Fail ✗
         NonWhitelistedContract-->>Alice: Fail ✗
     end
 ```
