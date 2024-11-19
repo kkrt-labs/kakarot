@@ -137,6 +137,7 @@ namespace State {
         alloc_locals;
         tempvar accounts_ptr = state.accounts;
         with accounts_ptr {
+            // EVM Precompiles
             Internals._cache_precompile(1);
             Internals._cache_precompile(2);
             Internals._cache_precompile(3);
@@ -147,6 +148,15 @@ namespace State {
             Internals._cache_precompile(8);
             Internals._cache_precompile(9);
             Internals._cache_precompile(10);
+
+            // RIP Precompiles
+            Internals._cache_precompile(Constants.P256VERIFY_PRECOMPILE);
+
+            // Kakarot Precompiles
+            Internals._cache_precompile(Constants.CAIRO_WHITELISTED_CALL_PRECOMPILE);
+            Internals._cache_precompile(Constants.CAIRO_MESSAGING_PRECOMPILE);
+            Internals._cache_precompile(Constants.CAIRO_MULTICALL_PRECOMPILE);
+            Internals._cache_precompile(Constants.CAIRO_CALL_PRECOMPILE);
         }
         tempvar state = new model.State(
             accounts_start=state.accounts_start,
