@@ -907,14 +907,6 @@ namespace Interpreter {
         let memory = Memory.init();
         let state = State.init();
 
-        // Cache the coinbase, precompiles, caller, and target, making them warm
-        with state {
-            let coinbase = State.get_account(env.coinbase);
-            State.cache_precompiles();
-            State.get_account(address.evm);
-            let access_list_cost = State.cache_access_list(access_list_len, access_list);
-        }
-
         let intrinsic_gas = intrinsic_gas + access_list_cost;
         let evm = EVM.init(message, gas_limit - intrinsic_gas);
 
@@ -923,6 +915,14 @@ namespace Interpreter {
             let evm = EVM.halt_validation_failed(evm);
             State.finalize{state=state}();
             return (evm, stack, memory, state, 0, 0);
+        }
+
+        // Cache the coinbase, precompiles, caller, and target, making them warm
+        with state {
+            let coinbase = State.get_account(env.coinbase);
+            State.cache_precompiles();
+            State.get_account(address.evm);
+            let access_list_cost = State.cache_access_list(access_list_len, access_list);
         }
 
         tempvar is_initcode_invalid = is_deploy_tx * is_nn(
