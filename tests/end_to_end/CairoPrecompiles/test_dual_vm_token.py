@@ -244,6 +244,13 @@ class TestDualVmToken:
             with cairo_error(evm_error):
                 await dual_vm_token.functions["approve(uint256,uint256)"](2**256 - 1, 1)
 
+        async def test_should_revert_approve_kakarot(self, kakarot, dual_vm_token):
+            evm_error = keccak(b"InvalidStarknetAddress()")[:4]
+            with cairo_error(evm_error):
+                await dual_vm_token.functions["approve(uint256,uint256)"](
+                    kakarot.address, 1
+                )
+
         async def test_allowance_owner_starknet_address(
             self, starknet_token, dual_vm_token, other
         ):
