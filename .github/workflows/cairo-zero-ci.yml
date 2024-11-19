@@ -95,7 +95,7 @@ jobs:
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
-          version: nightly
+          version: nightly-a79dfaed6fc6f88cda5f314a25d1b484d9d8c051
       - name: Run tests
         env:
           HYPOTHESIS_PROFILE: ci
@@ -138,7 +138,7 @@ jobs:
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
-          version: nightly
+          version: nightly-a79dfaed6fc6f88cda5f314a25d1b484d9d8c051
       - uses: asdf-vm/actions/install@v3
       - name: Load cached katana
         id: cached-katana
@@ -163,7 +163,7 @@ jobs:
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
-          version: nightly
+          version: nightly-a79dfaed6fc6f88cda5f314a25d1b484d9d8c051
       - name: Install deps
         run: forge install
       - name: Run tests

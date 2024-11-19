@@ -103,7 +103,7 @@ def setup_local() -> None:
 
     install_dependency(
         "foundry",
-        "curl -L https://foundry.paradigm.xyz | bash && exec $SHELL && foundryup",
+        "curl -L https://foundry.paradigm.xyz | bash && exec $SHELL && foundryup -v nightly-a79dfaed6fc6f88cda5f314a25d1b484d9d8c051",
         "forge",
     )
 
