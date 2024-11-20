@@ -13,7 +13,6 @@ from kakarot.errors import Errors
 from kakarot.interfaces.interfaces import IAccount
 from kakarot.account import Account
 from kakarot.constants import Constants
-from kakarot.storages import Kakarot_l1_messaging_contract_address
 from utils.utils import Helpers
 from backend.starknet import Starknet
 
@@ -28,7 +27,6 @@ const NUMBER_OF_CALLS_BYTES = 32;
 
 // TODO: compute acceptable EVM gas values for Cairo execution
 const CAIRO_PRECOMPILE_GAS = 10000;
-const CAIRO_MESSAGE_GAS = 5000;
 
 // ! Contains precompiles that are specific to Kakarot.
 // !
@@ -46,11 +44,6 @@ const CAIRO_MESSAGE_GAS = 5000;
 // ! token on Ethereum.
 // ! A contract should never be whitelisted for usage without extensive review and
 // ! auditing.
-// !
-// ! - 0x75002: Whitelisted Cairo Message Precompile. Allows the whitelisted caller to send messages to
-// ! L1. This can only be used by the L2KakarotMessaging contract. The message sent to L1 must be
-// ! formatted in a specific way, and only allowing L2KakarotMessaging to send messages to L1
-// ! ensures this format is respected.
 // !
 // ! - 0x75003: Multicall Precompile. Allows the caller to execute `n` Cairo calls in a single
 // ! precompile call. This precompile cannot be called with DELEGATECALL / CALLCODE. As such, it can
@@ -152,32 +145,6 @@ namespace KakarotPrecompiles {
             caller_address, calls_len, calls_ptr
         );
         return (output_len, output, gas_cost, reverted);
-    }
-
-    // @notice Sends a message to L1.
-    // @dev Only the L2KakarotMessaging contract is allowed to send messages to L1.  The caller must
-    // be whitelisted, and this whitelist _mut_ be enforced upstream.
-    // @param input_len The length of the input in bytes.
-    // @param input The input data.
-    // @param caller_address unused
-    func cairo_message{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(input_len: felt, input: felt*, caller_address: felt) -> (
-        output_len: felt, output: felt*, gas_used: felt, reverted: felt
-    ) {
-        alloc_locals;
-
-        // TODO: implement packing mechanism that doesn't truncate 32-byte values
-        // let (data_len, data) = Helpers.load_256_bits_array(data_bytes_len, data_ptr);
-
-        let (target_address) = Kakarot_l1_messaging_contract_address.read();
-
-        send_message_to_l1(target_address, input_len, input);
-        let (output) = alloc();
-        return (0, output, CAIRO_MESSAGE_GAS, FALSE);
     }
 }
 

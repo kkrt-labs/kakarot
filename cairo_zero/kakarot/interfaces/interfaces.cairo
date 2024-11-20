@@ -178,12 +178,6 @@ namespace IKakarot {
     func set_authorized_pre_eip155_tx(sender_address: felt, msg_hash: felt) {
     }
 
-    func set_l1_messaging_contract_address(l1_messaging_contract_address: felt) {
-    }
-
-    func get_l1_messaging_contract_address() -> (l1_messaging_contract_address: felt) {
-    }
-
     func eth_call(
         nonce: felt,
         origin: felt,

@@ -20,7 +20,6 @@ from kakarot.kakarot import (
     transfer_ownership,
     upgrade_account,
     deploy_externally_owned_account,
-    handle_l1_message,
     pause,
     unpause,
     initialize_chain_id,
@@ -249,30 +248,6 @@ func test__upgrade_account{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range
     %}
 
     upgrade_account(evm_address, new_class_hash);
-
-    return ();
-}
-
-func test__handle_l1_message{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    tempvar from_address;
-    tempvar l1_sender;
-    tempvar to_address;
-    tempvar value;
-    tempvar data_len;
-    let (data) = alloc();
-
-    %{
-        ids.from_address = program_input["from_address"]
-        ids.l1_sender = program_input["l1_sender"]
-        ids.to_address = program_input["to_address"]
-        ids.value = program_input["value"]
-        ids.data_len = len(program_input["data"])
-        segments.write_arg(ids.data, list(program_input["data"]))
-    %}
-
-    handle_l1_message(from_address, l1_sender, to_address, value, data_len, data);
 
     return ();
 }
