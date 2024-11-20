@@ -7,7 +7,11 @@ from hypothesis import given
 from hypothesis import strategies as st
 from rlp import encode
 
-from tests.utils.constants import INVALID_TRANSACTIONS, TRANSACTIONS
+from tests.utils.constants import (
+    ACCESS_LIST_TRANSACTION,
+    INVALID_TRANSACTIONS,
+    TRANSACTIONS,
+)
 from tests.utils.errors import cairo_error
 from tests.utils.helpers import flatten_tx_access_list, rlp_encode_signed_data
 
@@ -156,6 +160,28 @@ class TestEthTransaction:
             )
             expected_output = flatten_tx_access_list(transaction.get("accessList", []))
             assert output == expected_output
+
+        def test_should_panic_on_invalid_address_format(self, cairo_run):
+            rlp_structure_tx = transaction_rpc_to_rlp_structure(ACCESS_LIST_TRANSACTION)
+            # modify access list for addr to be 1 byte
+            rlp_structure_tx["accessList"] = [
+                (f"0x{bytes([1]).hex()}", storage_keys)
+                for _, storage_keys in rlp_structure_tx["accessList"]
+            ]
+            encoded_access_list = encode(rlp_structure_tx.get("accessList", []))
+            with cairo_error("Invalid address length"):
+                cairo_run("test__parse_access_list", data=list(encoded_access_list))
+
+        def test_should_panic_on_invalid_storage_key_format(self, cairo_run):
+            rlp_structure_tx = transaction_rpc_to_rlp_structure(ACCESS_LIST_TRANSACTION)
+            # modify access list for storage key to be 1 byte
+            rlp_structure_tx["accessList"] = [
+                (address, (f"0x{bytes([1]).hex()}",))
+                for address, _ in rlp_structure_tx["accessList"]
+            ]
+            encoded_access_list = encode(rlp_structure_tx.get("accessList", []))
+            with cairo_error("Invalid storage key length"):
+                cairo_run("test__parse_access_list", data=list(encoded_access_list))
 
     class TestGetTxType:
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
