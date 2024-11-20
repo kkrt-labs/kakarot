@@ -1,5 +1,6 @@
 from collections import defaultdict
 from contextlib import contextmanager
+from typing import Optional
 from unittest.mock import patch
 
 from starkware.cairo.common.dict import DictTracker
@@ -33,12 +34,28 @@ def new_default_dict(
 
 
 @contextmanager
-def patch_hint(program, hint, new_hint):
+def patch_hint(program, hint, new_hint, scope: Optional[str] = None):
+    """
+    Patch a Cairo hint in a program with a new hint.
+
+    Args:
+        program: The Cairo program containing the hints
+        hint: The original hint code to replace
+        new_hint: The new hint code to use instead
+        scope: Optional scope name to restrict which hints are patched. If provided,
+              only hints in scope containing this string will be patched.
+
+    Example:
+        with patch_hint(program, "old_hint", "new_hint", "initialize_jumpdests"):
+            # Code that runs with the patched hint
+
+    """
     patched_hints = {
         k: [
             (
                 hint_
                 if hint_.code != hint
+                or (scope is not None and scope not in str(hint_.accessible_scopes[-1]))
                 else CairoHint(
                     accessible_scopes=hint_.accessible_scopes,
                     flow_tracking_data=hint_.flow_tracking_data,

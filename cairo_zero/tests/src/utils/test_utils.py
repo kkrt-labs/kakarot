@@ -161,6 +161,19 @@ class TestInitializeJumpdests:
         output = cairo_run("test__initialize_jumpdests", bytecode=bytecode)
         assert set(output) == get_valid_jump_destinations(bytecode)
 
+    async def test_should_err_on_malicious_prover(self, cairo_program, cairo_run):
+        with (
+            patch_hint(
+                cairo_program,
+                "memory[ap] = 0 if 0 <= (ids.a % PRIME) < range_check_builtin.bound else 1",
+                "memory[ap] = 1",
+                "initialize_jumpdests",
+            ),
+            cairo_error(message="Reading out of bounds bytecode"),
+        ):
+            bytecode = (await get_contract("PlainOpcodes", "Counter")).bytecode_runtime
+            cairo_run("test__initialize_jumpdests", bytecode=bytecode)
+
 
 class TestLoadPackedBytes:
     def test_should_load_packed_bytes(self, cairo_run):

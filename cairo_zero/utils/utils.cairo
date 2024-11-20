@@ -910,6 +910,11 @@ namespace Helpers {
         let valid_jumpdests = cast([ap - 2], DictAccess*);
         let i = [ap - 1];
 
+        with_attr error_message("Reading out of bounds bytecode") {
+            assert [range_check_ptr] = bytecode_len - 1 - i;
+        }
+        let range_check_ptr = range_check_ptr + 1;
+
         tempvar opcode = [bytecode + i];
         let is_opcode_ge_0x5f = Helpers.is_le_unchecked(0x5f, opcode);
         let is_opcode_le_0x7f = Helpers.is_le_unchecked(opcode, 0x7f);
