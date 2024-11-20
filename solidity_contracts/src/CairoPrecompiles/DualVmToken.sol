@@ -237,7 +237,7 @@ contract DualVmToken is NoDelegateCall {
     }
 
     function _approve(uint256 spender, uint256 amount) private {
-        if (spender >= STARKNET_FIELD_PRIME) {
+        if (spender >= STARKNET_FIELD_PRIME || spender == kakarot) {
             revert InvalidStarknetAddress();
         }
         // Split amount in [low, high]

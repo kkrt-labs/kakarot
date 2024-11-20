@@ -190,11 +190,9 @@ namespace SystemOperations {
         State.update_account(target_account);
 
         let transfer = model.Transfer(evm.message.address, target_account.address, [value]);
-        let success = State.add_transfer(transfer);
-        if (success == 0) {
-            Stack.push_uint128(0);
-            return child_evm;
-        }
+
+        // @dev: This transfer cannot fail, as the balance was checked before.
+        let _success = State.add_transfer(transfer);
 
         return child_evm;
     }
@@ -826,9 +824,9 @@ namespace SystemOperations {
 
         // If the account was created in the same transaction and recipient is self, the native token is burnt
         tempvar is_recipient_not_self = is_not_zero(recipient - evm.message.address.evm);
-
         if (self_account.created != FALSE) {
-            tempvar recipient = is_recipient_not_self * recipient;
+            tempvar recipient = (1 - is_recipient_not_self) * Constants.BURN_ADDRESS +
+                is_recipient_not_self * recipient;
         } else {
             tempvar recipient = recipient;
         }

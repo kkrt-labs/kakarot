@@ -460,7 +460,7 @@ sequenceDiagram
     note over A: Check EVM tx signature
 
     A ->> RPC: eth_send_raw_unsigned_tx(...)
-    note over RPC: Decode tx<br><br>Check chain ID, nonce, gas params,<br>sender native balance, ...
+    note over RPC: Decode tx<br>Check chain ID, nonce, gas params,<br>sender native balance, ...
 
     RPC ->> RPC: eth_send_transaction(...)
     note over RPC: Verify caller address<br>(via safe_get_evm_address)
@@ -468,31 +468,27 @@ sequenceDiagram
     RPC ->> K: Kakarot.eth_call(...)
 
     K ->> A: get_bytecode()
-    A ->> K:
+    A ->> K: Bytecode returned
 
     K ->> I: Interpreter.execute(...)
 
-    note over I: Init state structs: (Message, EVM, stack, memory, ...)<br>Init called account if needed
+    note over I: Init state structs:<br>Message, EVM, stack, memory, ...<br>Init called account if needed
 
     loop Interpreter loop
-    Note over I: exec_opcode(...) is the function handling individual opcodes
+        note over I: exec_opcode(...) is the function handling individual opcodes
     end
 
-
-    note over I: State finalization<br>(squash memory dict, apply state balance changes, ...)
+    note over I: State finalization:<br>squash memory dict, apply state balance changes, ...
 
     I ->> K: EVM state:<br>result, stack, memory, gas_used, ...
 
     rect rgb(240,240,240)
         K ->> K: Starknet.commit()
-        note over K: Update accounts nonce
-        note over K: Commit accounts storage
-        note over K: Emit events
-        note over K: Perform ERC20 balance transfers
+        note over K: Update accounts nonce<br>Commit accounts storage<br>Emit events<br>Perform ERC20 balance transfers
     end
 
     K ->> A: returndata, success, gas used
-        note over A: Emit transaction_executed event
+    note over A: Emit transaction_executed event
     A ->> U: returndata
 ```
 

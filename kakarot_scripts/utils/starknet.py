@@ -301,7 +301,7 @@ def get_artifact(contract_name):
         return Artifact(sierra=None, casm=artifacts[0])
 
     # Cairo 1 artifacts
-    artifacts = list(BUILD_DIR_SSJ.glob(f"**/*{contract_name}.*.json")) or [
+    artifacts = list(BUILD_DIR_SSJ.glob(f"**/*_{contract_name}.*.json")) or [
         artifact
         for artifact in list(CAIRO_DIR.glob(f"**/*_{contract_name}.*.json"))
         if "test" not in str(artifact)
@@ -316,8 +316,10 @@ def get_artifact(contract_name):
             )
             return Artifact(sierra=sierra, casm=casm)
         except Exception as e:
-            raise FileNotFoundError(f"No artifact found for {contract_name}") from e
-
+            logger.error(
+                f"Error while loading artifact for {contract_name}: {e}, artifacts: {artifacts}"
+            )
+            raise e
     raise FileNotFoundError(f"No artifact found for {contract_name}")
 
 

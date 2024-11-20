@@ -510,37 +510,6 @@ class TestKakarot:
                     calldata=[0x1234],
                 )
 
-    class TestL1Handler:
-        @SyscallHandler.patch("Pausable_paused", 1)
-        def test_should_assert_unpaused(self, cairo_run):
-            with cairo_error(message="Pausable: paused"):
-                cairo_run(
-                    "test__handle_l1_message",
-                    from_address=0xABC,
-                    l1_sender=0xABC,
-                    to_address=0xABC,
-                    value=0xABC,
-                    data=[],
-                )
-
-        def test_should_not_handle_message_from_non_l1_messaging_contract(
-            self, cairo_run
-        ):
-            """
-            Test that the L1 handler does not handle messages when from_address is not the L1
-            messaging contract address (default is address 0).
-            If the message were handled, this would fail because no patches are set (e.g. balanceOf,
-            deploy, all the IAccount interface methods).
-            """
-            cairo_run(
-                "test__handle_l1_message",
-                from_address=0xDEAD,
-                l1_sender=0xABDE1,
-                to_address=0xABDE1,
-                value=0x1234,
-                data=[],
-            )
-
     class TestEthCall:
         @pytest.mark.slow
         @pytest.mark.SolmateERC20

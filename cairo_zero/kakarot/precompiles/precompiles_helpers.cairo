@@ -42,14 +42,10 @@ namespace PrecompilesHelpers {
     // @notice Return whether the precompile address requires a whitelist.
     // @dev The Cairo Call precompile must be whitelisted, as we can use it with DELEGATECALL / CALLCODE
     // to preserve the msg.sender of the contract that calls this precompile. Use case: DualVM tokens.
-    // @dev The Cairo Messaging precompile must be whitelisted, as we format the message payload in a specific Solidity contract.
     // @param precompile_address The address of the precompile.
     // @return Whether the precompile address requires a whitelist.
     func requires_whitelist(precompile_address: felt) -> felt {
         if (precompile_address == Constants.CAIRO_WHITELISTED_CALL_PRECOMPILE) {
-            return TRUE;
-        }
-        if (precompile_address == Constants.CAIRO_MESSAGING_PRECOMPILE) {
             return TRUE;
         }
         return FALSE;

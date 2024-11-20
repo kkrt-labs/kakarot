@@ -290,6 +290,10 @@ namespace EthTransaction {
 
         // Address
         let address_item = cast(access_list.data, RLP.Item*);
+        with_attr error_message("Invalid address length") {
+            assert [range_check_ptr] = address_item.data_len - 20;
+        }
+        let range_check_ptr = range_check_ptr + 1;
         let address = Helpers.bytes20_to_felt(address_item.data);
 
         // List<StorageKeys>
@@ -322,6 +326,11 @@ namespace EthTransaction {
         if (keys_list_len == 0) {
             return ();
         }
+
+        with_attr error_message("Invalid storage key length") {
+            assert [range_check_ptr] = keys_list.data_len - 32;
+        }
+        let range_check_ptr = range_check_ptr + 1;
 
         let key = Helpers.bytes32_to_uint256(keys_list.data);
         assert [parsed_keys] = key.low;

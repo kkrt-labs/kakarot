@@ -158,7 +158,7 @@ namespace Precompiles {
         jmp rel offset;
         call KakarotPrecompiles.cairo_call_precompile;  // offset 0x0c: precompile 0x75001
         ret;
-        call KakarotPrecompiles.cairo_message;  // offset 0x0d: precompile 0x75002
+        call not_implemented_precompile;  // offset 0x0d
         ret;
         call KakarotPrecompiles.cairo_multicall_precompile;  // offset 0x0e: precompile 0x75003
         ret;
