@@ -341,40 +341,56 @@ def get_tx_url(tx_hash: int) -> str:
     return f"{NETWORK['explorer_url']}/tx/0x{tx_hash:064x}"
 
 
-def compile_contract(contract):
+def locate_scarb_root(contract_path):
+    current_dir = contract_path.parent
+    while current_dir != current_dir.parent:
+        scarb_toml = current_dir / "Scarb.toml"
+        if scarb_toml.exists():
+            return current_dir
+        current_dir = current_dir.parent
+    return None
+
+
+def compile_scarb_package(package_path):
+    logger.info(f"ℹ️  Compiling package {package_path}")
+    start = datetime.now()
+    output = subprocess.run(
+        "scarb build", shell=True, cwd=package_path, capture_output=True
+    )
+    if output.returncode != 0:
+        raise RuntimeError(
+            f"❌ {package_path} raised:\n{output.stderr}.\nOutput:\n{output.stdout}"
+        )
+
+    elapsed = datetime.now() - start
+    logger.info(f"✅ {package_path} compiled in {elapsed.total_seconds():.2f}s")
+
+
+def compile_cairo_zero_contract(contract):
     logger.info(f"⏳ Compiling {contract['contract_name']}")
     start = datetime.now()
     contract_path = CONTRACTS.get(contract["contract_name"]) or CONTRACTS.get(
         re.sub("(?!^)([A-Z]+)", r"_\1", contract["contract_name"]).lower()
     )
 
-    if contract_path.is_relative_to(CAIRO_DIR):
-        output = subprocess.run(
-            "scarb build", shell=True, cwd=contract_path.parent, capture_output=True
-        )
-    else:
-        output = subprocess.run(
-            [
-                "starknet-compile-deprecated",
-                contract_path,
-                "--output",
-                BUILD_DIR / f"{contract['contract_name']}.json",
-                "--cairo_path",
-                str(CAIRO_ZERO_DIR),
-                *(
-                    ["--no_debug_info"]
-                    if NETWORK["type"] is not NetworkType.DEV
-                    else []
-                ),
-                *(["--account_contract"] if contract["is_account_contract"] else []),
-                *(
-                    ["--disable_hint_validation"]
-                    if NETWORK["type"] is NetworkType.DEV
-                    else []
-                ),
-            ],
-            capture_output=True,
-        )
+    output = subprocess.run(
+        [
+            "starknet-compile-deprecated",
+            contract_path,
+            "--output",
+            BUILD_DIR / f"{contract['contract_name']}.json",
+            "--cairo_path",
+            str(CAIRO_ZERO_DIR),
+            *(["--no_debug_info"] if NETWORK["type"] is not NetworkType.DEV else []),
+            *(["--account_contract"] if contract["is_account_contract"] else []),
+            *(
+                ["--disable_hint_validation"]
+                if NETWORK["type"] is NetworkType.DEV
+                else []
+            ),
+        ],
+        capture_output=True,
+    )
 
     if output.returncode != 0:
         raise RuntimeError(

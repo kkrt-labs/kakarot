@@ -41,6 +41,40 @@ async def dual_vm_token(kakarot, starknet_token, owner):
     return dual_vm_token
 
 
+@pytest_asyncio.fixture(scope="package")
+async def not_std_starknet_token(owner):
+    # A Non-Standard Starknet ERC20 token, that returns `false` on actions
+    # and has `felt252` return types for metadata.
+    address = await deploy_starknet(
+        "NonStandardStarknetToken",
+        "MyToken",
+        "MTK",
+        18,
+        int(2**256 - 1),
+        owner.starknet_contract.address,
+    )
+    return get_contract_starknet("NonStandardStarknetToken", address=address)
+
+
+@pytest_asyncio.fixture(scope="package")
+async def not_std_dual_vm_token(kakarot, not_std_starknet_token):
+    # A wrapper around a non-standard ERC20 to test for edge-case behaviors.
+    not_std_dual_vm_token = await deploy_kakarot(
+        "CairoPrecompiles",
+        "DualVmToken",
+        kakarot.address,
+        not_std_starknet_token.address,
+    )
+
+    await invoke(
+        "kakarot",
+        "set_authorized_cairo_precompile_caller",
+        int(not_std_dual_vm_token.address, 16),
+        True,
+    )
+    return not_std_dual_vm_token
+
+
 @pytest.mark.asyncio(scope="package")
 @pytest.mark.CairoPrecompiles
 class TestDualVmToken:
@@ -653,3 +687,82 @@ class TestDualVmToken:
                 balance_other_before + amount_dual_vm_token_desired
                 == balance_other_after
             )
+
+
+class TestNonStandardStarknetToken:
+    """
+    Tests for DualVMToken wrapping a non-standard Starknet token
+    Covers cases where:
+    - The wrapped token returns `false` on `transfer`, `approval`, `transfer_from`.
+    - The metadata is returned using `felt252` instead of `ByteArray`.
+    """
+
+    class TestMetadata:
+        async def test_should_return_name(
+            self, not_std_starknet_token, not_std_dual_vm_token
+        ):
+            (name_starknet,) = await not_std_starknet_token.functions["name"].call()
+            name_evm_bytes = bytes(await not_std_dual_vm_token.name(), "UTF-8")
+            assert name_starknet == int.from_bytes(name_evm_bytes, "big")
+
+        async def test_should_return_symbol(
+            self, not_std_starknet_token, not_std_dual_vm_token
+        ):
+            (symbol_starknet,) = await not_std_starknet_token.functions["symbol"].call()
+            symbol_evm_bytes = bytes(await not_std_dual_vm_token.symbol(), "UTF-8")
+            assert symbol_starknet == int.from_bytes(symbol_evm_bytes, "big")
+
+        async def test_should_return_decimals(
+            self, not_std_starknet_token, not_std_dual_vm_token
+        ):
+            (decimals_starknet,) = await not_std_starknet_token.functions[
+                "decimals"
+            ].call()
+            decimals_evm = await not_std_dual_vm_token.decimals()
+            assert decimals_starknet == decimals_evm
+
+    class TestActions:
+        """
+        The Starknet token returning false, the DualVMToken wrapper will fail the `require(success)` which
+        will revert the Starknet TX to avoid unwanted Starknet state changes.
+        """
+
+        async def test_transfer_should_fail_evm_tx(self, not_std_dual_vm_token, other):
+            with cairo_error(
+                "EVM tx reverted, reverting SN tx because of previous calls to cairo precompiles"
+            ):
+                success = (
+                    await not_std_dual_vm_token.functions["transfer(address,uint256)"](
+                        other.address, 1
+                    )
+                )["success"]
+                assert success == 0
+
+        async def test_approve_should_fail_evm_tx(self, not_std_dual_vm_token, other):
+            with cairo_error(
+                "EVM tx reverted, reverting SN tx because of previous calls to cairo precompiles"
+            ):
+                success = (
+                    await not_std_dual_vm_token.functions["approve(address,uint256)"](
+                        other.address, 1
+                    )
+                )["success"]
+                assert success == 0
+
+        async def test_transfer_from_should_fail_evm_tx(
+            self, not_std_dual_vm_token, owner, other
+        ):
+            with cairo_error(
+                "EVM tx reverted, reverting SN tx because of previous calls to cairo precompiles"
+            ):
+                success = (
+                    await not_std_dual_vm_token.functions[
+                        "transferFrom(address,address,uint256)"
+                    ](
+                        owner.address,
+                        other.address,
+                        1,
+                        caller_eoa=other.starknet_contract,
+                    )
+                )["success"]
+                assert success == 0
