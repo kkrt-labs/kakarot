@@ -911,7 +911,7 @@ namespace Helpers {
         let i = [ap - 1];
 
         with_attr error_message("Reading out of bounds bytecode") {
-            assert [range_check_ptr] = bytecode_len - i;
+            assert [range_check_ptr] = bytecode_len - 1 - i;
         }
         let range_check_ptr = range_check_ptr + 1;
 
