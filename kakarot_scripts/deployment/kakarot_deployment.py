@@ -12,6 +12,7 @@ from kakarot_scripts.constants import (
     RPC_CLIENT,
     NetworkType,
 )
+from kakarot_scripts.utils.kakarot import eth_chain_id
 from kakarot_scripts.utils.starknet import deploy as deploy_starknet
 from kakarot_scripts.utils.starknet import (
     dump_deployments,
@@ -52,6 +53,11 @@ async def deploy_or_upgrade_kakarot(owner):
                 "set_cairo1_helpers_class_hash",
                 class_hash["Cairo1Helpers"],
             )
+
+        # Initialize the chain_id if it's value is not set
+        if await eth_chain_id() == 0:
+            await invoke("kakarot", "initialize_chain_id", NETWORK["chain_id"])
+
         else:
             logger.info("✅ Kakarot already up to date.")
     else:

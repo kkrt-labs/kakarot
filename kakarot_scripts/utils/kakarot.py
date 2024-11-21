@@ -700,7 +700,7 @@ async def eth_send_transaction(
 
     payload = {
         "type": 0x1,
-        "chainId": await eth_chain_id(),
+        "chainId": NETWORK["chain_id"],
         "nonce": nonce,
         "gas": gas,
         "gasPrice": gas_price,
