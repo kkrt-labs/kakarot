@@ -8,7 +8,6 @@ from kakarot.library import Kakarot
 from kakarot.kakarot import (
     eth_send_raw_unsigned_tx,
     register_account,
-    set_native_token,
     set_base_fee,
     set_coinbase,
     set_prev_randao,
@@ -131,15 +130,6 @@ func test__transfer_ownership{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ra
 
     transfer_ownership(new_owner);
 
-    return ();
-}
-
-func test__set_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
-    tempvar address;
-
-    %{ ids.address = program_input["address"] %}
-
-    set_native_token(address);
     return ();
 }
 

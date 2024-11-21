@@ -138,16 +138,6 @@ namespace Kakarot {
         return (chain_id=chain_id);
     }
 
-    // @notice Set the native Starknet ERC20 token used by kakarot.
-    // @dev Set the native token which will emulate the role of ETH on Ethereum.
-    // @param native_token_address The address of the native token.
-    func set_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        native_token_address: felt
-    ) {
-        Kakarot_native_token_address.write(native_token_address);
-        return ();
-    }
-
     // @notice Get the native token address
     // @dev Return the address used to emulate the role of ETH on Ethereum
     // @return native_token_address The address of the native token

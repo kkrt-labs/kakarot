@@ -105,22 +105,6 @@ class TestKakarot:
                 address=get_storage_var_address("Pausable_paused"), value=0
             )
 
-    class TestNativeToken:
-        @pytest.mark.slow
-        @SyscallHandler.patch("Ownable_owner", 0xDEAD)
-        def test_should_assert_only_owner(self, cairo_run):
-            with cairo_error(message="Ownable: caller is not the owner"):
-                cairo_run("test__set_native_token", address=0xABC)
-
-        @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
-        def test_should_set_native_token(self, cairo_run):
-            token_address = 0xABCDE12345
-            cairo_run("test__set_native_token", address=token_address)
-            SyscallHandler.mock_storage.assert_any_call(
-                address=get_storage_var_address("Kakarot_native_token_address"),
-                value=token_address,
-            )
-
     class TestTransferOwnership:
         @SyscallHandler.patch("Ownable_owner", 0xDEAD)
         def test_should_assert_only_owner(self, cairo_run):

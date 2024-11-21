@@ -112,9 +112,6 @@ namespace IKakarot {
     func get_owner() -> (owner: felt) {
     }
 
-    func set_native_token(native_token_address: felt) {
-    }
-
     func get_native_token() -> (native_token_address: felt) {
     }
 
