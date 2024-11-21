@@ -93,7 +93,7 @@ build-sol:
 	forge build --names --force
 
 run-katana:
-	katana --chain-id test --validate-max-steps 1000000 --invoke-max-steps 9000000 --eth-gas-price 0 --strk-gas-price 0 --disable-fee --seed 0
+	katana --chain-id test --validate-max-steps 1000000 --invoke-max-steps 9000000 --eth-gas-price 0 --strk-gas-price 0 --disable-fee --seed 0 --db-dir ./katana-db
 
 run-anvil:
 	anvil --block-base-fee-per-gas 1
@@ -101,4 +101,4 @@ run-anvil:
 run-nodes:
 	@echo "Starting Anvil and Katana in messaging mode"
 	@anvil --block-base-fee-per-gas 1 &
-	@katana --chain-id test --validate-max-steps 1000000 --invoke-max-steps 9000000 --eth-gas-price 0 --strk-gas-price 0 --disable-fee --messaging .katana/messaging_config.json --seed 0
+	@katana --chain-id test --validate-max-steps 1000000 --invoke-max-steps 9000000 --eth-gas-price 0 --strk-gas-price 0 --disable-fee --messaging .katana/messaging_config.json --seed 0 --db-dir ./katana-db

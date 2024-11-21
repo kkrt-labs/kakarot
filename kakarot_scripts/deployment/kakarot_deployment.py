@@ -34,8 +34,18 @@ async def deploy_or_upgrade_kakarot(owner):
     class_hash = get_declarations()
     starknet_deployments = get_deployments()
 
+    if starknet_deployments.get("kakarot"):
+        try:
+            deployed_class_hash = await RPC_CLIENT.get_class_hash_at(
+                starknet_deployments["kakarot"]
+            )
+        except Exception:
+            deployed_class_hash = None
+    else:
+        deployed_class_hash = None
+
     # Deploy or upgrade Kakarot
-    if starknet_deployments.get("kakarot") and NETWORK["type"] is not NetworkType.DEV:
+    if deployed_class_hash:
         logger.info("ℹ️  Kakarot already deployed, checking version.")
         deployed_class_hash = await RPC_CLIENT.get_class_hash_at(
             starknet_deployments["kakarot"]
