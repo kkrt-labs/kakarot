@@ -302,7 +302,17 @@ class TestAccountContract:
                 cairo_run(
                     "test__execute_from_outside",
                     tx_data=[1],
-                    signature=list(range(5)),
+                    signature=[0, 1, 2, 3, 0],
+                    chain_id=CHAIN_ID,
+                )
+
+        @given(y_parity=integers(min_value=2))
+        def test_should_raise_with_invalid_y_parity(self, cairo_run, y_parity):
+            with cairo_error(message="Invalid y_parity"):
+                cairo_run(
+                    "test__execute_from_outside",
+                    tx_data=[1],
+                    signature=[0, 1, 2, 3, y_parity],
                     chain_id=CHAIN_ID,
                 )
 
