@@ -575,6 +575,25 @@ class TestAccountContract:
                     signature=[],
                 )
 
+        def test_should_raise_when_call_array_not_within_bounds_calldata(
+            self, cairo_run
+        ):
+            with cairo_error(message="EOA: call_array out of bounds"):
+                cairo_run(
+                    "test__execute_from_outside_entrypoint",
+                    outside_execution={
+                        "caller": SyscallHandler.caller_address,
+                        "nonce": 0,
+                        "execute_after": 0,
+                        "execute_before": SyscallHandler.block_timestamp + 1,
+                    },
+                    call_array=[
+                        {"to": 0, "selector": 0, "data_offset": 1, "data_len": 1},
+                    ],
+                    calldata=[],
+                    signature=[],
+                )
+
         @given(data_len=integers(min_value=2**128, max_value=DEFAULT_PRIME))
         def test_should_raise_when_packed_data_len_is_zero_or_out_of_range(
             self, cairo_run, data_len
