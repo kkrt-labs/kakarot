@@ -52,6 +52,18 @@ async def deploy_or_upgrade_kakarot(owner):
                 "set_cairo1_helpers_class_hash",
                 class_hash["Cairo1Helpers"],
             )
+            chain_id = await invoke(
+                "kakarot",
+                "eth_chain_id",
+                address=starknet_deployments["kakarot"],
+            )
+            if chain_id == 0:
+                await invoke(
+                    "kakarot",
+                    "initialize_chain_id",
+                    NETWORK["chain_id"],
+                    address=starknet_deployments["kakarot"],
+                )
         else:
             logger.info("✅ Kakarot already up to date.")
     else:
