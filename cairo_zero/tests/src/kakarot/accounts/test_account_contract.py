@@ -364,7 +364,7 @@ class TestAccountContract:
                     chain_id=CHAIN_ID,
                 )
 
-        def test_should_raise_invalid_signature_for_invalid_chain_id_when_tx_type0_not_pre_eip155(
+        def test_should_raise_invalid_y_parity_for_invalid_chain_id_when_tx_type0_not_pre_eip155(
             self, cairo_run
         ):
             transaction = {
@@ -384,7 +384,7 @@ class TestAccountContract:
 
             with (
                 SyscallHandler.patch("Account_evm_address", address),
-                cairo_error(message="Invalid signature."),
+                cairo_error(message="Invalid y_parity"),
             ):
                 cairo_run(
                     "test__execute_from_outside",
@@ -531,6 +531,7 @@ class TestAccountContract:
                     },
                     call_array=[],
                     calldata=[],
+                    calldata_len=0,
                     signature=[],
                 )
 
@@ -546,6 +547,7 @@ class TestAccountContract:
                     },
                     call_array=[{}, {}],
                     calldata=[],
+                    calldata_len=0,
                     signature=[],
                 )
 
@@ -564,6 +566,7 @@ class TestAccountContract:
                         {"to": 0, "selector": 0, "data_offset": 0, "data_len": 0},
                     ],
                     calldata=[],
+                    calldata_len=0,
                     signature=[],
                 )
 
@@ -582,6 +585,7 @@ class TestAccountContract:
                         {"to": 0, "selector": 0, "data_offset": 0, "data_len": 0},
                     ],
                     calldata=[],
+                    calldata_len=0,
                     signature=[],
                 )
 
@@ -601,10 +605,11 @@ class TestAccountContract:
                         {"to": 0, "selector": 0, "data_offset": 1, "data_len": 1},
                     ],
                     calldata=[],
+                    calldata_len=0,
                     signature=[],
                 )
 
-        @given(data_len=integers(min_value=2**128, max_value=DEFAULT_PRIME))
+        @given(data_len=integers(min_value=2**128, max_value=DEFAULT_PRIME - 1))
         def test_should_raise_when_packed_data_len_is_zero_or_out_of_range(
             self, cairo_run, data_len
         ):
@@ -624,10 +629,11 @@ class TestAccountContract:
                             "to": 0,
                             "selector": 0,
                             "data_offset": 0,
-                            "data_len": data_len % DEFAULT_PRIME,
+                            "data_len": data_len,
                         },
                     ],
                     calldata=[],
+                    calldata_len=data_len,
                     signature=[],
                 )
 
@@ -652,5 +658,6 @@ class TestAccountContract:
                         },
                     ],
                     calldata=[2**128],
+                    calldata_len=1,
                     signature=[],
                 )

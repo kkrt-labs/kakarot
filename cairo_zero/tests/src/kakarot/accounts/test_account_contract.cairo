@@ -166,7 +166,7 @@ func test__execute_from_outside_entrypoint{
                 call_.values() for call_ in program_input["call_array"]
             ])),
         )
-        ids.calldata_len = len(program_input["calldata"])
+        ids.calldata_len = program_input["calldata_len"]
         segments.write_arg(ids.calldata, program_input["calldata"])
         ids.signature_len = len(program_input["signature"])
         segments.write_arg(ids.signature, program_input["signature"])
