@@ -1,0 +1,4 @@
+katana-db/ filter=lfs diff=lfs merge=lfs -text
+katana-db/db.version filter=lfs diff=lfs merge=lfs -text
+katana-db/mdbx.dat filter=lfs diff=lfs merge=lfs -text
+katana-db/mdbx.lck filter=lfs diff=lfs merge=lfs -text

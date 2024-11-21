@@ -10,7 +10,6 @@ from kakarot_scripts.constants import (
     EVM_ADDRESS,
     NETWORK,
     RPC_CLIENT,
-    NetworkType,
 )
 from kakarot_scripts.utils.starknet import deploy as deploy_starknet
 from kakarot_scripts.utils.starknet import (
