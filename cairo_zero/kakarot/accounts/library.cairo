@@ -186,9 +186,8 @@ namespace AccountContract {
         let range_check_ptr = [ap - 1];
 
         // Signature validation
-        // `verify_eth_signature_uint256` verifies that r,s in the range [1, N[
+        // `verify_eth_signature_uint256` verifies that r and s are in the range [1, N[
         // TX validation imposes s to be the range [1, N//2], see EIP-2
-
         let (is_invalid_upper_s) = uint256_lt(
             Uint256(SECP256K1N_DIV_2_LOW, SECP256K1N_DIV_2_HIGH), s
         );
