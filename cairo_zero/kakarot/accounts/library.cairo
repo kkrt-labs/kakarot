@@ -7,7 +7,7 @@ from starkware.cairo.common.dict_access import DictAccess
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math import split_int
 from starkware.cairo.common.memcpy import memcpy
-from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.uint256 import Uint256, uint256_lt
 from starkware.cairo.common.math_cmp import is_nn, is_le_felt
 from starkware.starknet.common.syscalls import (
     StorageRead,
@@ -71,6 +71,9 @@ func transaction_executed(response_len: felt, response: felt*, success: felt, ga
 }
 
 const BYTES_PER_FELT = 31;
+
+const SECP256K1N_DIV_2_LOW = 0x5d576e7357a4501ddfe92f46681b20a0;
+const SECP256K1N_DIV_2_HIGH = 0x7fffffffffffffffffffffffffffffff;
 
 // @title Account main library file.
 // @notice This file contains the EVM account representation logic.
@@ -181,6 +184,17 @@ namespace AccountContract {
             tempvar range_check_ptr = range_check_ptr;
         }
         let range_check_ptr = [ap - 1];
+
+        // Signature validation
+        // `verify_eth_signature_uint256` verifies that r,s in the range [1, N[
+        // TX validation imposes s to be the range [1, N//2], see EIP-2
+
+        let (is_invalid_upper_s) = uint256_lt(
+            Uint256(SECP256K1N_DIV_2_LOW, SECP256K1N_DIV_2_HIGH), s
+        );
+        with_attr error_message("Invalid s value") {
+            assert is_invalid_upper_s = FALSE;
+        }
 
         let (local words: felt*) = alloc();
         let (words_len, last_word, last_word_num_bytes) = bytes_to_bytes8_little_endian(

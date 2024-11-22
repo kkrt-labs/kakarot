@@ -6,6 +6,7 @@ import pytest
 import rlp
 from eth_account.account import Account
 from eth_utils import keccak
+from ethereum.crypto.elliptic_curve import SECP256K1N
 from hypothesis import given, settings
 from hypothesis.strategies import binary, composite, integers, lists, permutations
 from starkware.cairo.lang.cairo_constants import DEFAULT_PRIME
@@ -303,6 +304,37 @@ class TestAccountContract:
                     "test__execute_from_outside",
                     tx_data=[1],
                     signature=list(range(5)),
+                    chain_id=CHAIN_ID,
+                )
+
+        def test_should_raise_with_malleable_signature_eip_2(self, cairo_run):
+            # EIP-2: one can take any transaction, flip the s value from s to secp256k1n -
+            # s, flip the v value (27 -> 28, 28 -> 27), and the resulting signature would still be
+            # valid.
+            transaction = TRANSACTIONS[0]
+            private_key = generate_random_private_key()
+            address = int(private_key.public_key.to_checksum_address(), 16)
+            signed = Account.sign_transaction(transaction, private_key)
+
+            # Modify s and flip v to generate a malleable signature
+            s_modified = SECP256K1N - signed.s
+            y_parity = signed.v - 2 * CHAIN_ID - 35
+            v_modified = signed.v + 1 if y_parity == 0 else signed.v - 1
+            signature = [
+                *int_to_uint256(signed.r),
+                *int_to_uint256(s_modified),
+                v_modified,
+            ]
+            tx_data = list(rlp_encode_signed_data(transaction))
+            with (
+                cairo_error(message="Invalid s value"),
+                SyscallHandler.patch("Account_evm_address", address),
+                SyscallHandler.patch("Account_nonce", transaction.get("nonce", 0)),
+            ):
+                cairo_run(
+                    "test__execute_from_outside",
+                    tx_data=tx_data,
+                    signature=signature,
                     chain_id=CHAIN_ID,
                 )
 
