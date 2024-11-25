@@ -302,7 +302,17 @@ class TestAccountContract:
                 cairo_run(
                     "test__execute_from_outside",
                     tx_data=[1],
-                    signature=list(range(5)),
+                    signature=[0, 1, 2, 3, 0],
+                    chain_id=CHAIN_ID,
+                )
+
+        @given(y_parity=integers(min_value=2))
+        def test_should_raise_with_invalid_y_parity(self, cairo_run, y_parity):
+            with cairo_error(message="Invalid y_parity"):
+                cairo_run(
+                    "test__execute_from_outside",
+                    tx_data=[1],
+                    signature=[0, 1, 2, 3, y_parity],
                     chain_id=CHAIN_ID,
                 )
 
@@ -354,7 +364,7 @@ class TestAccountContract:
                     chain_id=CHAIN_ID,
                 )
 
-        def test_should_raise_invalid_signature_for_invalid_chain_id_when_tx_type0_not_pre_eip155(
+        def test_should_raise_invalid_y_parity_for_invalid_chain_id_when_tx_type0_not_pre_eip155(
             self, cairo_run
         ):
             transaction = {
@@ -374,7 +384,7 @@ class TestAccountContract:
 
             with (
                 SyscallHandler.patch("Account_evm_address", address),
-                cairo_error(message="Invalid signature."),
+                cairo_error(message="Invalid y_parity"),
             ):
                 cairo_run(
                     "test__execute_from_outside",
@@ -521,6 +531,7 @@ class TestAccountContract:
                     },
                     call_array=[],
                     calldata=[],
+                    calldata_len=0,
                     signature=[],
                 )
 
@@ -536,6 +547,7 @@ class TestAccountContract:
                     },
                     call_array=[{}, {}],
                     calldata=[],
+                    calldata_len=0,
                     signature=[],
                 )
 
@@ -554,6 +566,7 @@ class TestAccountContract:
                         {"to": 0, "selector": 0, "data_offset": 0, "data_len": 0},
                     ],
                     calldata=[],
+                    calldata_len=0,
                     signature=[],
                 )
 
@@ -572,10 +585,31 @@ class TestAccountContract:
                         {"to": 0, "selector": 0, "data_offset": 0, "data_len": 0},
                     ],
                     calldata=[],
+                    calldata_len=0,
                     signature=[],
                 )
 
-        @given(data_len=integers(min_value=2**128, max_value=DEFAULT_PRIME))
+        def test_should_raise_when_call_array_not_within_bounds_calldata(
+            self, cairo_run
+        ):
+            with cairo_error(message="EOA: call_array out of bounds"):
+                cairo_run(
+                    "test__execute_from_outside_entrypoint",
+                    outside_execution={
+                        "caller": SyscallHandler.caller_address,
+                        "nonce": 0,
+                        "execute_after": 0,
+                        "execute_before": SyscallHandler.block_timestamp + 1,
+                    },
+                    call_array=[
+                        {"to": 0, "selector": 0, "data_offset": 1, "data_len": 1},
+                    ],
+                    calldata=[],
+                    calldata_len=0,
+                    signature=[],
+                )
+
+        @given(data_len=integers(min_value=2**128, max_value=DEFAULT_PRIME - 1))
         def test_should_raise_when_packed_data_len_is_zero_or_out_of_range(
             self, cairo_run, data_len
         ):
@@ -595,10 +629,11 @@ class TestAccountContract:
                             "to": 0,
                             "selector": 0,
                             "data_offset": 0,
-                            "data_len": data_len % DEFAULT_PRIME,
+                            "data_len": data_len,
                         },
                     ],
                     calldata=[],
+                    calldata_len=data_len,
                     signature=[],
                 )
 
@@ -623,5 +658,6 @@ class TestAccountContract:
                         },
                     ],
                     calldata=[2**128],
+                    calldata_len=1,
                     signature=[],
                 )

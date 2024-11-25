@@ -108,17 +108,6 @@ func get_owner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     return Ownable_owner.read();
 }
 
-// @notice Set the native token used by kakarot
-// @dev Set the native token which will emulate the role of ETH on Ethereum
-// @param native_token_address The address of the native token
-@external
-func set_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    native_token_address: felt
-) {
-    Ownable.assert_only_owner();
-    return Kakarot.set_native_token(native_token_address);
-}
-
 // @notice Get the native token address
 // @dev Return the address used to emulate the role of ETH on Ethereum
 // @return native_token_address The address of the native token

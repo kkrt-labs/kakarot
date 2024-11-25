@@ -98,13 +98,13 @@ dw 0x08;
 dw Gas.MID;
 dw 3;
 dw 3;
-dw -1;
+dw -2;
 // MULMOD
 dw 0x09;
 dw Gas.MID;
 dw 3;
 dw 3;
-dw -1;
+dw -2;
 // EXP
 dw 0x0a;
 dw Gas.EXPONENTIATION;
@@ -200,7 +200,7 @@ dw 0x19;
 dw Gas.VERY_LOW;
 dw 1;
 dw 1;
-dw -1;
+dw 0;
 // BYTE
 dw 0x1a;
 dw Gas.VERY_LOW;
@@ -380,7 +380,7 @@ dw 0x37;
 dw Gas.VERY_LOW;
 dw 3;
 dw 3;
-dw 0;
+dw -3;
 // CODESIZE
 dw 0x38;
 dw Gas.BASE;
@@ -392,7 +392,7 @@ dw 0x39;
 dw Gas.VERY_LOW;
 dw 3;
 dw 3;
-dw 0;
+dw -3;
 // GASPRICE
 dw 0x3a;
 dw Gas.BASE;
@@ -422,7 +422,7 @@ dw 0x3e;
 dw Gas.VERY_LOW;
 dw 3;
 dw 3;
-dw 0;
+dw -3;
 // EXTCODEHASH
 dw 0x3f;
 dw 0;

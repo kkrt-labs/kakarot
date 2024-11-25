@@ -5,7 +5,7 @@
 from openzeppelin.access.ownable.library import Ownable, Ownable_owner
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin, SignatureBuiltin
-from starkware.cairo.common.math import assert_le, assert_not_zero
+from starkware.cairo.common.math import assert_le, assert_not_zero, assert_le_felt
 from starkware.cairo.common.math_cmp import is_nn
 from starkware.cairo.common.uint256 import Uint256
 from starkware.starknet.common.syscalls import (
@@ -119,6 +119,11 @@ func execute_from_outside{
     let (bytecode_len) = Account_bytecode_len.read();
     with_attr error_message("EOAs cannot have code") {
         assert bytecode_len = 0;
+    }
+
+    // Ensure the call_array is within the bounds of the calldata.
+    with_attr error_message("EOA: call_array out of bounds") {
+        assert_le_felt([call_array].data_offset + [call_array].data_len, calldata_len);
     }
 
     // Unpack the tx data
