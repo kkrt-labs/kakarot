@@ -1,3 +1,5 @@
+use core::hash::{HashStateExTrait, HashStateTrait};
+use core::pedersen::PedersenTrait;
 use snforge_std::{
     ContractClassTrait, ContractClass, declare, DeclareResultTrait, EventSpyTrait,
     start_cheat_block_timestamp_global, start_cheat_caller_address, mock_call, spy_events, store,
@@ -656,12 +658,8 @@ fn test_protocol_handler_change_operator_should_pass() {
     let access_control_dispatcher = IAccessControlDispatcher {
         contract_address: protocol_handler.contract_address
     };
-    assert!(
-        !access_control_dispatcher.has_role(ProtocolHandler::OPERATOR_ROLE, operator_mock()),
-    );
-    assert!(
-        access_control_dispatcher.has_role(ProtocolHandler::OPERATOR_ROLE, new_operator),
-    );
+    assert!(!access_control_dispatcher.has_role(ProtocolHandler::OPERATOR_ROLE, operator_mock()),);
+    assert!(access_control_dispatcher.has_role(ProtocolHandler::OPERATOR_ROLE, new_operator),);
 
     // Check the Access control related events are emitted
     let expected_revoked = AccessControlComponent::Event::RoleRevoked(
@@ -879,6 +877,20 @@ fn test_protocol_handler_add_guardian_should_pass() {
         .with_contract_address(protocol_handler.contract_address)
         .build();
     contract_events.assert_emitted(@expected_granted);
+
+    // Check the guardian is added to the list
+    let length = load(
+        protocol_handler.contract_address,
+        selector!("guardians"),
+        1
+    );
+    assert_eq!(*length[0], (guardians_mock().len() + 1).into(), "Guardian not added");
+    // get storage slot for guardian
+    let storage_slot = PedersenTrait::new(selector!("guardians")).update_with(2).finalize();
+    let guardian3 = load(
+        protocol_handler.contract_address, storage_slot, 1
+    );
+    assert_eq!(*guardian3[0], new_guardian.into(), "Guardian not added");
 }
 
 #[test]
@@ -905,16 +917,23 @@ fn test_protocol_handler_remove_guardian_should_pass() {
     // Spy on the events
     let mut spy = spy_events();
 
-    // Call the protocol handler remove_guardian
-    let guardian = guardians_mock()[0];
-    protocol_handler.remove_guardian(*guardian);
+    // Ensure the guardian is in the list
+    let guardian_removed = *(guardians_mock()[0]);
+    let storage_slot = PedersenTrait::new(selector!("guardians")).update_with(0).finalize();
+    let guardian_loaded = load(
+        protocol_handler.contract_address, storage_slot, 1
+    );
+    assert_eq!(*guardian_loaded[0], guardian_removed.into(), "Guardian not in Vec");
+
+    // Remove the guardian
+    protocol_handler.remove_guardian(guardian_removed);
 
     // Check the guardian is revoked
     let access_control_dispatcher = IAccessControlDispatcher {
         contract_address: protocol_handler.contract_address
     };
     assert(
-        !access_control_dispatcher.has_role(ProtocolHandler::GUARDIAN_ROLE, *guardian),
+        !access_control_dispatcher.has_role(ProtocolHandler::GUARDIAN_ROLE, guardian_removed),
         'Guardian not revoked'
     );
 
@@ -922,7 +941,7 @@ fn test_protocol_handler_remove_guardian_should_pass() {
     let expected_revoked = AccessControlComponent::Event::RoleRevoked(
         RoleRevoked {
             role: ProtocolHandler::GUARDIAN_ROLE,
-            account: *guardian,
+            account: guardian_removed,
             sender: security_council_mock()
         }
     );
@@ -930,4 +949,10 @@ fn test_protocol_handler_remove_guardian_should_pass() {
         .with_contract_address(protocol_handler.contract_address)
         .build();
     contract_events.assert_emitted(@expected_revoked);
+
+    // Check the guardian is set to 0 in the guardian list
+    let guardian_loaded = load(
+        protocol_handler.contract_address, storage_slot, 1
+    );
+    assert_eq!(*guardian_loaded[0], 0, "Guardian not in Vec");
 }

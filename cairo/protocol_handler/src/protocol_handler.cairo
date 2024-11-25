@@ -123,10 +123,12 @@ pub trait IProtocolHandler<TContractState> {
 pub mod ProtocolHandler {
     use starknet::event::EventEmitter;
     use starknet::account::Call;
-    use starknet::{ContractAddress, ClassHash, get_block_timestamp, SyscallResultTrait};
+    use starknet::{
+        ContractAddress, contract_address_const, ClassHash, get_block_timestamp, SyscallResultTrait
+    };
     use starknet::storage::{
         Map, StoragePointerReadAccess, StoragePointerWriteAccess, StorageMapReadAccess,
-        StorageMapWriteAccess
+        StorageMapWriteAccess, Vec, MutableVecTrait
     };
     use openzeppelin_access::accesscontrol::AccessControlComponent;
     use openzeppelin_introspection::src5::SRC5Component;
@@ -179,7 +181,7 @@ pub mod ProtocolHandler {
         pub kakarot: IKakarotDispatcher,
         pub security_council: ContractAddress,
         pub operator: ContractAddress,
-        pub guardians: Map<ContractAddress, bool>,
+        pub guardians: Vec<ContractAddress>,
         pub gas_price_admin: ContractAddress,
         pub protocol_frozen_until: u64,
         pub authorized_operator_selector: Map<felt252, bool>,
@@ -261,11 +263,14 @@ pub mod ProtocolHandler {
         gas_price_admin: ContractAddress,
         mut guardians: Span<ContractAddress>
     ) {
-        // Store the Kakarot, security council, operator and gas price admin addresses
+        // Store the Kakarot, security council, operator, gas price admin and guardians addresses
         self.kakarot.write(IKakarotDispatcher { contract_address: kakarot });
         self.security_council.write(security_council);
         self.operator.write(operator);
         self.gas_price_admin.write(gas_price_admin);
+        for guardian in guardians {
+            self.guardians.append().write(*guardian);
+        };
 
         // Store the authorized selectors for the operator
         self.authorized_operator_selector.write(selector!("set_native_token"), true);
@@ -492,6 +497,9 @@ pub mod ProtocolHandler {
 
             // Grant the GUARDIAN_ROLE to the new guardian
             self.accesscontrol._grant_role(GUARDIAN_ROLE, new_guardian_address);
+
+            // Add the guardian to the guardians list
+            self.guardians.append().write(new_guardian_address)
         }
 
         fn remove_guardian(ref self: ContractState, guardian_address: ContractAddress) {
@@ -500,6 +508,17 @@ pub mod ProtocolHandler {
 
             // Revoke the GUARDIAN_ROLE from the guardian
             self.accesscontrol._revoke_role(GUARDIAN_ROLE, guardian_address);
+
+            // Remove the guardian from the guardians list
+            for i in 0
+                ..self
+                    .guardians
+                    .len() {
+                        let guardian = self.guardians.at(i).read();
+                        if guardian == guardian_address {
+                            self.guardians.at(i).write(contract_address_const::<0>());
+                        }
+                    };
         }
     }
 }
