@@ -39,7 +39,7 @@ future of zero-knowledge.
 ## Supported opcodes
 
 We support 100% of EVM opcodes and
-[9 out of 10 precompiles](https://docs.kakarot.org/starknet/architecture/differences).
+[9 out of 10 precompiles](https://docs.kakarot.org/starknet/architecture/cairo-precompiles).
 
 ## Documentation
 
@@ -176,7 +176,7 @@ required. Actually, for tests requiring a Starknet devnet, prefer end-to-end
 relying only on a RPC endpoint and currently running on Katana.
 
 For an example of the cairo test runner, see for example
-[the RLP library tests](tests/src/utils/test_rlp.py). Especially, the cairo
+[the RLP library tests](./cairo_zero/tests/src/utils/test_rlp.py). Especially, the cairo
 runner uses hints to communicate values and return outputs:
 
 - `kwargs` of `cairo_run` are available in the `program_input` variable
@@ -240,7 +240,7 @@ Note that the chosen `chain_id` when deploying is important:
 - To be compatible with ledger the chain id needs to be inferior to 4 bytes see
   https://github.com/kkrt-labs/kakarot/issues/1530
 
-The [deploy script](./kakarot_scripts/deploy_kakarot.py) relies on some env
+The [deploy script](./kakarot_scripts/deployment/kakarot_deployment.py) relies on some env
 variables defined in a `.env` file located at the root of the project and loaded
 in the [constant file](./kakarot_scripts/constants.py). To get started, just
 
