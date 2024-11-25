@@ -307,25 +307,22 @@ class TestAccountContract:
                     chain_id=CHAIN_ID,
                 )
 
-        def test_should_raise_with_malleable_signature_eip_2(self, cairo_run):
-            # EIP-2: one can take any transaction, flip the s value from s to secp256k1n -
-            # s, flip the v value (27 -> 28, 28 -> 27), and the resulting signature would still be
-            # valid.
+        @given(s_value=integers(min_value=SECP256K1N // 2 + 1, max_value=SECP256K1N))
+        def test_should_raise_with_high_s_values(self, cairo_run, s_value):
+            """Test that signatures with s values > secp256k1n/2 are rejected (EIP-2)."""
             transaction = TRANSACTIONS[0]
             private_key = generate_random_private_key()
             address = int(private_key.public_key.to_checksum_address(), 16)
             signed = Account.sign_transaction(transaction, private_key)
 
-            # Modify s and flip v to generate a malleable signature
-            s_modified = SECP256K1N - signed.s
-            y_parity = signed.v - 2 * CHAIN_ID - 35
-            v_modified = signed.v + 1 if y_parity == 0 else signed.v - 1
+            # Override the s value with our test value while keeping r and v
             signature = [
                 *int_to_uint256(signed.r),
-                *int_to_uint256(s_modified),
-                v_modified,
+                *int_to_uint256(s_value),
+                signed.v,
             ]
             tx_data = list(rlp_encode_signed_data(transaction))
+
             with (
                 cairo_error(message="Invalid s value"),
                 SyscallHandler.patch("Account_evm_address", address),
