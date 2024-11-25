@@ -243,10 +243,6 @@ namespace Precompiles {
     ) {
         alloc_locals;
         let (implementation) = Kakarot_cairo1_helpers_class_hash.read();
-        let (calldata: felt*) = alloc();
-        assert [calldata] = evm_address;
-        assert [calldata + 1] = input_len;
-        memcpy(calldata + 2, input, input_len);
         let (
             success, gas, return_data_len, return_data
         ) = ICairo1Helpers.library_call_exec_precompile(

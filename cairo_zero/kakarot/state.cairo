@@ -389,6 +389,10 @@ namespace State {
             [recipient.balance], transfer.amount
         );
 
+        if (carry != 0) {
+            return 0;
+        }
+
         let sender = Account.set_balance(sender, &sender_balance_new);
         let recipient = Account.set_balance(recipient, &recipient_balance_new);
 
