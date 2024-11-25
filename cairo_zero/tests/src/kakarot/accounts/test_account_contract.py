@@ -6,6 +6,7 @@ import pytest
 import rlp
 from eth_account.account import Account
 from eth_utils import keccak
+from ethereum.crypto.elliptic_curve import SECP256K1N
 from hypothesis import given, settings
 from hypothesis.strategies import binary, composite, integers, lists, permutations
 from starkware.cairo.lang.cairo_constants import DEFAULT_PRIME
@@ -312,6 +313,34 @@ class TestAccountContract:
                     "test__execute_from_outside",
                     tx_data=[1],
                     signature=[0, 1, 2, 3, y_parity],
+                    chain_id=CHAIN_ID,
+                )
+
+        @given(s_value=integers(min_value=SECP256K1N // 2 + 1, max_value=SECP256K1N))
+        def test_should_raise_with_high_s_values(self, cairo_run, s_value):
+            """Test that signatures with s values > secp256k1n/2 are rejected (EIP-2)."""
+            transaction = TRANSACTIONS[0]
+            private_key = generate_random_private_key()
+            address = int(private_key.public_key.to_checksum_address(), 16)
+            signed = Account.sign_transaction(transaction, private_key)
+
+            # Override the s value with our test value while keeping r and v
+            signature = [
+                *int_to_uint256(signed.r),
+                *int_to_uint256(s_value),
+                signed.v,
+            ]
+            tx_data = list(rlp_encode_signed_data(transaction))
+
+            with (
+                cairo_error(message="Invalid s value"),
+                SyscallHandler.patch("Account_evm_address", address),
+                SyscallHandler.patch("Account_nonce", transaction.get("nonce", 0)),
+            ):
+                cairo_run(
+                    "test__execute_from_outside",
+                    tx_data=tx_data,
+                    signature=signature,
                     chain_id=CHAIN_ID,
                 )
 
