@@ -656,13 +656,11 @@ fn test_protocol_handler_change_operator_should_pass() {
     let access_control_dispatcher = IAccessControlDispatcher {
         contract_address: protocol_handler.contract_address
     };
-    assert(
+    assert!(
         !access_control_dispatcher.has_role(ProtocolHandler::OPERATOR_ROLE, operator_mock()),
-        'Old operator not revoked'
     );
-    assert(
+    assert!(
         access_control_dispatcher.has_role(ProtocolHandler::OPERATOR_ROLE, new_operator),
-        'New operator not granted'
     );
 
     // Check the Access control related events are emitted
@@ -688,7 +686,7 @@ fn test_protocol_handler_change_operator_should_pass() {
 
     // Check the new operator is set in the contract state
     let loaded = load(protocol_handler.contract_address, selector!("operator"), 1);
-    assert_eq!(*loaded[0], new_operator.into(), "New operator not set");
+    assert_eq!(*loaded[0], new_operator.into());
 }
 
 
