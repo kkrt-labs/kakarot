@@ -17,6 +17,7 @@ from kakarot_scripts.utils.starknet import (
     register_lazy_account,
     remove_lazy_account,
 )
+from tests.utils.constants import ALL_PRECOMPILES
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -67,8 +68,8 @@ async def deploy_evm_contracts():
 
     # %% Pre-fund precompiles
     # see https://github.com/ethereum/go-ethereum/blob/5230b06d5151e214e80762eebed9196a670c52b1/core/vm/instructions.go#L404
-    for i in range(1, 10):
-        await fund_address(hex(i), 1 / 1e18)
+    for precompile in ALL_PRECOMPILES:
+        await fund_address(precompile, 1 / 1e18)
     # %% Tear down
     dump_evm_deployments(evm_deployments)
 

@@ -4,9 +4,8 @@ from ethereum.shanghai.transactions import (
     TX_ACCESS_LIST_ADDRESS_COST,
     TX_ACCESS_LIST_STORAGE_KEY_COST,
 )
-from web3 import Web3
 
-from tests.utils.constants import TRANSACTIONS
+from tests.utils.constants import ALL_PRECOMPILES, TRANSACTIONS
 from tests.utils.helpers import flatten_tx_access_list, merge_access_list
 from tests.utils.syscall_handler import SyscallHandler
 
@@ -89,9 +88,9 @@ class TestState:
         @SyscallHandler.patch("IERC20.balanceOf", lambda *_: [0, 1])
         def test_should_cache_precompiles(self, cairo_run):
             state = cairo_run("test__cache_precompiles")
-            assert list(map(Web3.to_checksum_address, state["accounts"].keys())) == [
-                Web3.to_checksum_address(f"0x{i:040x}") for i in range(1, 11)
-            ]
+            assert [
+                int(address, 16) for address in state["accounts"].keys()
+            ] == ALL_PRECOMPILES
 
         @SyscallHandler.patch("IERC20.balanceOf", lambda *_: [0, 1])
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
