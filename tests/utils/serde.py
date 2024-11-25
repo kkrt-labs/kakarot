@@ -44,6 +44,7 @@ class Serde:
             list_len * item_size
             if list_len is not None
             else self.runner.segments.get_segment_size(segment_ptr.segment_index)
+            - segment_ptr.offset
         )
         output = []
         for i in range(0, list_len, item_size):

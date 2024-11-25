@@ -16,7 +16,7 @@ from starkware.starknet.public.abi import (
 
 from kakarot_scripts.data.pre_eip155_txs import PRE_EIP155_TX
 from kakarot_scripts.utils.uint256 import int_to_uint256
-from tests.utils.constants import CHAIN_ID, TRANSACTIONS
+from tests.utils.constants import CAIRO1_HELPERS_CLASS_HASH, CHAIN_ID, TRANSACTIONS
 from tests.utils.errors import cairo_error
 from tests.utils.helpers import generate_random_private_key, rlp_encode_signed_data
 from tests.utils.hints import patch_hint
@@ -263,28 +263,27 @@ class TestAccountContract:
 
         @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
         def test_should_execute_starknet_call(self, cairo_run):
-            called_address = 0xABCDEF1234567890
-            function_selector = 0x0987654321FEDCBA
-            calldata = [random.randint(0, 255) for _ in range(32)]
-            expected_return_data = [random.randint(0, 255) for _ in range(32)] + [
-                int(True)
-            ]
+            call_to = 0xABCDEF1234567890
+            call_selector = 0x0987654321FEDCBA
+            call_calldata = [random.randint(0, 255) for _ in range(32)]
+            call_retdata = [random.randint(0, 255) for _ in range(32)]
             with SyscallHandler.patch(
-                function_selector, lambda *_: expected_return_data
+                "new_call_contract_syscall",
+                lambda *_: [int(True), len(call_retdata), *call_retdata],
             ):
                 return_data, success = cairo_run(
                     "test__execute_starknet_call",
-                    called_address=called_address,
-                    function_selector=function_selector,
-                    calldata=calldata,
+                    called_address=call_to,
+                    function_selector=call_selector,
+                    calldata=call_calldata,
                 )
 
-            assert return_data == expected_return_data
+            assert return_data == call_retdata
             assert success == 1
-            SyscallHandler.mock_call.assert_any_call(
-                contract_address=called_address,
-                function_selector=function_selector,
-                calldata=calldata,
+            SyscallHandler.mock_library_call.assert_any_call(
+                class_hash=CAIRO1_HELPERS_CLASS_HASH,
+                function_selector=get_selector_from_name("new_call_contract_syscall"),
+                calldata=[call_to, call_selector, len(call_calldata), *call_calldata],
             )
 
     class TestExecuteFromOutside:

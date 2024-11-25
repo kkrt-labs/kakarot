@@ -337,6 +337,5 @@ func execute_starknet_call{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range
     to: felt, function_selector: felt, calldata_len: felt, calldata: felt*
 ) -> (retdata_len: felt, retdata: felt*, success: felt) {
     Ownable.assert_only_owner();
-    let (retdata_len, retdata) = call_contract(to, function_selector, calldata_len, calldata);
-    return (retdata_len, retdata, TRUE);
+    return AccountContract.execute_starknet_call(to, function_selector, calldata_len, calldata);
 }

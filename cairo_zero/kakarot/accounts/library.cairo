@@ -374,6 +374,35 @@ namespace AccountContract {
         Account_code_hash.write(code_hash);
         return ();
     }
+
+    // @notice Execute a starknet call.
+    // @dev Used when executing a Cairo Precompile. Used to preserve the caller address.
+    // @param to The address to call.
+    // @param function_selector The function selector to call.
+    // @param calldata_len The length of the calldata array.
+    // @param calldata The calldata for the call.
+    // @return retdata_len The length of the return data array.
+    // @return retdata The return data from the call.
+    // @return success 1 if the call was successful, 0 otherwise.
+    func execute_starknet_call{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        to: felt, function_selector: felt, calldata_len: felt, calldata: felt*
+    ) -> (retdata_len: felt, retdata: felt*, success: felt) {
+        alloc_locals;
+        let (kakarot_address) = Ownable_owner.read();
+        let (helpers_class) = IKakarot.get_cairo1_helpers_class_hash(kakarot_address);
+        // Note: until Starknet v0.13.4, the transaction will always fail if the call reverted.
+        // Post starknet v0.13.4, it will be possible to handle failures in contract calls.
+        // Currently, `new_call_contract_syscall` is implemented to panic if the call reverted.
+        // Manual changes to the implementation in the Cairo1Helpers class will be needed to handle call reverts.
+        let (success, retdata_len, retdata) = ICairo1Helpers.library_call_new_call_contract_syscall(
+            class_hash=helpers_class,
+            to=to,
+            selector=function_selector,
+            calldata_len=calldata_len,
+            calldata=calldata,
+        );
+        return (retdata_len, retdata, success);
+    }
 }
 
 namespace Internals {

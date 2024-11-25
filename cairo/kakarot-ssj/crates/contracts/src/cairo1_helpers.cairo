@@ -1,4 +1,4 @@
-use core::starknet::{EthAddress, secp256_trait::Signature};
+use core::starknet::{EthAddress, secp256_trait::Signature, ContractAddress};
 
 #[starknet::interface]
 pub trait IPrecompiles<T> {
@@ -103,13 +103,33 @@ pub trait IHelpers<T> {
     fn verify_signature_secp256r1(
         self: @T, msg_hash: u256, r: u256, s: u256, x: u256, y: u256
     ) -> bool;
+
+
+    /// Calls a contract using the new Cairo call_contract_syscall.
+    ///
+    /// Meant to be used from Cairo Zero classes that want to be able to manage the return value of
+    /// the call.
+    /// Only applicable from Starknet v0.13.4 and onwwards.
+    ///
+    /// # Arguments
+    ///
+    /// * `to` - The address of the contract to call.
+    /// * `selector` - The selector of the function to call.
+    /// * `calldata` - The calldata to pass to the function.
+    ///
+    /// # Returns
+    /// A tuple containing:
+    /// * A boolean indicating whether the call was successful.
+    /// * The output of the call.
+    fn new_call_contract_syscall(
+        ref self: T, to: ContractAddress, selector: felt252, calldata: Span<felt252>
+    ) -> (bool, Span<felt252>);
 }
 
 
 pub mod embeddable_impls {
     use core::keccak::{cairo_keccak, keccak_u256s_be_inputs};
     use core::num::traits::Zero;
-    use core::starknet::EthAddress;
     use core::starknet::eth_signature::{verify_eth_signature};
     use core::starknet::secp256_trait::{
         Signature, recover_public_key, Secp256PointTrait, is_valid_signature
@@ -117,6 +137,7 @@ pub mod embeddable_impls {
     use core::starknet::secp256_trait::{Secp256Trait};
     use core::starknet::secp256k1::Secp256k1Point;
     use core::starknet::secp256r1::{Secp256r1Point};
+    use core::starknet::{ContractAddress, EthAddress};
     use core::traits::Into;
     use core::{starknet, starknet::SyscallResultTrait};
     use evm::errors::EVMError;
@@ -149,7 +170,7 @@ pub mod embeddable_impls {
     }
 
     #[starknet::embeddable]
-    pub impl Helpers<TContractState> of super::IHelpers<TContractState> {
+    pub impl Helpers<TContractState, +Drop<TContractState>> of super::IHelpers<TContractState> {
         fn get_block_hash(self: @TContractState, block_number: u64) -> felt252 {
             starknet::syscalls::get_block_hash_syscall(block_number).unwrap_syscall()
         }
@@ -216,6 +237,22 @@ pub mod embeddable_impls {
             };
 
             return is_valid_signature(msg_hash, r, s, public_key);
+        }
+
+        fn new_call_contract_syscall(
+            ref self: TContractState,
+            to: ContractAddress,
+            selector: felt252,
+            calldata: Span<felt252>
+        ) -> (bool, Span<felt252>) {
+            // Note: until Starknet v0.13.4, the transaction will fail if the call reverted.
+            let result = starknet::syscalls::call_contract_syscall(to, selector, calldata);
+            match result {
+                Result::Ok(output) => { return (true, output); },
+                // This will need to be manually tested and enabled once contract calls can be
+                // handled.
+                Result::Err(error) => { return panic(error); }
+            }
         }
     }
 }
