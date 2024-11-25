@@ -7,6 +7,7 @@ from kakarot_scripts.constants import EVM_ADDRESS, NETWORK, RPC_CLIENT, NetworkT
 from kakarot_scripts.utils.kakarot import deploy as deploy_evm
 from kakarot_scripts.utils.kakarot import deploy_and_fund_evm_address
 from kakarot_scripts.utils.kakarot import dump_deployments as dump_evm_deployments
+from kakarot_scripts.utils.kakarot import fund_address
 from kakarot_scripts.utils.kakarot import get_deployments as get_evm_deployments
 from kakarot_scripts.utils.starknet import call, call_contract, execute_calls
 from kakarot_scripts.utils.starknet import get_deployments as get_starknet_deployments
@@ -16,6 +17,7 @@ from kakarot_scripts.utils.starknet import (
     register_lazy_account,
     remove_lazy_account,
 )
+from tests.utils.constants import ALL_PRECOMPILES
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -64,6 +66,10 @@ async def deploy_evm_contracts():
         }
         await invoke("kakarot", "set_coinbase", int(contract.address, 16))
 
+    # %% Pre-fund precompiles
+    # see https://github.com/ethereum/go-ethereum/blob/5230b06d5151e214e80762eebed9196a670c52b1/core/vm/instructions.go#L404
+    for precompile in ALL_PRECOMPILES:
+        await fund_address(precompile, 1 / 1e18)
     # %% Tear down
     dump_evm_deployments(evm_deployments)
 

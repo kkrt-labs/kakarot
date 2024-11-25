@@ -17,6 +17,7 @@ from kakarot_scripts.utils.kakarot import (
     deploy_and_fund_evm_address,
     eth_balance_of,
     get_contract,
+    get_starknet_address,
 )
 from kakarot_scripts.utils.starknet import (
     call,
@@ -26,6 +27,7 @@ from kakarot_scripts.utils.starknet import (
     register_lazy_account,
     remove_lazy_account,
 )
+from tests.utils.constants import ALL_PRECOMPILES
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -91,6 +93,14 @@ async def main():
     logger.info(
         f"💰  EVM deployer balance:\n    L2: {l2_balance} ETH\n    L1: {l1_balance} ETH"
     )
+
+    # check precompiles received funds
+    for precompile in ALL_PRECOMPILES:
+        starknet_address = await get_starknet_address(precompile)
+        balance = await get_balance(starknet_address)
+        assert (
+            balance > 0
+        ), f"Failed to fund precompile {precompile} starknet address {starknet_address}"
 
 
 # %%
