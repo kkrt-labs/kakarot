@@ -1,6 +1,9 @@
+use core::hash::{HashStateExTrait, HashStateTrait};
+use core::pedersen::PedersenTrait;
 use snforge_std::{
     ContractClassTrait, ContractClass, declare, DeclareResultTrait, EventSpyTrait,
-    start_cheat_block_timestamp_global, start_cheat_caller_address, mock_call, spy_events, store
+    start_cheat_block_timestamp_global, start_cheat_caller_address, mock_call, spy_events, store,
+    load
 };
 use starknet::{ContractAddress, contract_address_const, get_block_timestamp};
 use starknet::account::Call;
@@ -12,6 +15,13 @@ use protocol_handler::{
 use snforge_utils::snforge_utils::{
     EventsFilterBuilderTrait, ContractEventsTrait, assert_called_with
 };
+
+use openzeppelin_access::accesscontrol::AccessControlComponent;
+use openzeppelin_access::accesscontrol::AccessControlComponent::{
+    InternalImpl, RoleGranted, RoleRevoked
+};
+use openzeppelin_access::accesscontrol::interface::IAccessControlDispatcher;
+use openzeppelin_access::accesscontrol::interface::IAccessControlDispatcherTrait;
 
 fn kakarot_mock() -> ContractAddress {
     contract_address_const::<'security_council_mock'>()
@@ -141,6 +151,7 @@ fn test_protocol_upgrade_fail_wrong_caller() {
     protocol_handler.upgrade(contract.class_hash);
 }
 
+#[test]
 fn test_protocol_upgrade_should_pass() {
     let (protocol_handler, contract) = setup_contracts_for_testing();
 
@@ -565,7 +576,6 @@ fn test_protocol_handler_execute_call_wrong_selector_should_fail() {
         }
 }
 
-
 #[test]
 fn test_protocol_handler_execute_call_should_pass() {
     let (protocol_handler, _) = setup_contracts_for_testing();
@@ -614,4 +624,335 @@ fn test_protocol_handler_execute_call_should_pass() {
                 .build();
             contract_events.assert_emitted(@expected);
         }
+}
+
+#[test]
+#[should_panic(expected: 'Caller is missing role')]
+fn test_protocol_handler_change_operator_should_fail_wrong_caller() {
+    let (protocol_handler, _) = setup_contracts_for_testing();
+
+    // Change caller to random caller address
+    let random_caller = contract_address_const::<'random_caller'>();
+    start_cheat_caller_address(protocol_handler.contract_address, random_caller);
+
+    // Call the protocol handler change_operator, should fail as caller is not security council
+    let new_operator = contract_address_const::<'new_operator'>();
+    protocol_handler.change_operator(new_operator);
+}
+
+#[test]
+fn test_protocol_handler_change_operator_should_pass() {
+    let (protocol_handler, _) = setup_contracts_for_testing();
+
+    // Change caller to security council
+    start_cheat_caller_address(protocol_handler.contract_address, security_council_mock());
+
+    // Spy on the events
+    let mut spy = spy_events();
+
+    // Call the protocol handler change_operator
+    let new_operator = contract_address_const::<'new_operator'>();
+    protocol_handler.change_operator(new_operator);
+
+    // Check the old operator is revoked and the new operator is granted
+    let access_control_dispatcher = IAccessControlDispatcher {
+        contract_address: protocol_handler.contract_address
+    };
+    assert!(!access_control_dispatcher.has_role(ProtocolHandler::OPERATOR_ROLE, operator_mock()),);
+    assert!(access_control_dispatcher.has_role(ProtocolHandler::OPERATOR_ROLE, new_operator),);
+
+    // Check the Access control related events are emitted
+    let expected_revoked = AccessControlComponent::Event::RoleRevoked(
+        RoleRevoked {
+            role: ProtocolHandler::OPERATOR_ROLE,
+            account: operator_mock(),
+            sender: security_council_mock()
+        }
+    );
+    let expected_granted = AccessControlComponent::Event::RoleGranted(
+        RoleGranted {
+            role: ProtocolHandler::OPERATOR_ROLE,
+            account: new_operator,
+            sender: security_council_mock()
+        }
+    );
+    let contract_events = EventsFilterBuilderTrait::from_events(@spy.get_events())
+        .with_contract_address(protocol_handler.contract_address)
+        .build();
+    contract_events.assert_emitted(@expected_revoked);
+    contract_events.assert_emitted(@expected_granted);
+
+    // Check the new operator is set in the contract state
+    let loaded = load(protocol_handler.contract_address, selector!("operator"), 1);
+    assert_eq!(*loaded[0], new_operator.into());
+}
+
+
+#[test]
+#[should_panic(expected: 'Caller is missing role')]
+fn test_protocol_handler_change_security_council_should_fail_wrong_caller() {
+    let (protocol_handler, _) = setup_contracts_for_testing();
+
+    // Change caller to random caller address
+    let random_caller = contract_address_const::<'random_caller'>();
+    start_cheat_caller_address(protocol_handler.contract_address, random_caller);
+
+    // Call the protocol handler change_security_council, should fail as caller is not security
+    // council
+    let new_security_council = contract_address_const::<'new_security_council'>();
+    protocol_handler.change_security_council(new_security_council);
+}
+
+#[test]
+fn test_protocol_handler_change_security_council_should_pass() {
+    let (protocol_handler, _) = setup_contracts_for_testing();
+
+    // Change caller to security council
+    start_cheat_caller_address(protocol_handler.contract_address, security_council_mock());
+
+    // Spy on the events
+    let mut spy = spy_events();
+
+    // Call the protocol handler change_security_council
+    let new_security_council = contract_address_const::<'new_security_council'>();
+    protocol_handler.change_security_council(new_security_council);
+
+    // Check the old security council is revoked and the new security council is granted
+    let access_control_dispatcher = IAccessControlDispatcher {
+        contract_address: protocol_handler.contract_address
+    };
+    assert(
+        !access_control_dispatcher
+            .has_role(ProtocolHandler::SECURITY_COUNCIL_ROLE, security_council_mock()),
+        'Old SC not revoked'
+    );
+    assert(
+        access_control_dispatcher
+            .has_role(ProtocolHandler::SECURITY_COUNCIL_ROLE, new_security_council),
+        'New SC not granted'
+    );
+
+    // Check the Access control related events are emitted
+    let expected_revoked = AccessControlComponent::Event::RoleRevoked(
+        RoleRevoked {
+            role: ProtocolHandler::SECURITY_COUNCIL_ROLE,
+            account: security_council_mock(),
+            sender: security_council_mock()
+        }
+    );
+    let expected_granted = AccessControlComponent::Event::RoleGranted(
+        RoleGranted {
+            role: ProtocolHandler::SECURITY_COUNCIL_ROLE,
+            account: new_security_council,
+            sender: security_council_mock()
+        }
+    );
+    let contract_events = EventsFilterBuilderTrait::from_events(@spy.get_events())
+        .with_contract_address(protocol_handler.contract_address)
+        .build();
+    contract_events.assert_emitted(@expected_revoked);
+    contract_events.assert_emitted(@expected_granted);
+
+    // Check the new security council is set in the contract state
+    let loaded = load(protocol_handler.contract_address, selector!("security_council"), 1);
+    assert_eq!(*loaded[0], new_security_council.into(), "New SC not set");
+}
+
+#[test]
+#[should_panic(expected: 'Caller is missing role')]
+fn test_protocol_handler_change_gas_price_admin_should_fail_wrong_caller() {
+    let (protocol_handler, _) = setup_contracts_for_testing();
+
+    // Change caller to random caller address
+    let random_caller = contract_address_const::<'random_caller'>();
+    start_cheat_caller_address(protocol_handler.contract_address, random_caller);
+
+    // Call the protocol handler change_gas_price_admin, should fail as caller is not security
+    // council
+    let new_gas_price_admin = contract_address_const::<'new_gas_price_admin'>();
+    protocol_handler.change_gas_price_admin(new_gas_price_admin);
+}
+
+#[test]
+fn test_protocol_handler_change_gas_price_admin_should_pass() {
+    let (protocol_handler, _) = setup_contracts_for_testing();
+
+    // Change caller to security council
+    start_cheat_caller_address(protocol_handler.contract_address, security_council_mock());
+
+    // Spy on the events
+    let mut spy = spy_events();
+
+    // Call the protocol handler change_gas_price_admin
+    let new_gas_price_admin = contract_address_const::<'new_gas_price_admin'>();
+    protocol_handler.change_gas_price_admin(new_gas_price_admin);
+
+    // Check the old gas price admin is revoked and the new gas price admin is granted
+    let access_control_dispatcher = IAccessControlDispatcher {
+        contract_address: protocol_handler.contract_address
+    };
+    assert(
+        !access_control_dispatcher
+            .has_role(ProtocolHandler::GAS_PRICE_ADMIN_ROLE, gas_price_admin_mock()),
+        'Old GPA not revoked'
+    );
+    assert(
+        access_control_dispatcher
+            .has_role(ProtocolHandler::GAS_PRICE_ADMIN_ROLE, new_gas_price_admin),
+        'New GPA not granted'
+    );
+
+    // Check the Access control related events are emitted
+    let expected_revoked = AccessControlComponent::Event::RoleRevoked(
+        RoleRevoked {
+            role: ProtocolHandler::GAS_PRICE_ADMIN_ROLE,
+            account: gas_price_admin_mock(),
+            sender: security_council_mock()
+        }
+    );
+    let expected_granted = AccessControlComponent::Event::RoleGranted(
+        RoleGranted {
+            role: ProtocolHandler::GAS_PRICE_ADMIN_ROLE,
+            account: new_gas_price_admin,
+            sender: security_council_mock()
+        }
+    );
+    let contract_events = EventsFilterBuilderTrait::from_events(@spy.get_events())
+        .with_contract_address(protocol_handler.contract_address)
+        .build();
+    contract_events.assert_emitted(@expected_revoked);
+    contract_events.assert_emitted(@expected_granted);
+
+    // Check the new  gas price admin is set in the contract state
+    let loaded = load(protocol_handler.contract_address, selector!("gas_price_admin"), 1);
+    assert_eq!(*loaded[0], new_gas_price_admin.into(), "New GPA not set");
+}
+
+#[test]
+#[should_panic(expected: 'Caller is missing role')]
+fn test_protocol_handler_add_guardian_should_fail_wrong_caller() {
+    let (protocol_handler, _) = setup_contracts_for_testing();
+
+    // Change caller to random caller address
+    let random_caller = contract_address_const::<'random_caller'>();
+    start_cheat_caller_address(protocol_handler.contract_address, random_caller);
+
+    // Call the protocol handler add_guardian, should fail as caller is not security council
+    let new_guardian = contract_address_const::<'new_guardian'>();
+    protocol_handler.add_guardian(new_guardian);
+}
+
+#[test]
+fn test_protocol_handler_add_guardian_should_pass() {
+    let (protocol_handler, _) = setup_contracts_for_testing();
+
+    // Change caller to security council
+    start_cheat_caller_address(protocol_handler.contract_address, security_council_mock());
+
+    // Spy on the events
+    let mut spy = spy_events();
+
+    // Call the protocol handler add_guardian
+    let new_guardian = contract_address_const::<'new_guardian'>();
+    protocol_handler.add_guardian(new_guardian);
+
+    // Check the new guardian is granted
+    let access_control_dispatcher = IAccessControlDispatcher {
+        contract_address: protocol_handler.contract_address
+    };
+    assert(
+        access_control_dispatcher.has_role(ProtocolHandler::GUARDIAN_ROLE, new_guardian),
+        'New guardian not granted'
+    );
+
+    // Check the Access control related events are emitted
+    let expected_granted = AccessControlComponent::Event::RoleGranted(
+        RoleGranted {
+            role: ProtocolHandler::GUARDIAN_ROLE,
+            account: new_guardian,
+            sender: security_council_mock()
+        }
+    );
+    let contract_events = EventsFilterBuilderTrait::from_events(@spy.get_events())
+        .with_contract_address(protocol_handler.contract_address)
+        .build();
+    contract_events.assert_emitted(@expected_granted);
+
+    // Check the guardian is added to the list
+    let length = load(
+        protocol_handler.contract_address,
+        selector!("guardians"),
+        1
+    );
+    assert_eq!(*length[0], (guardians_mock().len() + 1).into(), "Guardian not added");
+    // get storage slot for guardian
+    let storage_slot = PedersenTrait::new(selector!("guardians")).update_with(2).finalize();
+    let guardian3 = load(
+        protocol_handler.contract_address, storage_slot, 1
+    );
+    assert_eq!(*guardian3[0], new_guardian.into(), "Guardian not added");
+}
+
+#[test]
+#[should_panic(expected: 'Caller is missing role')]
+fn test_protocol_handler_remove_guardian_should_fail_wrong_caller() {
+    let (protocol_handler, _) = setup_contracts_for_testing();
+
+    // Change caller to random caller address
+    let random_caller = contract_address_const::<'random_caller'>();
+    start_cheat_caller_address(protocol_handler.contract_address, random_caller);
+
+    // Call the protocol handler remove_guardian, should fail as caller is not security council
+    let guardian = guardians_mock()[0];
+    protocol_handler.remove_guardian(*guardian);
+}
+
+#[test]
+fn test_protocol_handler_remove_guardian_should_pass() {
+    let (protocol_handler, _) = setup_contracts_for_testing();
+
+    // Change caller to security council
+    start_cheat_caller_address(protocol_handler.contract_address, security_council_mock());
+
+    // Spy on the events
+    let mut spy = spy_events();
+
+    // Ensure the guardian is in the list
+    let guardian_removed = *(guardians_mock()[0]);
+    let storage_slot = PedersenTrait::new(selector!("guardians")).update_with(0).finalize();
+    let guardian_loaded = load(
+        protocol_handler.contract_address, storage_slot, 1
+    );
+    assert_eq!(*guardian_loaded[0], guardian_removed.into(), "Guardian not in Vec");
+
+    // Remove the guardian
+    protocol_handler.remove_guardian(guardian_removed);
+
+    // Check the guardian is revoked
+    let access_control_dispatcher = IAccessControlDispatcher {
+        contract_address: protocol_handler.contract_address
+    };
+    assert(
+        !access_control_dispatcher.has_role(ProtocolHandler::GUARDIAN_ROLE, guardian_removed),
+        'Guardian not revoked'
+    );
+
+    // Check the Access control related events are emitted
+    let expected_revoked = AccessControlComponent::Event::RoleRevoked(
+        RoleRevoked {
+            role: ProtocolHandler::GUARDIAN_ROLE,
+            account: guardian_removed,
+            sender: security_council_mock()
+        }
+    );
+    let contract_events = EventsFilterBuilderTrait::from_events(@spy.get_events())
+        .with_contract_address(protocol_handler.contract_address)
+        .build();
+    contract_events.assert_emitted(@expected_revoked);
+
+    // Check the guardian is set to 0 in the guardian list
+    let guardian_loaded = load(
+        protocol_handler.contract_address, storage_slot, 1
+    );
+    assert_eq!(*guardian_loaded[0], 0, "Guardian not in Vec");
 }

@@ -1,1 +1,4 @@
 target
+.snfoundry_versioned_programs/
+coverage/
+snfoundry_trace/
