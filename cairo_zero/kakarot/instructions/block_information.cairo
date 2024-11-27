@@ -165,9 +165,7 @@ namespace Internals {
         }
 
         let lower_bound = Helpers.saturated_sub(evm.message.env.block_number, 256);
-        let in_range = is_in_range(
-            block_number.low, lower_bound, evm.message.env.block_number - 10
-        );
+        let in_range = is_in_range(block_number.low, lower_bound, evm.message.env.block_number - 9);
 
         if (in_range == FALSE) {
             Stack.push_uint256(Uint256(0, 0));
