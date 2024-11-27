@@ -123,12 +123,11 @@ namespace Account {
             tempvar address = new model.Address(starknet=starknet_address, evm=evm_address);
             let balance = fetch_balance(address);
             assert balance_ptr = new Uint256(balance.low, balance.high);
-            tempvar code_hash_ptr = new Uint256(0, 0);
             let account = Account.init(
                 address=address,
                 code_len=0,
                 code=bytecode,
-                code_hash=code_hash_ptr,
+                code_hash=cast(0, Uint256*),
                 nonce=0,
                 balance=balance_ptr,
             );
