@@ -205,10 +205,6 @@ namespace Internals {
         if (starknet_account_exists == 0) {
             // Deploy account
             Starknet.deploy(self.address.evm);
-            // Commit the code hash upon deployment
-            // of a new account, in all cases.
-            // Retrieved in `fetch_or_create` in the next transaction.
-            IAccount.set_code_hash(starknet_address, [self.code_hash]);
             tempvar syscall_ptr = syscall_ptr;
             tempvar pedersen_ptr = pedersen_ptr;
             tempvar range_check_ptr = range_check_ptr;
