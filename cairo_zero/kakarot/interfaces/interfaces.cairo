@@ -163,7 +163,7 @@ namespace IKakarot {
     func get_starknet_address(evm_address: felt) -> (starknet_address: felt) {
     }
 
-    func deploy_externally_owned_account(evm_address: felt) {
+    func deploy_externally_owned_account(evm_address: felt) -> (starknet_address: felt) {
     }
 
     func register_account(evm_address: felt) {
@@ -172,7 +172,7 @@ namespace IKakarot {
     func upgrade_account(evm_address: felt, new_class: felt) {
     }
 
-    func set_authorized_pre_eip155_tx(sender_address: felt, msg_hash: felt) {
+    func set_authorized_pre_eip155_tx(sender_address: felt, msg_hash: Uint256) {
     }
 
     func eth_call(
@@ -184,7 +184,23 @@ namespace IKakarot {
         value: Uint256,
         data_len: felt,
         data: felt*,
+        access_list_len: felt,
+        access_list: felt*,
     ) -> (return_data_len: felt, return_data: felt*, success: felt, gas_used: felt) {
+    }
+
+    func eth_estimate_gas(
+        nonce: felt,
+        origin: felt,
+        to: model.Option,
+        gas_limit: felt,
+        gas_price: felt,
+        value: Uint256,
+        data_len: felt,
+        data: felt*,
+        access_list_len: felt,
+        access_list: felt*,
+    ) -> (return_data_len: felt, return_data: felt*, success: felt, required_gas: felt) {
     }
 
     func eth_send_transaction(
