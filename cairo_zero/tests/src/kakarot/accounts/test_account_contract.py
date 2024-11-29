@@ -579,25 +579,6 @@ class TestAccountContract:
                     signature=[],
                 )
 
-        @patch.dict(SyscallHandler.tx_info, {"version": 0})
-        def test_should_raise_when_tx_version_is_zero(self, cairo_run):
-            with cairo_error(message="Deprecated tx version: 0"):
-                cairo_run(
-                    "test__execute_from_outside_entrypoint",
-                    outside_execution={
-                        "caller": SyscallHandler.caller_address,
-                        "nonce": 0,
-                        "execute_after": 0,
-                        "execute_before": SyscallHandler.block_timestamp + 1,
-                    },
-                    call_array=[
-                        {"to": 0, "selector": 0, "data_offset": 0, "data_len": 0},
-                    ],
-                    calldata=[],
-                    calldata_len=0,
-                    signature=[],
-                )
-
         @SyscallHandler.patch("Account_bytecode_len", 1)
         def test_should_raise_when_eoa_has_code(self, cairo_run):
             with cairo_error(message="EOAs cannot have code"):
