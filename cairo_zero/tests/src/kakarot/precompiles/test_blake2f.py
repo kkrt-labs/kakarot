@@ -9,7 +9,7 @@ from hypothesis.strategies import binary
 class TestBlake2f:
     def test_should_fail_when_input_len_is_not_213(self, cairo_run):
         output = cairo_run("test_should_fail_when_input_is_not_213")
-        assert bytes(output) == b"Precompile: wrong input_len"
+        assert bytes(output) == b"Precompile: input error"
 
     def test_should_fail_when_flag_is_not_0_or_1(self, cairo_run):
         output = cairo_run("test_should_fail_when_flag_is_not_0_or_1")
