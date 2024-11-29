@@ -9,7 +9,6 @@ from starkware.cairo.common.math import assert_le, assert_not_zero, assert_le_fe
 from starkware.cairo.common.math_cmp import is_nn
 from starkware.cairo.common.uint256 import Uint256
 from starkware.starknet.common.syscalls import (
-    get_tx_info,
     get_caller_address,
     get_block_timestamp,
     call_contract,
@@ -108,11 +107,6 @@ func execute_from_outside{
     let (caller) = get_caller_address();
     with_attr error_message("EOA: multicall not supported") {
         assert call_array_len = 1;
-    }
-    let (tx_info) = get_tx_info();
-    let version = tx_info.version;
-    with_attr error_message("Deprecated tx version: 0") {
-        assert_le(1, version);
     }
 
     // EOA validation
