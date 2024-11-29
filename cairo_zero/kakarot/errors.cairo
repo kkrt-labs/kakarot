@@ -682,7 +682,7 @@ namespace Errors {
 
     func precompileInputError() -> (error_len: felt, error: felt*) {
         let (error) = get_label_location(precompile_input_error_message);
-        return (27, error);
+        return (23, error);
 
         precompile_input_error_message:
         dw 'P';
@@ -697,21 +697,17 @@ namespace Errors {
         dw 'e';
         dw ':';
         dw ' ';
-        dw 'w';
-        dw 'r';
-        dw 'o';
-        dw 'n';
-        dw 'g';
-        dw ' ';
         dw 'i';
         dw 'n';
         dw 'p';
         dw 'u';
         dw 't';
-        dw '_';
-        dw 'l';
+        dw ' ';
         dw 'e';
-        dw 'n';
+        dw 'r';
+        dw 'r';
+        dw 'o';
+        dw 'r';
     }
 
     func precompileFlagError() -> (error_len: felt, error: felt*) {

@@ -3,8 +3,9 @@ from typing import Any, List, Tuple
 import pytest
 import pytest_asyncio
 from eth_abi import encode
-from hypothesis import given, settings
+from hypothesis import assume, given, settings
 from hypothesis import strategies as st
+from starkware.cairo.lang.cairo_constants import DEFAULT_PRIME
 
 from kakarot_scripts.utils.kakarot import deploy, eth_send_transaction
 from kakarot_scripts.utils.starknet import get_contract, invoke
@@ -92,6 +93,30 @@ class TestCairoPrecompiles:
             new_count = (await cairo_counter.functions["get"].call()).count
             expected_count = new_counter + 1
             assert new_count == expected_count
+
+        @given(wrong_nb_calls=st.integers(min_value=0, max_value=DEFAULT_PRIME - 1))
+        async def test_should_fail_when_number_of_calls_mismatch_actual_calls(
+            self, cairo_counter, owner, wrong_nb_calls
+        ):
+            assume(wrong_nb_calls != 2)
+            calls = [
+                cairo_counter.functions["set_counter"].prepare_call(1),
+                cairo_counter.functions["inc"].prepare_call(),
+            ]
+            tx_data = prepare_transaction_data(calls)
+            # modify the number of calls to be different than the actual calls
+            tx_data = f"{wrong_nb_calls:064x}" + tx_data[64:]
+
+            _, response, success, _ = await eth_send_transaction(
+                to=f"0x{0x75003:040x}",
+                gas=21000 + 20000 * (len(calls)),
+                data=tx_data,
+                value=0,
+                caller_eoa=owner.starknet_contract,
+            )
+
+            assert not success
+            assert "Precompile: input error".encode() == bytes(response)
 
         async def test_should_increase_counter_single_call_from_solidity(
             self, cairo_counter, multicall_cairo_counter_caller

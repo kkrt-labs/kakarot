@@ -34,7 +34,7 @@ const CAIRO_PRECOMPILE_GAS = 10000;
 // ! and the sending of transactions to L1.
 // !
 // ! There are various considerations that one must take into account when using these precompiles.
-// ! We currently have 4 different "precompiles".
+// ! We currently have 3 different "precompiles".
 // ! - 0x75001: Whitelisted Cairo Precompile. Allows any whitelisted caller to execute a Cairo call.
 // ! The whitelisting is based on the address of the caller. 75001 can be called using DELEGATECALL
 // ! / CALLCODE. Any contract calling 75001 must be whitelisted, as malicious contract would be able
@@ -107,6 +107,10 @@ namespace KakarotPrecompiles {
     // @param input_len The length of the input in bytes.
     // @param input The input data.
     // @param caller_address The address of the caller of the precompile.
+    // @returns output_len The length in bytes of the output of the first call that reverted else 0.
+    // @returns output The output data of the first call that reverted else empty.
+    // @returns gas_used The gas used.
+    // @returns reverted Errors.EXCEPTIONAL_HALT if a call reverted, FALSE otherwise.
     func cairo_multicall_precompile{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -141,9 +145,17 @@ namespace KakarotPrecompiles {
         let calls_ptr = number_of_calls_ptr + NUMBER_OF_CALLS_BYTES;
         let calls_len = input_len - NUMBER_OF_CALLS_BYTES;
 
-        let (output_len, output, reverted) = Internals.execute_multiple_cairo_calls(
-            caller_address, calls_len, calls_ptr
-        );
+        let (
+            output_len, output, reverted, nb_executed_calls
+        ) = Internals.execute_multiple_cairo_calls(caller_address, calls_len, calls_ptr, 0);
+
+        if (reverted == FALSE and nb_executed_calls != number_of_calls) {
+            let (revert_reason_len, revert_reason) = Errors.precompileInputError();
+            return (
+                revert_reason_len, revert_reason, CAIRO_PRECOMPILE_GAS, Errors.EXCEPTIONAL_HALT
+            );
+        }
+
         return (output_len, output, gas_cost, reverted);
     }
 }
@@ -154,20 +166,23 @@ namespace Internals {
     // @param caller_address The address of the caller of the precompile.
     // @param calls_len The length of the calls array.
     // @param calls The calls to execute.
+    // @returns output_len The length in bytes of the output of the first call that reverted else 0.
+    // @returns output The output data of the first call that reverted else empty.
+    // @returns gas_used The gas used.
     // @returns reverted Errors.EXCEPTIONAL_HALT if reverted, FALSE otherwise.
     func execute_multiple_cairo_calls{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(caller_address: felt, calls_len: felt, calls: felt*) -> (
-        output_len: felt, output: felt*, reverted: felt
+    }(caller_address: felt, calls_len: felt, calls: felt*, nb_executed_calls: felt) -> (
+        output_len: felt, output: felt*, reverted: felt, nb_executed_calls: felt
     ) {
         alloc_locals;
 
         if (calls_len == 0) {
             let (output) = alloc();
-            return (0, output, FALSE);
+            return (0, output, FALSE, nb_executed_calls);
         }
 
         // Ensure that the current remaining calls_len >= MIN_EVM_ENCODED_STARKNET_CALL_BYTES
@@ -175,7 +190,7 @@ namespace Internals {
         let is_input_invalid = is_nn(MIN_EVM_ENCODED_STARKNET_CALL_BYTES - (calls_len + 1));
         if (is_input_invalid != 0) {
             let (revert_reason_len, revert_reason) = Errors.outOfBoundsRead();
-            return (revert_reason_len, revert_reason, Errors.EXCEPTIONAL_HALT);
+            return (revert_reason_len, revert_reason, Errors.EXCEPTIONAL_HALT, nb_executed_calls);
         }
 
         let (
@@ -184,7 +199,7 @@ namespace Internals {
 
         if (is_err != FALSE) {
             let (revert_reason_len, revert_reason) = Errors.precompileInputError();
-            return (revert_reason_len, revert_reason, Errors.EXCEPTIONAL_HALT);
+            return (revert_reason_len, revert_reason, Errors.EXCEPTIONAL_HALT, nb_executed_calls);
         }
 
         let (output_len, output, gas_used, reverted) = execute_cairo_call(
@@ -192,12 +207,15 @@ namespace Internals {
         );
 
         if (reverted != FALSE) {
-            return (output_len, output, reverted);
+            return (output_len, output, reverted, nb_executed_calls + 1);
         }
 
         // Move to the next call
         return execute_multiple_cairo_calls(
-            caller_address, calls_len - next_call_offset, calls + next_call_offset
+            caller_address,
+            calls_len - next_call_offset,
+            calls + next_call_offset,
+            nb_executed_calls + 1,
         );
     }
 

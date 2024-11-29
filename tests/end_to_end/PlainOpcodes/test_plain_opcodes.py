@@ -416,7 +416,7 @@ class TestPlainOpcodes:
         async def test_should_revert_on_fallbacks(
             self, revert_on_fallbacks, data, value, message, other
         ):
-            receipt, response, success, gas_used = await eth_send_transaction(
+            _, response, success, _ = await eth_send_transaction(
                 to=revert_on_fallbacks.address,
                 gas=200_000,
                 data=data,
