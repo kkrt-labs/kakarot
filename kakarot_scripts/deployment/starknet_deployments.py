@@ -50,11 +50,12 @@ async def deploy_starknet_contracts(account):
         NETWORK["chain_id"],
     )
     try:
-        coinbase = (
-            await call("EVM", "get_coinbase", address=starknet_deployments["EVM"])
-        )[0]
-    except Exception:
-        coinbase = None
+    coinbase = (
+        await call("EVM", "get_coinbase", address=starknet_deployments["EVM"])
+    )[0]
+    except Exception as e:
+        logger.error(f"❌ Failed to get coinbase: {str(e)}") 
+    coinbase = None
     if coinbase != COINBASE:
         logger.info(f"ℹ️  Setting EVM coinbase to {COINBASE}")
         await invoke(
