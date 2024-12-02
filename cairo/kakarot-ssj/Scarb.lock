@@ -59,10 +59,6 @@ dependencies = [
 [[package]]
 name = "snforge_utils"
 version = "0.1.0"
-dependencies = [
- "evm",
- "snforge_std",
-]
 
 [[package]]
 name = "utils"

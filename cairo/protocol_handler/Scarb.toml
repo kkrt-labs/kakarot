@@ -1,0 +1,21 @@
+[package]
+name = "protocol_handler"
+version = "0.1.0"
+edition = "2024_07"
+
+# See more keys and their definitions at https://docs.swmansion.com/scarb/docs/reference/manifest.html
+
+[dependencies]
+starknet = "2.8.2"
+openzeppelin = { git = "https://github.com/OpenZeppelin/cairo-contracts.git", tag = "v0.17.0" }
+
+[dev-dependencies]
+snforge_std = { git = "https://github.com/foundry-rs/starknet-foundry.git", tag = "v0.31.0" }
+snforge_utils = { path = "../snforge_utils" }
+
+[[target.starknet-contract]]
+casm = true
+casm-add-pythonic-hints = true
+
+[scripts]
+test = "snforge test"
