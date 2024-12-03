@@ -190,6 +190,7 @@ func __execute__{
 }
 
 // @notice Store the bytecode of the contract.
+// @param code_hash The hash of the bytecode to store.
 // @param bytecode_len The length of the bytecode.
 // @param bytecode The bytecode of the contract.
 @external

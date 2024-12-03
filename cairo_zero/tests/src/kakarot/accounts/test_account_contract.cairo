@@ -51,13 +51,20 @@ func test__write_bytecode{
 
     // Given
     local bytecode_len: felt;
+    local code_hash: Uint256;
     let (bytecode: felt*) = alloc();
     %{
-        ids.bytecode_len = len(program_input["bytecode"])
-        segments.write_arg(ids.bytecode, program_input["bytecode"])
+        from ethereum.crypto.hash import keccak256
+        bytecode = program_input["bytecode"]
+        ids.bytecode_len = len(bytecode)
+        segments.write_arg(ids.bytecode, bytecode)
+        code_hash = keccak256(bytes(bytecode))
+        ids.code_hash.low = int.from_bytes(code_hash[0:32], "big")
+        ids.code_hash.high = int.from_bytes(code_hash[32:64], "big")
+
     %}
 
-    write_bytecode(bytecode_len, bytecode);
+    write_bytecode(code_hash,bytecode_len, bytecode);
 
     return ();
 }
