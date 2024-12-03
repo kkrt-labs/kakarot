@@ -16,7 +16,6 @@ from kakarot.accounts.account_contract import (
     set_nonce,
     set_authorized_pre_eip155_tx,
     execute_starknet_call,
-    set_code_hash,
     execute_from_outside,
     upgrade,
 )
@@ -219,7 +218,7 @@ func test__set_code_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_c
         ids.code_hash.high = program_input["code_hash"][1]
     %}
 
-    set_code_hash(code_hash);
+    AccountContract.set_code_hash(code_hash);
 
     return ();
 }

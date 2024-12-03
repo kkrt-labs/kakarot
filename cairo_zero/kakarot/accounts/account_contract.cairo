@@ -295,7 +295,6 @@ func get_code_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
     return (code_hash,);
 }
 
-
 // @notice Authorizes a pre-eip155 transaction by message hash.
 // @param message_hash The hash of the message.
 @external
