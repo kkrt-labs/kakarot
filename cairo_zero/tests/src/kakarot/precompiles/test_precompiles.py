@@ -219,8 +219,7 @@ class TestPrecompiles:
             assert result == (address in ROLLUP_PRECOMPILES)
 
         @pytest.mark.parametrize(
-            "address",
-            range(KAKAROT_PRECOMPILES[0], KAKAROT_PRECOMPILES[-1] + 2),
+            "address", range(KAKAROT_PRECOMPILES[0], KAKAROT_PRECOMPILES[-1] + 2)
         )
         def test__is_precompile_kakarot_precompiles(self, cairo_run, address):
             result = cairo_run("test__is_precompile", address=address)

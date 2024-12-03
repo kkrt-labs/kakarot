@@ -154,7 +154,6 @@ namespace State {
 
             // Kakarot Precompiles
             Internals._cache_precompile(Constants.CAIRO_WHITELISTED_CALL_PRECOMPILE);
-            Internals._cache_precompile(Constants.CAIRO_MESSAGING_PRECOMPILE);
             Internals._cache_precompile(Constants.CAIRO_MULTICALL_PRECOMPILE);
             Internals._cache_precompile(Constants.CAIRO_CALL_PRECOMPILE);
         }
