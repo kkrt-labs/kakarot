@@ -103,6 +103,10 @@ namespace AccountContract {
         let infinite = Uint256(Constants.UINT128_MAX, Constants.UINT128_MAX);
         IERC20.approve(native_token_address, kakarot_address, infinite);
 
+        // Write the empty code hash in storage, as this account does not currently have code.
+        tempvar code_hash = Uint256(Constants.EMPTY_CODE_HASH_LOW, Constants.EMPTY_CODE_HASH_HIGH);
+        AccountContract.set_code_hash(code_hash);
+
         // Register the account in the Kakarot mapping
         IKakarot.register_account(kakarot_address, evm_address);
         return ();

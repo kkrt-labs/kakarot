@@ -205,10 +205,6 @@ namespace Internals {
         if (starknet_account_exists == 0) {
             // Deploy account
             Starknet.deploy(self.address.evm);
-            // Commit the code hash upon deployment
-            // of a new account, in all cases.
-            // Retrieved in `fetch_or_create` in the next transaction.
-            IAccount.set_code_hash(starknet_address, [self.code_hash]);
             tempvar syscall_ptr = syscall_ptr;
             tempvar pedersen_ptr = pedersen_ptr;
             tempvar range_check_ptr = range_check_ptr;
@@ -243,11 +239,10 @@ namespace Internals {
 
         // Update bytecode and jumpdests if required (newly created account)
         if (self.created != FALSE) {
-            IAccount.write_bytecode(starknet_address, self.code_len, self.code);
+            IAccount.write_bytecode(starknet_address, [self.code_hash], self.code_len, self.code);
             Internals._save_valid_jumpdests(
                 starknet_address, self.valid_jumpdests_start, self.valid_jumpdests
             );
-            IAccount.set_code_hash(starknet_address, [self.code_hash]);
             return ();
         }
 
