@@ -90,7 +90,7 @@ async def check_and_fund_relayers():
         changed_fee += base_fee * 0.125
     # check if the relayers balance is more than the prev balance + the acceptable earning percentage
     elif relayers_prev_total_balance + actual_fee > relayers_total_balance + (
-        earning_percentage * actual_fee / 100
+        earning_percentage * actual_fee // 100
     ):
         # decrease the base fee of 12.5%
         changed_fee -= base_fee * 0.125
@@ -106,12 +106,18 @@ async def check_and_fund_relayers():
     }
 
 
-async def get_total_balance_of_relayers(relayers, eth_contract, block_number):
+async def get_total_balance_of_relayers(
+    relayers: list, 
+    eth_contract, 
+    block_number: int | None
+) -> int:
     total_balance = 0
 
     for relayer in relayers:
         account_balance = await get_balance(
-            relayer["address"], eth_contract, block_number
+            relayer["address"], 
+            eth_contract, 
+            block_number
         )
         total_balance += account_balance
 
