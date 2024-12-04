@@ -5,7 +5,7 @@ from ethereum.shanghai.transactions import (
     TX_ACCESS_LIST_STORAGE_KEY_COST,
 )
 
-from tests.utils.constants import ETHEREUM_PRECOMPILES, TRANSACTIONS
+from tests.utils.constants import ALL_PRECOMPILES, TRANSACTIONS
 from tests.utils.helpers import flatten_tx_access_list, merge_access_list
 from tests.utils.syscall_handler import SyscallHandler
 
@@ -90,7 +90,7 @@ class TestState:
             state = cairo_run("test__cache_precompiles")
             assert [
                 int(address, 16) for address in state["accounts"].keys()
-            ] == ETHEREUM_PRECOMPILES
+            ] == ALL_PRECOMPILES
 
         @SyscallHandler.patch("IERC20.balanceOf", lambda *_: [0, 1])
         @pytest.mark.parametrize("transaction", TRANSACTIONS)

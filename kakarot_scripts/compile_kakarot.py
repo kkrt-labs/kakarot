@@ -50,8 +50,14 @@ def main():
         cairo0_task = pool.map_async(compile_cairo_zero_contract, cairo0_contracts)
         cairo1_task = pool.map_async(compile_scarb_package, cairo1_packages)
 
-        cairo0_task.wait()
-        cairo1_task.wait()
+        try:
+            cairo0_task.wait()
+            cairo1_task.wait()
+            cairo0_task.get()
+            cairo1_task.get()
+        except Exception as e:
+            logger.error(e)
+            raise
     logger.info("ℹ️  Computing deployed class hashes")
     with mp.Pool() as pool:
         class_hashes = pool.map(compute_deployed_class_hash, DECLARED_CONTRACTS)

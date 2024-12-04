@@ -464,6 +464,9 @@ testname:
     - StaticcallToPrecompileFromCalledContract_d0g0v0_Cancun
     - StaticcallToPrecompileFromContractInitialization_d0g0v0_Cancun
     - StaticcallToPrecompileFromTransaction_d0g0v0_Cancun
+    - static_Call1024PreCalls_d1g0v0_Cancun #RunResources error
+    - static_Call1024PreCalls2_d1g0v0_Cancun #RunResources error
+    - static_Call1024PreCalls3_d1g0v0_Cancun #RunResources error
     - static_Call1MB1024Calldepth_d1g0v0_Cancun #RunResources error
     - static_Call1024PreCalls2_d0g0v0_Cancun #RunResources error
     - static_Call50000_d0g0v0_Cancun #RunResources error

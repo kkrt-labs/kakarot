@@ -394,7 +394,7 @@ def compile_cairo_zero_contract(contract):
 
     if output.returncode != 0:
         raise RuntimeError(
-            f"❌ {contract['contract_name']} raised:\n{output.stderr}.\nOutput:\n{output.stdout}"
+            f"❌ {contract['contract_name']} raised: {output.stderr.decode().strip()}. Output: {output.stdout.decode().strip()}"
         )
 
     elapsed = datetime.now() - start
