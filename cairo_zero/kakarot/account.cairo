@@ -123,11 +123,15 @@ namespace Account {
             tempvar address = new model.Address(starknet=starknet_address, evm=evm_address);
             let balance = fetch_balance(address);
             assert balance_ptr = new Uint256(balance.low, balance.high);
+            // empty code hash see https://eips.ethereum.org/EIPS/eip-1052
+            tempvar code_hash_ptr = new Uint256(
+                low=Constants.EMPTY_CODE_HASH_LOW, high=Constants.EMPTY_CODE_HASH_HIGH
+            );
             let account = Account.init(
                 address=address,
                 code_len=0,
                 code=bytecode,
-                code_hash=cast(0, Uint256*),
+                code_hash=code_hash_ptr,
                 nonce=0,
                 balance=balance_ptr,
             );

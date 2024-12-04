@@ -16,7 +16,6 @@ from kakarot.accounts.account_contract import (
     set_nonce,
     set_authorized_pre_eip155_tx,
     execute_starknet_call,
-    set_code_hash,
     execute_from_outside,
     upgrade,
 )
@@ -52,13 +51,19 @@ func test__write_bytecode{
 
     // Given
     local bytecode_len: felt;
+    local code_hash: Uint256;
     let (bytecode: felt*) = alloc();
     %{
-        ids.bytecode_len = len(program_input["bytecode"])
-        segments.write_arg(ids.bytecode, program_input["bytecode"])
+        from ethereum.crypto.hash import keccak256
+        bytecode = program_input["bytecode"]
+        ids.bytecode_len = len(bytecode)
+        segments.write_arg(ids.bytecode, bytecode)
+        code_hash = keccak256(bytes(bytecode))
+        ids.code_hash.low = int.from_bytes(code_hash[0:32], "big")
+        ids.code_hash.high = int.from_bytes(code_hash[32:64], "big")
     %}
 
-    write_bytecode(bytecode_len, bytecode);
+    write_bytecode(code_hash, bytecode_len, bytecode);
 
     return ();
 }
@@ -219,7 +224,7 @@ func test__set_code_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_c
         ids.code_hash.high = program_input["code_hash"][1]
     %}
 
-    set_code_hash(code_hash);
+    AccountContract.set_code_hash(code_hash);
 
     return ();
 }

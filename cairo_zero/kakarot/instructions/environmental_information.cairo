@@ -11,7 +11,6 @@ from starkware.cairo.common.math_cmp import is_not_zero, is_nn
 from starkware.cairo.common.uint256 import Uint256, uint256_le
 
 from kakarot.account import Account
-from kakarot.constants import Constants
 
 from kakarot.evm import EVM
 from kakarot.errors import Errors
@@ -479,27 +478,18 @@ namespace EnvironmentalInformation {
             return evm;
         }
 
+        let account = State.get_account(evm_address);
+        let has_code_or_nonce = Account.has_code_or_nonce(account);
+        let account_exists = has_code_or_nonce + account.balance.low + account.balance.high;
         // Relevant cases:
         // https://github.com/ethereum/go-ethereum/blob/master/core/vm/instructions.go#L392
-        let account = State.get_account(evm_address);
-
-        // If the account has code, return the code_hash stored in the account storage.
-        if (account.code_len != 0) {
-            Stack.push_uint256([account.code_hash]);
+        if (account_exists == FALSE) {
+            Stack.push_uint128(0);
             return evm;
         }
 
-        // If the account has no code but a balance or nonce, return the hash of the empty code hash.
-        if (account.nonce + account.balance.low + account.balance.high != 0) {
-            let empty_code_hash = Uint256(
-                low=Constants.EMPTY_CODE_HASH_LOW, high=Constants.EMPTY_CODE_HASH_HIGH
-            );
-            Stack.push_uint256(empty_code_hash);
-            return evm;
-        }
+        Stack.push_uint256([account.code_hash]);
 
-        // Account is empty (EIP-161), return 0
-        Stack.push_uint128(0);
         return evm;
     }
 }

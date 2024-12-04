@@ -190,14 +190,16 @@ func __execute__{
 }
 
 // @notice Store the bytecode of the contract.
+// @param code_hash The hash of the bytecode to store.
 // @param bytecode_len The length of the bytecode.
 // @param bytecode The bytecode of the contract.
 @external
 func write_bytecode{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(bytecode_len: felt, bytecode: felt*) {
+}(code_hash: Uint256, bytecode_len: felt, bytecode: felt*) {
     // Access control check.
     Ownable.assert_only_owner();
+    AccountContract.set_code_hash(code_hash);
     return AccountContract.write_bytecode(bytecode_len, bytecode);
 }
 
@@ -292,17 +294,6 @@ func get_code_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
 ) {
     let code_hash = AccountContract.get_code_hash();
     return (code_hash,);
-}
-
-// @notice Set the code hash of the account.
-// @param code_hash The code hash of the account.
-@external
-func set_code_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    code_hash: Uint256
-) {
-    Ownable.assert_only_owner();
-    AccountContract.set_code_hash(code_hash);
-    return ();
 }
 
 // @notice Authorizes a pre-eip155 transaction by message hash.

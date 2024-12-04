@@ -48,7 +48,7 @@ namespace IAccount {
     func bytecode() -> (bytecode_len: felt, bytecode: felt*) {
     }
 
-    func write_bytecode(bytecode_len: felt, bytecode: felt*) {
+    func write_bytecode(code_hash: Uint256, bytecode_len: felt, bytecode: felt*) {
     }
 
     func storage(storage_addr: felt) -> (value: Uint256) {
@@ -78,9 +78,6 @@ namespace IAccount {
     }
 
     func get_code_hash() -> (code_hash: Uint256) {
-    }
-
-    func set_code_hash(code_hash: Uint256) {
     }
 
     func execute_from_outside(
