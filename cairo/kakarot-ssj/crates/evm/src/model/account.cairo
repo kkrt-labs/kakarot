@@ -380,7 +380,7 @@ mod tests {
             };
 
             // When
-            start_mock_call::<u256>(native_token(), selector!("balanceOf"), 100);
+            start_mock_call::<u256>(native_token(), selector!("balance_of"), 100);
             start_mock_call::<u64>(starknet_address, selector!("get_nonce"), 1);
             start_mock_call::<Span<u8>>(starknet_address, selector!("bytecode"), [].span());
             start_mock_call::<u256>(starknet_address, selector!("get_code_hash"), EMPTY_KECCAK);
@@ -391,9 +391,9 @@ mod tests {
             assert_called(starknet_address, selector!("get_nonce"));
             assert_called(starknet_address, selector!("bytecode"));
             assert_called(starknet_address, selector!("get_code_hash"));
-            //TODO(starknet-foundry): we mocked the balanceOf call, but we should also check if it
+            //TODO(starknet-foundry): we mocked the balance_of call, but we should also check if it
             //was called with the right data
-            assert_called(native_token(), selector!("balanceOf"));
+            assert_called(native_token(), selector!("balance_of"));
         }
 
         #[test]
@@ -439,7 +439,7 @@ mod tests {
             };
 
             // When
-            start_mock_call::<u256>(native_token(), selector!("balanceOf"), 100);
+            start_mock_call::<u256>(native_token(), selector!("balance_of"), 100);
             start_mock_call::<u64>(starknet_address, selector!("get_nonce"), 1);
             start_mock_call::<Span<u8>>(starknet_address, selector!("bytecode"), [].span());
             start_mock_call::<u256>(starknet_address, selector!("get_code_hash"), EMPTY_KECCAK);
@@ -450,9 +450,9 @@ mod tests {
             assert_called(starknet_address, selector!("get_nonce"));
             assert_called(starknet_address, selector!("bytecode"));
             assert_called(starknet_address, selector!("get_code_hash"));
-            //TODO(starknet-foundry): we mocked the balanceOf call, but we should also check if it
+            //TODO(starknet-foundry): we mocked the balance_of call, but we should also check if it
             //was called with the right data
-            assert_called(native_token(), selector!("balanceOf"));
+            assert_called(native_token(), selector!("balance_of"));
         }
 
         #[test]
@@ -474,14 +474,14 @@ mod tests {
             };
 
             // When
-            start_mock_call::<u256>(native_token(), selector!("balanceOf"), 50);
+            start_mock_call::<u256>(native_token(), selector!("balance_of"), 50);
             let account = AccountTrait::fetch_or_create(evm_address());
 
             // Then
             assert_eq!(account, expected);
-            //TODO(starknet-foundry): we mocked the balanceOf call, but we should also check if it
+            //TODO(starknet-foundry): we mocked the balance_of call, but we should also check if it
             //was called with the right data
-            assert_called(native_token(), selector!("balanceOf"));
+            assert_called(native_token(), selector!("balance_of"));
         }
     }
     //TODO(starknet-foundry): add a test for get_jumpdests

@@ -15,7 +15,7 @@ use core::starknet::secp256_trait::Signature;
 use core::starknet::{ContractAddress, contract_address_const, EthAddress, Event};
 use evm::test_utils::chain_id;
 use evm::test_utils::other_evm_address;
-use openzeppelin::token::erc20::interface::IERC20CamelDispatcher;
+use openzeppelin::token::erc20::interface::IERC20Dispatcher;
 use snforge_std::{
     start_cheat_caller_address, stop_cheat_caller_address, start_cheat_transaction_hash, spy_events,
     EventSpyTrait, CheatSpan, cheat_caller_address, stop_cheat_block_timestamp,
@@ -132,7 +132,7 @@ impl OutsideExecutionBuilderImpl of OutsideExecutionBuilderTrait {
     }
 }
 
-fn set_up() -> (IExtendedKakarotCoreDispatcher, IAccountDispatcher, IERC20CamelDispatcher) {
+fn set_up() -> (IExtendedKakarotCoreDispatcher, IAccountDispatcher, IERC20Dispatcher) {
     let (native_token, kakarot_core) = setup_contracts_for_testing();
     // When we deploy the EOA, we use get_caller_address to get the address of the KakarotCore
     // contract and set the caller address to that.

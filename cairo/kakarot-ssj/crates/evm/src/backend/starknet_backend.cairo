@@ -11,7 +11,7 @@ use crate::errors::{ensure, EVMError};
 use crate::model::{Address, AddressTrait, Environment, Account, AccountTrait};
 use crate::model::{Transfer};
 use crate::state::{State, StateTrait};
-use openzeppelin::token::erc20::interface::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
+use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
 use utils::constants::BURN_ADDRESS;
 use utils::constants;
 use utils::set::SetTrait;
@@ -206,8 +206,8 @@ fn transfer_native_token(ref self: State) -> Result<(), EVMError> {
     let kakarot_state = KakarotCore::unsafe_new_contract_state();
     let native_token = kakarot_state.get_native_token();
     while let Option::Some(transfer) = self.transfers.pop_front() {
-        IERC20CamelDispatcher { contract_address: native_token }
-            .transferFrom(transfer.sender.starknet, transfer.recipient.starknet, transfer.amount);
+        IERC20Dispatcher { contract_address: native_token }
+            .transfer_from(transfer.sender.starknet, transfer.recipient.starknet, transfer.amount);
     };
     Result::Ok(())
 }

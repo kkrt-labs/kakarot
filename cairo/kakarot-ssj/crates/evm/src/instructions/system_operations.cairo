@@ -889,7 +889,7 @@ mod tests {
         vm.stack.push(0).expect('push failed');
 
         // When
-        start_mock_call::<u256>(native_token(), selector!("balanceOf"), 0);
+        start_mock_call::<u256>(native_token(), selector!("balance_of"), 0);
         vm.exec_create().unwrap();
         EVMTrait::execute_code(ref vm);
 
@@ -958,7 +958,7 @@ mod tests {
         vm.stack.push(1).expect('push failed');
 
         // When
-        start_mock_call::<u256>(native_token(), selector!("balanceOf"), 0);
+        start_mock_call::<u256>(native_token(), selector!("balance_of"), 0);
         vm.exec_create().expect('exec_create failed');
         EVMTrait::execute_code(ref vm);
 
@@ -1026,7 +1026,7 @@ mod tests {
         vm.stack.push(0).expect('push failed');
 
         // When
-        start_mock_call::<u256>(native_token(), selector!("balanceOf"), 0);
+        start_mock_call::<u256>(native_token(), selector!("balance_of"), 0);
         vm.exec_create2().unwrap();
         EVMTrait::execute_code(ref vm);
 

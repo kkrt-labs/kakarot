@@ -439,7 +439,7 @@ mod tests {
                 is_created: false,
             };
 
-            start_mock_call::<u256>(test_utils::native_token(), selector!("balanceOf"), 0);
+            start_mock_call::<u256>(test_utils::native_token(), selector!("balance_of"), 0);
             let account = state.get_account(evm_address);
 
             assert_eq!(account, expected_account);
@@ -499,7 +499,7 @@ mod tests {
                 is_created: false,
             };
 
-            start_mock_call::<u256>(test_utils::native_token(), selector!("balanceOf"), 420);
+            start_mock_call::<u256>(test_utils::native_token(), selector!("balance_of"), 420);
             start_mock_call::<
                 Span<u8>
             >(starknet_address, selector!("bytecode"), [0xab, 0xcd, 0xef].span());
@@ -540,7 +540,7 @@ mod tests {
             let code_hash = bytecode.compute_keccak256_hash();
 
             start_mock_call::<u256>(starknet_address, selector!("storage"), value);
-            start_mock_call::<u256>(test_utils::native_token(), selector!("balanceOf"), 10000);
+            start_mock_call::<u256>(test_utils::native_token(), selector!("balance_of"), 10000);
             start_mock_call::<Span<u8>>(starknet_address, selector!("bytecode"), bytecode);
             start_mock_call::<u256>(starknet_address, selector!("get_code_hash"), code_hash);
             start_mock_call::<u256>(starknet_address, selector!("get_nonce"), 1);
@@ -759,7 +759,7 @@ mod tests {
             let mut state: State = Default::default();
             let bytecode = [0xab, 0xcd, 0xef].span();
             let code_hash = bytecode.compute_keccak256_hash();
-            start_mock_call::<u256>(test_utils::native_token(), selector!("balanceOf"), 10000);
+            start_mock_call::<u256>(test_utils::native_token(), selector!("balance_of"), 10000);
             start_mock_call::<Span<u8>>(starknet_address, selector!("bytecode"), bytecode);
             start_mock_call::<u256>(starknet_address, selector!("get_code_hash"), code_hash);
             start_mock_call::<u256>(starknet_address, selector!("get_nonce"), 1);
