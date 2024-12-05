@@ -107,7 +107,9 @@ class TestCairoPrecompiles:
             # modify the number of calls to be different than the actual calls
             tx_data = f"{wrong_nb_calls:064x}" + tx_data[64:]
 
-            with cairo_error("Number of executed calls does not match precompile input"):
+            with cairo_error(
+                "Number of executed calls does not match precompile input"
+            ):
                 await eth_send_transaction(
                     to=f"0x{0x75003:040x}",
                     gas=21000 + 20000 * (len(calls)),
