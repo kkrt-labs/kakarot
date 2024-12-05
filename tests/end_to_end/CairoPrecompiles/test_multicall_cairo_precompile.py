@@ -5,7 +5,6 @@ import pytest_asyncio
 from eth_abi import encode
 from hypothesis import assume, given, settings
 from hypothesis import strategies as st
-from starkware.cairo.lang.cairo_constants import DEFAULT_PRIME
 
 from kakarot_scripts.utils.kakarot import deploy, eth_send_transaction
 from kakarot_scripts.utils.starknet import get_contract, invoke
@@ -94,7 +93,7 @@ class TestCairoPrecompiles:
             expected_count = new_counter + 1
             assert new_count == expected_count
 
-        @given(wrong_nb_calls=st.integers(min_value=0, max_value=DEFAULT_PRIME - 1))
+        @given(wrong_nb_calls=st.integers(min_value=0, max_value=2**8 - 1))
         async def test_should_fail_when_number_of_calls_mismatch_actual_calls(
             self, cairo_counter, owner, wrong_nb_calls
         ):
@@ -112,7 +111,7 @@ class TestCairoPrecompiles:
             ):
                 await eth_send_transaction(
                     to=f"0x{0x75003:040x}",
-                    gas=21000 + 20000 * (len(calls)),
+                    gas=21000 + 20000 * max(wrong_nb_calls, len(calls)),
                     data=tx_data,
                     value=0,
                     caller_eoa=owner.starknet_contract,
