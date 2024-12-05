@@ -5,11 +5,10 @@ import pytest_asyncio
 from eth_abi import encode
 from hypothesis import assume, given, settings
 from hypothesis import strategies as st
-from starkware.cairo.lang.cairo_constants import DEFAULT_PRIME
 
 from kakarot_scripts.utils.kakarot import deploy, eth_send_transaction
 from kakarot_scripts.utils.starknet import get_contract, invoke
-from tests.utils.errors import evm_error
+from tests.utils.errors import cairo_error, evm_error
 
 
 @pytest_asyncio.fixture(scope="module")
@@ -94,7 +93,7 @@ class TestCairoPrecompiles:
             expected_count = new_counter + 1
             assert new_count == expected_count
 
-        @given(wrong_nb_calls=st.integers(min_value=0, max_value=DEFAULT_PRIME - 1))
+        @given(wrong_nb_calls=st.integers(min_value=0, max_value=2**8 - 1))
         async def test_should_fail_when_number_of_calls_mismatch_actual_calls(
             self, cairo_counter, owner, wrong_nb_calls
         ):
@@ -107,16 +106,16 @@ class TestCairoPrecompiles:
             # modify the number of calls to be different than the actual calls
             tx_data = f"{wrong_nb_calls:064x}" + tx_data[64:]
 
-            _, response, success, _ = await eth_send_transaction(
-                to=f"0x{0x75003:040x}",
-                gas=21000 + 20000 * (len(calls)),
-                data=tx_data,
-                value=0,
-                caller_eoa=owner.starknet_contract,
-            )
-
-            assert not success
-            assert "Precompile: input error".encode() == bytes(response)
+            with cairo_error(
+                "Number of executed calls does not match precompile input"
+            ):
+                await eth_send_transaction(
+                    to=f"0x{0x75003:040x}",
+                    gas=21000 + 20000 * max(wrong_nb_calls, len(calls)),
+                    data=tx_data,
+                    value=0,
+                    caller_eoa=owner.starknet_contract,
+                )
 
         async def test_should_increase_counter_single_call_from_solidity(
             self, cairo_counter, multicall_cairo_counter_caller

@@ -150,10 +150,9 @@ namespace KakarotPrecompiles {
         ) = Internals.execute_multiple_cairo_calls(caller_address, calls_len, calls_ptr, 0);
 
         if (reverted == FALSE and nb_executed_calls != number_of_calls) {
-            let (revert_reason_len, revert_reason) = Errors.precompileInputError();
-            return (
-                revert_reason_len, revert_reason, CAIRO_PRECOMPILE_GAS, Errors.EXCEPTIONAL_HALT
-            );
+            with_attr error_message("Number of executed calls does not match precompile input") {
+                assert nb_executed_calls = number_of_calls;
+            }
         }
 
         return (output_len, output, gas_cost, reverted);
