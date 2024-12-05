@@ -205,7 +205,7 @@ impl StackImpl of StackTrait {
     ///
     /// # Errors
     ///
-    /// If the stack length is less than than N, returns with a StackUnderflow error.
+    /// If the stack length is less than N, returns with a StackUnderflow error.
     fn pop_n(ref self: Stack, mut n: usize) -> Result<Array<u256>, EVMError> {
         ensure(!(n > self.len()), EVMError::StackUnderflow)?;
         let mut popped_items = ArrayTrait::<u256>::new();
