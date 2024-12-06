@@ -41,7 +41,6 @@ jobs:
         with:
           repository: kkrt-labs/ef-tests
           path: ef-tests # Check out to a subdirectory to avoid cleaning the kakarot-ssj directory
-          ref: ci/add-native-runtime-env
 
       - name: Checkout local skip file
         uses: actions/checkout@v4
@@ -85,9 +84,11 @@ jobs:
 
       - name: Run tests
         working-directory: ef-tests
+        # If we want to enable native mode:
+        # RUST_MIN_STACK=1342177280 make ef-test-v1-native | tee test_v1.out
         run: |
           set -o pipefail
-          RUST_BACKTRACE=1 RUST_MIN_STACK=1342177280 make ef-test-v1-native | tee test_v1.out
+          make ef-test-v1 | tee test_v1.out
           set +o pipefail
 
       - name: Retrieve ef-tests execution resources
