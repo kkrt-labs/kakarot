@@ -41,6 +41,7 @@ jobs:
         with:
           repository: kkrt-labs/ef-tests
           path: ef-tests # Check out to a subdirectory to avoid cleaning the kakarot-ssj directory
+          ref: ci/add-native-runtime-env
 
       - name: Checkout local skip file
         uses: actions/checkout@v4
