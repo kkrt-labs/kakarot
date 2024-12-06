@@ -9,6 +9,7 @@ mod sha256;
 pub use blake2f::Blake2f;
 pub use ec_operations::ec_add::EcAdd;
 pub use ec_operations::ec_mul::EcMul;
+pub use ec_operations::ec_pairing::EcPairing;
 pub use ec_recover::EcRecover;
 pub use identity::Identity;
 pub use modexp::ModExp;
@@ -104,10 +105,7 @@ pub impl PrecompilesImpl of Precompiles {
                 0x05 => { ModExp::exec(input)? },
                 0x06 => { EcAdd::exec(input)? },
                 0x07 => { EcMul::exec(input)? },
-                0x08 => {
-                    // we should never reach this branch!
-                    panic!("pre-compile at address {:?} isn't implemented yet", precompile_address)
-                },
+                0x08 => { EcPairing::exec(input)? },
                 0x09 => { Blake2f::exec(input)? },
                 0x0a => {
                     // Point Evaluation

@@ -4,45 +4,9 @@ use core::starknet::{EthAddress, secp256r1::{Secp256r1Point}, secp256_trait::is_
 use crate::errors::{EVMError};
 use crate::precompiles::Precompile;
 use utils::traits::bytes::FromBytes;
+use utils::constants::ONE_32_BYTES;
 
 const P256VERIFY_PRECOMPILE_GAS_COST: u64 = 3450;
-
-const ONE_32_BYTES: [
-    u8
-    ; 32] = [
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x01
-];
 
 pub impl P256Verify of Precompile {
     #[inline(always)]

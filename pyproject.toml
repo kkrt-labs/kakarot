@@ -35,7 +35,7 @@ dev-dependencies = [
   "eth-abi>=5.1.0",
   "eth-account>=0.13.0",
   "eth-keys>=0.4.0",
-  "eth-typing==3.5.2",
+  "eth-typing>=5.0.1",
   "eth-utils>=2.1.0",
   "ethereum",
   "py-evm",
