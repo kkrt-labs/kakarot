@@ -34,21 +34,6 @@ jobs:
       - name: Make setup script executable
         run: chmod +x ./cairo/kakarot-ssj/scripts/setup_cairo_native.sh
 
-      - name: Setup Cairo Native
-        run: |
-          if [[ "${{ steps.cache-cairo-native.outputs.cache-hit }}" == 'true' ]]; then
-            sudo ./cairo/kakarot-ssj/scripts/setup_cairo_native.sh -s
-          else
-            sudo ./cairo/kakarot-ssj/scripts/setup_cairo_native.sh
-          fi
-
-      - name: Set Environment Variables
-        run: |
-          echo "MLIR_SYS_190_PREFIX=/usr/lib/llvm-19/" >> $GITHUB_ENV
-          echo "LLVM_SYS_191_PREFIX=/usr/lib/llvm-19/" >> $GITHUB_ENV
-          echo "TABLEGEN_190_PREFIX=/usr/lib/llvm-19/" >> $GITHUB_ENV
-          echo "CAIRO_NATIVE_RUNTIME_LIBRARY=$(pwd)/libcairo_native_runtime.a" >> $GITHUB_ENV
-
       - name: Checkout ef-tests
         uses: actions/checkout@v4
         with:
