@@ -11,28 +11,30 @@ permissions: read-all
 
 jobs:
   ef-tests:
+    env:
+      MLIR_SYS_190_PREFIX: /usr/lib/llvm-19/
+      LLVM_SYS_191_PREFIX: /usr/lib/llvm-19/
+      TABLEGEN_190_PREFIX: /usr/lib/llvm-19/
     runs-on: ubuntu-latest-16-cores
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Cache cairo-native setup
-        id: cache-cairo-native
-        uses: actions/cache@v3
+      - name: add llvm deb repository
+        uses: myci-actions/add-deb-repo@11
         with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            cairo/kakarot-ssj/target/
-            ./libcairo_native_runtime.a
-          key:
-            ${{ runner.os }}-cairo-native-${{ hashFiles('**/Cargo.lock',
-            'scripts/setup_cairo_native.sh') }}
-
-      - name: Make setup script executable
-        run: chmod +x ./cairo/kakarot-ssj/scripts/setup_cairo_native.sh
+          repo: deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-19 main
+          repo-name: llvm-repo
+          keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
+      - name: Update and upgrade APT
+        shell: bash
+        run: sudo apt-get update && sudo apt-get upgrade -y
+      - name: Install LLVM
+        run:
+          sudo apt-get install llvm-19 llvm-19-dev llvm-19-runtime clang-19
+          clang-tools-19 lld-19 libpolly-19-dev libmlir-19-dev mlir-19-tools
+          libgmp3-dev libzstd-dev lld libssl-dev zstd
+      - name: Add llvm bin to PATH
+        run: echo "/usr/lib/llvm-19/bin" >> $GITHUB_PATH
 
       - name: Checkout ef-tests
         uses: actions/checkout@v4
