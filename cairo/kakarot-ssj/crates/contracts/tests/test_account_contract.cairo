@@ -7,7 +7,7 @@ use contracts::{IAccountDispatcher, IAccountDispatcherTrait};
 use core::starknet::EthAddress;
 use core::starknet::account::{Call};
 use evm::test_utils::{ca_address, eoa_address};
-use openzeppelin::token::erc20::interface::IERC20CamelDispatcherTrait;
+use openzeppelin::token::erc20::interface::IERC20DispatcherTrait;
 use snforge_std::{start_cheat_caller_address, stop_cheat_caller_address};
 
 #[test]
@@ -94,7 +94,7 @@ fn test_ca_external_starknet_call_native_token() {
 
     let call = Call {
         to: native_token.contract_address,
-        selector: selector!("balanceOf"),
+        selector: selector!("balance_of"),
         calldata: array![ca_address.starknet.into()].span(),
     };
     start_cheat_caller_address(ca_address.starknet, kakarot_core.contract_address);
@@ -103,7 +103,7 @@ fn test_ca_external_starknet_call_native_token() {
 
     assert(success, 'execute_starknet_call failed');
     assert(data.len() == 2, 'wrong return data length');
-    let balance = native_token.balanceOf(ca_address.starknet);
+    let balance = native_token.balance_of(ca_address.starknet);
     assert((*data[0], *data[1]) == (balance.low.into(), balance.high.into()), 'wrong return data');
 }
 

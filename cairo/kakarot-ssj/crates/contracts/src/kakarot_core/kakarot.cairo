@@ -11,17 +11,16 @@ pub mod KakarotCore {
         StoragePointerWriteAccess
     };
     use core::starknet::{EthAddress, ContractAddress, ClassHash, get_contract_address};
-    use crate::components::ownable::{ownable_component};
-    use crate::components::upgradeable::{IUpgradeable, upgradeable_component};
     use crate::kakarot_core::eth_rpc;
     use crate::kakarot_core::interface::IKakarotCore;
     use evm::backend::starknet_backend;
     use evm::model::account::AccountTrait;
+    use openzeppelin::access::ownable::OwnableComponent;
+    use openzeppelin::upgrades::upgradeable::UpgradeableComponent;
     use utils::helpers::compute_starknet_address;
 
-    component!(path: ownable_component, storage: ownable, event: OwnableEvent);
-    component!(path: upgradeable_component, storage: upgradeable, event: UpgradeableEvent);
-
+    component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
+    component!(path: UpgradeableComponent, storage: upgradeable, event: UpgradeableEvent);
     /// STORAGE ///
 
     #[storage]
@@ -36,9 +35,9 @@ pub mod KakarotCore {
         pub Kakarot_block_gas_limit: u64,
         // Components
         #[substorage(v0)]
-        ownable: ownable_component::Storage,
+        ownable: OwnableComponent::Storage,
         #[substorage(v0)]
-        upgradeable: upgradeable_component::Storage,
+        upgradeable: UpgradeableComponent::Storage,
     }
 
     /// EVENTS ///
@@ -46,8 +45,10 @@ pub mod KakarotCore {
     #[event]
     #[derive(Drop, starknet::Event)]
     pub enum Event {
-        OwnableEvent: ownable_component::Event,
-        UpgradeableEvent: upgradeable_component::Event,
+        #[flat]
+        OwnableEvent: OwnableComponent::Event,
+        #[flat]
+        UpgradeableEvent: UpgradeableComponent::Event,
         AccountDeployed: AccountDeployed,
         AccountClassHashChange: AccountClassHashChange,
         EOAClassHashChange: EOAClassHashChange,
@@ -114,7 +115,7 @@ pub mod KakarotCore {
 
     // Public-facing "ownable" functions
     #[abi(embed_v0)]
-    impl OwnableImpl = ownable_component::Ownable<ContractState>;
+    impl OwnableImpl = OwnableComponent::OwnableImpl<ContractState>;
 
     /// Public-facing "ethereum" functions
     /// Used to make EVM-related actions through Kakarot.
@@ -147,7 +148,7 @@ pub mod KakarotCore {
 
         fn upgrade(ref self: ContractState, new_class_hash: ClassHash) {
             self.ownable.assert_only_owner();
-            self.upgradeable.upgrade_contract(new_class_hash);
+            self.upgradeable.upgrade(new_class_hash);
         }
 
         fn get_account_contract_class_hash(self: @ContractState) -> ClassHash {
@@ -211,8 +212,8 @@ pub mod KakarotCore {
     /// INTERNAL-FACING FUNCTIONS ///
 
     // Internal-facing "ownable" functions
-    impl OwnableInternalImpl = ownable_component::InternalImpl<ContractState>;
+    impl InternalImplOwnable = OwnableComponent::InternalImpl<ContractState>;
 
     // Internal-facing "upgradeable" functions
-    impl UpgradeableImpl = upgradeable_component::Upgradeable<ContractState>;
+    impl UpgradeableInternalImpl = UpgradeableComponent::InternalImpl<ContractState>;
 }

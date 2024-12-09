@@ -59,24 +59,22 @@ pub mod AccountContract {
     use core::starknet::{
         EthAddress, ClassHash, get_caller_address, get_tx_info, get_block_timestamp
     };
-    use crate::components::ownable::IOwnable;
-    use crate::components::ownable::ownable_component::InternalTrait;
-    use crate::components::ownable::ownable_component;
     use crate::errors::KAKAROT_REENTRANCY;
     use crate::kakarot_core::eth_rpc::{IEthRPCDispatcher, IEthRPCDispatcherTrait};
     use crate::kakarot_core::interface::{IKakarotCoreDispatcher, IKakarotCoreDispatcherTrait};
     use crate::storage::StorageBytecode;
-    use openzeppelin::token::erc20::interface::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
+    use openzeppelin::access::ownable::OwnableComponent;
+    use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
     use super::OutsideExecution;
     use utils::eth_transaction::transaction::TransactionTrait;
     use utils::serialization::{deserialize_signature, deserialize_bytes, serialize_bytes};
     use utils::traits::DefaultSignature;
 
     // Add ownable component
-    component!(path: ownable_component, storage: ownable, event: OwnableEvent);
+    component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
     #[abi(embed_v0)]
-    impl OwnableImpl = ownable_component::Ownable<ContractState>;
-    impl OwnableInternal = ownable_component::InternalImpl<ContractState>;
+    impl OwnableImpl = OwnableComponent::OwnableImpl<ContractState>;
+    impl InternalImplOwnable = OwnableComponent::InternalImpl<ContractState>;
 
 
     const VERSION: u32 = 000_001_000;
@@ -93,14 +91,15 @@ pub mod AccountContract {
         pub(crate) Account_evm_address: EthAddress,
         pub(crate) Account_code_hash: u256,
         #[substorage(v0)]
-        ownable: ownable_component::Storage
+        ownable: OwnableComponent::Storage,
     }
 
     #[event]
     #[derive(Drop, starknet::Event)]
     pub enum Event {
         transaction_executed: TransactionExecuted,
-        OwnableEvent: ownable_component::Event
+        #[flat]
+        OwnableEvent: OwnableComponent::Event,
     }
 
     #[derive(Drop, starknet::Event, Debug)]
@@ -132,7 +131,7 @@ pub mod AccountContract {
             // To internally perform value transfer of the network's native
             // token (which conforms to the ERC20 standard), we need to give the
             // KakarotCore contract infinite allowance
-            IERC20CamelDispatcher { contract_address: native_token }
+            IERC20Dispatcher { contract_address: native_token }
                 .approve(kakarot_address, Bounded::<u256>::MAX);
 
             kakarot.register_account(evm_address);

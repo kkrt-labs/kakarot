@@ -1,6 +1,5 @@
 pub mod account_contract;
 pub mod cairo1_helpers;
-pub mod components;
 
 pub mod errors;
 
@@ -27,11 +26,11 @@ pub use kakarot_core::{
 };
 pub use uninitialized_account::{UninitializedAccount};
 
-//TODO: hide this behind a feature flag
-pub mod test_contracts {
-    pub mod test_upgradeable;
-}
-
 pub mod mocks {
     pub mod cairo1_helpers_fixture;
+    pub mod mock_contract_upgradeable;
+}
+
+pub mod token {
+    pub mod erc20;
 }

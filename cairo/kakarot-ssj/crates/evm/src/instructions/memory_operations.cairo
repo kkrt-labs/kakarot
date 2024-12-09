@@ -865,7 +865,7 @@ mod tests {
         vm.stack.push(key).expect('push failed');
 
         // When
-        start_mock_call::<u256>(native_token(), selector!("balanceOf"), 0);
+        start_mock_call::<u256>(native_token(), selector!("balance_of"), 0);
         let result = vm.exec_sstore();
 
         // Then
@@ -924,7 +924,7 @@ mod tests {
 
         // When
         start_mock_call::<u256>(vm.message().target.starknet, selector!("storage"), 0);
-        start_mock_call::<u256>(native_token(), selector!("balanceOf"), 0);
+        start_mock_call::<u256>(native_token(), selector!("balance_of"), 0);
         let result = vm.exec_sstore();
 
         // Then
@@ -949,7 +949,7 @@ mod tests {
 
         // When
         start_mock_call::<u256>(starknet_address, selector!("storage"), 0);
-        start_mock_call::<u256>(native_token(), selector!("balanceOf"), 0);
+        start_mock_call::<u256>(native_token(), selector!("balance_of"), 0);
         let result = vm.exec_sstore();
 
         // Then

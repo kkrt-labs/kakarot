@@ -9,7 +9,7 @@ use evm::backend::validation::validate_eth_tx;
 use evm::model::account::AccountTrait;
 use evm::model::{TransactionResult, Address};
 use evm::{EVMTrait};
-use openzeppelin::token::erc20::interface::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
+use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
 use utils::constants::MAX_SAFE_CHAIN_ID;
 use utils::eth_transaction::transaction::{Transaction, TransactionTrait};
 
@@ -113,8 +113,8 @@ pub impl EthRPC<
         let kakarot_state = KakarotState::get_state();
         let starknet_address = kakarot_state.get_starknet_address(address);
         let native_token_address = kakarot_state.get_native_token();
-        let native_token = IERC20CamelDispatcher { contract_address: native_token_address };
-        native_token.balanceOf(starknet_address)
+        let native_token = IERC20Dispatcher { contract_address: native_token_address };
+        native_token.balance_of(starknet_address)
     }
 
     fn eth_get_transaction_count(self: @TContractState, address: EthAddress) -> u64 {

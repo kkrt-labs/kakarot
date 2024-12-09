@@ -1,7 +1,7 @@
 use contracts::account_contract::{IAccountDispatcher, IAccountDispatcherTrait};
 use contracts::kakarot_core::interface::IExtendedKakarotCoreDispatcherTrait;
 use contracts::kakarot_core::{KakarotCore};
-use contracts::test_contracts::test_upgradeable::{
+use contracts::mocks::mock_contract_upgradeable::{
     IMockContractUpgradeableDispatcher, IMockContractUpgradeableDispatcherTrait
 };
 use contracts::test_data::{deploy_counter_calldata, counter_evm_bytecode};

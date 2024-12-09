@@ -141,7 +141,7 @@ mod tests {
         vm.stack.push(0x1).unwrap(); // address
         vm.stack.push(0xFFFFFFFF).unwrap(); // gas
 
-        start_mock_call::<u256>(native_token(), selector!("balanceOf"), 0);
+        start_mock_call::<u256>(native_token(), selector!("balance_of"), 0);
         vm.exec_staticcall().unwrap();
 
         let result = vm.memory.load(0x80);

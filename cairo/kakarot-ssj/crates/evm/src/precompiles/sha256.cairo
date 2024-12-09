@@ -162,7 +162,7 @@ mod tests {
 
         vm.memory.store_with_expansion(0xFF, 0x0);
 
-        start_mock_call::<u256>(native_token(), selector!("balanceOf"), 0);
+        start_mock_call::<u256>(native_token(), selector!("balance_of"), 0);
         vm.exec_staticcall().unwrap();
 
         let result = vm.memory.load(0x20);

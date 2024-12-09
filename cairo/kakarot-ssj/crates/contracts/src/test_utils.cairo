@@ -1,3 +1,4 @@
+use core::num::traits::Bounded;
 use core::result::ResultTrait;
 use core::starknet::syscalls::deploy_syscall;
 use core::starknet::{EthAddress, ContractAddress};
@@ -8,7 +9,7 @@ use crate::kakarot_core::{
 use evm::model::{Address};
 
 use evm::test_utils::{other_starknet_address, sequencer_evm_address, chain_id};
-use openzeppelin::token::erc20::interface::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
+use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
 use snforge_std::start_cheat_chain_id_global;
 use snforge_std::{
     declare, DeclareResultTrait, start_cheat_caller_address, start_cheat_sequencer_address_global,
@@ -41,14 +42,21 @@ pub mod constants {
     }
 }
 
-pub fn deploy_native_token() -> IERC20CamelDispatcher {
-    let calldata: Array<felt252> = array![
-        'STARKNET_ETH', 'ETH', 0x00, 0xfffffffffffffffffffffffffff, constants::ETH_BANK().into()
-    ];
+pub fn deploy_native_token() -> IERC20Dispatcher {
+    let name: ByteArray = "STARKNET_ETH";
+    let symbol: ByteArray = "ETH";
+    let initial_supply = Bounded::<u256>::MAX;
+
+    let mut calldata = array![];
+    name.serialize(ref calldata);
+    symbol.serialize(ref calldata);
+    initial_supply.serialize(ref calldata);
+    constants::ETH_BANK().serialize(ref calldata);
+
     let class = declare("ERC20").unwrap().contract_class().class_hash;
     let maybe_address = deploy_syscall(*class, 0, calldata.span(), false);
     match maybe_address {
-        Result::Ok((contract_address, _)) => { IERC20CamelDispatcher { contract_address } },
+        Result::Ok((contract_address, _)) => { IERC20Dispatcher { contract_address } },
         Result::Err(err) => panic(err)
     }
 }
@@ -128,14 +136,14 @@ pub fn call_transaction(
 }
 
 pub fn fund_account_with_native_token(
-    contract_address: ContractAddress, native_token: IERC20CamelDispatcher, amount: u256,
+    contract_address: ContractAddress, native_token: IERC20Dispatcher, amount: u256,
 ) {
     start_cheat_caller_address(native_token.contract_address, constants::ETH_BANK());
     native_token.transfer(contract_address, amount);
     stop_cheat_caller_address(native_token.contract_address);
 }
 
-pub fn setup_contracts_for_testing() -> (IERC20CamelDispatcher, IExtendedKakarotCoreDispatcher) {
+pub fn setup_contracts_for_testing() -> (IERC20Dispatcher, IExtendedKakarotCoreDispatcher) {
     let sequencer: EthAddress = sequencer_evm_address();
     let native_token = deploy_native_token();
     let kakarot_core = deploy_kakarot_core(native_token.contract_address, [sequencer].span());
