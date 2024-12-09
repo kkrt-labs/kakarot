@@ -44,6 +44,12 @@ testname:
   initcode:
     - contract_creating_tx__fork_Cancun_minus_blockchain_test_minus_over_limit_ones
     - contract_creating_tx__fork_Cancun_minus_blockchain_test_minus_over_limit_zeros
+    - create_opcode_initcode__fork_Cancun_minus_blockchain_test_minus_create2_minus_49120_bytes #RunResources error
+    - create_opcode_initcode__fork_Cancun_minus_blockchain_test_minus_create2_minus_49121_bytes #RunResources error
+    - create_opcode_initcode__fork_Cancun_minus_blockchain_test_minus_create2_minus_max_size_ones #RunResources error
+    - create_opcode_initcode__fork_Cancun_minus_blockchain_test_minus_create2_minus_max_size_zeros #RunResources error
+    - create_opcode_initcode__fork_Cancun_minus_blockchain_test_minus_create2_minus_over_limit_ones #RunResources error
+    - create_opcode_initcode__fork_Cancun_minus_blockchain_test_minus_create2_minus_over_limit_zeros #RunResources error
   stEIP3651-warmcoinbase:
     - coinbaseWarmAccountCallGasFail_d0g0v0_Cancun
   vmIOandFlowOperations:
@@ -201,6 +207,8 @@ testname:
     - createInitFailStackSizeLargerThan1024_d0g0v0_Cancun
     - Call1024PreCalls_d0g0v0_Cancun
     - Call1024PreCalls_d0g1v0_Cancun
+  vmArithmeticTest:
+    - twoOps_d0g0v0_Cancun #RunResources error
   stCreate2:
     - Create2OnDepth1023_d0g0v0_Cancun
     - Create2OnDepth1024_d0g0v0_Cancun
@@ -213,6 +221,9 @@ testname:
     - CreateOOGafterMaxCodesize_d2g0v0_Cancun
     - CreateOOGafterMaxCodesize_d3g0v0_Cancun
     - CreateOOGafterMaxCodesize_d5g0v0_Cancun
+    - CREATE_ContractRETURNBigOffset_d3g0v0_Cancun #RunResources error
+    - CreateOOGafterMaxCodesize_d0g0v0_Cancun #RunResources error
+    - CreateOOGafterMaxCodesize_d1g0v0_Cancun #RunResources error
   stEIP150Specific:
     - Transaction64Rule_integerBoundaries_d0g0v0_Cancun
     - Transaction64Rule_integerBoundaries_d10g0v0_Cancun
@@ -241,6 +252,47 @@ testname:
   stEIP1559:
     - baseFeeDiffPlaces_d34g0v0_Cancun
     - gasPriceDiffPlaces_d34g0v0_Cancun
+    - baseFeeDiffPlaces_d0g0v0_Cancun
+    - baseFeeDiffPlaces_d10g0v0_Cancun
+    - baseFeeDiffPlaces_d11g0v0_Cancun
+    - baseFeeDiffPlaces_d12g0v0_Cancun
+    - baseFeeDiffPlaces_d13g0v0_Cancun
+    - baseFeeDiffPlaces_d14g0v0_Cancun
+    - baseFeeDiffPlaces_d15g0v0_Cancun
+    - baseFeeDiffPlaces_d16g0v0_Cancun
+    - baseFeeDiffPlaces_d17g0v0_Cancun
+    - baseFeeDiffPlaces_d18g0v0_Cancun
+    - baseFeeDiffPlaces_d19g0v0_Cancun
+    - baseFeeDiffPlaces_d1g0v0_Cancun
+    - baseFeeDiffPlaces_d20g0v0_Cancun
+    - baseFeeDiffPlaces_d21g0v0_Cancun
+    - baseFeeDiffPlaces_d22g0v0_Cancun
+    - baseFeeDiffPlaces_d23g0v0_Cancun
+    - baseFeeDiffPlaces_d24g0v0_Cancun
+    - baseFeeDiffPlaces_d25g0v0_Cancun
+    - baseFeeDiffPlaces_d26g0v0_Cancun
+    - baseFeeDiffPlaces_d27g0v0_Cancun
+    - baseFeeDiffPlaces_d28g0v0_Cancun
+    - baseFeeDiffPlaces_d29g0v0_Cancun
+    - baseFeeDiffPlaces_d2g0v0_Cancun
+    - baseFeeDiffPlaces_d30g0v0_Cancun
+    - baseFeeDiffPlaces_d31g0v0_Cancun
+    - baseFeeDiffPlaces_d32g0v0_Cancun
+    - baseFeeDiffPlaces_d33g0v0_Cancun
+    - baseFeeDiffPlaces_d3g0v0_Cancun
+    - baseFeeDiffPlaces_d4g0v0_Cancun
+    - baseFeeDiffPlaces_d5g0v0_Cancun
+    - baseFeeDiffPlaces_d6g0v0_Cancun
+    - baseFeeDiffPlaces_d7g0v0_Cancun
+    - baseFeeDiffPlaces_d8g0v0_Cancun
+    - baseFeeDiffPlaces_d9g0v0_Cancun
+    - lowFeeCap_d0g0v0_Cancun
+    - lowGasPriceOldTypes_d0g0v0_Cancun
+    - lowGasPriceOldTypes_d1g0v0_Cancun
+    - senderBalance_d0g0v0_Cancun
+  stExample:
+    - eip1559_d0g0v0_Cancun
+    - mergeTest_d0g0v0_Cancun
   stExtCodeHash:
     - extCodeHashDynamicArgument_d1g0v0_Cancun
     - dynamicAccountOverwriteEmpty_Paris_d0g0v0_Cancun
@@ -255,6 +307,10 @@ testname:
     - stackLimitPush32_1024_d0g0v0_Cancun
     - stackLimitPush32_1025_d0g0v0_Cancun
   stPreCompiledContracts2:
+    - CALLCODEIdentity_5_d0g0v0_Cancun #RunResources error
+    - CALLCODESha256_5_d0g0v0_Cancun #RunResources error
+    - CallIdentity_5_d0g0v0_Cancun #RunResources error
+    - CallSha256_5_d0g0v0_Cancun #RunResources error
     - CALLCODERipemd160_0_d0g0v0_Cancun
     - CALLCODERipemd160_1_d0g0v0_Cancun
     - CALLCODERipemd160_2_d0g0v0_Cancun
@@ -360,6 +416,8 @@ testname:
     - modexp_d30g2v0_Cancun
     - modexp_d30g3v0_Cancun
   stQuadraticComplexityTest:
+    - Call50000_d0g0v0_Cancun #RunResources error
+    - Callcode50000_d0g0v0_Cancun #RunResources error
     - Call20KbytesContract50_1_d0g0v0_Cancun
     - Call20KbytesContract50_2_d0g0v0_Cancun
     - Call20KbytesContract50_3_d0g0v0_Cancun
@@ -381,6 +439,10 @@ testname:
     - Return50000_d0g0v0_Cancun
     - Return50000_d0g1v0_Cancun
   stRandom2:
+    - randomStatetest448_d0g0v0_Cancun #RunResources error
+    - randomStatetest456_d0g0v0_Cancun #RunResources error
+    - randomStatetest589_d0g0v0_Cancun #RunResources error
+    - randomStatetest643_d0g0v0_Cancun #RunResources error
     - randomStatetest415_d0g0v0_Cancun
     - randomStatetest418_d0g0v0_Cancun
     - randomStatetest433_d0g0v0_Cancun
@@ -398,6 +460,10 @@ testname:
     - randomStatetest476_d0g0v0_Cancun
     - randomStatetest650_d0g0v0_Cancun
   stRandom:
+    - randomStatetest151_d0g0v0_Cancun #RunResources error
+    - randomStatetest205_d0g0v0_Cancun #RunResources error
+    - randomStatetest341_d0g0v0_Cancun #RunResources error
+    - randomStatetest53_d0g0v0_Cancun #RunResources error
     - randomStatetest111_d0g0v0_Cancun
     - randomStatetest14_d0g0v0_Cancun
     - randomStatetest150_d0g0v0_Cancun
@@ -519,6 +585,11 @@ testname:
     - shiftCombinations_d0g0v0_Cancun
     - shiftSignedCombinations_d0g0v0_Cancun
   stStaticCall:
+    - static_Call10_d0g0v0_Cancun #RunResources error
+    - static_Call10_d1g0v0_Cancun #RunResources error
+    - static_Call1MB1024Calldepth_d0g0v0_Cancun #RunResources error
+    - static_CallIdentity_5_d0g0v0_Cancun #RunResources error
+    - static_CallSha256_5_d0g0v0_Cancun #RunResources error
     - static_Call1024BalanceTooLow2_d1g0v0_Cancun
     - static_Call1024BalanceTooLow_d1g0v0_Cancun
     - static_Call1024PreCalls2_d0g0v0_Cancun
@@ -590,6 +661,9 @@ testname:
     - static_LoopCallsThenRevert_d0g1v0_Cancun
     - static_Return50000_2_d0g0v0_Cancun
   stSystemOperationsTest:
+    - Call10_d0g0v0_Cancun #RunResources error
+    - CallRecursiveBombLog2_d0g0v0_Cancun #RunResources error
+    - CallRecursiveBombLog_d0g0v0_Cancun #RunResources error
     - CallRecursiveBomb0_OOG_atMaxCallDepth_d0g0v0_Cancun
   stZeroKnowledge:
     - ecpairing_bad_length_191_d0g0v0_Cancun
