@@ -22,7 +22,7 @@ precompile will never cause the transaction to revert, meaning that:
 
 - The target Cairo addresses should always correspond to a deployed contract
 - The selector of the Cairo function being called should always be present in
-  the contract called
+  the called contract
 - The Cairo contract called should never _panic_
 
 From these principles, we can derive the following design.
