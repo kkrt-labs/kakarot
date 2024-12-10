@@ -43,7 +43,7 @@ namespace Starknet {
         self: model.State*
     ) {
         alloc_locals;
-        let (native_token_address) = Kakarot_native_token_address.read();
+        let native_token_address = Kakarot_native_token_address.read();
 
         // Accounts
         Internals._commit_accounts{state=self}(
