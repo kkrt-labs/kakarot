@@ -14,7 +14,7 @@ garaga = { git = "https://github.com/keep-starknet-strange/garaga.git" }
 
 [dev-dependencies]
 snforge_std = { git = "https://github.com/foundry-rs/starknet-foundry.git", tag = "v0.31.0" }
-snforge_utils = { path = "../snforge_utils" }
+snforge_utils = { path = "../../../snforge_utils" }
 assert_macros = "2.8.2"
 
 [tool]

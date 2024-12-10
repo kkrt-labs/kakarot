@@ -23,7 +23,7 @@ name = "contracts"
 [dev-dependencies]
 snforge_std = { git = "https://github.com/foundry-rs/starknet-foundry.git", tag = "v0.31.0" }
 assert_macros = "2.8.2"
-snforge_utils = { path = "../snforge_utils" }
+snforge_utils = { path = "../../../snforge_utils" }
 
 [scripts]
 test = "snforge test --max-n-steps 4294967295"
