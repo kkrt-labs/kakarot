@@ -367,7 +367,7 @@ smaller than the field element size, and the resulting `data` array is of
 size 2.
 
 Similarly, the return data of the Cairo contract is deserialized into a
-`uint256[]` where each returned felt has been cast to a uint256.
+`uint256[]` where each returned felt has been cast to an uint256.
 
 > Note: It is left to the responsibility of the wrapper contract developer to
 > ensure that the calldata is correctly serialized to match the Cairo contract's
