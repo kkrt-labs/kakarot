@@ -1,8 +1,7 @@
 # Bytecode Storage Methods for Kakarot on Starknet
 
 The bytecode is the compiled version of a contract, and it is what the Kakarot
-EVM will execute when a contract is called. As Kakarot's state is embedded into
-the Starknet chain it is deployed on, contracts are not actually "deployed" on
+EVM will execute when a contract is called. As Kakarot's state is embedded in the Starknet chain where it is deployed, contracts are not actually "deployed" on
 Kakarot: instead, the EVM bytecode of the deployed contract is first executed,
 and the returned data is then stored on-chain at a particular storage address
 inside the Starknet contract corresponding to the contract's EVM address, whose

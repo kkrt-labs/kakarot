@@ -15,14 +15,14 @@ contexts, which were used to model the execution of sub-calls. However, this
 design was not possible to implement in Cairo, as Cairo does not support the use
 of `Nullable` types containing dictionaries. Since the `ExecutionContext` struct
 contains such `Nullable` types, we had to change the design of the EVM to use a
-machine with a single stack and memory, which are our dict-based data
+machine with a single stack and memory, which as our dict-based data
 structures.
 
 ## The Kakarot Machine design
 
 To overcome the problem stated above, we have come up with the following design:
 
-- There is only one instance of the Memory and the Stack, which is shared
+- There only one instance of Memory and Stack, which are shared
   between the different execution contexts.
 - Each execution context has its own identifier `id`, which uniquely identifies
   it.
