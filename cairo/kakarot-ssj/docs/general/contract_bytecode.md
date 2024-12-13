@@ -196,7 +196,7 @@ struct Storage {
 ```
 
 We use the `List` type from the
-[Alexandria](https://github.com/keep-starknet-strange/alexandria/blob/main/src/storage/src/list.cairo)
+[Alexandria](https://github.com/keep-starknet-strange/alexandria/blob/main/packages/storage/src/list.cairo)
 library to store the bytecode, allowing us to store up to 255 31-bytes values
 per `StorageBaseAddress`. Indeed, the current limitation on the maximal size of
 a complex storage value is 256 field elements, where a field element is the
