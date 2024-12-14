@@ -83,7 +83,7 @@ We need to be able to store in the local state the current information:
   storage updates,
 - The emitted events,
 - The newly created accounts,
-- The deleted accounts through `selfdestruct`
+- The deleted accounts through `self-destruct`
 - The pending transfers of native tokens.
 
 At the end of an execution context, we can merge the contextual state into the
