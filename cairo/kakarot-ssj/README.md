@@ -48,7 +48,7 @@
 
 ## About
 
-Kakarot is an (zk)-Ethereum Virtual Machine implementation written in Cairo.
+Kakarot is a (zk)-Ethereum Virtual Machine implementation written in Cairo.
 Kakarot is Ethereum compatible, i.e. all existing smart contracts, developer
 tools and wallets work out-of-the-box on Kakarot. It's been open source from day
 one. Soon available on Starknet L2 and Appchains.
