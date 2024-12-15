@@ -88,7 +88,7 @@ When working on opcodes, make sure to check several things:
 - The [EVM playground](https://www.evm.codes/) to be able to read the specs and
   play around directly on the [playground](https://www.evm.codes/playground).
 - The [Cairo Zero implementation](https://github.com/kkrt-labs/kakarot) that
-  already exists in the above mentioned repo.
+  already exists in the above-mentioned repo.
 
 Now, here are things to pay attention to:
 
